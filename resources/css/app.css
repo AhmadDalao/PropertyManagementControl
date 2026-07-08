@@ -1,0 +1,214 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+    --pmc-bg: #fffaf3;
+    --pmc-panel: rgba(255, 255, 255, 0.92);
+    --pmc-border: rgba(26, 30, 48, 0.08);
+    --pmc-text: #1b2430;
+    --pmc-muted: #6f7683;
+    --pmc-primary: #ef6c2f;
+    --pmc-secondary: #0c8a7c;
+    --pmc-accent: #ffca4b;
+    --pmc-shadow: 0 20px 60px rgba(31, 33, 51, 0.08);
+    --bs-primary: var(--pmc-primary);
+    --bs-secondary: var(--pmc-secondary);
+    --bs-body-color: var(--pmc-text);
+    --bs-body-bg: var(--pmc-bg);
+    --bs-border-color: var(--pmc-border);
+    --bs-link-color: var(--pmc-primary);
+    --bs-link-hover-color: #d4581d;
+    --bs-font-sans-serif:
+        'Instrument Sans', 'Avenir Next', 'Segoe UI', sans-serif;
+}
+
+html,
+body,
+#app {
+    min-height: 100%;
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(239, 108, 47, 0.14), transparent 30%),
+        radial-gradient(circle at top right, rgba(12, 138, 124, 0.12), transparent 28%),
+        linear-gradient(180deg, #fffefb 0%, #fff9ef 55%, #fff4e9 100%);
+    color: var(--pmc-text);
+}
+
+a {
+    text-decoration: none;
+}
+
+.pmc-shell {
+    min-height: 100vh;
+}
+
+.pmc-sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #162238 0%, #24314a 100%);
+    color: #f7f8fb;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pmc-sidebar .nav-link {
+    color: rgba(247, 248, 251, 0.72);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    margin-bottom: 0.35rem;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.pmc-sidebar .nav-link.active,
+.pmc-sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.pmc-main {
+    flex: 1;
+    min-width: 0;
+}
+
+.pmc-topbar,
+.pmc-card,
+.pmc-table-wrap,
+.pmc-surface {
+    background: var(--pmc-panel);
+    border: 1px solid var(--pmc-border);
+    box-shadow: var(--pmc-shadow);
+    backdrop-filter: blur(12px);
+}
+
+.pmc-topbar {
+    border-radius: 1.5rem;
+}
+
+.pmc-card {
+    border-radius: 1.4rem;
+}
+
+.pmc-card--accent {
+    background:
+        linear-gradient(135deg, rgba(239, 108, 47, 0.12), rgba(255, 202, 75, 0.16)),
+        var(--pmc-panel);
+}
+
+.pmc-card--teal {
+    background:
+        linear-gradient(135deg, rgba(12, 138, 124, 0.14), rgba(64, 193, 178, 0.16)),
+        var(--pmc-panel);
+}
+
+.pmc-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--pmc-muted);
+}
+
+.pmc-page-title {
+    font-size: clamp(1.9rem, 2vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.pmc-metric {
+    font-size: clamp(1.9rem, 2vw, 3rem);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.pmc-table {
+    margin: 0;
+}
+
+.pmc-table thead th {
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom-color: var(--pmc-border);
+}
+
+.pmc-table tbody td {
+    vertical-align: middle;
+    border-color: rgba(15, 23, 42, 0.05);
+}
+
+.pmc-form-label {
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--pmc-muted);
+    font-weight: 700;
+}
+
+.pmc-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.06);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pmc-chip--primary {
+    background: rgba(239, 108, 47, 0.12);
+    color: #b94b16;
+}
+
+.pmc-chip--teal {
+    background: rgba(12, 138, 124, 0.12);
+    color: #0f6f63;
+}
+
+.pmc-login-panel {
+    max-width: 460px;
+}
+
+.pmc-hero {
+    border-radius: 2rem;
+    overflow: hidden;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.92)),
+        linear-gradient(120deg, rgba(239, 108, 47, 0.18), rgba(12, 138, 124, 0.18));
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-hero-blob {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(16px);
+    opacity: 0.45;
+}
+
+.pmc-hero-blob--orange {
+    background: rgba(239, 108, 47, 0.22);
+}
+
+.pmc-hero-blob--teal {
+    background: rgba(12, 138, 124, 0.22);
+}
+
+.pmc-public-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+[dir='rtl'] .pmc-sidebar {
+    border-right: none;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 991.98px) {
+    .pmc-sidebar {
+        width: 100%;
+    }
+}

@@ -1,0 +1,117 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class UserController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        $users = $this->scopeByPortfolio(
+            User::query()->with('roles')->latest(),
+            $actor
+        )->get();
+
+        return Inertia::render('admin/users/index', [
+            'users' => $users,
+            'portfolioOptions' => $this->portfolioOptions($actor),
+            'roleOptions' => $this->roleOptions($actor),
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        $data = $request->validate([
+            'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'preferred_locale' => ['required', 'in:en,ar'],
+            'status' => ['required', 'string', 'max:50'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'string'],
+        ]);
+
+        $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
+        $this->ensurePortfolioAccess($actor, $portfolioId);
+        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
+
+        $user = DB::transaction(function () use ($data, $portfolioId) {
+            $user = User::query()->create([
+                'portfolio_id' => $portfolioId,
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'preferred_locale' => $data['preferred_locale'],
+                'status' => $data['status'],
+                'force_password_reset' => true,
+                'password' => Hash::make($data['password']),
+            ]);
+
+            $user->syncRoles([$data['role']]);
+
+            return $user;
+        });
+
+        return to_route('users.index')->with('success', "User {$user->name} created.");
+    }
+
+    public function update(Request $request, User $user): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'preferred_locale' => ['required', 'in:en,ar'],
+            'status' => ['required', 'string', 'max:50'],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['required', 'string'],
+        ]);
+
+        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
+
+        $user->update([
+            'name' => $data['name'],
+            'phone' => $data['phone'] ?? null,
+            'preferred_locale' => $data['preferred_locale'],
+            'status' => $data['status'],
+            'password' => $data['password'] ? Hash::make($data['password']) : $user->password,
+        ]);
+
+        $user->syncRoles([$data['role']]);
+
+        return to_route('users.index')->with('success', "User {$user->name} updated.");
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function roleOptions(User $actor): array
+    {
+        if ($actor->hasRole('superadmin')) {
+            return ['superadmin', 'owner', 'property_manager', 'tenant'];
+        }
+
+        if ($actor->hasRole('owner')) {
+            return ['property_manager', 'tenant'];
+        }
+
+        return ['tenant'];
+    }
+}
