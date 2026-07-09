@@ -2,6 +2,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -517,6 +518,13 @@ export default function LeasesPage() {
                                             >
                                                 Edit
                                             </button>
+                                            {lease.status !== 'terminated' ? (
+                                                <ArchiveAction
+                                                    href={`/leases/${lease.id}`}
+                                                    label="Terminate"
+                                                    confirmMessage={`Terminate lease ${lease.code}? The asset will become vacant if no other active lease exists.`}
+                                                />
+                                            ) : null}
                                         </div>
                                     ),
                                 },

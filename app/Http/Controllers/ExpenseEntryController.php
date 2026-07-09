@@ -83,6 +83,7 @@ class ExpenseEntryController extends Controller
 
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
+        $this->ensureExpenseReferencesBelongToPortfolio($data, $portfolioId);
 
         ExpenseEntry::query()->create([
             'portfolio_id' => $portfolioId,
@@ -109,6 +110,8 @@ class ExpenseEntryController extends Controller
         $this->ensurePortfolioAccess($actor, $expense->portfolio_id);
 
         $data = $request->validate([
+            'asset_id' => ['nullable', 'integer', 'exists:assets,id'],
+            'maintenance_request_id' => ['nullable', 'integer', 'exists:maintenance_requests,id'],
             'category' => ['required', 'string'],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
@@ -119,8 +122,45 @@ class ExpenseEntryController extends Controller
             'status' => ['required', 'string'],
         ]);
 
+        $this->ensureExpenseReferencesBelongToPortfolio($data, $expense->portfolio_id);
         $expense->update($data);
 
         return to_route('expenses.index')->with('success', 'Expense updated successfully.');
+    }
+
+    public function destroy(Request $request, ExpenseEntry $expense): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $expense->portfolio_id);
+
+        $expense->update(['status' => 'void']);
+
+        return to_route('expenses.index')->with('success', 'Expense voided successfully.');
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function ensureExpenseReferencesBelongToPortfolio(array $data, int $portfolioId): void
+    {
+        if (! empty($data['asset_id'])) {
+            abort_unless(
+                Asset::query()->whereKey($data['asset_id'])->where('portfolio_id', $portfolioId)->exists(),
+                422,
+                'Selected asset does not belong to this portfolio.'
+            );
+        }
+
+        if (! empty($data['maintenance_request_id'])) {
+            abort_unless(
+                MaintenanceRequest::query()
+                    ->whereKey($data['maintenance_request_id'])
+                    ->where('portfolio_id', $portfolioId)
+                    ->exists(),
+                422,
+                'Selected maintenance request does not belong to this portfolio.'
+            );
+        }
     }
 }

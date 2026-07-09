@@ -38,23 +38,23 @@ Route::middleware('auth')->group(function () {
     Route::get('/global-search', GlobalSearchController::class)->name('global-search');
     Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
 
-    Route::resource('portfolios', PortfolioController::class)->only(['index', 'store', 'update']);
-    Route::resource('users', UserController::class)->only(['index', 'store', 'update']);
-    Route::resource('assets', AssetController::class)->only(['index', 'store', 'update']);
-    Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update']);
-    Route::resource('leases', LeaseController::class)->only(['index', 'store', 'update']);
+    Route::resource('portfolios', PortfolioController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('assets', AssetController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('leases', LeaseController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract');
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract');
     Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement');
 
-    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'update']);
+    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
 
     Route::resource('maintenance-requests', MaintenanceRequestController::class)
         ->parameters(['maintenance-requests' => 'maintenanceRequest'])
-        ->only(['index', 'store', 'update']);
+        ->only(['index', 'store', 'update', 'destroy']);
 
-    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update']);
+    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');

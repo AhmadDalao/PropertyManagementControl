@@ -103,4 +103,14 @@ class PortfolioController extends Controller
 
         return to_route('portfolios.index')->with('success', "Portfolio {$portfolio->name_en} updated.");
     }
+
+    public function destroy(Request $request, Portfolio $portfolio): RedirectResponse
+    {
+        $user = $this->actor($request);
+        $this->requireRoles($user, ['superadmin']);
+
+        $portfolio->update(['status' => 'archived']);
+
+        return to_route('portfolios.index')->with('success', "Portfolio {$portfolio->name_en} archived.");
+    }
 }

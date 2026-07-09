@@ -1,6 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -15,7 +17,11 @@ import type {
 
 type ExpenseRecord = {
     id: number;
+    portfolio_id: number;
+    asset_id?: number | null;
+    maintenance_request_id?: number | null;
     title: string;
+    description?: string | null;
     category: string;
     status: string;
     vendor_name?: string | null;
@@ -36,6 +42,7 @@ type PageProps = SharedProps & {
 
 export default function ExpensesPage() {
     const { props } = usePage<PageProps>();
+    const [editing, setEditing] = useState<ExpenseRecord | null>(null);
     const form = useForm({
         portfolio_id: String(
             props.auth.user?.portfolio_id ??
@@ -54,8 +61,42 @@ export default function ExpensesPage() {
         status: 'posted',
     });
 
+    const startEditing = (expense: ExpenseRecord) => {
+        form.setData({
+            portfolio_id: String(expense.portfolio_id),
+            asset_id: expense.asset_id ? String(expense.asset_id) : '',
+            maintenance_request_id: expense.maintenance_request_id
+                ? String(expense.maintenance_request_id)
+                : '',
+            category: expense.category,
+            title: expense.title,
+            description: expense.description ?? '',
+            incurred_on: expense.incurred_on,
+            amount: expense.amount,
+            currency: expense.currency,
+            vendor_name: expense.vendor_name ?? '',
+            status: expense.status,
+        });
+        setEditing(expense);
+    };
+
+    const clearEditing = () => {
+        setEditing(null);
+        form.reset();
+    };
+
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (editing) {
+            form.put(`/expenses/${editing.id}`, {
+                preserveScroll: true,
+                onSuccess: clearEditing,
+            });
+
+            return;
+        }
+
         form.post('/expenses', { preserveScroll: true });
     };
 
@@ -109,6 +150,27 @@ export default function ExpensesPage() {
             <div className="row g-4">
                 <div className="col-xl-4">
                     <div className="pmc-card p-4">
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div className="pmc-kicker mb-2">
+                                    Expense form
+                                </div>
+                                <h2 className="h4 mb-0">
+                                    {editing
+                                        ? `Edit ${editing.title}`
+                                        : 'Record expense'}
+                                </h2>
+                            </div>
+                            {editing ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearEditing}
+                                >
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
                         <form className="d-grid gap-3" onSubmit={submit}>
                             <input
                                 className="form-control"
@@ -142,6 +204,7 @@ export default function ExpensesPage() {
                                         <option value="supplies">
                                             Supplies
                                         </option>
+                                        <option value="repairs">Repairs</option>
                                     </select>
                                 </div>
                                 <div className="col-md-6">
@@ -199,11 +262,25 @@ export default function ExpensesPage() {
                                     )
                                 }
                             />
+                            <select
+                                className="form-select"
+                                value={form.data.status}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'status',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <option value="posted">Posted</option>
+                                <option value="pending">Pending</option>
+                                <option value="void">Void</option>
+                            </select>
                             <button
                                 className="btn btn-primary"
                                 disabled={form.processing}
                             >
-                                Record expense
+                                {editing ? 'Update expense' : 'Record expense'}
                             </button>
                         </form>
                     </div>
@@ -278,6 +355,31 @@ export default function ExpensesPage() {
                                         <span className="pmc-chip pmc-chip--primary">
                                             {expense.status}
                                         </span>
+                                    ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (expense) => (
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    startEditing(expense)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                            {expense.status !== 'void' ? (
+                                                <ArchiveAction
+                                                    href={`/expenses/${expense.id}`}
+                                                    label="Void"
+                                                    confirmMessage={`Void expense ${expense.title}?`}
+                                                />
+                                            ) : null}
+                                        </div>
                                     ),
                                 },
                             ]}

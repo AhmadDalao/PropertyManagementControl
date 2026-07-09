@@ -152,4 +152,22 @@ class TenantController extends Controller
 
         return to_route('tenants.index')->with('success', 'Tenant updated successfully.');
     }
+
+    public function destroy(Request $request, TenantProfile $tenant): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $tenant->portfolio_id);
+
+        if ($tenant->leases()->where('status', 'active')->exists()) {
+            return back()->with('error', 'Terminate active leases before archiving this tenant.');
+        }
+
+        DB::transaction(function () use ($tenant) {
+            $tenant->update(['status' => 'blocked']);
+            $tenant->user?->update(['status' => 'suspended']);
+        });
+
+        return to_route('tenants.index')->with('success', 'Tenant archived successfully.');
+    }
 }

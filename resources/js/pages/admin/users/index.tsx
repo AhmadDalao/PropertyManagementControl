@@ -2,6 +2,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -384,13 +385,24 @@ export default function UsersPage() {
                                     label: 'Actions',
                                     className: 'text-end',
                                     render: (user) => (
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => startEditing(user)}
-                                        >
-                                            Edit
-                                        </button>
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    startEditing(user)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                            {user.status !== 'suspended' &&
+                                            user.id !== props.auth.user?.id ? (
+                                                <ArchiveAction
+                                                    href={`/users/${user.id}`}
+                                                    confirmMessage={`Archive ${user.name}? They will no longer have an active portal account.`}
+                                                />
+                                            ) : null}
+                                        </div>
                                     ),
                                 },
                             ]}

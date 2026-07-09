@@ -9,6 +9,7 @@ use App\Services\LeaseFinancialService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -96,11 +97,27 @@ class PaymentController extends Controller
         $lease = Lease::query()->findOrFail($data['lease_id']);
         $portfolioId = $data['portfolio_id'] ?? $lease->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
+        abort_if($lease->portfolio_id !== $portfolioId, 422, 'Lease does not belong to the selected portfolio.');
+
+        $tenantProfileId = $data['tenant_profile_id'] ?? $lease->tenant_profile_id;
+        abort_unless(
+            TenantProfile::query()
+                ->whereKey($tenantProfileId)
+                ->where('portfolio_id', $portfolioId)
+                ->exists(),
+            422,
+            'Tenant does not belong to the selected portfolio.'
+        );
+        abort_if(
+            (int) $tenantProfileId !== (int) $lease->tenant_profile_id,
+            422,
+            'Payment tenant must match the selected lease tenant.'
+        );
 
         $payment = Payment::query()->create([
             'portfolio_id' => $portfolioId,
             'lease_id' => $lease->id,
-            'tenant_profile_id' => $data['tenant_profile_id'] ?? $lease->tenant_profile_id,
+            'tenant_profile_id' => $tenantProfileId,
             'recorded_by_user_id' => $actor->id,
             'reference' => $data['reference'] ?? null,
             'type' => $data['type'],
@@ -128,9 +145,33 @@ class PaymentController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
+        if ($payment->status === 'void' && $data['status'] !== 'void') {
+            return back()->with('error', 'Voided payments cannot be reopened. Record a new payment instead.');
+        }
+
+        if ($data['status'] === 'void' && $payment->status !== 'void') {
+            DB::transaction(function () use ($payment, $data) {
+                $this->leaseFinancials->voidPayment($payment);
+                $payment->update(['notes' => $data['notes'] ?? null]);
+            });
+
+            return to_route('payments.index')->with('success', 'Payment voided and allocations reversed.');
+        }
+
         $payment->update($data);
 
         return to_route('payments.index')->with('success', 'Payment updated successfully.');
+    }
+
+    public function destroy(Request $request, Payment $payment): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $payment->portfolio_id);
+
+        DB::transaction(fn () => $this->leaseFinancials->voidPayment($payment));
+
+        return to_route('payments.index')->with('success', 'Payment voided and allocations reversed.');
     }
 
     public function receipt(Request $request, Payment $payment): StreamedResponse

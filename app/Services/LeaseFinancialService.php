@@ -93,4 +93,29 @@ class LeaseFinancialService
             $remaining -= $allocated;
         }
     }
+
+    public function voidPayment(Payment $payment): void
+    {
+        $payment->loadMissing('allocations.leaseInstallment');
+
+        foreach ($payment->allocations as $allocation) {
+            $installment = $allocation->leaseInstallment;
+
+            if (! $installment) {
+                continue;
+            }
+
+            $installment->amount_paid = max(0, (float) $installment->amount_paid - (float) $allocation->amount);
+            $installment->status = match (true) {
+                $installment->amount_paid <= 0 => 'pending',
+                $installment->amount_paid < $installment->amount_due => 'partial',
+                default => 'paid',
+            };
+            $installment->paid_at = $installment->status === 'paid' ? $installment->paid_at : null;
+            $installment->save();
+        }
+
+        $payment->allocations()->delete();
+        $payment->update(['status' => 'void']);
+    }
 }

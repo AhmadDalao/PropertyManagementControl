@@ -1,6 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -20,6 +22,8 @@ type RequestRecord = {
     category: string;
     priority: string;
     created_at: string;
+    assigned_to_user_id?: number | null;
+    internal_notes?: string | null;
     asset?: { title_en: string };
     tenant_profile?: { user?: { name: string } };
 };
@@ -37,6 +41,7 @@ type PageProps = SharedProps & {
 
 export default function MaintenancePage() {
     const { props } = usePage<PageProps>();
+    const [editing, setEditing] = useState<RequestRecord | null>(null);
 
     const tenantForm = useForm({
         asset_id: String(props.assetOptions[0]?.id ?? ''),
@@ -56,13 +61,46 @@ export default function MaintenancePage() {
         title: '',
         description: '',
         internal_notes: '',
+        comment: '',
     });
+
+    const startTriage = (requestItem: RequestRecord) => {
+        managerForm.setData({
+            asset_id: '',
+            tenant_profile_id: '',
+            assigned_to_user_id: requestItem.assigned_to_user_id
+                ? String(requestItem.assigned_to_user_id)
+                : '',
+            category: requestItem.category,
+            priority: requestItem.priority,
+            status: requestItem.status,
+            title: requestItem.title,
+            description: '',
+            internal_notes: requestItem.internal_notes ?? '',
+            comment: '',
+        });
+        setEditing(requestItem);
+    };
+
+    const clearTriage = () => {
+        setEditing(null);
+        managerForm.reset();
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         if (props.mode === 'tenant') {
             tenantForm.post('/maintenance-requests', { preserveScroll: true });
+
+            return;
+        }
+
+        if (editing) {
+            managerForm.put(`/maintenance-requests/${editing.id}`, {
+                preserveScroll: true,
+                onSuccess: clearTriage,
+            });
 
             return;
         }
@@ -119,205 +157,377 @@ export default function MaintenancePage() {
             <div className="row g-4">
                 <div className="col-xl-4">
                     <div className="pmc-card p-4">
-                        <div className="pmc-kicker mb-2">Request form</div>
-                        <form className="d-grid gap-3" onSubmit={submit}>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <label className="form-label pmc-form-label">
-                                    Asset
-                                </label>
-                                <select
-                                    className="form-select"
-                                    value={
-                                        props.mode === 'tenant'
-                                            ? tenantForm.data.asset_id
-                                            : managerForm.data.asset_id
-                                    }
-                                    onChange={(event) =>
-                                        props.mode === 'tenant'
-                                            ? tenantForm.setData(
-                                                  'asset_id',
-                                                  event.currentTarget.value,
-                                              )
-                                            : managerForm.setData(
-                                                  'asset_id',
-                                                  event.currentTarget.value,
-                                              )
-                                    }
+                                <div className="pmc-kicker mb-2">
+                                    Request form
+                                </div>
+                                <h2 className="h4 mb-0">
+                                    {editing
+                                        ? `Triage #${editing.id}`
+                                        : 'Submit request'}
+                                </h2>
+                            </div>
+                            {editing ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearTriage}
                                 >
-                                    {props.assetOptions.map((asset) => (
-                                        <option key={asset.id} value={asset.id}>
-                                            {asset.title_en}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            {props.mode === 'manager' ? (
-                                <div>
-                                    <label className="form-label pmc-form-label">
-                                        Tenant
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        value={
-                                            managerForm.data.tenant_profile_id
-                                        }
-                                        onChange={(event) =>
-                                            managerForm.setData(
-                                                'tenant_profile_id',
-                                                event.currentTarget.value,
-                                            )
-                                        }
-                                    >
-                                        {props.tenantOptions?.map((tenant) => (
-                                            <option
-                                                key={tenant.id}
-                                                value={tenant.id}
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
+                        <form className="d-grid gap-3" onSubmit={submit}>
+                            {editing && props.mode === 'manager' ? (
+                                <>
+                                    <div>
+                                        <label className="form-label pmc-form-label">
+                                            Assigned to
+                                        </label>
+                                        <select
+                                            className="form-select"
+                                            value={
+                                                managerForm.data
+                                                    .assigned_to_user_id
+                                            }
+                                            onChange={(event) =>
+                                                managerForm.setData(
+                                                    'assigned_to_user_id',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        >
+                                            <option value="">Unassigned</option>
+                                            {props.userOptions?.map((user) => (
+                                                <option
+                                                    key={user.id}
+                                                    value={user.id}
+                                                >
+                                                    {user.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="row g-3">
+                                        <div className="col-md-6">
+                                            <label className="form-label pmc-form-label">
+                                                Priority
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={
+                                                    managerForm.data.priority
+                                                }
+                                                onChange={(event) =>
+                                                    managerForm.setData(
+                                                        'priority',
+                                                        event.currentTarget
+                                                            .value,
+                                                    )
+                                                }
                                             >
-                                                {tenant.user?.name ??
-                                                    `Tenant #${tenant.id}`}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            ) : null}
-
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">
-                                        Category
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        value={
-                                            props.mode === 'tenant'
-                                                ? tenantForm.data.category
-                                                : managerForm.data.category
-                                        }
-                                        onChange={(event) =>
-                                            props.mode === 'tenant'
-                                                ? tenantForm.setData(
-                                                      'category',
-                                                      event.currentTarget.value,
-                                                  )
-                                                : managerForm.setData(
-                                                      'category',
-                                                      event.currentTarget.value,
-                                                  )
-                                        }
-                                    >
-                                        <option value="electricity">
-                                            Electricity
-                                        </option>
-                                        <option value="plumbing">
-                                            Plumbing
-                                        </option>
-                                        <option value="ac">AC</option>
-                                        <option value="general">General</option>
-                                    </select>
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">
-                                        Priority
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        value={
-                                            props.mode === 'tenant'
-                                                ? tenantForm.data.priority
-                                                : managerForm.data.priority
-                                        }
-                                        onChange={(event) =>
-                                            props.mode === 'tenant'
-                                                ? tenantForm.setData(
-                                                      'priority',
-                                                      event.currentTarget.value,
-                                                  )
-                                                : managerForm.setData(
-                                                      'priority',
-                                                      event.currentTarget.value,
-                                                  )
-                                        }
-                                    >
-                                        <option value="low">Low</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="high">High</option>
-                                        <option value="urgent">Urgent</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            {props.mode === 'manager' ? (
-                                <div>
-                                    <label className="form-label pmc-form-label">
-                                        Status
-                                    </label>
-                                    <select
-                                        className="form-select"
-                                        value={managerForm.data.status}
+                                                <option value="low">Low</option>
+                                                <option value="medium">
+                                                    Medium
+                                                </option>
+                                                <option value="high">
+                                                    High
+                                                </option>
+                                                <option value="urgent">
+                                                    Urgent
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label pmc-form-label">
+                                                Status
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={managerForm.data.status}
+                                                onChange={(event) =>
+                                                    managerForm.setData(
+                                                        'status',
+                                                        event.currentTarget
+                                                            .value,
+                                                    )
+                                                }
+                                            >
+                                                <option value="open">
+                                                    Open
+                                                </option>
+                                                <option value="in_progress">
+                                                    In progress
+                                                </option>
+                                                <option value="resolved">
+                                                    Resolved
+                                                </option>
+                                                <option value="cancelled">
+                                                    Cancelled
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="Internal notes"
+                                        value={managerForm.data.internal_notes}
                                         onChange={(event) =>
                                             managerForm.setData(
-                                                'status',
+                                                'internal_notes',
                                                 event.currentTarget.value,
                                             )
                                         }
-                                    >
-                                        <option value="open">Open</option>
-                                        <option value="in_progress">
-                                            In progress
-                                        </option>
-                                        <option value="resolved">
-                                            Resolved
-                                        </option>
-                                        <option value="cancelled">
-                                            Cancelled
-                                        </option>
-                                    </select>
-                                </div>
-                            ) : null}
+                                    />
+                                    <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="Update comment"
+                                        value={managerForm.data.comment}
+                                        onChange={(event) =>
+                                            managerForm.setData(
+                                                'comment',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </>
+                            ) : (
+                                <>
+                                    <div>
+                                        <label className="form-label pmc-form-label">
+                                            Asset
+                                        </label>
+                                        <select
+                                            className="form-select"
+                                            value={
+                                                props.mode === 'tenant'
+                                                    ? tenantForm.data.asset_id
+                                                    : managerForm.data.asset_id
+                                            }
+                                            onChange={(event) =>
+                                                props.mode === 'tenant'
+                                                    ? tenantForm.setData(
+                                                          'asset_id',
+                                                          event.currentTarget
+                                                              .value,
+                                                      )
+                                                    : managerForm.setData(
+                                                          'asset_id',
+                                                          event.currentTarget
+                                                              .value,
+                                                      )
+                                            }
+                                        >
+                                            {props.assetOptions.map((asset) => (
+                                                <option
+                                                    key={asset.id}
+                                                    value={asset.id}
+                                                >
+                                                    {asset.title_en}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
 
-                            <input
-                                className="form-control"
-                                placeholder="Title"
-                                value={
-                                    props.mode === 'tenant'
-                                        ? tenantForm.data.title
-                                        : managerForm.data.title
-                                }
-                                onChange={(event) =>
-                                    props.mode === 'tenant'
-                                        ? tenantForm.setData(
-                                              'title',
-                                              event.currentTarget.value,
-                                          )
-                                        : managerForm.setData(
-                                              'title',
-                                              event.currentTarget.value,
-                                          )
-                                }
-                            />
+                                    {props.mode === 'manager' ? (
+                                        <div>
+                                            <label className="form-label pmc-form-label">
+                                                Tenant
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={
+                                                    managerForm.data
+                                                        .tenant_profile_id
+                                                }
+                                                onChange={(event) =>
+                                                    managerForm.setData(
+                                                        'tenant_profile_id',
+                                                        event.currentTarget
+                                                            .value,
+                                                    )
+                                                }
+                                            >
+                                                {props.tenantOptions?.map(
+                                                    (tenant) => (
+                                                        <option
+                                                            key={tenant.id}
+                                                            value={tenant.id}
+                                                        >
+                                                            {tenant.user
+                                                                ?.name ??
+                                                                `Tenant #${tenant.id}`}
+                                                        </option>
+                                                    ),
+                                                )}
+                                            </select>
+                                        </div>
+                                    ) : null}
 
-                            <textarea
-                                className="form-control"
-                                rows={4}
-                                placeholder="Description"
-                                value={
-                                    props.mode === 'tenant'
-                                        ? tenantForm.data.description
-                                        : managerForm.data.description
-                                }
-                                onChange={(event) =>
-                                    props.mode === 'tenant'
-                                        ? tenantForm.setData(
-                                              'description',
-                                              event.currentTarget.value,
-                                          )
-                                        : managerForm.setData(
-                                              'description',
-                                              event.currentTarget.value,
-                                          )
-                                }
-                            />
+                                    <div className="row g-3">
+                                        <div className="col-md-6">
+                                            <label className="form-label pmc-form-label">
+                                                Category
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={
+                                                    props.mode === 'tenant'
+                                                        ? tenantForm.data
+                                                              .category
+                                                        : managerForm.data
+                                                              .category
+                                                }
+                                                onChange={(event) =>
+                                                    props.mode === 'tenant'
+                                                        ? tenantForm.setData(
+                                                              'category',
+                                                              event
+                                                                  .currentTarget
+                                                                  .value,
+                                                          )
+                                                        : managerForm.setData(
+                                                              'category',
+                                                              event
+                                                                  .currentTarget
+                                                                  .value,
+                                                          )
+                                                }
+                                            >
+                                                <option value="electricity">
+                                                    Electricity
+                                                </option>
+                                                <option value="plumbing">
+                                                    Plumbing
+                                                </option>
+                                                <option value="ac">AC</option>
+                                                <option value="general">
+                                                    General
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div className="col-md-6">
+                                            <label className="form-label pmc-form-label">
+                                                Priority
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={
+                                                    props.mode === 'tenant'
+                                                        ? tenantForm.data
+                                                              .priority
+                                                        : managerForm.data
+                                                              .priority
+                                                }
+                                                onChange={(event) =>
+                                                    props.mode === 'tenant'
+                                                        ? tenantForm.setData(
+                                                              'priority',
+                                                              event
+                                                                  .currentTarget
+                                                                  .value,
+                                                          )
+                                                        : managerForm.setData(
+                                                              'priority',
+                                                              event
+                                                                  .currentTarget
+                                                                  .value,
+                                                          )
+                                                }
+                                            >
+                                                <option value="low">Low</option>
+                                                <option value="medium">
+                                                    Medium
+                                                </option>
+                                                <option value="high">
+                                                    High
+                                                </option>
+                                                <option value="urgent">
+                                                    Urgent
+                                                </option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    {props.mode === 'manager' ? (
+                                        <div>
+                                            <label className="form-label pmc-form-label">
+                                                Status
+                                            </label>
+                                            <select
+                                                className="form-select"
+                                                value={managerForm.data.status}
+                                                onChange={(event) =>
+                                                    managerForm.setData(
+                                                        'status',
+                                                        event.currentTarget
+                                                            .value,
+                                                    )
+                                                }
+                                            >
+                                                <option value="open">
+                                                    Open
+                                                </option>
+                                                <option value="in_progress">
+                                                    In progress
+                                                </option>
+                                                <option value="resolved">
+                                                    Resolved
+                                                </option>
+                                                <option value="cancelled">
+                                                    Cancelled
+                                                </option>
+                                            </select>
+                                        </div>
+                                    ) : null}
+
+                                    <input
+                                        className="form-control"
+                                        placeholder="Title"
+                                        value={
+                                            props.mode === 'tenant'
+                                                ? tenantForm.data.title
+                                                : managerForm.data.title
+                                        }
+                                        onChange={(event) =>
+                                            props.mode === 'tenant'
+                                                ? tenantForm.setData(
+                                                      'title',
+                                                      event.currentTarget.value,
+                                                  )
+                                                : managerForm.setData(
+                                                      'title',
+                                                      event.currentTarget.value,
+                                                  )
+                                        }
+                                    />
+
+                                    <textarea
+                                        className="form-control"
+                                        rows={4}
+                                        placeholder="Description"
+                                        value={
+                                            props.mode === 'tenant'
+                                                ? tenantForm.data.description
+                                                : managerForm.data.description
+                                        }
+                                        onChange={(event) =>
+                                            props.mode === 'tenant'
+                                                ? tenantForm.setData(
+                                                      'description',
+                                                      event.currentTarget.value,
+                                                  )
+                                                : managerForm.setData(
+                                                      'description',
+                                                      event.currentTarget.value,
+                                                  )
+                                        }
+                                    />
+                                </>
+                            )}
 
                             <button
                                 className="btn btn-primary"
@@ -327,7 +537,7 @@ export default function MaintenancePage() {
                                         : managerForm.processing
                                 }
                             >
-                                Submit request
+                                {editing ? 'Update request' : 'Submit request'}
                             </button>
                         </form>
                     </div>
@@ -409,6 +619,40 @@ export default function MaintenancePage() {
                                             requestItem.created_at,
                                             props.app.locale,
                                         ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (requestItem) => (
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            {props.mode === 'manager' ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary btn-sm"
+                                                    onClick={() =>
+                                                        startTriage(requestItem)
+                                                    }
+                                                >
+                                                    Triage
+                                                </button>
+                                            ) : null}
+                                            {requestItem.status !==
+                                                'cancelled' &&
+                                            requestItem.status !==
+                                                'resolved' ? (
+                                                <ArchiveAction
+                                                    href={`/maintenance-requests/${requestItem.id}`}
+                                                    label="Cancel"
+                                                    confirmMessage={`Cancel maintenance request #${requestItem.id}?`}
+                                                />
+                                            ) : (
+                                                <span className="text-secondary small">
+                                                    Closed
+                                                </span>
+                                            )}
+                                        </div>
+                                    ),
                                 },
                             ]}
                         />

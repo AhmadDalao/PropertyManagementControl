@@ -127,6 +127,16 @@ class MaintenanceRequestController extends Controller
                 'description' => ['required', 'string'],
             ]);
 
+            abort_unless(
+                $tenantProfile->leases()
+                    ->where('status', 'active')
+                    ->where('leaseable_type', Asset::class)
+                    ->where('leaseable_id', $data['asset_id'])
+                    ->exists(),
+                422,
+                'You can only submit maintenance requests for your rented assets.'
+            );
+
             $requestItem = MaintenanceRequest::query()->create([
                 'portfolio_id' => $tenantProfile->portfolio_id,
                 'asset_id' => $data['asset_id'],
@@ -168,6 +178,7 @@ class MaintenanceRequestController extends Controller
 
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
+        $this->ensureMaintenanceReferencesBelongToPortfolio($data, $portfolioId);
 
         MaintenanceRequest::query()->create([
             'portfolio_id' => $portfolioId,
@@ -220,6 +231,8 @@ class MaintenanceRequestController extends Controller
             'comment' => ['nullable', 'string'],
         ]);
 
+        $this->ensureMaintenanceReferencesBelongToPortfolio($data, $maintenanceRequest->portfolio_id);
+
         $previousStatus = $maintenanceRequest->status;
         $maintenanceRequest->update([
             'assigned_to_user_id' => $data['assigned_to_user_id'] ?? null,
@@ -240,5 +253,78 @@ class MaintenanceRequestController extends Controller
         }
 
         return to_route('maintenance-requests.index')->with('success', 'Maintenance request updated.');
+    }
+
+    public function destroy(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
+    {
+        $actor = $this->actor($request);
+
+        if ($actor->hasRole('tenant')) {
+            abort_if($maintenanceRequest->tenantProfile?->user_id !== $actor->id, 403);
+
+            if (! in_array($maintenanceRequest->status, ['open', 'in_progress'], true)) {
+                return back()->with('error', 'Only open maintenance requests can be cancelled.');
+            }
+
+            $previousStatus = $maintenanceRequest->status;
+            $maintenanceRequest->update(['status' => 'cancelled']);
+            $maintenanceRequest->updates()->create([
+                'user_id' => $actor->id,
+                'status_from' => $previousStatus,
+                'status_to' => 'cancelled',
+                'is_public_comment' => true,
+                'comment' => 'Maintenance request cancelled by tenant.',
+            ]);
+
+            return to_route('maintenance-requests.index')->with('success', 'Maintenance request cancelled.');
+        }
+
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $maintenanceRequest->portfolio_id);
+
+        $previousStatus = $maintenanceRequest->status;
+        $maintenanceRequest->update(['status' => 'cancelled']);
+        $maintenanceRequest->updates()->create([
+            'user_id' => $actor->id,
+            'status_from' => $previousStatus,
+            'status_to' => 'cancelled',
+            'is_public_comment' => false,
+            'comment' => 'Maintenance request cancelled by management.',
+        ]);
+
+        return to_route('maintenance-requests.index')->with('success', 'Maintenance request cancelled.');
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function ensureMaintenanceReferencesBelongToPortfolio(array $data, int $portfolioId): void
+    {
+        if (! empty($data['asset_id'])) {
+            abort_unless(
+                Asset::query()->whereKey($data['asset_id'])->where('portfolio_id', $portfolioId)->exists(),
+                422,
+                'Selected asset does not belong to this portfolio.'
+            );
+        }
+
+        if (! empty($data['tenant_profile_id'])) {
+            abort_unless(
+                TenantProfile::query()
+                    ->whereKey($data['tenant_profile_id'])
+                    ->where('portfolio_id', $portfolioId)
+                    ->exists(),
+                422,
+                'Selected tenant does not belong to this portfolio.'
+            );
+        }
+
+        if (! empty($data['assigned_to_user_id'])) {
+            abort_unless(
+                User::query()->whereKey($data['assigned_to_user_id'])->where('portfolio_id', $portfolioId)->exists(),
+                422,
+                'Assigned user does not belong to this portfolio.'
+            );
+        }
     }
 }

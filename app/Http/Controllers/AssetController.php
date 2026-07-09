@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\Lease;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -111,6 +113,7 @@ class AssetController extends Controller
 
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
+        $this->ensureAssetReferencesBelongToPortfolio($data, $portfolioId);
 
         $asset = Asset::query()->create([
             'portfolio_id' => $portfolioId,
@@ -166,6 +169,8 @@ class AssetController extends Controller
             'primary_manager_user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
+        $this->ensureAssetReferencesBelongToPortfolio($data, $asset->portfolio_id, $asset);
+
         $asset->update([
             'parent_id' => $data['parent_id'] ?? null,
             'asset_type' => $data['asset_type'],
@@ -188,6 +193,33 @@ class AssetController extends Controller
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
 
         return to_route('assets.index')->with('success', "Asset {$asset->title_en} updated.");
+    }
+
+    public function destroy(Request $request, Asset $asset): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
+
+        $assetIds = $this->assetAndDescendantIds($asset);
+
+        if (Lease::query()
+            ->where('leaseable_type', Asset::class)
+            ->whereIn('leaseable_id', $assetIds)
+            ->where('status', 'active')
+            ->exists()) {
+            return back()->with('error', 'Terminate active leases before archiving this asset.');
+        }
+
+        DB::transaction(function () use ($assetIds) {
+            foreach ($assetIds as $assetId) {
+                Asset::query()
+                    ->whereKey($assetId)
+                    ->update(['status' => 'archived']);
+            }
+        });
+
+        return to_route('assets.index')->with('success', "Asset {$asset->title_en} archived.");
     }
 
     private function syncStakeholders(Asset $asset, ?int $ownerId, ?int $managerId): void
@@ -213,5 +245,61 @@ class AssetController extends Controller
                 'starts_on' => now()->toDateString(),
             ]);
         }
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    private function ensureAssetReferencesBelongToPortfolio(array $data, int $portfolioId, ?Asset $currentAsset = null): void
+    {
+        if (! empty($data['parent_id'])) {
+            if ($currentAsset) {
+                abort_if((int) $data['parent_id'] === $currentAsset->id, 422, 'An asset cannot be its own parent.');
+                abort_if(
+                    in_array((int) $data['parent_id'], $this->assetAndDescendantIds($currentAsset), true),
+                    422,
+                    'An asset cannot be moved under one of its descendants.'
+                );
+            }
+
+            abort_unless(
+                Asset::query()->whereKey($data['parent_id'])->where('portfolio_id', $portfolioId)->exists(),
+                422,
+                'Parent asset does not belong to this portfolio.'
+            );
+        }
+
+        foreach (['primary_owner_user_id', 'primary_manager_user_id'] as $userKey) {
+            if (empty($data[$userKey])) {
+                continue;
+            }
+
+            abort_unless(
+                User::query()->whereKey($data[$userKey])->where('portfolio_id', $portfolioId)->exists(),
+                422,
+                'Assigned user does not belong to this portfolio.'
+            );
+        }
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    private function assetAndDescendantIds(Asset $asset): array
+    {
+        $ids = [$asset->id];
+        $stack = [$asset->id];
+
+        while ($stack !== []) {
+            $children = Asset::query()
+                ->whereIn('parent_id', $stack)
+                ->pluck('id')
+                ->all();
+
+            $stack = array_values(array_diff($children, $ids));
+            $ids = array_values(array_unique([...$ids, ...$children]));
+        }
+
+        return $ids;
     }
 }

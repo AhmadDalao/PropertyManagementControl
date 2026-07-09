@@ -1,6 +1,8 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -20,6 +22,9 @@ type PortfolioRecord = {
     city?: string | null;
     country?: string | null;
     contact_email?: string | null;
+    contact_phone?: string | null;
+    address?: string | null;
+    default_currency?: string | null;
     users_count?: number;
     assets_count?: number;
     leases_count?: number;
@@ -34,6 +39,7 @@ type PageProps = SharedProps & {
 
 export default function PortfoliosPage() {
     const { props } = usePage<PageProps>();
+    const [editing, setEditing] = useState<PortfolioRecord | null>(null);
     const form = useForm({
         name_en: '',
         name_ar: '',
@@ -47,8 +53,39 @@ export default function PortfoliosPage() {
         status: 'active',
     });
 
+    const startEditing = (portfolio: PortfolioRecord) => {
+        form.setData({
+            name_en: portfolio.name_en,
+            name_ar: portfolio.name_ar,
+            code: portfolio.code,
+            contact_email: portfolio.contact_email ?? '',
+            contact_phone: portfolio.contact_phone ?? '',
+            city: portfolio.city ?? '',
+            country: portfolio.country ?? 'Saudi Arabia',
+            address: portfolio.address ?? '',
+            default_currency: portfolio.default_currency ?? 'SAR',
+            status: portfolio.status,
+        });
+        setEditing(portfolio);
+    };
+
+    const clearEditing = () => {
+        setEditing(null);
+        form.reset();
+    };
+
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        if (editing) {
+            form.put(`/portfolios/${editing.id}`, {
+                preserveScroll: true,
+                onSuccess: clearEditing,
+            });
+
+            return;
+        }
+
         form.post('/portfolios', { preserveScroll: true });
     };
 
@@ -63,9 +100,28 @@ export default function PortfoliosPage() {
             <div className="row g-4">
                 <div className="col-xl-4">
                     <div className="pmc-card p-4">
-                        <div className="pmc-kicker mb-2">Portfolio form</div>
-                        <h2 className="h4 mb-3">Create portfolio</h2>
-                        {props.canCreate ? (
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <div className="pmc-kicker mb-2">
+                                    Portfolio form
+                                </div>
+                                <h2 className="h4 mb-0">
+                                    {editing
+                                        ? `Edit ${editing.name_en}`
+                                        : 'Create portfolio'}
+                                </h2>
+                            </div>
+                            {editing ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearEditing}
+                                >
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
+                        {props.canCreate || editing ? (
                             <form className="d-grid gap-3" onSubmit={submit}>
                                 <input
                                     className="form-control"
@@ -92,6 +148,7 @@ export default function PortfoliosPage() {
                                 <input
                                     className="form-control"
                                     placeholder="Code"
+                                    disabled={Boolean(editing)}
                                     value={form.data.code}
                                     onChange={(event) =>
                                         form.setData(
@@ -152,14 +209,16 @@ export default function PortfoliosPage() {
                                     className="btn btn-primary"
                                     disabled={form.processing}
                                 >
-                                    Create portfolio
+                                    {editing
+                                        ? 'Update portfolio'
+                                        : 'Create portfolio'}
                                 </button>
                             </form>
                         ) : (
                             <p className="text-secondary mb-0">
-                                Portfolio creation is restricted to the system
-                                owner. You can still view your assigned
-                                portfolio records.
+                                Select your portfolio from the table to update
+                                its profile. Creating new portfolios is
+                                restricted to the system owner.
                             </p>
                         )}
                     </div>
@@ -253,6 +312,31 @@ export default function PortfoliosPage() {
                                         <span className="pmc-chip pmc-chip--primary">
                                             {portfolio.status}
                                         </span>
+                                    ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (portfolio) => (
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    startEditing(portfolio)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                            {props.canCreate &&
+                                            portfolio.status !== 'archived' ? (
+                                                <ArchiveAction
+                                                    href={`/portfolios/${portfolio.id}`}
+                                                    confirmMessage={`Archive portfolio ${portfolio.name_en}? Users and records stay for reporting.`}
+                                                />
+                                            ) : null}
+                                        </div>
                                     ),
                                 },
                             ]}

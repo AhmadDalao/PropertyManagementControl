@@ -10,6 +10,7 @@ use App\Services\LeaseFinancialService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -110,6 +111,23 @@ class LeaseController extends Controller
 
         $asset = Asset::query()->findOrFail($data['asset_id']);
         abort_if($asset->portfolio_id !== $portfolioId, 422, 'Asset does not belong to the selected portfolio.');
+        abort_unless(
+            TenantProfile::query()
+                ->whereKey($data['tenant_profile_id'])
+                ->where('portfolio_id', $portfolioId)
+                ->exists(),
+            422,
+            'Tenant does not belong to the selected portfolio.'
+        );
+        abort_if(
+            Lease::query()
+                ->where('leaseable_type', Asset::class)
+                ->where('leaseable_id', $asset->id)
+                ->where('status', 'active')
+                ->exists(),
+            422,
+            'This asset already has an active lease.'
+        );
 
         $lease = Lease::query()->create([
             'portfolio_id' => $portfolioId,
@@ -162,6 +180,36 @@ class LeaseController extends Controller
         }
 
         return to_route('leases.index')->with('success', "Lease {$lease->code} updated.");
+    }
+
+    public function destroy(Request $request, Lease $lease): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
+
+        DB::transaction(function () use ($lease) {
+            $lease->update(['status' => 'terminated']);
+
+            if ($lease->leaseable_type !== Asset::class) {
+                return;
+            }
+
+            $hasOtherActiveLease = Lease::query()
+                ->whereKeyNot($lease->id)
+                ->where('leaseable_type', Asset::class)
+                ->where('leaseable_id', $lease->leaseable_id)
+                ->where('status', 'active')
+                ->exists();
+
+            if (! $hasOtherActiveLease) {
+                Asset::query()
+                    ->whereKey($lease->leaseable_id)
+                    ->update(['occupancy_status' => 'vacant']);
+            }
+        });
+
+        return to_route('leases.index')->with('success', "Lease {$lease->code} terminated.");
     }
 
     public function uploadSignedContract(Request $request, Lease $lease): RedirectResponse

@@ -2,6 +2,7 @@ import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -556,13 +557,23 @@ export default function AssetsPage() {
                                     label: 'Actions',
                                     className: 'text-end',
                                     render: (asset) => (
-                                        <button
-                                            type="button"
-                                            className="btn btn-outline-secondary btn-sm"
-                                            onClick={() => startEditing(asset)}
-                                        >
-                                            Edit
-                                        </button>
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    startEditing(asset)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                            {asset.status !== 'archived' ? (
+                                                <ArchiveAction
+                                                    href={`/assets/${asset.id}`}
+                                                    confirmMessage={`Archive ${asset.title_en}? Active leases must be terminated first.`}
+                                                />
+                                            ) : null}
+                                        </div>
                                     ),
                                 },
                             ]}

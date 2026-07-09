@@ -124,6 +124,32 @@ class UserController extends Controller
         return to_route('users.index')->with('success', "User {$user->name} updated.");
     }
 
+    public function destroy(Request $request, User $user): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+
+        if ($actor->is($user)) {
+            return back()->with('error', 'You cannot archive your own account.');
+        }
+
+        if (! $actor->hasRole('superadmin') && $user->hasAnyRole(['superadmin', 'owner'])) {
+            return back()->with('error', 'Only the system owner can archive owner or superadmin accounts.');
+        }
+
+        if ($actor->hasRole('property_manager') && ! $user->hasRole('tenant')) {
+            return back()->with('error', 'Managers can only archive tenant accounts.');
+        }
+
+        DB::transaction(function () use ($user) {
+            $user->update(['status' => 'suspended']);
+            $user->tenantProfile?->update(['status' => 'blocked']);
+        });
+
+        return to_route('users.index')->with('success', "User {$user->name} archived.");
+    }
+
     /**
      * @return array<int, string>
      */
