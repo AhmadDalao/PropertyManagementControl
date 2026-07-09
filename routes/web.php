@@ -56,6 +56,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
     Route::resource('documents', DocumentController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 

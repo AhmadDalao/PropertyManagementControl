@@ -199,6 +199,48 @@ a {
     color: #0f6f63;
 }
 
+.pmc-report-strip {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.pmc-report-strip > div {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 14px 34px rgba(31, 33, 51, 0.06);
+}
+
+.pmc-report-strip > div > span {
+    display: inline-grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 0.9rem;
+    background: linear-gradient(135deg, #ef6c2f, #ffca4b);
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.pmc-report-strip small {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-report-strip strong {
+    display: block;
+    font-size: 1.35rem;
+    line-height: 1;
+}
+
 .pmc-media-preview {
     display: block;
     width: 100%;
@@ -2572,6 +2614,10 @@ a {
         position: static;
     }
 
+    .pmc-report-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .pmc-cms-lists,
     .pmc-builder-head,
     .pmc-builder-section,
@@ -2698,5 +2744,9 @@ a {
 
     .pmc-empty-cell::before {
         content: none !important;
+    }
+
+    .pmc-report-strip {
+        grid-template-columns: 1fr;
     }
 }
