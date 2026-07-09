@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TenantProfile;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +24,13 @@ class TenantController extends Controller
             'profile_type' => 'all',
         ]);
         $baseQuery = $this->scopeByPortfolio(TenantProfile::query(), $actor);
-        $tenants = (clone $baseQuery)->with(['user', 'leases' => fn ($query) => $query->latest('started_at')]);
+        $tenants = (clone $baseQuery)
+            ->with(['user', 'leases' => fn ($query) => $query->latest('started_at')])
+            ->withCount([
+                'leases',
+                'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
+                'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
+            ]);
 
         $this->applyExactFilter($tenants, $filters, 'portfolio_id');
         $this->applyExactFilter($tenants, $filters, 'status');
@@ -53,6 +60,7 @@ class TenantController extends Controller
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'blocked'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
+            'tenantInsights' => $this->tenantInsights($baseQuery),
         ]);
     }
 
@@ -88,7 +96,7 @@ class TenantController extends Controller
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 'preferred_locale' => $data['preferred_locale'],
-                'status' => $data['status'],
+                'status' => $this->userStatusFromTenantStatus($data['status']),
                 'force_password_reset' => true,
                 'password' => Hash::make($data['password']),
             ]);
@@ -136,7 +144,7 @@ class TenantController extends Controller
             'name' => $data['name'],
             'phone' => $data['phone'] ?? null,
             'preferred_locale' => $data['preferred_locale'],
-            'status' => $data['status'],
+            'status' => $this->userStatusFromTenantStatus($data['status']),
         ]);
 
         $tenant->update([
@@ -169,5 +177,44 @@ class TenantController extends Controller
         });
 
         return to_route('tenants.index')->with('success', 'Tenant archived successfully.');
+    }
+
+    /**
+     * @return array<string, int>
+     */
+    private function tenantInsights(Builder $baseQuery): array
+    {
+        return [
+            'total' => (clone $baseQuery)->count(),
+            'active' => (clone $baseQuery)->where('status', 'active')->count(),
+            'blocked' => (clone $baseQuery)->where('status', 'blocked')->count(),
+            'companies' => (clone $baseQuery)->where('profile_type', 'company')->count(),
+            'without_active_lease' => (clone $baseQuery)
+                ->whereDoesntHave('leases', fn (Builder $query) => $query->where('status', 'active'))
+                ->count(),
+            'missing_emergency' => (clone $baseQuery)
+                ->where(function (Builder $query): void {
+                    $query
+                        ->whereNull('emergency_contact_name')
+                        ->orWhereNull('emergency_contact_phone')
+                        ->orWhere('emergency_contact_name', '')
+                        ->orWhere('emergency_contact_phone', '');
+                })
+                ->count(),
+            'missing_address' => (clone $baseQuery)
+                ->where(function (Builder $query): void {
+                    $query->whereNull('address')->orWhere('address', '');
+                })
+                ->count(),
+        ];
+    }
+
+    private function userStatusFromTenantStatus(string $tenantStatus): string
+    {
+        return match ($tenantStatus) {
+            'blocked' => 'suspended',
+            'inactive' => 'inactive',
+            default => 'active',
+        };
     }
 }

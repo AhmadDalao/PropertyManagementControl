@@ -3115,6 +3115,191 @@ a {
     font-weight: 850;
 }
 
+.pmc-tenant-workspace-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 1.45rem;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(12, 138, 124, 0.16),
+            transparent 35%
+        ),
+        linear-gradient(135deg, #fff8ee, #ffffff);
+    box-shadow: 0 22px 56px rgba(31, 33, 51, 0.08);
+}
+
+.pmc-tenant-workspace-hero h1 {
+    max-width: 50rem;
+    margin: 0;
+    color: #172033;
+    font-size: clamp(2rem, 4.5vw, 3.8rem);
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    line-height: 0.96;
+}
+
+.pmc-tenant-workspace-hero p {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 1.02rem;
+}
+
+.pmc-tenant-workspace-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+}
+
+.pmc-tenant-workspace-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(239, 108, 47, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.84);
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.pmc-tenant-readiness-card {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1.2rem;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.pmc-tenant-readiness-card > div:first-child {
+    display: grid;
+    min-height: 7rem;
+    place-items: center;
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #162238, #0c8a7c);
+    color: #fff;
+    text-align: center;
+}
+
+.pmc-tenant-readiness-card span,
+.pmc-tenant-insight-grid span {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-tenant-readiness-card > div:first-child span {
+    color: rgba(255, 255, 255, 0.76);
+}
+
+.pmc-tenant-readiness-card strong {
+    display: block;
+    font-size: 2.35rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.pmc-tenant-insight-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-tenant-insight-grid div {
+    padding: 0.75rem;
+    border-radius: 0.9rem;
+    background: rgba(15, 23, 42, 0.05);
+}
+
+.pmc-tenant-insight-grid div.is-good {
+    background: rgba(12, 138, 124, 0.1);
+}
+
+.pmc-tenant-insight-grid div.is-risk {
+    background: rgba(239, 108, 47, 0.13);
+}
+
+.pmc-tenant-insight-grid strong {
+    color: #172033;
+    font-size: 1.25rem;
+}
+
+.pmc-tenant-onboarding-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-tenant-onboarding-grid a,
+.pmc-tenant-form-guide {
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 12px 32px rgba(31, 33, 51, 0.055);
+}
+
+.pmc-tenant-onboarding-grid a {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1rem;
+    color: var(--pmc-text);
+}
+
+.pmc-tenant-onboarding-grid a:hover {
+    border-color: rgba(239, 108, 47, 0.26);
+    color: var(--pmc-text);
+}
+
+.pmc-tenant-onboarding-grid i,
+.pmc-tenant-form-guide i {
+    display: grid;
+    width: 2.45rem;
+    height: 2.45rem;
+    place-items: center;
+    border-radius: 0.85rem;
+    background: rgba(239, 108, 47, 0.12);
+    color: var(--pmc-primary);
+    font-size: 1.1rem;
+}
+
+.pmc-tenant-onboarding-grid strong,
+.pmc-tenant-form-guide strong {
+    color: #172033;
+    font-weight: 950;
+}
+
+.pmc-tenant-onboarding-grid span,
+.pmc-tenant-form-guide span {
+    color: var(--pmc-muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+}
+
+.pmc-tenant-form-guide {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    background: linear-gradient(135deg, #fff8ee, #f2fffb);
+}
+
+.pmc-tenant-form-guide div {
+    display: grid;
+    gap: 0.15rem;
+}
+
 .pmc-asset-control-hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -4386,7 +4571,8 @@ a {
     .pmc-dashboard-brief,
     .pmc-tenant-command,
     .pmc-document-command,
-    .pmc-user-command {
+    .pmc-user-command,
+    .pmc-tenant-workspace-hero {
         grid-template-columns: 1fr;
     }
 
@@ -4422,6 +4608,10 @@ a {
     }
 
     .pmc-access-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-tenant-onboarding-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
@@ -4504,21 +4694,24 @@ a {
     .pmc-dashboard-brief,
     .pmc-tenant-command,
     .pmc-document-command,
-    .pmc-user-command {
+    .pmc-user-command,
+    .pmc-tenant-workspace-hero {
         padding: 1rem;
         border-radius: 1.2rem;
     }
 
     .pmc-dashboard-context,
     .pmc-document-command-meta,
-    .pmc-user-command-meta {
+    .pmc-user-command-meta,
+    .pmc-tenant-workspace-meta {
         align-items: stretch;
         flex-direction: column;
     }
 
     .pmc-dashboard-context span,
     .pmc-document-command-meta span,
-    .pmc-user-command-meta span {
+    .pmc-user-command-meta span,
+    .pmc-tenant-workspace-meta span {
         justify-content: center;
         width: 100%;
     }
@@ -4534,7 +4727,9 @@ a {
     .pmc-document-workflow,
     .pmc-document-insight-grid,
     .pmc-access-grid,
-    .pmc-user-insight-grid {
+    .pmc-user-insight-grid,
+    .pmc-tenant-onboarding-grid,
+    .pmc-tenant-insight-grid {
         grid-template-columns: 1fr;
     }
 
