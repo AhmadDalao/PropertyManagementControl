@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
@@ -22,6 +22,7 @@ type UserRecord = {
     phone?: string | null;
     preferred_locale: 'en' | 'ar';
     status: string;
+    force_password_reset?: boolean;
     roles?: Array<{ name: string }>;
 };
 
@@ -146,6 +147,11 @@ export default function UsersPage() {
                                         ? `Edit ${editing.name}`
                                         : 'Create user'}
                                 </h2>
+                                <p className="text-secondary small mb-0 mt-2">
+                                    Passwords entered here are temporary. The
+                                    user will be asked to replace it from
+                                    Profile.
+                                </p>
                             </div>
                             {editing ? (
                                 <button
@@ -303,8 +309,8 @@ export default function UsersPage() {
                             <div>
                                 <label className="form-label pmc-form-label">
                                     {editing
-                                        ? 'New password (optional)'
-                                        : 'Password'}
+                                        ? 'Temporary password reset (optional)'
+                                        : 'Temporary password'}
                                 </label>
                                 <input
                                     type="password"
@@ -317,6 +323,10 @@ export default function UsersPage() {
                                         )
                                     }
                                 />
+                                <div className="form-text">
+                                    Leave blank while editing to keep the
+                                    current password.
+                                </div>
                             </div>
                             <button
                                 className="btn btn-primary"
@@ -375,35 +385,51 @@ export default function UsersPage() {
                                     key: 'status',
                                     label: 'Status',
                                     render: (user) => (
-                                        <span className="pmc-chip pmc-chip--teal">
-                                            {user.status}
-                                        </span>
+                                        <div className="d-flex gap-2 flex-wrap">
+                                            <span className="pmc-chip pmc-chip--teal">
+                                                {user.status}
+                                            </span>
+                                            {user.force_password_reset ? (
+                                                <span className="pmc-chip">
+                                                    temp password
+                                                </span>
+                                            ) : null}
+                                        </div>
                                     ),
                                 },
                                 {
                                     key: 'actions',
                                     label: 'Actions',
                                     className: 'text-end',
-                                    render: (user) => (
-                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary btn-sm"
-                                                onClick={() =>
-                                                    startEditing(user)
-                                                }
-                                            >
-                                                Edit
-                                            </button>
-                                            {user.status !== 'suspended' &&
-                                            user.id !== props.auth.user?.id ? (
-                                                <ArchiveAction
-                                                    href={`/users/${user.id}`}
-                                                    confirmMessage={`Archive ${user.name}? They will no longer have an active portal account.`}
-                                                />
-                                            ) : null}
-                                        </div>
-                                    ),
+                                    render: (user) =>
+                                        user.id === props.auth.user?.id ? (
+                                            <div className="d-flex justify-content-end">
+                                                <Link
+                                                    href="/profile"
+                                                    className="btn btn-outline-secondary btn-sm"
+                                                >
+                                                    Profile
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary btn-sm"
+                                                    onClick={() =>
+                                                        startEditing(user)
+                                                    }
+                                                >
+                                                    Edit
+                                                </button>
+                                                {user.status !== 'suspended' ? (
+                                                    <ArchiveAction
+                                                        href={`/users/${user.id}`}
+                                                        confirmMessage={`Archive ${user.name}? They will no longer have an active portal account.`}
+                                                    />
+                                                ) : null}
+                                            </div>
+                                        ),
                                 },
                             ]}
                         />

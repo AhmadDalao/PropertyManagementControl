@@ -254,6 +254,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     </div>
                                 </summary>
                                 <div className="pmc-account-panel">
+                                    <Link href="/profile">Profile</Link>
                                     <Link href="/dashboard">Dashboard</Link>
                                     <Link href="/documentation">
                                         Documentation
@@ -279,6 +280,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
                 <section className="pmc-console-content">
                     <FlashBanner />
+                    {user?.force_password_reset && url !== '/profile' ? (
+                        <div className="alert alert-warning d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4 border-0">
+                            <div>
+                                <strong>Temporary password active.</strong>{' '}
+                                Update your password before continuing serious
+                                account work.
+                            </div>
+                            <Link
+                                href="/profile"
+                                className="btn btn-warning btn-sm"
+                            >
+                                Open profile
+                            </Link>
+                        </div>
+                    ) : null}
                     {children}
                 </section>
             </main>

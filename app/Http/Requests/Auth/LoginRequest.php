@@ -45,6 +45,15 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        if (Auth::user()?->status !== 'active') {
+            Auth::guard('web')->logout();
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'This account is not active. Contact the property owner or system administrator.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

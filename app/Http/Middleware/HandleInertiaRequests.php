@@ -56,6 +56,9 @@ class HandleInertiaRequests extends Middleware
                         'phone' => $request->user()?->phone,
                         'portfolio_id' => $request->user()?->portfolio_id,
                         'preferred_locale' => $request->user()?->preferred_locale,
+                        'status' => $request->user()?->status,
+                        'force_password_reset' => $request->user()?->force_password_reset,
+                        'last_login_at' => $request->user()?->last_login_at?->toIso8601String(),
                         'roles' => $request->user()?->getRoleNames()->values()->all(),
                     ]
                     : null,

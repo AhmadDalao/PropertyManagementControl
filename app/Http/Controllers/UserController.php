@@ -99,6 +99,7 @@ class UserController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+        $this->ensureCanManageUser($actor, $user);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -111,13 +112,19 @@ class UserController extends Controller
 
         abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
 
-        $user->update([
+        $updates = [
             'name' => $data['name'],
             'phone' => $data['phone'] ?? null,
             'preferred_locale' => $data['preferred_locale'],
             'status' => $data['status'],
-            'password' => $data['password'] ? Hash::make($data['password']) : $user->password,
-        ]);
+        ];
+
+        if (! empty($data['password'])) {
+            $updates['password'] = Hash::make($data['password']);
+            $updates['force_password_reset'] = true;
+        }
+
+        $user->update($updates);
 
         $user->syncRoles([$data['role']]);
 
@@ -129,6 +136,7 @@ class UserController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+        $this->ensureCanManageUser($actor, $user);
 
         if ($actor->is($user)) {
             return back()->with('error', 'You cannot archive your own account.');
@@ -164,5 +172,26 @@ class UserController extends Controller
         }
 
         return ['tenant'];
+    }
+
+    private function ensureCanManageUser(User $actor, User $target): void
+    {
+        if ($actor->is($target)) {
+            abort(403, 'Use Profile to update your own account.');
+        }
+
+        if ($actor->hasRole('superadmin')) {
+            return;
+        }
+
+        if ($actor->hasRole('owner') && $target->hasAnyRole(['property_manager', 'tenant'])) {
+            return;
+        }
+
+        if ($actor->hasRole('property_manager') && $target->hasRole('tenant')) {
+            return;
+        }
+
+        abort(403, 'You are not allowed to manage this account.');
     }
 }

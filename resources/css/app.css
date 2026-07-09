@@ -120,6 +120,45 @@ a {
         var(--pmc-panel);
 }
 
+.pmc-profile-avatar {
+    display: grid;
+    width: 4rem;
+    height: 4rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 1.35rem;
+    background: linear-gradient(135deg, var(--pmc-primary), var(--pmc-teal));
+    color: #fff;
+    font-size: 1.4rem;
+    font-weight: 950;
+    box-shadow: 0 16px 36px rgba(12, 138, 124, 0.22);
+}
+
+.pmc-profile-context-card {
+    display: grid;
+    height: 100%;
+    gap: 0.45rem;
+    padding: 1rem;
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 1.1rem;
+    background: linear-gradient(135deg, #fff, rgba(255, 248, 235, 0.92));
+}
+
+.pmc-profile-context-card i {
+    color: var(--pmc-primary);
+    font-size: 1.4rem;
+}
+
+.pmc-profile-context-card span,
+.pmc-profile-context-card small {
+    color: var(--pmc-muted);
+}
+
+.pmc-profile-context-card strong {
+    color: var(--pmc-text);
+    font-size: 1.02rem;
+}
+
 .pmc-kicker {
     text-transform: uppercase;
     letter-spacing: 0;
