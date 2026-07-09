@@ -16,7 +16,14 @@ import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, percent } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Tooltip, Legend);
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    ArcElement,
+    Tooltip,
+    Legend,
+);
 
 type PageProps = SharedProps & {
     mode: 'tenant' | 'portfolio' | 'superadmin';
@@ -51,16 +58,39 @@ export default function ReportsPage() {
 
             <div className="row g-3 mb-4">
                 <div className="col-md-3">
-                    <StatCard title="Revenue" value={currency(props.summary.revenue ?? 0, props.app.locale)} tone="accent" />
+                    <StatCard
+                        title="Revenue"
+                        value={currency(
+                            props.summary.revenue ?? 0,
+                            props.app.locale,
+                        )}
+                        tone="accent"
+                    />
                 </div>
                 <div className="col-md-3">
-                    <StatCard title="Expenses" value={currency(props.summary.expenses ?? 0, props.app.locale)} />
+                    <StatCard
+                        title="Expenses"
+                        value={currency(
+                            props.summary.expenses ?? 0,
+                            props.app.locale,
+                        )}
+                    />
                 </div>
                 <div className="col-md-3">
-                    <StatCard title="Net" value={currency(props.summary.net ?? 0, props.app.locale)} tone="teal" />
+                    <StatCard
+                        title="Net"
+                        value={currency(
+                            props.summary.net ?? 0,
+                            props.app.locale,
+                        )}
+                        tone="teal"
+                    />
                 </div>
                 <div className="col-md-3">
-                    <StatCard title="Occupancy" value={percent(props.summary.occupancyRate ?? 0)} />
+                    <StatCard
+                        title="Occupancy"
+                        value={percent(props.summary.occupancyRate ?? 0)}
+                    />
                 </div>
             </div>
 
@@ -92,7 +122,12 @@ export default function ReportsPage() {
                                 datasets: [
                                     {
                                         data: Object.values(assetMixSource),
-                                        backgroundColor: ['#ef6c2f', '#0c8a7c', '#24314a', '#ffca4b'],
+                                        backgroundColor: [
+                                            '#ef6c2f',
+                                            '#0c8a7c',
+                                            '#24314a',
+                                            '#ffca4b',
+                                        ],
                                     },
                                 ],
                             }}
@@ -102,18 +137,27 @@ export default function ReportsPage() {
 
                 <div className="col-12">
                     <div className="pmc-card p-4">
-                        <div className="pmc-kicker mb-2">Expense categories</div>
+                        <div className="pmc-kicker mb-2">
+                            Expense categories
+                        </div>
                         <div className="row g-3">
-                            {Object.entries(expenseSource).map(([label, value]) => (
-                                <div key={label} className="col-md-4">
-                                    <div className="border rounded-4 p-3">
-                                        <div className="pmc-kicker mb-2">{label}</div>
-                                        <div className="h4 mb-0">
-                                            {currency(value, props.app.locale)}
+                            {Object.entries(expenseSource).map(
+                                ([label, value]) => (
+                                    <div key={label} className="col-md-4">
+                                        <div className="rounded-4 p-3 border">
+                                            <div className="pmc-kicker mb-2">
+                                                {label}
+                                            </div>
+                                            <div className="h4 mb-0">
+                                                {currency(
+                                                    value,
+                                                    props.app.locale,
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ),
+                            )}
                         </div>
                     </div>
                 </div>

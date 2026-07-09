@@ -25,13 +25,47 @@ class LeaseController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
-        $leases = $this->scopeByPortfolio(
-            Lease::query()->with(['tenantProfile.user', 'leaseable', 'installments', 'documents'])->latest(),
-            $actor
-        )->get();
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'payment_frequency' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(Lease::query(), $actor);
+        $leases = (clone $baseQuery)->with(['tenantProfile.user', 'leaseable', 'installments', 'documents']);
+
+        $this->applyExactFilter($leases, $filters, 'portfolio_id');
+        $this->applyExactFilter($leases, $filters, 'status');
+        $this->applyExactFilter($leases, $filters, 'payment_frequency');
+        $this->applyDateRange($leases, $filters, 'started_at');
+        $this->applySearch($leases, $filters['search'], [
+            'code',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'tenantProfile.user',
+                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHasMorph(
+                'leaseable',
+                [Asset::class],
+                fn ($assetQuery) => $assetQuery
+                    ->where('title_en', 'like', $like)
+                    ->orWhere('title_ar', 'like', $like)
+                    ->orWhere('code', 'like', $like)
+            ),
+        ]);
 
         return Inertia::render('admin/leases/index', [
-            'leases' => $leases,
+            'leases' => $this->paginateTable($leases, $request, $filters, [
+                'created_at',
+                'code',
+                'status',
+                'payment_frequency',
+                'started_at',
+                'ends_at',
+                'rent_amount',
+            ], 'started_at'),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['draft', 'active', 'expired', 'terminated'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'tenantOptions' => $this->scopeByPortfolio(
                 TenantProfile::query()->with('user')->whereNotNull('user_id'),
@@ -41,6 +75,10 @@ class LeaseController extends Controller
                 Asset::query()->where('rentable', true),
                 $actor
             )->get(),
+            'leaseOptions' => $this->scopeByPortfolio(
+                Lease::query()->orderByDesc('created_at'),
+                $actor
+            )->get(['id', 'code', 'portfolio_id']),
         ]);
     }
 
@@ -190,7 +228,7 @@ class LeaseController extends Controller
             ],
         );
 
-        return response()->streamDownload(fn () => print($content), $fileName);
+        return response()->streamDownload(fn () => print ($content), $fileName);
     }
 
     public function statement(Request $request, Lease $lease): StreamedResponse
@@ -201,6 +239,6 @@ class LeaseController extends Controller
 
         $pdf = Pdf::loadView('pdf.tenant-statement', ['lease' => $lease]);
 
-        return response()->streamDownload(fn () => print($pdf->output()), "tenant-statement-{$lease->code}.pdf");
+        return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf");
     }
 }

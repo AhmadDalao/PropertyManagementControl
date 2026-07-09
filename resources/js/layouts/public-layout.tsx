@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
@@ -16,55 +16,63 @@ function itemLabel(item: NavigationItemRecord, locale: 'en' | 'ar') {
 export function PublicLayout({ children }: PublicLayoutProps) {
     const { props } = usePage<SharedProps>();
     const locale = props.app.locale;
+    const [menuOpen, setMenuOpen] = useState(false);
 
     useEffect(() => {
         document.documentElement.lang = props.app.locale;
         document.documentElement.dir = props.app.direction;
     }, [props.app.direction, props.app.locale]);
 
+    const navItems =
+        props.publicNavigation.header.length > 0
+            ? props.publicNavigation.header
+            : defaultNavigation(locale);
+
     return (
-        <div className="pmc-public-shell">
-            <header className="pmc-public-header">
-                <div className="container">
-                    <div className="pmc-public-nav">
-                        <Link href="/" className="pmc-public-brand">
-                            <span>PMC</span>
-                            <strong>{props.app.name}</strong>
-                        </Link>
-
-                        <nav
-                            className="pmc-public-links"
-                            aria-label="Public navigation"
-                        >
-                            {props.publicNavigation.header.length > 0
-                                ? props.publicNavigation.header.map((item) => (
-                                      <PublicNavItem
-                                          key={item.id}
-                                          item={item}
-                                          locale={locale}
-                                      />
-                                  ))
-                                : defaultNavigation(locale).map((item) => (
-                                      <a key={item.href} href={item.href}>
-                                          {item.label}
-                                      </a>
-                                  ))}
-                        </nav>
-
-                        <div className="pmc-public-actions">
-                            <LanguageSwitcher />
-                            <Link href="/login" className="btn btn-primary">
-                                <i className="bi bi-box-arrow-in-right me-2" />
-                                {locale === 'ar'
-                                    ? 'دخول البوابة'
-                                    : 'Open Portal'}
-                            </Link>
+        <div className="pmc-site-shell">
+            <header className="pmc-site-header">
+                <div className="pmc-site-nav">
+                    <Link href="/" className="pmc-site-brand">
+                        <span>PC</span>
+                        <div>
+                            <strong>Property Control</strong>
+                            <small>Portfolio operations OS</small>
                         </div>
+                    </Link>
+
+                    <nav
+                        className={`pmc-site-links ${menuOpen ? 'is-open' : ''}`}
+                        aria-label="Public navigation"
+                    >
+                        {navItems.map((item) => (
+                            <PublicNavItem
+                                key={`${item.id}-${item.url}`}
+                                item={item}
+                                locale={locale}
+                            />
+                        ))}
+                    </nav>
+
+                    <div className="pmc-site-actions">
+                        <LanguageSwitcher />
+                        <Link href="/login" className="btn btn-primary">
+                            {locale === 'ar' ? 'فتح البوابة' : 'Open Portal'}
+                        </Link>
+                        <button
+                            type="button"
+                            className="pmc-site-menu"
+                            aria-label="Toggle navigation"
+                            onClick={() => setMenuOpen((value) => !value)}
+                        >
+                            <i
+                                className={`bi ${menuOpen ? 'bi-x-lg' : 'bi-list'}`}
+                            />
+                        </button>
                     </div>
                 </div>
             </header>
 
-            <main className="pmc-public-main container">{children}</main>
+            <main className="pmc-site-main">{children}</main>
         </div>
     );
 }
@@ -79,25 +87,34 @@ function PublicNavItem({
     const href = item.url || '/';
     const label = itemLabel(item, locale);
 
-    if (href.startsWith('#')) {
+    if (href.startsWith('#') || href.startsWith('http')) {
         return <a href={href}>{label}</a>;
     }
 
     return <Link href={href}>{label}</Link>;
 }
 
-function defaultNavigation(locale: 'en' | 'ar') {
-    if (locale === 'ar') {
-        return [
-            { label: 'المزايا', href: '#features' },
-            { label: 'مسار العمل', href: '#workflow' },
-            { label: 'الأسئلة', href: '#faq' },
-        ];
-    }
+function defaultNavigation(locale: 'en' | 'ar'): NavigationItemRecord[] {
+    const items =
+        locale === 'ar'
+            ? [
+                  ['المزايا', '#features'],
+                  ['طريقة العمل', '#workflow'],
+                  ['الأسئلة', '#faq'],
+              ]
+            : [
+                  ['Features', '#features'],
+                  ['Workflow', '#workflow'],
+                  ['FAQ', '#faq'],
+              ];
 
-    return [
-        { label: 'Features', href: '#features' },
-        { label: 'Workflow', href: '#workflow' },
-        { label: 'FAQ', href: '#faq' },
-    ];
+    return items.map(([title, href], index) => ({
+        id: -index - 1,
+        title_en: title,
+        title_ar: title,
+        url: href,
+        target: '_self',
+        location: 'header',
+        sort_order: index + 1,
+    }));
 }

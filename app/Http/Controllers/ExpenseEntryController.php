@@ -17,11 +17,45 @@ class ExpenseEntryController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'category' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(ExpenseEntry::query(), $actor);
+        $expenses = (clone $baseQuery)->with(['asset', 'maintenanceRequest']);
+
+        $this->applyExactFilter($expenses, $filters, 'portfolio_id');
+        $this->applyExactFilter($expenses, $filters, 'status');
+        $this->applyExactFilter($expenses, $filters, 'category');
+        $this->applyDateRange($expenses, $filters, 'incurred_on');
+        $this->applySearch($expenses, $filters['search'], [
+            'title',
+            'description',
+            'category',
+            'vendor_name',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'asset',
+                fn ($assetQuery) => $assetQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'maintenanceRequest',
+                fn ($maintenanceQuery) => $maintenanceQuery->where('title', 'like', $like)
+            ),
+        ]);
+
         return Inertia::render('admin/expenses/index', [
-            'expenses' => $this->scopeByPortfolio(
-                ExpenseEntry::query()->with(['asset', 'maintenanceRequest'])->latest('incurred_on'),
-                $actor
-            )->get(),
+            'expenses' => $this->paginateTable($expenses, $request, $filters, [
+                'created_at',
+                'incurred_on',
+                'title',
+                'category',
+                'status',
+                'amount',
+            ], 'incurred_on'),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['posted', 'pending', 'void'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'assetOptions' => $this->scopeByPortfolio(Asset::query(), $actor)->get(),
             'maintenanceOptions' => $this->scopeByPortfolio(MaintenanceRequest::query(), $actor)->get(),

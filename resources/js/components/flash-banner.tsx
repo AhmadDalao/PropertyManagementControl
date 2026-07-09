@@ -13,7 +13,7 @@ export function FlashBanner() {
 
     return (
         <div
-            className={`alert ${success ? 'alert-success' : 'alert-danger'} border-0 mb-4`}
+            className={`alert ${success ? 'alert-success' : 'alert-danger'} mb-4 border-0`}
             role="alert"
         >
             {success ?? error}

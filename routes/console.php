@@ -92,6 +92,30 @@ Artisan::command('property:seed-landing-content', function () {
     return 0;
 })->purpose('Seed editable public landing page CMS content.');
 
+Artisan::command('property:seed-demo-data {--fresh-demo : Rebuild the local database before seeding demo data}', function () {
+    if (app()->environment('production')) {
+        $this->error('Demo data seeding is blocked in production.');
+
+        return 1;
+    }
+
+    if (! $this->option('fresh-demo')) {
+        $this->error('Use --fresh-demo so the demo dataset starts from a clean local database.');
+
+        return 1;
+    }
+
+    Artisan::call('migrate:fresh', [
+        '--seed' => true,
+        '--force' => true,
+    ]);
+
+    $this->info(Artisan::output());
+    $this->info('Local property demo data is ready.');
+
+    return 0;
+})->purpose('Rebuild the local/staging database with rich demo property data. Blocked in production.');
+
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()
     ->withoutOverlapping();

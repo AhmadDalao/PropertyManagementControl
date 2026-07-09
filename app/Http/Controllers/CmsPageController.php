@@ -54,8 +54,34 @@ class CmsPageController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin']);
 
+        $filters = $this->tableFilters($request, ['status' => 'all']);
+        $baseQuery = CmsPage::query();
+        $pages = (clone $baseQuery)->with(['pageSections.section']);
+
+        $this->applyExactFilter($pages, $filters, 'status');
+        $this->applySearch($pages, $filters['search'], [
+            'title_en',
+            'title_ar',
+            'slug',
+            'excerpt_en',
+            'excerpt_ar',
+        ]);
+
         return Inertia::render('admin/cms/index', [
-            'pages' => CmsPage::query()->with(['pageSections.section'])->latest()->get(),
+            'pages' => $this->paginateTable($pages, $request, $filters, [
+                'created_at',
+                'title_en',
+                'slug',
+                'status',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['draft', 'published', 'archived'], $filters),
+            'pageOptions' => CmsPage::query()->orderBy('title_en')->get(['id', 'title_en']),
+            'builderPages' => CmsPage::query()
+                ->with(['pageSections' => fn ($query) => $query->with('section')->orderBy('sort_order')])
+                ->orderByDesc('is_homepage')
+                ->orderBy('title_en')
+                ->get(),
             'sections' => CmsSection::query()->latest()->get(),
             'navigationItems' => NavigationItem::query()->with('children')->whereNull('parent_id')->orderBy('sort_order')->get(),
         ]);
@@ -204,6 +230,34 @@ class CmsPageController extends Controller
         ]);
 
         return to_route('cms.index')->with('success', 'Page section updated.');
+    }
+
+    public function reorderPageSections(Request $request, CmsPage $cmsPage): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        $data = $request->validate([
+            'ordered_ids' => ['required', 'array', 'min:1'],
+            'ordered_ids.*' => ['integer', 'exists:cms_page_sections,id'],
+        ]);
+
+        $validIds = $cmsPage->pageSections()
+            ->whereIn('id', $data['ordered_ids'])
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        abort_unless(count($validIds) === count($data['ordered_ids']), 422, 'Section order does not match this page.');
+
+        foreach (array_values($data['ordered_ids']) as $index => $id) {
+            CmsPageSection::query()
+                ->whereKey($id)
+                ->where('cms_page_id', $cmsPage->id)
+                ->update(['sort_order' => $index + 1]);
+        }
+
+        return to_route('cms.index')->with('success', 'Page sections reordered.');
     }
 
     public function destroyPageSection(CmsPageSection $cmsPageSection): RedirectResponse

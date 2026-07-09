@@ -15,8 +15,55 @@ class MediaFileController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
+        $filters = $this->tableFilters($request, [
+            'visibility' => 'all',
+            'collection' => 'all',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(MediaFile::query(), $actor);
+        $mediaFiles = (clone $baseQuery)->with(['portfolio', 'uploadedBy']);
+
+        $this->applyExactFilter($mediaFiles, $filters, 'portfolio_id');
+        $this->applyExactFilter($mediaFiles, $filters, 'visibility');
+        $this->applyExactFilter($mediaFiles, $filters, 'collection');
+        $this->applySearch($mediaFiles, $filters['search'], [
+            'title_en',
+            'title_ar',
+            'alt_text_en',
+            'alt_text_ar',
+            'collection',
+            'path',
+            'mime_type',
+        ]);
+
         return Inertia::render('admin/media/index', [
-            'mediaFiles' => $this->scopeByPortfolio(MediaFile::query()->latest(), $actor)->get(),
+            'mediaFiles' => $this->paginateTable($mediaFiles, $request, $filters, [
+                'created_at',
+                'title_en',
+                'collection',
+                'visibility',
+                'size',
+            ]),
+            'filters' => $filters,
+            'counts' => [
+                [
+                    'label' => 'All',
+                    'value' => (clone $baseQuery)->count(),
+                    'filter' => ['visibility' => 'all'],
+                    'active' => ($filters['visibility'] ?? 'all') === 'all',
+                ],
+                [
+                    'label' => 'Public',
+                    'value' => (clone $baseQuery)->where('visibility', 'public')->count(),
+                    'filter' => ['visibility' => 'public'],
+                    'active' => ($filters['visibility'] ?? 'all') === 'public',
+                ],
+                [
+                    'label' => 'Private',
+                    'value' => (clone $baseQuery)->where('visibility', 'private')->count(),
+                    'filter' => ['visibility' => 'private'],
+                    'active' => ($filters['visibility'] ?? 'all') === 'private',
+                ],
+            ],
             'portfolioOptions' => $this->portfolioOptions($actor),
         ]);
     }

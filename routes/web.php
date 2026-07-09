@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\AdminExportController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\ExpenseEntryController;
+use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LeaseController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceRequestController;
@@ -31,6 +34,9 @@ Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('loca
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
+    Route::get('/global-search', GlobalSearchController::class)->name('global-search');
+    Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'store', 'update']);
     Route::resource('users', UserController::class)->only(['index', 'store', 'update']);
@@ -57,6 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/cms/sections', [CmsPageController::class, 'storeSection'])->name('cms.sections.store');
     Route::put('/cms/sections/{cmsSection}', [CmsPageController::class, 'updateSection'])->name('cms.sections.update');
     Route::post('/cms/pages/{cmsPage}/sections', [CmsPageController::class, 'attachSection'])->name('cms.pages.sections.store');
+    Route::put('/cms/pages/{cmsPage}/sections/reorder', [CmsPageController::class, 'reorderPageSections'])->name('cms.pages.sections.reorder');
     Route::put('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'updatePageSection'])->name('cms.page-sections.update');
     Route::delete('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'destroyPageSection'])->name('cms.page-sections.destroy');
 

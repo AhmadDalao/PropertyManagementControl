@@ -1,15 +1,24 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import { DataTable, exportUrl } from '@/components/data-table';
+import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
-import type { SharedProps } from '@/types';
+import type {
+    PaginatedData,
+    SharedProps,
+    TableCount,
+    TableFilters,
+} from '@/types';
 
 type ExpenseRecord = {
     id: number;
     title: string;
     category: string;
+    status: string;
+    vendor_name?: string | null;
     amount: number;
     currency: string;
     incurred_on: string;
@@ -17,7 +26,9 @@ type ExpenseRecord = {
 };
 
 type PageProps = SharedProps & {
-    expenses: ExpenseRecord[];
+    expenses: PaginatedData<ExpenseRecord>;
+    filters: TableFilters;
+    counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
     assetOptions: Array<{ id: number; title_en: string }>;
     maintenanceOptions: Array<{ id: number; title: string }>;
@@ -26,7 +37,11 @@ type PageProps = SharedProps & {
 export default function ExpensesPage() {
     const { props } = usePage<PageProps>();
     const form = useForm({
-        portfolio_id: String(props.auth.user?.portfolio_id ?? props.portfolioOptions[0]?.id ?? ''),
+        portfolio_id: String(
+            props.auth.user?.portfolio_id ??
+                props.portfolioOptions[0]?.id ??
+                '',
+        ),
         asset_id: String(props.assetOptions[0]?.id ?? ''),
         maintenance_request_id: '',
         category: 'maintenance',
@@ -44,6 +59,45 @@ export default function ExpensesPage() {
         form.post('/expenses', { preserveScroll: true });
     };
 
+    const filterFields: TableFilterField[] = [
+        {
+            name: 'status',
+            label: 'Status',
+            options: [
+                { label: 'All', value: 'all' },
+                { label: 'Posted', value: 'posted' },
+                { label: 'Pending', value: 'pending' },
+                { label: 'Void', value: 'void' },
+            ],
+        },
+        {
+            name: 'category',
+            label: 'Category',
+            options: [
+                { label: 'All', value: 'all' },
+                { label: 'Maintenance', value: 'maintenance' },
+                { label: 'Utilities', value: 'utilities' },
+                { label: 'Supplies', value: 'supplies' },
+            ],
+        },
+        { name: 'date_from', label: 'From', type: 'date' },
+        { name: 'date_to', label: 'To', type: 'date' },
+    ];
+
+    if (props.auth.user?.roles.includes('superadmin')) {
+        filterFields.push({
+            name: 'portfolio_id',
+            label: 'Portfolio',
+            options: [
+                { label: 'All', value: 'all' },
+                ...props.portfolioOptions.map((portfolio) => ({
+                    label: portfolio.name,
+                    value: portfolio.id,
+                })),
+            ],
+        });
+    }
+
     return (
         <AdminLayout>
             <Head title="Expenses" />
@@ -56,63 +110,99 @@ export default function ExpensesPage() {
                 <div className="col-xl-4">
                     <div className="pmc-card p-4">
                         <form className="d-grid gap-3" onSubmit={submit}>
-                            <div>
-                                <label className="form-label pmc-form-label">Title</label>
-                                <input
-                                    className="form-control"
-                                    value={form.data.title}
-                                    onChange={(event) => form.setData('title', event.currentTarget.value)}
-                                />
-                            </div>
+                            <input
+                                className="form-control"
+                                placeholder="Title"
+                                value={form.data.title}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'title',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
                             <div className="row g-3">
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Category</label>
                                     <select
                                         className="form-select"
                                         value={form.data.category}
-                                        onChange={(event) => form.setData('category', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'category',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     >
-                                        <option value="maintenance">Maintenance</option>
-                                        <option value="utilities">Utilities</option>
-                                        <option value="supplies">Supplies</option>
+                                        <option value="maintenance">
+                                            Maintenance
+                                        </option>
+                                        <option value="utilities">
+                                            Utilities
+                                        </option>
+                                        <option value="supplies">
+                                            Supplies
+                                        </option>
                                     </select>
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Amount</label>
                                     <input
                                         type="number"
                                         className="form-control"
+                                        placeholder="Amount"
                                         value={form.data.amount}
                                         onChange={(event) =>
-                                            form.setData('amount', Number(event.currentTarget.value))
+                                            form.setData(
+                                                'amount',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
                                         }
                                     />
                                 </div>
                             </div>
-                            <div>
-                                <label className="form-label pmc-form-label">Asset</label>
-                                <select
-                                    className="form-select"
-                                    value={form.data.asset_id}
-                                    onChange={(event) => form.setData('asset_id', event.currentTarget.value)}
-                                >
-                                    {props.assetOptions.map((asset) => (
-                                        <option key={asset.id} value={asset.id}>
-                                            {asset.title_en}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                            <div>
-                                <label className="form-label pmc-form-label">Date</label>
-                                <input
-                                    type="date"
-                                    className="form-control"
-                                    value={form.data.incurred_on}
-                                    onChange={(event) => form.setData('incurred_on', event.currentTarget.value)}
-                                />
-                            </div>
-                            <button className="btn btn-primary" disabled={form.processing}>
+                            <select
+                                className="form-select"
+                                value={form.data.asset_id}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'asset_id',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            >
+                                {props.assetOptions.map((asset) => (
+                                    <option key={asset.id} value={asset.id}>
+                                        {asset.title_en}
+                                    </option>
+                                ))}
+                            </select>
+                            <input
+                                className="form-control"
+                                placeholder="Vendor"
+                                value={form.data.vendor_name}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'vendor_name',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={form.data.incurred_on}
+                                onChange={(event) =>
+                                    form.setData(
+                                        'incurred_on',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <button
+                                className="btn btn-primary"
+                                disabled={form.processing}
+                            >
                                 Record expense
                             </button>
                         </form>
@@ -121,31 +211,77 @@ export default function ExpensesPage() {
 
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
-                        <div className="table-responsive">
-                            <table className="table pmc-table">
-                                <thead>
-                                    <tr>
-                                        <th>Expense</th>
-                                        <th>Asset</th>
-                                        <th>Date</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {props.expenses.map((expense) => (
-                                        <tr key={expense.id}>
-                                            <td>
-                                                <div className="fw-semibold">{expense.title}</div>
-                                                <div className="small text-secondary">{expense.category}</div>
-                                            </td>
-                                            <td>{expense.asset?.title_en ?? '-'}</td>
-                                            <td>{humanDate(expense.incurred_on, props.app.locale)}</td>
-                                            <td>{currency(expense.amount, props.app.locale, expense.currency)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            title="Expense ledger"
+                            description="Search titles, vendors, categories, maintenance work, or linked assets."
+                            data={props.expenses}
+                            filters={props.filters}
+                            counts={props.counts}
+                            basePath="/expenses"
+                            exportHref={exportUrl(
+                                '/exports/expenses',
+                                props.filters,
+                            )}
+                            filterFields={filterFields}
+                            columns={[
+                                {
+                                    key: 'expense',
+                                    label: 'Expense',
+                                    render: (expense) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {expense.title}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {expense.category}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'asset',
+                                    label: 'Asset',
+                                    render: (expense) => (
+                                        <>
+                                            <div>
+                                                {expense.asset?.title_en ?? '-'}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {expense.vendor_name ?? '-'}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'date',
+                                    label: 'Date',
+                                    render: (expense) =>
+                                        humanDate(
+                                            expense.incurred_on,
+                                            props.app.locale,
+                                        ),
+                                },
+                                {
+                                    key: 'amount',
+                                    label: 'Amount',
+                                    render: (expense) =>
+                                        currency(
+                                            expense.amount,
+                                            props.app.locale,
+                                            expense.currency,
+                                        ),
+                                },
+                                {
+                                    key: 'status',
+                                    label: 'Status',
+                                    render: (expense) => (
+                                        <span className="pmc-chip pmc-chip--primary">
+                                            {expense.status}
+                                        </span>
+                                    ),
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

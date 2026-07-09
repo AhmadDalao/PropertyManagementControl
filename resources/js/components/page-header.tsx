@@ -10,7 +10,9 @@ export function PageHeader({ title, description, actions }: PageHeaderProps) {
     return (
         <div className="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-end mb-4">
             <div>
-                <div className="pmc-kicker mb-2">Property management control</div>
+                <div className="pmc-kicker mb-2">
+                    Property management control
+                </div>
                 <h1 className="pmc-page-title mb-2">{title}</h1>
                 <p className="text-secondary mb-0">{description}</p>
             </div>

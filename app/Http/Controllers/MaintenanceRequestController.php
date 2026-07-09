@@ -16,29 +16,96 @@ class MaintenanceRequestController extends Controller
     public function index(Request $request): Response
     {
         $actor = $this->actor($request);
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'category' => 'all',
+            'priority' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+        ]);
 
         if ($actor->hasRole('tenant')) {
             $tenantProfile = TenantProfile::query()
                 ->where('user_id', $actor->id)
-                ->with(['leases.leaseable', 'maintenanceRequests.asset', 'maintenanceRequests.updates'])
+                ->with(['leases.leaseable'])
                 ->first();
+            $baseQuery = MaintenanceRequest::query()
+                ->when(
+                    $tenantProfile,
+                    fn ($query) => $query->where('tenant_profile_id', $tenantProfile->id),
+                    fn ($query) => $query->whereRaw('1 = 0')
+                );
+            $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user']);
+
+            $this->applyExactFilter($requests, $filters, 'status');
+            $this->applyExactFilter($requests, $filters, 'category');
+            $this->applyExactFilter($requests, $filters, 'priority');
+            $this->applyDateRange($requests, $filters, 'created_at');
+            $this->applySearch($requests, $filters['search'], [
+                'title',
+                'description',
+                'category',
+                fn ($query, $search, $like) => $query->orWhereHas(
+                    'asset',
+                    fn ($assetQuery) => $assetQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)
+                ),
+            ]);
 
             return Inertia::render('admin/maintenance/index', [
                 'mode' => 'tenant',
-                'requests' => $tenantProfile?->maintenanceRequests ?? [],
+                'requests' => $this->paginateTable($requests, $request, $filters, [
+                    'created_at',
+                    'requested_at',
+                    'status',
+                    'priority',
+                    'category',
+                ]),
+                'filters' => $filters,
+                'counts' => $this->statusCounts($baseQuery, ['open', 'in_progress', 'resolved', 'cancelled'], $filters),
                 'assetOptions' => $tenantProfile?->leases->map(fn ($lease) => $lease->leaseable)->filter()->values() ?? [],
                 'tenantProfile' => $tenantProfile,
             ]);
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $baseQuery = $this->scopeByPortfolio(MaintenanceRequest::query(), $actor);
+        $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user']);
+
+        $this->applyExactFilter($requests, $filters, 'portfolio_id');
+        $this->applyExactFilter($requests, $filters, 'status');
+        $this->applyExactFilter($requests, $filters, 'category');
+        $this->applyExactFilter($requests, $filters, 'priority');
+        $this->applyDateRange($requests, $filters, 'created_at');
+        $this->applySearch($requests, $filters['search'], [
+            'title',
+            'description',
+            'category',
+            'internal_notes',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'asset',
+                fn ($assetQuery) => $assetQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'tenantProfile.user',
+                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'assignedTo',
+                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
+            ),
+        ]);
 
         return Inertia::render('admin/maintenance/index', [
             'mode' => 'manager',
-            'requests' => $this->scopeByPortfolio(
-                MaintenanceRequest::query()->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user'])->latest(),
-                $actor
-            )->get(),
+            'requests' => $this->paginateTable($requests, $request, $filters, [
+                'created_at',
+                'requested_at',
+                'status',
+                'priority',
+                'category',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['open', 'in_progress', 'resolved', 'cancelled'], $filters),
             'assetOptions' => $this->scopeByPortfolio(Asset::query(), $actor)->get(),
             'tenantOptions' => $this->scopeByPortfolio(TenantProfile::query()->with('user'), $actor)->get(),
             'userOptions' => $this->scopeByPortfolio(User::query()->orderBy('name'), $actor)->get(['id', 'name', 'portfolio_id']),

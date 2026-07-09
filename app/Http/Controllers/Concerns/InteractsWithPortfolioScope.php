@@ -50,7 +50,7 @@ trait InteractsWithPortfolioScope
      */
     protected function portfolioOptions(User $user): array
     {
-        return $this->scopeByPortfolio(Portfolio::query()->orderBy('name_en'), $user)
+        return $this->scopeByPortfolio(Portfolio::query()->orderBy('name_en'), $user, 'id')
             ->get()
             ->map(fn (Portfolio $portfolio) => [
                 'id' => $portfolio->id,

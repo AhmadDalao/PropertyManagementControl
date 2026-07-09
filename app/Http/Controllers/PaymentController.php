@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\TenantProfile;
 use App\Services\LeaseFinancialService;
@@ -21,16 +22,49 @@ class PaymentController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
-        $payments = $this->scopeByPortfolio(
-            Payment::query()->with(['lease.leaseable', 'tenantProfile.user', 'allocations'])->latest('received_on'),
-            $actor
-        )->get();
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'type' => 'all',
+            'method' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(Payment::query(), $actor);
+        $payments = (clone $baseQuery)->with(['lease.leaseable', 'tenantProfile.user', 'allocations']);
+
+        $this->applyExactFilter($payments, $filters, 'portfolio_id');
+        $this->applyExactFilter($payments, $filters, 'status');
+        $this->applyExactFilter($payments, $filters, 'type');
+        $this->applyExactFilter($payments, $filters, 'method');
+        $this->applyDateRange($payments, $filters, 'received_on');
+        $this->applySearch($payments, $filters['search'], [
+            'reference',
+            'notes',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'lease',
+                fn ($leaseQuery) => $leaseQuery->where('code', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'tenantProfile.user',
+                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
+            ),
+        ]);
 
         return Inertia::render('admin/payments/index', [
-            'payments' => $payments,
+            'payments' => $this->paginateTable($payments, $request, $filters, [
+                'created_at',
+                'received_on',
+                'reference',
+                'status',
+                'type',
+                'method',
+                'amount',
+            ], 'received_on'),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['posted', 'pending', 'void'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'leaseOptions' => $this->scopeByPortfolio(
-                \App\Models\Lease::query()->with('tenantProfile.user')->where('status', 'active'),
+                Lease::query()->with('tenantProfile.user')->where('status', 'active'),
                 $actor
             )->get(),
             'tenantOptions' => $this->scopeByPortfolio(
@@ -59,7 +93,7 @@ class PaymentController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $lease = \App\Models\Lease::query()->findOrFail($data['lease_id']);
+        $lease = Lease::query()->findOrFail($data['lease_id']);
         $portfolioId = $data['portfolio_id'] ?? $lease->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
 
@@ -109,7 +143,7 @@ class PaymentController extends Controller
         $reference = $payment->reference ?: (string) $payment->id;
 
         return response()->streamDownload(
-            fn () => print($pdf->output()),
+            fn () => print ($pdf->output()),
             "receipt-{$reference}.pdf"
         );
     }

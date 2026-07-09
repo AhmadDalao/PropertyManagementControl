@@ -17,13 +17,38 @@ class UserController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
-        $users = $this->scopeByPortfolio(
-            User::query()->with('roles')->latest(),
-            $actor
-        )->get();
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'role' => 'all',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(User::query(), $actor);
+        $users = (clone $baseQuery)->with('roles');
+
+        $this->applyExactFilter($users, $filters, 'portfolio_id');
+        $this->applyExactFilter($users, $filters, 'status');
+        $this->applySearch($users, $filters['search'], [
+            'name',
+            'email',
+            'phone',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'roles',
+                fn ($roleQuery) => $roleQuery->where('name', 'like', $like)
+            ),
+        ]);
+
+        if (($filters['role'] ?? 'all') !== 'all') {
+            $users->whereHas('roles', fn ($query) => $query->where('name', $filters['role']));
+        }
 
         return Inertia::render('admin/users/index', [
-            'users' => $users,
+            'users' => $this->paginateTable($users, $request, $filters, [
+                'created_at',
+                'name',
+                'email',
+                'status',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'suspended'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'roleOptions' => $this->roleOptions($actor),
         ]);

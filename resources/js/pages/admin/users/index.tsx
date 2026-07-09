@@ -1,9 +1,17 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 
+import { DataTable, exportUrl } from '@/components/data-table';
+import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
-import type { SharedProps } from '@/types';
+import type {
+    PaginatedData,
+    SharedProps,
+    TableCount,
+    TableFilters,
+} from '@/types';
 
 type UserRecord = {
     id: number;
@@ -17,7 +25,9 @@ type UserRecord = {
 };
 
 type PageProps = SharedProps & {
-    users: UserRecord[];
+    users: PaginatedData<UserRecord>;
+    filters: TableFilters;
+    counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
     roleOptions: string[];
 };
@@ -26,7 +36,11 @@ export default function UsersPage() {
     const { props } = usePage<PageProps>();
     const [editing, setEditing] = useState<UserRecord | null>(null);
     const form = useForm({
-        portfolio_id: String(props.auth.user?.portfolio_id ?? props.portfolioOptions[0]?.id ?? ''),
+        portfolio_id: String(
+            props.auth.user?.portfolio_id ??
+                props.portfolioOptions[0]?.id ??
+                '',
+        ),
         name: '',
         email: '',
         phone: '',
@@ -36,23 +50,26 @@ export default function UsersPage() {
         role: props.roleOptions[0] ?? 'tenant',
     });
 
-    useEffect(() => {
-        if (!editing) {
-            form.reset('name', 'email', 'phone', 'password');
-            return;
-        }
-
+    const startEditing = (user: UserRecord) => {
         form.setData({
-            portfolio_id: String(editing.portfolio_id ?? props.auth.user?.portfolio_id ?? ''),
-            name: editing.name,
-            email: editing.email,
-            phone: editing.phone ?? '',
-            preferred_locale: editing.preferred_locale,
-            status: editing.status,
+            portfolio_id: String(
+                user.portfolio_id ?? props.auth.user?.portfolio_id ?? '',
+            ),
+            name: user.name,
+            email: user.email,
+            phone: user.phone ?? '',
+            preferred_locale: user.preferred_locale,
+            status: user.status,
             password: '',
-            role: editing.roles?.[0]?.name ?? props.roleOptions[0] ?? 'tenant',
+            role: user.roles?.[0]?.name ?? props.roleOptions[0] ?? 'tenant',
         });
-    }, [editing]);
+        setEditing(user);
+    };
+
+    const clearEditing = () => {
+        setEditing(null);
+        form.reset('name', 'email', 'phone', 'password');
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -60,13 +77,52 @@ export default function UsersPage() {
         if (editing) {
             form.put(`/users/${editing.id}`, {
                 preserveScroll: true,
-                onSuccess: () => setEditing(null),
+                onSuccess: clearEditing,
             });
+
             return;
         }
 
         form.post('/users', { preserveScroll: true });
     };
+
+    const filterFields: TableFilterField[] = [
+        {
+            name: 'status',
+            label: 'Status',
+            options: [
+                { label: 'All', value: 'all' },
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+                { label: 'Suspended', value: 'suspended' },
+            ],
+        },
+        {
+            name: 'role',
+            label: 'Role',
+            options: [
+                { label: 'All', value: 'all' },
+                ...props.roleOptions.map((role) => ({
+                    label: role,
+                    value: role,
+                })),
+            ],
+        },
+    ];
+
+    if (props.auth.user?.roles.includes('superadmin')) {
+        filterFields.push({
+            name: 'portfolio_id',
+            label: 'Portfolio',
+            options: [
+                { label: 'All', value: 'all' },
+                ...props.portfolioOptions.map((portfolio) => ({
+                    label: portfolio.name,
+                    value: portfolio.id,
+                })),
+            ],
+        });
+    }
 
     return (
         <AdminLayout>
@@ -81,16 +137,20 @@ export default function UsersPage() {
                     <div className="pmc-card p-4">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <div className="pmc-kicker mb-2">Account form</div>
+                                <div className="pmc-kicker mb-2">
+                                    Account form
+                                </div>
                                 <h2 className="h4 mb-0">
-                                    {editing ? `Edit ${editing.name}` : 'Create user'}
+                                    {editing
+                                        ? `Edit ${editing.name}`
+                                        : 'Create user'}
                                 </h2>
                             </div>
                             {editing ? (
                                 <button
                                     type="button"
                                     className="btn btn-outline-secondary btn-sm"
-                                    onClick={() => setEditing(null)}
+                                    onClick={clearEditing}
                                 >
                                     Reset
                                 </button>
@@ -100,54 +160,92 @@ export default function UsersPage() {
                         <form className="d-grid gap-3" onSubmit={submit}>
                             {props.auth.user?.roles.includes('superadmin') ? (
                                 <div>
-                                    <label className="form-label pmc-form-label">Portfolio</label>
+                                    <label className="form-label pmc-form-label">
+                                        Portfolio
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={form.data.portfolio_id}
                                         onChange={(event) =>
-                                            form.setData('portfolio_id', event.currentTarget.value)
+                                            form.setData(
+                                                'portfolio_id',
+                                                event.currentTarget.value,
+                                            )
                                         }
                                     >
-                                        {props.portfolioOptions.map((portfolio) => (
-                                            <option key={portfolio.id} value={portfolio.id}>
-                                                {portfolio.name}
-                                            </option>
-                                        ))}
+                                        {props.portfolioOptions.map(
+                                            (portfolio) => (
+                                                <option
+                                                    key={portfolio.id}
+                                                    value={portfolio.id}
+                                                >
+                                                    {portfolio.name}
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
                                 </div>
                             ) : null}
                             <div>
-                                <label className="form-label pmc-form-label">Name</label>
+                                <label className="form-label pmc-form-label">
+                                    Name
+                                </label>
                                 <input
                                     className="form-control"
                                     value={form.data.name}
-                                    onChange={(event) => form.setData('name', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'name',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
                             </div>
                             <div>
-                                <label className="form-label pmc-form-label">Email</label>
+                                <label className="form-label pmc-form-label">
+                                    Email
+                                </label>
                                 <input
                                     disabled={Boolean(editing)}
                                     className="form-control"
                                     value={form.data.email}
-                                    onChange={(event) => form.setData('email', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'email',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
                             </div>
                             <div className="row g-3">
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Phone</label>
+                                    <label className="form-label pmc-form-label">
+                                        Phone
+                                    </label>
                                     <input
                                         className="form-control"
                                         value={form.data.phone}
-                                        onChange={(event) => form.setData('phone', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'phone',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Role</label>
+                                    <label className="form-label pmc-form-label">
+                                        Role
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={form.data.role}
-                                        onChange={(event) => form.setData('role', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'role',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     >
                                         {props.roleOptions.map((role) => (
                                             <option key={role} value={role}>
@@ -159,12 +257,18 @@ export default function UsersPage() {
                             </div>
                             <div className="row g-3">
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Locale</label>
+                                    <label className="form-label pmc-form-label">
+                                        Locale
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={form.data.preferred_locale}
                                         onChange={(event) =>
-                                            form.setData('preferred_locale', event.currentTarget.value as 'en' | 'ar')
+                                            form.setData(
+                                                'preferred_locale',
+                                                event.currentTarget.value as
+                                                    'en' | 'ar',
+                                            )
                                         }
                                     >
                                         <option value="en">English</option>
@@ -172,29 +276,51 @@ export default function UsersPage() {
                                     </select>
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Status</label>
+                                    <label className="form-label pmc-form-label">
+                                        Status
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={form.data.status}
-                                        onChange={(event) => form.setData('status', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'status',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     >
                                         <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
+                                        <option value="inactive">
+                                            Inactive
+                                        </option>
+                                        <option value="suspended">
+                                            Suspended
+                                        </option>
                                     </select>
                                 </div>
                             </div>
                             <div>
                                 <label className="form-label pmc-form-label">
-                                    {editing ? 'New password (optional)' : 'Password'}
+                                    {editing
+                                        ? 'New password (optional)'
+                                        : 'Password'}
                                 </label>
                                 <input
                                     type="password"
                                     className="form-control"
                                     value={form.data.password}
-                                    onChange={(event) => form.setData('password', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'password',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
                             </div>
-                            <button className="btn btn-primary" disabled={form.processing}>
+                            <button
+                                className="btn btn-primary"
+                                disabled={form.processing}
+                            >
                                 {editing ? 'Update user' : 'Create user'}
                             </button>
                         </form>
@@ -203,43 +329,72 @@ export default function UsersPage() {
 
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
-                        <div className="table-responsive">
-                            <table className="table pmc-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>Locale</th>
-                                        <th>Status</th>
-                                        <th />
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {props.users.map((user) => (
-                                        <tr key={user.id}>
-                                            <td>
-                                                <div className="fw-semibold">{user.name}</div>
-                                                <div className="small text-secondary">{user.email}</div>
-                                            </td>
-                                            <td>{user.roles?.[0]?.name ?? '-'}</td>
-                                            <td>{user.preferred_locale.toUpperCase()}</td>
-                                            <td>
-                                                <span className="pmc-chip pmc-chip--teal">{user.status}</span>
-                                            </td>
-                                            <td className="text-end">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary btn-sm"
-                                                    onClick={() => setEditing(user)}
-                                                >
-                                                    Edit
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            title="All users"
+                            description="Search by name, email, phone, or assigned role."
+                            data={props.users}
+                            filters={props.filters}
+                            counts={props.counts}
+                            basePath="/users"
+                            exportHref={exportUrl(
+                                '/exports/users',
+                                props.filters,
+                            )}
+                            filterFields={filterFields}
+                            columns={[
+                                {
+                                    key: 'name',
+                                    label: 'Name',
+                                    render: (user) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {user.name}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {user.email}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'role',
+                                    label: 'Role',
+                                    render: (user) =>
+                                        user.roles
+                                            ?.map((role) => role.name)
+                                            .join(', ') || '-',
+                                },
+                                {
+                                    key: 'locale',
+                                    label: 'Locale',
+                                    render: (user) =>
+                                        user.preferred_locale.toUpperCase(),
+                                },
+                                {
+                                    key: 'status',
+                                    label: 'Status',
+                                    render: (user) => (
+                                        <span className="pmc-chip pmc-chip--teal">
+                                            {user.status}
+                                        </span>
+                                    ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (user) => (
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() => startEditing(user)}
+                                        >
+                                            Edit
+                                        </button>
+                                    ),
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

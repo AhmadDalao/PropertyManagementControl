@@ -16,13 +16,33 @@ class PortfolioController extends Controller
         $user = $this->actor($request);
         $this->requireRoles($user, ['superadmin', 'owner', 'property_manager']);
 
-        $portfolios = $this->scopeByPortfolio(
-            Portfolio::query()->with(['owner', 'users'])->latest(),
-            $user
-        )->get();
+        $filters = $this->tableFilters($request, ['status' => 'all']);
+        $baseQuery = $this->scopeByPortfolio(Portfolio::query(), $user, 'id');
+        $portfolios = (clone $baseQuery)
+            ->with(['owner', 'users'])
+            ->withCount(['assets', 'users', 'leases']);
+
+        $this->applySearch($portfolios, $filters['search'], [
+            'name_en',
+            'name_ar',
+            'code',
+            'contact_email',
+            'contact_phone',
+            'city',
+            'country',
+        ]);
+        $this->applyExactFilter($portfolios, $filters, 'status');
 
         return Inertia::render('admin/portfolios/index', [
-            'portfolios' => $portfolios,
+            'portfolios' => $this->paginateTable($portfolios, $request, $filters, [
+                'created_at',
+                'name_en',
+                'code',
+                'status',
+                'city',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
             'canCreate' => $user->hasRole('superadmin'),
         ]);
     }

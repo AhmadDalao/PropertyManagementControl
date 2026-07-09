@@ -18,13 +18,40 @@ class TenantController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
-        $tenants = $this->scopeByPortfolio(
-            TenantProfile::query()->with(['user', 'leases' => fn ($query) => $query->latest('started_at')]),
-            $actor
-        )->latest()->get();
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'profile_type' => 'all',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(TenantProfile::query(), $actor);
+        $tenants = (clone $baseQuery)->with(['user', 'leases' => fn ($query) => $query->latest('started_at')]);
+
+        $this->applyExactFilter($tenants, $filters, 'portfolio_id');
+        $this->applyExactFilter($tenants, $filters, 'status');
+        $this->applyExactFilter($tenants, $filters, 'profile_type');
+        $this->applySearch($tenants, $filters['search'], [
+            'national_id',
+            'company_name',
+            'emergency_contact_name',
+            'emergency_contact_phone',
+            'address',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'user',
+                fn ($userQuery) => $userQuery
+                    ->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like)
+                    ->orWhere('phone', 'like', $like)
+            ),
+        ]);
 
         return Inertia::render('admin/tenants/index', [
-            'tenants' => $tenants,
+            'tenants' => $this->paginateTable($tenants, $request, $filters, [
+                'created_at',
+                'status',
+                'profile_type',
+                'company_name',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'blocked'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
         ]);
     }

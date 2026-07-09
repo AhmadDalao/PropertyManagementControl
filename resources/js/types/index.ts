@@ -43,3 +43,49 @@ export type OptionRecord = {
     title_ar?: string;
     [key: string]: unknown;
 };
+
+export type PaginationLink = {
+    url: string | null;
+    label: string;
+    active: boolean;
+};
+
+export type PaginatedData<T> = {
+    data: T[];
+    current_page: number;
+    from: number | null;
+    last_page: number;
+    links: PaginationLink[];
+    path: string;
+    per_page: number;
+    to: number | null;
+    total: number;
+};
+
+export type TableFilters = Record<
+    string,
+    string | number | boolean | null | undefined
+>;
+
+export type TableCount = {
+    label: string;
+    value: number;
+    filter?: Record<string, string | number | null>;
+    active?: boolean;
+};
+
+export type GlobalSearchResult = {
+    group: string;
+    title: string;
+    subtitle: string;
+    badge: string;
+    url: string;
+};
+
+export type GlobalSearchResponse = {
+    ok: boolean;
+    query: string;
+    results: GlobalSearchResult[];
+    message: string;
+    direct_url: string;
+};

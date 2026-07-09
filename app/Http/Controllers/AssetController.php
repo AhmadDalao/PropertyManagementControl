@@ -17,10 +17,42 @@ class AssetController extends Controller
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
-        $assets = $this->scopeByPortfolio(
-            Asset::query()->with(['portfolio', 'parent', 'stakeholders.user'])->latest(),
-            $actor
-        )->get();
+        $filters = $this->tableFilters($request, [
+            'status' => 'all',
+            'asset_type' => 'all',
+            'usage_type' => 'all',
+            'occupancy_status' => 'all',
+            'rentable' => 'all',
+        ]);
+        $baseQuery = $this->scopeByPortfolio(Asset::query(), $actor);
+        $assets = (clone $baseQuery)->with(['portfolio', 'parent', 'stakeholders.user']);
+
+        $this->applyExactFilter($assets, $filters, 'portfolio_id');
+        $this->applyExactFilter($assets, $filters, 'status');
+        $this->applyExactFilter($assets, $filters, 'asset_type');
+        $this->applyExactFilter($assets, $filters, 'usage_type');
+        $this->applyExactFilter($assets, $filters, 'occupancy_status');
+
+        if (($filters['rentable'] ?? 'all') !== 'all') {
+            $assets->where('rentable', $filters['rentable'] === 'yes');
+        }
+
+        $this->applySearch($assets, $filters['search'], [
+            'title_en',
+            'title_ar',
+            'code',
+            'level_label',
+            'unit_label',
+            'address',
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'parent',
+                fn ($parentQuery) => $parentQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)
+            ),
+            fn ($query, $search, $like) => $query->orWhereHas(
+                'stakeholders.user',
+                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
+            ),
+        ]);
 
         $userOptions = $this->scopeByPortfolio(
             User::query()->whereDoesntHave('roles', fn ($query) => $query->where('name', 'tenant'))->orderBy('name'),
@@ -28,9 +60,20 @@ class AssetController extends Controller
         )->get(['id', 'name', 'portfolio_id']);
 
         return Inertia::render('admin/assets/index', [
-            'assets' => $assets,
+            'assets' => $this->paginateTable($assets, $request, $filters, [
+                'created_at',
+                'title_en',
+                'code',
+                'asset_type',
+                'usage_type',
+                'status',
+                'occupancy_status',
+                'valuation_amount',
+            ]),
+            'filters' => $filters,
+            'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
-            'parentOptions' => $assets->map(fn (Asset $asset) => [
+            'parentOptions' => (clone $baseQuery)->orderBy('title_en')->get()->map(fn (Asset $asset) => [
                 'id' => $asset->id,
                 'name' => $asset->title_en,
             ])->all(),

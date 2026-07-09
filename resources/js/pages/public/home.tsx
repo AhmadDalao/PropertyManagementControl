@@ -88,6 +88,176 @@ const fallbackSections = [
         },
     },
     {
+        id: -3,
+        section: {
+            section_type: 'role_cards',
+            content_en: {
+                eyebrow: 'Role-based portals',
+                headline: 'Every user sees only what they should manage.',
+                items: [
+                    {
+                        icon: 'bi-shield-lock',
+                        title: 'Superadmin',
+                        body: 'Controls the system, CMS, portfolios, users, values, and platform health.',
+                    },
+                    {
+                        icon: 'bi-buildings',
+                        title: 'Owner',
+                        body: 'Manages assets, tenants, leases, payments, documents, and reports.',
+                    },
+                    {
+                        icon: 'bi-person-workspace',
+                        title: 'Property manager',
+                        body: 'Runs daily operations across units, tenants, contracts, and maintenance.',
+                    },
+                    {
+                        icon: 'bi-person-badge',
+                        title: 'Tenant',
+                        body: 'Views rent, days left, documents, payments, and service requests.',
+                    },
+                ],
+            },
+            content_ar: {
+                eyebrow: 'بوابات حسب الدور',
+                headline: 'كل مستخدم يرى ما يخصه فقط.',
+                items: [
+                    {
+                        icon: 'bi-shield-lock',
+                        title: 'مالك النظام',
+                        body: 'يدير النظام والموقع والمحافظ والمستخدمين والقيم وحالة المنصة.',
+                    },
+                    {
+                        icon: 'bi-buildings',
+                        title: 'المالك',
+                        body: 'يدير الأصول والمستأجرين والعقود والمدفوعات والمستندات والتقارير.',
+                    },
+                    {
+                        icon: 'bi-person-workspace',
+                        title: 'مدير العقار',
+                        body: 'يتابع التشغيل اليومي للوحدات والمستأجرين والعقود والصيانة.',
+                    },
+                    {
+                        icon: 'bi-person-badge',
+                        title: 'المستأجر',
+                        body: 'يعرض الإيجار والأيام المتبقية والمستندات والمدفوعات وطلبات الخدمة.',
+                    },
+                ],
+            },
+        },
+    },
+    {
+        id: -4,
+        section: {
+            section_type: 'workflow',
+            content_en: {
+                eyebrow: 'Operating flow',
+                headline:
+                    'From portfolio setup to tenant service, every step stays connected.',
+                steps: [
+                    {
+                        title: 'Create portfolio',
+                        body: 'Start with the owner account and portfolio boundary.',
+                    },
+                    {
+                        title: 'Add assets',
+                        body: 'Build buildings, floors, units, spaces, values, and occupancy.',
+                    },
+                    {
+                        title: 'Assign control',
+                        body: 'Track who owns and who manages each asset.',
+                    },
+                    {
+                        title: 'Create tenant',
+                        body: 'Add profile, contacts, documents, and portal account.',
+                    },
+                    {
+                        title: 'Generate lease',
+                        body: 'Create contract, installments, deposit, and signed files.',
+                    },
+                    {
+                        title: 'Track operations',
+                        body: 'Monitor balances, receipts, expenses, and maintenance.',
+                    },
+                ],
+            },
+            content_ar: {
+                eyebrow: 'مسار التشغيل',
+                headline: 'من إعداد المحفظة إلى خدمة المستأجر، كل خطوة مرتبطة.',
+                steps: [
+                    {
+                        title: 'إنشاء محفظة',
+                        body: 'ابدأ بحساب المالك وحدود المحفظة.',
+                    },
+                    {
+                        title: 'إضافة الأصول',
+                        body: 'أضف المباني والطوابق والوحدات والمساحات والقيم والإشغال.',
+                    },
+                    {
+                        title: 'تعيين التحكم',
+                        body: 'حدد من يملك ومن يدير كل أصل.',
+                    },
+                    {
+                        title: 'إنشاء مستأجر',
+                        body: 'أضف الملف وجهات الاتصال والمستندات وحساب البوابة.',
+                    },
+                    {
+                        title: 'إنشاء العقد',
+                        body: 'أنشئ العقد والأقساط والتأمين والملفات الموقعة.',
+                    },
+                    {
+                        title: 'متابعة التشغيل',
+                        body: 'راقب الأرصدة والإيصالات والمصاريف والصيانة.',
+                    },
+                ],
+            },
+        },
+    },
+    {
+        id: -5,
+        section: {
+            section_type: 'dashboard_preview',
+            content_en: {
+                eyebrow: 'Dashboard visibility',
+                headline: 'Know what is owned, rented, due, and unresolved.',
+                body: 'The control center focuses on portfolio value, occupancy, lease health, rent collection, maintenance backlog, and documents.',
+                metrics: [
+                    {
+                        label: 'Managed assets',
+                        value: 'Buildings / floors / units',
+                    },
+                    {
+                        label: 'Financial health',
+                        value: 'Paid / remaining / overdue',
+                    },
+                    {
+                        label: 'Service queue',
+                        value: 'Electrical / plumbing / general',
+                    },
+                ],
+            },
+            content_ar: {
+                eyebrow: 'وضوح لوحة التحكم',
+                headline:
+                    'اعرف ما تملكه وما تم تأجيره وما هو مستحق وما لم يتم حله.',
+                body: 'يركز مركز التحكم على قيمة المحفظة والإشغال وحالة العقود والتحصيل وطلبات الصيانة والمستندات.',
+                metrics: [
+                    {
+                        label: 'الأصول المُدارة',
+                        value: 'مبان / طوابق / وحدات',
+                    },
+                    {
+                        label: 'الحالة المالية',
+                        value: 'مدفوع / متبقي / متأخر',
+                    },
+                    {
+                        label: 'طلبات الخدمة',
+                        value: 'كهرباء / سباكة / عام',
+                    },
+                ],
+            },
+        },
+    },
+    {
         id: -2,
         section: {
             section_type: 'feature_grid',
@@ -142,6 +312,89 @@ const fallbackSections = [
                         body: 'سجل الدفعات اليدوية ووزع الأقساط وراقب الأرصدة.',
                     },
                 ],
+            },
+        },
+    },
+    {
+        id: -6,
+        section: {
+            section_type: 'operations_strip',
+            content_en: {
+                headline: 'Payments and maintenance stay tied to the lease.',
+                body: 'Receipts, contract balance, deposits, expenses, and service requests all roll into owner and superadmin reporting.',
+                items: [
+                    { label: 'Receipts', value: 'PDF-ready' },
+                    { label: 'Arrears', value: 'By installment' },
+                    { label: 'Requests', value: 'Tenant submitted' },
+                ],
+            },
+            content_ar: {
+                headline: 'المدفوعات والصيانة مرتبطة بالعقد.',
+                body: 'الإيصالات ورصيد العقد والتأمين والمصاريف وطلبات الخدمة تظهر في تقارير المالك ومالك النظام.',
+                items: [
+                    { label: 'الإيصالات', value: 'جاهزة كملف PDF' },
+                    { label: 'المتأخرات', value: 'حسب القسط' },
+                    { label: 'الطلبات', value: 'من المستأجر' },
+                ],
+            },
+        },
+    },
+    {
+        id: -7,
+        section: {
+            section_type: 'faq',
+            content_en: {
+                eyebrow: 'FAQ',
+                headline: 'Answers before the first login.',
+                items: [
+                    {
+                        question: 'Does it support Arabic?',
+                        answer: 'Yes. The public site and portal support English and Arabic, including RTL layout.',
+                    },
+                    {
+                        question: 'Can tenants log in?',
+                        answer: 'Yes. Owners or managers create tenant accounts so tenants can view rent, contracts, documents, and maintenance.',
+                    },
+                    {
+                        question: 'Is payment gateway included?',
+                        answer: 'Not in v1. Payments are manual and tracked through installments, receipts, and balances.',
+                    },
+                ],
+            },
+            content_ar: {
+                eyebrow: 'الأسئلة الشائعة',
+                headline: 'إجابات قبل أول تسجيل دخول.',
+                items: [
+                    {
+                        question: 'هل يدعم العربية؟',
+                        answer: 'نعم. الموقع والبوابة يدعمان العربية والإنجليزية مع اتجاه RTL.',
+                    },
+                    {
+                        question: 'هل يمكن للمستأجر الدخول؟',
+                        answer: 'نعم. ينشئ المالك أو المدير حساب المستأجر لعرض الإيجار والعقود والمستندات والصيانة.',
+                    },
+                    {
+                        question: 'هل توجد بوابة دفع؟',
+                        answer: 'ليس في الإصدار الأول. المدفوعات يدوية وتُتابع من خلال الأقساط والإيصالات والأرصدة.',
+                    },
+                ],
+            },
+        },
+    },
+    {
+        id: -8,
+        section: {
+            section_type: 'final_cta',
+            content_en: {
+                headline:
+                    'Start with one portfolio. Grow into the full operation.',
+                body: 'Create the owner, add assets, attach tenants, generate leases, and let the reporting tell the truth.',
+                ctaPrimary: 'Open Portal',
+            },
+            content_ar: {
+                headline: 'ابدأ بمحفظة واحدة ثم وسّع التشغيل بالكامل.',
+                body: 'أنشئ المالك، أضف الأصول، اربط المستأجرين، أنشئ العقود، ودع التقارير تعرض الحقيقة.',
+                ctaPrimary: 'فتح البوابة',
             },
         },
     },

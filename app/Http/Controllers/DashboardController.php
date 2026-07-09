@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Asset;
+use App\Models\CmsPage;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
@@ -26,7 +27,7 @@ class DashboardController extends Controller
                 ->with([
                     'leases' => fn ($query) => $query
                         ->whereIn('status', ['active', 'draft'])
-                        ->with('installments', 'documents'),
+                        ->with(['installments', 'documents', 'leaseable']),
                     'maintenanceRequests',
                     'payments',
                 ])
@@ -48,6 +49,7 @@ class DashboardController extends Controller
                     'lease' => $activeLease,
                     'payments' => $tenantProfile?->payments()->latest('received_on')->limit(8)->get() ?? [],
                     'requests' => $tenantProfile?->maintenanceRequests()->latest()->limit(8)->get() ?? [],
+                    'documents' => $activeLease?->documents()->latest()->get() ?? [],
                 ],
             ]);
         }
@@ -75,6 +77,11 @@ class DashboardController extends Controller
                 ->whereYear('incurred_on', now()->year)
                 ->sum('amount'),
             'openRequests' => (clone $maintenanceQuery)->whereIn('status', ['open', 'in_progress'])->count(),
+            'arrears' => (float) (clone $leaseQuery)
+                ->with('installments')
+                ->get()
+                ->sum(fn (Lease $lease) => $lease->balance_remaining),
+            'vacantUnits' => (clone $assetQuery)->where('rentable', true)->where('occupancy_status', 'vacant')->count(),
         ];
 
         $occupancy = (clone $assetQuery)
@@ -93,12 +100,76 @@ class DashboardController extends Controller
                 'remaining' => $lease->balance_remaining,
             ]);
 
+        $assetMix = (clone $assetQuery)
+            ->selectRaw('asset_type, COUNT(*) as total')
+            ->groupBy('asset_type')
+            ->pluck('total', 'asset_type');
+
+        $maintenanceByStatus = (clone $maintenanceQuery)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $expiringLeases = (clone $leaseQuery)
+            ->with(['tenantProfile.user', 'leaseable', 'installments'])
+            ->where('status', 'active')
+            ->whereDate('ends_at', '<=', now()->addDays(90))
+            ->orderBy('ends_at')
+            ->limit(8)
+            ->get()
+            ->map(fn (Lease $lease) => [
+                'id' => $lease->id,
+                'code' => $lease->code,
+                'tenant' => $lease->tenantProfile?->user?->name,
+                'asset' => $lease->leaseable?->title_en,
+                'ends_at' => $lease->ends_at?->toDateString(),
+                'days_remaining' => $lease->days_remaining,
+                'balance_remaining' => $lease->balance_remaining,
+                'currency' => $lease->currency,
+            ]);
+
+        $arrearsLeases = (clone $leaseQuery)
+            ->with(['tenantProfile.user', 'leaseable', 'installments'])
+            ->whereIn('status', ['active', 'expired'])
+            ->get()
+            ->filter(fn (Lease $lease) => $lease->balance_remaining > 0)
+            ->sortByDesc(fn (Lease $lease) => $lease->balance_remaining)
+            ->take(8)
+            ->values()
+            ->map(fn (Lease $lease) => [
+                'id' => $lease->id,
+                'code' => $lease->code,
+                'tenant' => $lease->tenantProfile?->user?->name,
+                'asset' => $lease->leaseable?->title_en,
+                'balance_remaining' => $lease->balance_remaining,
+                'currency' => $lease->currency,
+            ]);
+
+        $setupChecklist = [
+            ['label' => 'Create portfolio', 'done' => $user->hasRole('superadmin') ? Portfolio::query()->exists() : (bool) $user->portfolio_id, 'href' => '/portfolios'],
+            ['label' => 'Create users', 'done' => $stats['totalUsers'] > 1, 'href' => '/users'],
+            ['label' => 'Add assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets'],
+            ['label' => 'Add tenants', 'done' => (clone $this->scopeByPortfolio(TenantProfile::query(), $user))->exists(), 'href' => '/tenants'],
+            ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases'],
+            ['label' => 'Publish website', 'done' => CmsPage::query()->where('status', 'published')->exists(), 'href' => '/cms'],
+        ];
+
         return Inertia::render('dashboard', [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
             'stats' => $stats,
             'charts' => [
                 'occupancy' => $occupancy,
                 'paymentHealth' => $paymentHealth,
+                'assetMix' => $assetMix,
+                'maintenanceByStatus' => $maintenanceByStatus,
+            ],
+            'setupChecklist' => $setupChecklist,
+            'expiringLeases' => $expiringLeases,
+            'arrearsLeases' => $arrearsLeases,
+            'cmsStatus' => [
+                'published' => CmsPage::query()->where('status', 'published')->count(),
+                'draft' => CmsPage::query()->where('status', 'draft')->count(),
+                'homepage' => CmsPage::query()->where('is_homepage', true)->value('title_en'),
             ],
             'recentPayments' => (clone $paymentQuery)->with('tenantProfile.user')->latest('received_on')->limit(8)->get(),
             'recentMaintenance' => (clone $maintenanceQuery)->with('asset')->latest()->limit(8)->get(),

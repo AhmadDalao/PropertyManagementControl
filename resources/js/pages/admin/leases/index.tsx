@@ -1,10 +1,18 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState } from 'react';
+import type { FormEvent } from 'react';
 
+import { DataTable, exportUrl } from '@/components/data-table';
+import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
-import type { SharedProps } from '@/types';
+import type {
+    PaginatedData,
+    SharedProps,
+    TableCount,
+    TableFilters,
+} from '@/types';
 
 type LeaseRecord = {
     id: number;
@@ -26,10 +34,13 @@ type LeaseRecord = {
 };
 
 type PageProps = SharedProps & {
-    leases: LeaseRecord[];
+    leases: PaginatedData<LeaseRecord>;
+    filters: TableFilters;
+    counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
     tenantOptions: Array<{ id: number; user?: { name: string } }>;
     assetOptions: Array<{ id: number; title_en: string }>;
+    leaseOptions: Array<{ id: number; code: string }>;
 };
 
 export default function LeasesPage() {
@@ -41,7 +52,11 @@ export default function LeasesPage() {
     });
 
     const form = useForm({
-        portfolio_id: String(props.auth.user?.portfolio_id ?? props.portfolioOptions[0]?.id ?? ''),
+        portfolio_id: String(
+            props.auth.user?.portfolio_id ??
+                props.portfolioOptions[0]?.id ??
+                '',
+        ),
         tenant_profile_id: String(props.tenantOptions[0]?.id ?? ''),
         asset_id: String(props.assetOptions[0]?.id ?? ''),
         status: 'active',
@@ -59,31 +74,32 @@ export default function LeasesPage() {
         resync_installments: false,
     });
 
-    useEffect(() => {
-        if (!editing) {
-            form.reset();
-            return;
-        }
-
+    const startEditing = (lease: LeaseRecord) => {
         form.setData({
-            portfolio_id: String(editing.portfolio_id),
-            tenant_profile_id: String(editing.tenant_profile_id),
-            asset_id: String(editing.leaseable_id),
-            status: editing.status,
-            payment_frequency: editing.payment_frequency,
-            started_at: editing.started_at,
-            ends_at: editing.ends_at,
-            signed_at: editing.signed_at ?? '',
-            rent_amount: editing.rent_amount,
-            deposit_amount: editing.deposit_amount,
+            portfolio_id: String(lease.portfolio_id),
+            tenant_profile_id: String(lease.tenant_profile_id),
+            asset_id: String(lease.leaseable_id),
+            status: lease.status,
+            payment_frequency: lease.payment_frequency,
+            started_at: lease.started_at,
+            ends_at: lease.ends_at,
+            signed_at: lease.signed_at ?? '',
+            rent_amount: lease.rent_amount,
+            deposit_amount: lease.deposit_amount,
             tax_amount: 0,
             discount_amount: 0,
-            currency: editing.currency,
+            currency: lease.currency,
             billing_day: 1,
-            notes: editing.notes ?? '',
+            notes: lease.notes ?? '',
             resync_installments: false,
         });
-    }, [editing]);
+        setEditing(lease);
+    };
+
+    const clearEditing = () => {
+        setEditing(null);
+        form.reset();
+    };
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -91,8 +107,9 @@ export default function LeasesPage() {
         if (editing) {
             form.put(`/leases/${editing.id}`, {
                 preserveScroll: true,
-                onSuccess: () => setEditing(null),
+                onSuccess: clearEditing,
             });
+
             return;
         }
 
@@ -101,19 +118,63 @@ export default function LeasesPage() {
 
     const uploadSignedContract = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
         if (!signedContractLease) {
             return;
         }
 
-        signedContractForm.post(`/leases/${signedContractLease}/signed-contract`, {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                signedContractForm.reset();
-                setSignedContractLease('');
+        signedContractForm.post(
+            `/leases/${signedContractLease}/signed-contract`,
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    signedContractForm.reset();
+                    setSignedContractLease('');
+                },
             },
-        });
+        );
     };
+
+    const filterFields: TableFilterField[] = [
+        {
+            name: 'status',
+            label: 'Status',
+            options: [
+                { label: 'All', value: 'all' },
+                { label: 'Draft', value: 'draft' },
+                { label: 'Active', value: 'active' },
+                { label: 'Expired', value: 'expired' },
+                { label: 'Terminated', value: 'terminated' },
+            ],
+        },
+        {
+            name: 'payment_frequency',
+            label: 'Frequency',
+            options: [
+                { label: 'All', value: 'all' },
+                { label: 'Monthly', value: 'monthly' },
+                { label: 'Quarterly', value: 'quarterly' },
+                { label: 'Yearly', value: 'yearly' },
+            ],
+        },
+        { name: 'date_from', label: 'From', type: 'date' },
+        { name: 'date_to', label: 'To', type: 'date' },
+    ];
+
+    if (props.auth.user?.roles.includes('superadmin')) {
+        filterFields.push({
+            name: 'portfolio_id',
+            label: 'Portfolio',
+            options: [
+                { label: 'All', value: 'all' },
+                ...props.portfolioOptions.map((portfolio) => ({
+                    label: portfolio.name,
+                    value: portfolio.id,
+                })),
+            ],
+        });
+    }
 
     return (
         <AdminLayout>
@@ -128,16 +189,20 @@ export default function LeasesPage() {
                     <div className="pmc-card p-4 mb-4">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <div className="pmc-kicker mb-2">Lease form</div>
+                                <div className="pmc-kicker mb-2">
+                                    Lease form
+                                </div>
                                 <h2 className="h4 mb-0">
-                                    {editing ? `Edit ${editing.code}` : 'Create lease'}
+                                    {editing
+                                        ? `Edit ${editing.code}`
+                                        : 'Create lease'}
                                 </h2>
                             </div>
                             {editing ? (
                                 <button
                                     type="button"
                                     className="btn btn-outline-secondary btn-sm"
-                                    onClick={() => setEditing(null)}
+                                    onClick={clearEditing}
                                 >
                                     Reset
                                 </button>
@@ -147,46 +212,72 @@ export default function LeasesPage() {
                         <form className="d-grid gap-3" onSubmit={submit}>
                             {props.auth.user?.roles.includes('superadmin') ? (
                                 <div>
-                                    <label className="form-label pmc-form-label">Portfolio</label>
+                                    <label className="form-label pmc-form-label">
+                                        Portfolio
+                                    </label>
                                     <select
                                         className="form-select"
                                         value={form.data.portfolio_id}
                                         onChange={(event) =>
-                                            form.setData('portfolio_id', event.currentTarget.value)
+                                            form.setData(
+                                                'portfolio_id',
+                                                event.currentTarget.value,
+                                            )
                                         }
                                     >
-                                        {props.portfolioOptions.map((portfolio) => (
-                                            <option key={portfolio.id} value={portfolio.id}>
-                                                {portfolio.name}
-                                            </option>
-                                        ))}
+                                        {props.portfolioOptions.map(
+                                            (portfolio) => (
+                                                <option
+                                                    key={portfolio.id}
+                                                    value={portfolio.id}
+                                                >
+                                                    {portfolio.name}
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
                                 </div>
                             ) : null}
 
                             <div>
-                                <label className="form-label pmc-form-label">Tenant</label>
+                                <label className="form-label pmc-form-label">
+                                    Tenant
+                                </label>
                                 <select
                                     className="form-select"
                                     value={form.data.tenant_profile_id}
                                     onChange={(event) =>
-                                        form.setData('tenant_profile_id', event.currentTarget.value)
+                                        form.setData(
+                                            'tenant_profile_id',
+                                            event.currentTarget.value,
+                                        )
                                     }
                                 >
                                     {props.tenantOptions.map((tenant) => (
-                                        <option key={tenant.id} value={tenant.id}>
-                                            {tenant.user?.name ?? `Tenant #${tenant.id}`}
+                                        <option
+                                            key={tenant.id}
+                                            value={tenant.id}
+                                        >
+                                            {tenant.user?.name ??
+                                                `Tenant #${tenant.id}`}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
                             <div>
-                                <label className="form-label pmc-form-label">Asset</label>
+                                <label className="form-label pmc-form-label">
+                                    Asset
+                                </label>
                                 <select
                                     className="form-select"
                                     value={form.data.asset_id}
-                                    onChange={(event) => form.setData('asset_id', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'asset_id',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 >
                                     {props.assetOptions.map((asset) => (
                                         <option key={asset.id} value={asset.id}>
@@ -198,66 +289,106 @@ export default function LeasesPage() {
 
                             <div className="row g-3">
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Start</label>
+                                    <label className="form-label pmc-form-label">
+                                        Start
+                                    </label>
                                     <input
                                         type="date"
                                         className="form-control"
                                         value={form.data.started_at}
-                                        onChange={(event) => form.setData('started_at', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'started_at',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">End</label>
+                                    <label className="form-label pmc-form-label">
+                                        End
+                                    </label>
                                     <input
                                         type="date"
                                         className="form-control"
                                         value={form.data.ends_at}
-                                        onChange={(event) => form.setData('ends_at', event.currentTarget.value)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'ends_at',
+                                                event.currentTarget.value,
+                                            )
+                                        }
                                     />
                                 </div>
                             </div>
 
                             <div className="row g-3">
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Rent</label>
+                                    <label className="form-label pmc-form-label">
+                                        Rent
+                                    </label>
                                     <input
                                         type="number"
                                         className="form-control"
                                         value={form.data.rent_amount}
                                         onChange={(event) =>
-                                            form.setData('rent_amount', Number(event.currentTarget.value))
+                                            form.setData(
+                                                'rent_amount',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
                                         }
                                     />
                                 </div>
                                 <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Deposit</label>
+                                    <label className="form-label pmc-form-label">
+                                        Deposit
+                                    </label>
                                     <input
                                         type="number"
                                         className="form-control"
                                         value={form.data.deposit_amount}
                                         onChange={(event) =>
-                                            form.setData('deposit_amount', Number(event.currentTarget.value))
+                                            form.setData(
+                                                'deposit_amount',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
                                         }
                                     />
                                 </div>
                             </div>
 
-                            <button className="btn btn-primary" disabled={form.processing}>
+                            <button
+                                className="btn btn-primary"
+                                disabled={form.processing}
+                            >
                                 {editing ? 'Update lease' : 'Create lease'}
                             </button>
                         </form>
                     </div>
 
                     <div className="pmc-card p-4">
-                        <div className="pmc-kicker mb-2">Signed contract upload</div>
-                        <form className="d-grid gap-3" onSubmit={uploadSignedContract}>
+                        <div className="pmc-kicker mb-2">
+                            Signed contract upload
+                        </div>
+                        <form
+                            className="d-grid gap-3"
+                            onSubmit={uploadSignedContract}
+                        >
                             <select
                                 className="form-select"
                                 value={signedContractLease}
-                                onChange={(event) => setSignedContractLease(event.currentTarget.value)}
+                                onChange={(event) =>
+                                    setSignedContractLease(
+                                        event.currentTarget.value,
+                                    )
+                                }
                             >
                                 <option value="">Choose lease</option>
-                                {props.leases.map((lease) => (
+                                {props.leaseOptions.map((lease) => (
                                     <option key={lease.id} value={lease.id}>
                                         {lease.code}
                                     </option>
@@ -273,7 +404,10 @@ export default function LeasesPage() {
                                     )
                                 }
                             />
-                            <button className="btn btn-outline-secondary" disabled={signedContractForm.processing}>
+                            <button
+                                className="btn btn-outline-secondary"
+                                disabled={signedContractForm.processing}
+                            >
                                 Upload signed contract
                             </button>
                         </form>
@@ -282,52 +416,112 @@ export default function LeasesPage() {
 
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
-                        <div className="table-responsive">
-                            <table className="table pmc-table">
-                                <thead>
-                                    <tr>
-                                        <th>Lease</th>
-                                        <th>Tenant</th>
-                                        <th>Period</th>
-                                        <th>Rent</th>
-                                        <th />
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {props.leases.map((lease) => (
-                                        <tr key={lease.id}>
-                                            <td>
-                                                <div className="fw-semibold">{lease.code}</div>
-                                                <span className="pmc-chip pmc-chip--primary">{lease.status}</span>
-                                            </td>
-                                            <td>{lease.tenant_profile?.user?.name ?? '-'}</td>
-                                            <td>
-                                                {humanDate(lease.started_at, props.app.locale)} to{' '}
-                                                {humanDate(lease.ends_at, props.app.locale)}
-                                            </td>
-                                            <td>{currency(lease.rent_amount, props.app.locale, lease.currency)}</td>
-                                            <td className="text-end">
-                                                <div className="d-flex justify-content-end gap-2">
-                                                    <a href={`/leases/${lease.id}/contract`} className="btn btn-outline-secondary btn-sm">
-                                                        Contract
-                                                    </a>
-                                                    <a href={`/leases/${lease.id}/statement`} className="btn btn-outline-secondary btn-sm">
-                                                        Statement
-                                                    </a>
-                                                    <button
-                                                        type="button"
-                                                        className="btn btn-primary btn-sm"
-                                                        onClick={() => setEditing(lease)}
-                                                    >
-                                                        Edit
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            title="Lease lifecycle"
+                            description="Search lease codes, tenants, or rented assets."
+                            data={props.leases}
+                            filters={props.filters}
+                            counts={props.counts}
+                            basePath="/leases"
+                            exportHref={exportUrl(
+                                '/exports/leases',
+                                props.filters,
+                            )}
+                            filterFields={filterFields}
+                            columns={[
+                                {
+                                    key: 'lease',
+                                    label: 'Lease',
+                                    render: (lease) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {lease.code}
+                                            </div>
+                                            <span className="pmc-chip pmc-chip--primary mt-2">
+                                                {lease.status}
+                                            </span>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'tenant',
+                                    label: 'Tenant',
+                                    render: (lease) => (
+                                        <>
+                                            <div>
+                                                {lease.tenant_profile?.user
+                                                    ?.name ?? '-'}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {lease.leaseable?.title_en ??
+                                                    '-'}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'period',
+                                    label: 'Period',
+                                    render: (lease) => (
+                                        <>
+                                            <div>
+                                                {humanDate(
+                                                    lease.started_at,
+                                                    props.app.locale,
+                                                )}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                to{' '}
+                                                {humanDate(
+                                                    lease.ends_at,
+                                                    props.app.locale,
+                                                )}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'rent',
+                                    label: 'Rent',
+                                    render: (lease) =>
+                                        currency(
+                                            lease.rent_amount,
+                                            props.app.locale,
+                                            lease.currency,
+                                        ),
+                                },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (lease) => (
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <a
+                                                href={`/leases/${lease.id}/contract`}
+                                                className="btn btn-outline-secondary btn-sm"
+                                            >
+                                                Contract
+                                            </a>
+                                            <a
+                                                href={`/leases/${lease.id}/statement`}
+                                                className="btn btn-outline-secondary btn-sm"
+                                            >
+                                                Statement
+                                            </a>
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary btn-sm"
+                                                onClick={() =>
+                                                    startEditing(lease)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                        </div>
+                                    ),
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>

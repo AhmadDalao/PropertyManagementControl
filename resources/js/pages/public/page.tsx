@@ -22,7 +22,8 @@ type PageProps = SharedProps & {
 
 export default function PublicPage() {
     const { props } = usePage<PageProps>();
-    const title = props.app.locale === 'ar' ? props.page.title_ar : props.page.title_en;
+    const title =
+        props.app.locale === 'ar' ? props.page.title_ar : props.page.title_en;
 
     return (
         <PublicLayout>

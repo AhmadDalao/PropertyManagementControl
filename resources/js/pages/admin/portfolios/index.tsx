@@ -1,9 +1,15 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
-import { useEffect, useState, type FormEvent } from 'react';
+import type { FormEvent } from 'react';
 
+import { DataTable, exportUrl } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
-import type { SharedProps } from '@/types';
+import type {
+    PaginatedData,
+    SharedProps,
+    TableCount,
+    TableFilters,
+} from '@/types';
 
 type PortfolioRecord = {
     id: number;
@@ -11,24 +17,23 @@ type PortfolioRecord = {
     name_ar: string;
     code: string;
     status: string;
-    contact_email?: string | null;
-    contact_phone?: string | null;
     city?: string | null;
     country?: string | null;
-    address?: string | null;
-    default_currency: string;
-    module_settings?: Record<string, boolean> | null;
-    users?: Array<{ id: number }>;
+    contact_email?: string | null;
+    users_count?: number;
+    assets_count?: number;
+    leases_count?: number;
 };
 
 type PageProps = SharedProps & {
-    portfolios: PortfolioRecord[];
+    portfolios: PaginatedData<PortfolioRecord>;
+    filters: TableFilters;
+    counts: TableCount[];
     canCreate: boolean;
 };
 
 export default function PortfoliosPage() {
     const { props } = usePage<PageProps>();
-    const [editing, setEditing] = useState<PortfolioRecord | null>(null);
     const form = useForm({
         name_en: '',
         name_ar: '',
@@ -42,40 +47,9 @@ export default function PortfoliosPage() {
         status: 'active',
     });
 
-    useEffect(() => {
-        if (!editing) {
-            form.reset();
-            return;
-        }
-
-        form.setData({
-            name_en: editing.name_en,
-            name_ar: editing.name_ar,
-            code: editing.code,
-            contact_email: editing.contact_email ?? '',
-            contact_phone: editing.contact_phone ?? '',
-            city: editing.city ?? '',
-            country: editing.country ?? 'Saudi Arabia',
-            address: editing.address ?? '',
-            default_currency: editing.default_currency ?? 'SAR',
-            status: editing.status,
-        });
-    }, [editing]);
-
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
-        if (editing) {
-            form.put(`/portfolios/${editing.id}`, {
-                preserveScroll: true,
-                onSuccess: () => setEditing(null),
-            });
-            return;
-        }
-
-        form.post('/portfolios', {
-            preserveScroll: true,
-        });
+        form.post('/portfolios', { preserveScroll: true });
     };
 
     return (
@@ -83,158 +57,206 @@ export default function PortfoliosPage() {
             <Head title="Portfolios" />
             <PageHeader
                 title="Portfolios"
-                description="Control portfolio identity, contact details, and enabled modules."
+                description="Client account boundaries for owners, managers, assets, leases, and reporting."
             />
 
             <div className="row g-4">
                 <div className="col-xl-4">
                     <div className="pmc-card p-4">
-                        <div className="d-flex justify-content-between align-items-center mb-3">
-                            <div>
-                                <div className="pmc-kicker mb-2">Portfolio form</div>
-                                <h2 className="h4 mb-0">
-                                    {editing ? `Edit ${editing.name_en}` : 'Create portfolio'}
-                                </h2>
-                            </div>
-                            {editing ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-outline-secondary btn-sm"
-                                    onClick={() => setEditing(null)}
-                                >
-                                    Reset
-                                </button>
-                            ) : null}
-                        </div>
-
-                        <form className="d-grid gap-3" onSubmit={submit}>
-                            <div>
-                                <label className="form-label pmc-form-label">English name</label>
+                        <div className="pmc-kicker mb-2">Portfolio form</div>
+                        <h2 className="h4 mb-3">Create portfolio</h2>
+                        {props.canCreate ? (
+                            <form className="d-grid gap-3" onSubmit={submit}>
                                 <input
                                     className="form-control"
+                                    placeholder="English name"
                                     value={form.data.name_en}
-                                    onChange={(event) => form.setData('name_en', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'name_en',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
-                            </div>
-                            <div>
-                                <label className="form-label pmc-form-label">Arabic name</label>
                                 <input
                                     className="form-control"
+                                    placeholder="Arabic name"
                                     value={form.data.name_ar}
-                                    onChange={(event) => form.setData('name_ar', event.currentTarget.value)}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'name_ar',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
-                            </div>
-                            {props.canCreate ? (
-                                <div>
-                                    <label className="form-label pmc-form-label">Code</label>
-                                    <input
-                                        className="form-control"
-                                        value={form.data.code}
-                                        onChange={(event) => form.setData('code', event.currentTarget.value)}
-                                    />
-                                </div>
-                            ) : null}
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Email</label>
-                                    <input
-                                        className="form-control"
-                                        value={form.data.contact_email}
-                                        onChange={(event) =>
-                                            form.setData('contact_email', event.currentTarget.value)
-                                        }
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Phone</label>
-                                    <input
-                                        className="form-control"
-                                        value={form.data.contact_phone}
-                                        onChange={(event) =>
-                                            form.setData('contact_phone', event.currentTarget.value)
-                                        }
-                                    />
-                                </div>
-                            </div>
-                            <div className="row g-3">
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">City</label>
-                                    <input
-                                        className="form-control"
-                                        value={form.data.city}
-                                        onChange={(event) => form.setData('city', event.currentTarget.value)}
-                                    />
-                                </div>
-                                <div className="col-md-6">
-                                    <label className="form-label pmc-form-label">Status</label>
-                                    <select
-                                        className="form-select"
-                                        value={form.data.status}
-                                        onChange={(event) => form.setData('status', event.currentTarget.value)}
-                                    >
-                                        <option value="active">Active</option>
-                                        <option value="inactive">Inactive</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div>
-                                <label className="form-label pmc-form-label">Address</label>
-                                <textarea
+                                <input
                                     className="form-control"
-                                    rows={3}
-                                    value={form.data.address}
-                                    onChange={(event) => form.setData('address', event.currentTarget.value)}
+                                    placeholder="Code"
+                                    value={form.data.code}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'code',
+                                            event.currentTarget.value,
+                                        )
+                                    }
                                 />
-                            </div>
-                            <button className="btn btn-primary" disabled={form.processing}>
-                                {editing ? 'Update portfolio' : 'Create portfolio'}
-                            </button>
-                        </form>
+                                <div className="row g-3">
+                                    <div className="col-md-6">
+                                        <input
+                                            className="form-control"
+                                            placeholder="City"
+                                            value={form.data.city}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'city',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <select
+                                            className="form-select"
+                                            value={form.data.status}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'status',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        >
+                                            <option value="active">
+                                                Active
+                                            </option>
+                                            <option value="inactive">
+                                                Inactive
+                                            </option>
+                                            <option value="archived">
+                                                Archived
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <input
+                                    className="form-control"
+                                    placeholder="Contact email"
+                                    value={form.data.contact_email}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'contact_email',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                                <button
+                                    className="btn btn-primary"
+                                    disabled={form.processing}
+                                >
+                                    Create portfolio
+                                </button>
+                            </form>
+                        ) : (
+                            <p className="text-secondary mb-0">
+                                Portfolio creation is restricted to the system
+                                owner. You can still view your assigned
+                                portfolio records.
+                            </p>
+                        )}
                     </div>
                 </div>
 
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
-                        <div className="pmc-kicker mb-2">Portfolio list</div>
-                        <div className="table-responsive">
-                            <table className="table pmc-table">
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Code</th>
-                                        <th>Users</th>
-                                        <th>Status</th>
-                                        <th />
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {props.portfolios.map((portfolio) => (
-                                        <tr key={portfolio.id}>
-                                            <td>
-                                                <div className="fw-semibold">{portfolio.name_en}</div>
-                                                <div className="small text-secondary">{portfolio.name_ar}</div>
-                                            </td>
-                                            <td>{portfolio.code}</td>
-                                            <td>{portfolio.users?.length ?? 0}</td>
-                                            <td>
-                                                <span className="pmc-chip pmc-chip--primary">
-                                                    {portfolio.status}
-                                                </span>
-                                            </td>
-                                            <td className="text-end">
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-outline-secondary btn-sm"
-                                                    onClick={() => setEditing(portfolio)}
-                                                >
-                                                    Edit
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            title="All portfolios"
+                            description="Search by name, code, contact, city, or country."
+                            data={props.portfolios}
+                            filters={props.filters}
+                            counts={props.counts}
+                            basePath="/portfolios"
+                            exportHref={exportUrl(
+                                '/exports/portfolios',
+                                props.filters,
+                            )}
+                            filterFields={[
+                                {
+                                    name: 'status',
+                                    label: 'Status',
+                                    options: [
+                                        { label: 'All', value: 'all' },
+                                        { label: 'Active', value: 'active' },
+                                        {
+                                            label: 'Inactive',
+                                            value: 'inactive',
+                                        },
+                                        {
+                                            label: 'Archived',
+                                            value: 'archived',
+                                        },
+                                    ],
+                                },
+                            ]}
+                            columns={[
+                                {
+                                    key: 'portfolio',
+                                    label: 'Portfolio',
+                                    render: (portfolio) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {portfolio.name_en}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {portfolio.name_ar}
+                                            </div>
+                                            <span className="pmc-chip mt-2">
+                                                {portfolio.code}
+                                            </span>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'location',
+                                    label: 'Location',
+                                    render: (portfolio) => (
+                                        <>
+                                            <div>{portfolio.city ?? '-'}</div>
+                                            <div className="small text-secondary">
+                                                {portfolio.country ?? '-'}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'activity',
+                                    label: 'Activity',
+                                    render: (portfolio) => (
+                                        <div className="d-flex gap-2 flex-wrap">
+                                            <span className="pmc-chip pmc-chip--teal">
+                                                {portfolio.assets_count ?? 0}{' '}
+                                                assets
+                                            </span>
+                                            <span className="pmc-chip">
+                                                {portfolio.users_count ?? 0}{' '}
+                                                users
+                                            </span>
+                                            <span className="pmc-chip">
+                                                {portfolio.leases_count ?? 0}{' '}
+                                                leases
+                                            </span>
+                                        </div>
+                                    ),
+                                },
+                                {
+                                    key: 'status',
+                                    label: 'Status',
+                                    render: (portfolio) => (
+                                        <span className="pmc-chip pmc-chip--primary">
+                                            {portfolio.status}
+                                        </span>
+                                    ),
+                                },
+                            ]}
+                        />
                     </div>
                 </div>
             </div>
