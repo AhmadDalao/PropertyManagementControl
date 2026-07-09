@@ -5,7 +5,6 @@ import type { FormEvent } from 'react';
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
-import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
 import type {
@@ -99,6 +98,7 @@ export default function DocumentsPage() {
         props,
         defaultAttachmentType,
     )[0];
+    const documentInsights = insightFromCounts(props.counts);
     const defaultPortfolioId = String(
         isSuperadmin
             ? (defaultAttachment?.portfolio_id ??
@@ -235,10 +235,93 @@ export default function DocumentsPage() {
     return (
         <AdminLayout>
             <Head title="Documents" />
-            <PageHeader
-                title="Documents"
-                description="Upload, classify, attach, search, export, and remove contracts, receipts, tenant statements, and portfolio evidence."
-            />
+
+            <section className="pmc-document-command">
+                <div>
+                    <div className="pmc-kicker mb-3">
+                        Contract and signoff control
+                    </div>
+                    <h1>
+                        Keep every contract, receipt, and signed file attached.
+                    </h1>
+                    <p>
+                        Documents are not a loose file cabinet. Each upload is
+                        tied to a lease, asset, or payment so owners can audit
+                        it and tenants only see files they are allowed to
+                        download.
+                    </p>
+                    <div className="pmc-document-command-meta">
+                        <span>
+                            <i className="bi bi-file-earmark-lock" />
+                            Private by default
+                        </span>
+                        <span>
+                            <i className="bi bi-person-check" />
+                            Tenant lease access scoped
+                        </span>
+                        <span>
+                            <i className="bi bi-download" />
+                            CSV export ready
+                        </span>
+                    </div>
+                </div>
+
+                <div className="pmc-document-insight-card">
+                    <div>
+                        <span>Total documents</span>
+                        <strong>{documentInsights.total}</strong>
+                    </div>
+                    <div className="pmc-document-insight-grid">
+                        <DocumentInsight
+                            label="Contracts"
+                            value={documentInsights.contracts}
+                        />
+                        <DocumentInsight
+                            label="Signed"
+                            value={documentInsights.signed}
+                        />
+                        <DocumentInsight
+                            label="Receipts"
+                            value={documentInsights.receipts}
+                        />
+                        <DocumentInsight
+                            label="Portal visible"
+                            value={documentInsights.public}
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section className="pmc-document-workflow">
+                {[
+                    {
+                        icon: 'bi-file-earmark-text',
+                        title: 'Generate contract',
+                        body: 'Create the lease, generate the contract PDF, then keep it attached to the lease.',
+                    },
+                    {
+                        icon: 'bi-pen',
+                        title: 'Upload signed copy',
+                        body: 'Store the signed contract separately instead of overwriting generated files.',
+                    },
+                    {
+                        icon: 'bi-receipt',
+                        title: 'Attach receipts',
+                        body: 'Connect receipts to payments so balances and documents agree.',
+                    },
+                    {
+                        icon: 'bi-eye',
+                        title: 'Control visibility',
+                        body: 'Mark portal-visible only when the tenant should see the document.',
+                    },
+                ].map((item) => (
+                    <div key={item.title}>
+                        <i className={`bi ${item.icon}`} />
+                        <strong>{item.title}</strong>
+                        <span>{item.body}</span>
+                    </div>
+                ))}
+            </section>
 
             <div className="row g-4">
                 <div className="col-xl-4">
@@ -277,6 +360,19 @@ export default function DocumentsPage() {
                         ) : null}
 
                         <form className="d-grid gap-3" onSubmit={submit}>
+                            <div className="pmc-document-form-guide">
+                                <i className="bi bi-shield-check" />
+                                <div>
+                                    <strong>Upload rule</strong>
+                                    <span>
+                                        Contracts belong on leases, ownership
+                                        proof belongs on assets, and receipts
+                                        belong on payments. That keeps audits
+                                        clean.
+                                    </span>
+                                </div>
+                            </div>
+
                             {isSuperadmin ? (
                                 <div>
                                     <label className="form-label pmc-form-label">
@@ -406,28 +502,38 @@ export default function DocumentsPage() {
                                 ) : null}
                             </div>
 
-                            <input
-                                className="form-control"
-                                placeholder="English title"
-                                value={form.data.title_en}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'title_en',
-                                        event.currentTarget.value,
-                                    )
-                                }
-                            />
-                            <input
-                                className="form-control"
-                                placeholder="Arabic title"
-                                value={form.data.title_ar}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'title_ar',
-                                        event.currentTarget.value,
-                                    )
-                                }
-                            />
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    English title
+                                </label>
+                                <input
+                                    className="form-control"
+                                    placeholder="Signed contract - Unit A12"
+                                    value={form.data.title_en}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'title_en',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    Arabic title
+                                </label>
+                                <input
+                                    className="form-control"
+                                    placeholder="العقد الموقع - الوحدة A12"
+                                    value={form.data.title_ar}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'title_ar',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </div>
 
                             <label className="pmc-checkbox-row">
                                 <input
@@ -448,18 +554,25 @@ export default function DocumentsPage() {
                             </label>
 
                             {!editing ? (
-                                <input
-                                    type="file"
-                                    className="form-control"
-                                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'file',
-                                            event.currentTarget.files?.[0] ??
-                                                null,
-                                        )
-                                    }
-                                />
+                                <label className="pmc-document-dropzone">
+                                    <i className="bi bi-cloud-arrow-up" />
+                                    <span>
+                                        {form.data.file?.name ??
+                                            'Choose PDF, Word, JPG, or PNG'}
+                                    </span>
+                                    <small>Maximum upload size: 10 MB</small>
+                                    <input
+                                        type="file"
+                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'file',
+                                                event.currentTarget
+                                                    .files?.[0] ?? null,
+                                            )
+                                        }
+                                    />
+                                </label>
                             ) : (
                                 <p className="small text-secondary mb-0">
                                     File replacement is disabled. Upload a new
@@ -616,6 +729,15 @@ export default function DocumentsPage() {
     );
 }
 
+function DocumentInsight({ label, value }: { label: string; value: number }) {
+    return (
+        <div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+        </div>
+    );
+}
+
 function firstAvailableAttachmentType(props: PageProps): string {
     if (props.leaseOptions.length > 0) {
         return 'lease';
@@ -626,6 +748,19 @@ function firstAvailableAttachmentType(props: PageProps): string {
     }
 
     return 'payment';
+}
+
+function insightFromCounts(counts: TableCount[]) {
+    const valueFor = (label: string) =>
+        counts.find((count) => count.label === label)?.value ?? 0;
+
+    return {
+        total: valueFor('All'),
+        contracts: valueFor('Lease contracts'),
+        signed: valueFor('Signed'),
+        receipts: valueFor('Receipts'),
+        public: valueFor('Public'),
+    };
 }
 
 function attachmentOptionsForType(
