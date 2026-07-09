@@ -7,7 +7,7 @@ import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
-import { humanDate } from '@/lib/utils';
+import { currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -18,14 +18,35 @@ import type {
 type RequestRecord = {
     id: number;
     title: string;
+    description: string;
     status: string;
     category: string;
     priority: string;
     created_at: string;
+    requested_at?: string | null;
+    due_at?: string | null;
+    resolved_at?: string | null;
     assigned_to_user_id?: number | null;
+    assigned_to?: { id: number; name: string } | null;
     internal_notes?: string | null;
-    asset?: { title_en: string };
-    tenant_profile?: { user?: { name: string } };
+    asset?: { id: number; title_en: string; code?: string | null } | null;
+    tenant_profile?: {
+        id?: number | null;
+        user?: { name?: string | null; email?: string | null };
+    };
+    expense_total: number;
+    expense_count: number;
+    updates: MaintenanceUpdateRecord[];
+};
+
+type MaintenanceUpdateRecord = {
+    id: number;
+    user?: string | null;
+    status_from?: string | null;
+    status_to?: string | null;
+    is_public_comment: boolean;
+    comment?: string | null;
+    created_at?: string | null;
 };
 
 type PageProps = SharedProps & {
@@ -42,6 +63,9 @@ type PageProps = SharedProps & {
 export default function MaintenancePage() {
     const { props } = usePage<PageProps>();
     const [editing, setEditing] = useState<RequestRecord | null>(null);
+    const [selectedRequestId, setSelectedRequestId] = useState<number | null>(
+        null,
+    );
 
     const tenantForm = useForm({
         asset_id: String(props.assetOptions[0]?.id ?? ''),
@@ -62,6 +86,11 @@ export default function MaintenancePage() {
         description: '',
         internal_notes: '',
         comment: '',
+        is_public_comment: false,
+    });
+
+    const commentForm = useForm({
+        comment: '',
     });
 
     const startTriage = (requestItem: RequestRecord) => {
@@ -78,8 +107,10 @@ export default function MaintenancePage() {
             description: '',
             internal_notes: requestItem.internal_notes ?? '',
             comment: '',
+            is_public_comment: false,
         });
         setEditing(requestItem);
+        setSelectedRequestId(requestItem.id);
     };
 
     const clearTriage = () => {
@@ -106,6 +137,26 @@ export default function MaintenancePage() {
         }
 
         managerForm.post('/maintenance-requests', { preserveScroll: true });
+    };
+
+    const selectedRequest =
+        props.requests.data.find(
+            (request) => request.id === selectedRequestId,
+        ) ??
+        props.requests.data[0] ??
+        null;
+
+    const submitTenantComment = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!selectedRequest || props.mode !== 'tenant') {
+            return;
+        }
+
+        commentForm.put(`/maintenance-requests/${selectedRequest.id}`, {
+            preserveScroll: true,
+            onSuccess: () => commentForm.reset(),
+        });
     };
 
     const filterFields: TableFilterField[] = [
@@ -293,6 +344,25 @@ export default function MaintenancePage() {
                                             )
                                         }
                                     />
+                                    <label className="form-check">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            checked={
+                                                managerForm.data
+                                                    .is_public_comment
+                                            }
+                                            onChange={(event) =>
+                                                managerForm.setData(
+                                                    'is_public_comment',
+                                                    event.currentTarget.checked,
+                                                )
+                                            }
+                                        />
+                                        <span className="form-check-label">
+                                            Share update with tenant
+                                        </span>
+                                    </label>
                                 </>
                             ) : (
                                 <>
@@ -544,6 +614,21 @@ export default function MaintenancePage() {
                 </div>
 
                 <div className="col-xl-8">
+                    {selectedRequest ? (
+                        <MaintenanceDetailPanel
+                            mode={props.mode}
+                            requestItem={selectedRequest}
+                            locale={props.app.locale}
+                            comment={commentForm.data.comment}
+                            commentProcessing={commentForm.processing}
+                            onCommentChange={(value) =>
+                                commentForm.setData('comment', value)
+                            }
+                            onCommentSubmit={submitTenantComment}
+                            onTriage={() => startTriage(selectedRequest)}
+                        />
+                    ) : null}
+
                     <div className="pmc-card p-4">
                         <DataTable
                             title="Maintenance queue"
@@ -574,6 +659,13 @@ export default function MaintenancePage() {
                                             <div className="small text-secondary">
                                                 {requestItem.category}
                                             </div>
+                                            <div className="small text-secondary">
+                                                Due{' '}
+                                                {humanDate(
+                                                    requestItem.due_at,
+                                                    props.app.locale,
+                                                )}
+                                            </div>
                                         </>
                                     ),
                                 },
@@ -589,6 +681,25 @@ export default function MaintenancePage() {
                                             <div className="small text-secondary">
                                                 {requestItem.tenant_profile
                                                     ?.user?.name ?? ''}
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'assignment',
+                                    label: 'Assignment',
+                                    render: (requestItem) => (
+                                        <>
+                                            <div>
+                                                {requestItem.assigned_to
+                                                    ?.name ?? 'Unassigned'}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {currency(
+                                                    requestItem.expense_total,
+                                                    props.app.locale,
+                                                )}{' '}
+                                                cost
                                             </div>
                                         </>
                                     ),
@@ -626,6 +737,17 @@ export default function MaintenancePage() {
                                     className: 'text-end',
                                     render: (requestItem) => (
                                         <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    setSelectedRequestId(
+                                                        requestItem.id,
+                                                    )
+                                                }
+                                            >
+                                                Details
+                                            </button>
                                             {props.mode === 'manager' ? (
                                                 <button
                                                     type="button"
@@ -660,5 +782,168 @@ export default function MaintenancePage() {
                 </div>
             </div>
         </AdminLayout>
+    );
+}
+
+function MaintenanceDetailPanel({
+    mode,
+    requestItem,
+    locale,
+    comment,
+    commentProcessing,
+    onCommentChange,
+    onCommentSubmit,
+    onTriage,
+}: {
+    mode: 'tenant' | 'manager';
+    requestItem: RequestRecord;
+    locale: 'en' | 'ar';
+    comment: string;
+    commentProcessing: boolean;
+    onCommentChange: (value: string) => void;
+    onCommentSubmit: (event: FormEvent<HTMLFormElement>) => void;
+    onTriage: () => void;
+}) {
+    return (
+        <section className="pmc-card p-4 mb-4 pmc-maintenance-control-panel">
+            <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                <div>
+                    <div className="pmc-kicker mb-2">Selected request</div>
+                    <h2 className="h4 mb-1">
+                        #{requestItem.id} {requestItem.title}
+                    </h2>
+                    <p className="text-secondary mb-0">
+                        {requestItem.asset?.title_en ?? 'No asset'} ·{' '}
+                        {requestItem.tenant_profile?.user?.name ?? 'No tenant'}
+                    </p>
+                </div>
+                {mode === 'manager' ? (
+                    <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={onTriage}
+                    >
+                        Triage request
+                    </button>
+                ) : null}
+            </div>
+
+            <div className="pmc-maintenance-kpi-grid">
+                <MaintenanceKpi
+                    label="Status"
+                    value={requestItem.status.replaceAll('_', ' ')}
+                    detail={requestItem.priority}
+                />
+                <MaintenanceKpi
+                    label="Due"
+                    value={humanDate(requestItem.due_at, locale)}
+                    detail={`Requested ${humanDate(requestItem.requested_at, locale)}`}
+                />
+                <MaintenanceKpi
+                    label="Assigned"
+                    value={requestItem.assigned_to?.name ?? 'Unassigned'}
+                    detail={requestItem.category}
+                />
+                <MaintenanceKpi
+                    label="Cost"
+                    value={currency(requestItem.expense_total, locale)}
+                    detail={`${requestItem.expense_count} expense entries`}
+                />
+            </div>
+
+            <div className="row g-4 mt-1">
+                <div className="col-lg-6">
+                    <div className="pmc-kicker mb-2">Description</div>
+                    <p className="text-secondary mb-3">
+                        {requestItem.description}
+                    </p>
+                    {mode === 'manager' && requestItem.internal_notes ? (
+                        <div className="pmc-maintenance-note">
+                            <strong>Internal notes</strong>
+                            <span>{requestItem.internal_notes}</span>
+                        </div>
+                    ) : null}
+                    {mode === 'tenant' &&
+                    !['resolved', 'cancelled'].includes(requestItem.status) ? (
+                        <form
+                            className="d-grid gap-2 mt-3"
+                            onSubmit={onCommentSubmit}
+                        >
+                            <label className="form-label pmc-form-label">
+                                Add update for owner
+                            </label>
+                            <textarea
+                                className="form-control"
+                                rows={3}
+                                value={comment}
+                                onChange={(event) =>
+                                    onCommentChange(event.currentTarget.value)
+                                }
+                                placeholder="Add a photo note, access instruction, or extra detail..."
+                            />
+                            <button
+                                className="btn btn-primary btn-sm justify-self-start"
+                                disabled={commentProcessing}
+                            >
+                                Add comment
+                            </button>
+                        </form>
+                    ) : null}
+                </div>
+                <div className="col-lg-6">
+                    <div className="pmc-kicker mb-2">Timeline</div>
+                    <div className="pmc-maintenance-timeline">
+                        {requestItem.updates.length > 0 ? (
+                            requestItem.updates.map((update) => (
+                                <div key={update.id}>
+                                    <span />
+                                    <div>
+                                        <strong>
+                                            {update.status_to ??
+                                                requestItem.status}
+                                            {update.is_public_comment
+                                                ? ' · public'
+                                                : mode === 'manager'
+                                                  ? ' · internal'
+                                                  : ''}
+                                        </strong>
+                                        <p>{update.comment ?? 'Updated.'}</p>
+                                        <small>
+                                            {update.user ?? 'System'} ·{' '}
+                                            {humanDate(
+                                                update.created_at,
+                                                locale,
+                                            )}
+                                        </small>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="pmc-inline-empty">
+                                No updates recorded yet.
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function MaintenanceKpi({
+    label,
+    value,
+    detail,
+}: {
+    label: string;
+    value: string;
+    detail: string;
+}) {
+    return (
+        <div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{detail}</small>
+        </div>
     );
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceUpdate;
 use App\Models\TenantProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -35,7 +36,7 @@ class MaintenanceRequestController extends Controller
                     fn ($query) => $query->where('tenant_profile_id', $tenantProfile->id),
                     fn ($query) => $query->whereRaw('1 = 0')
                 );
-            $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user']);
+            $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user', 'expenses']);
 
             $this->applyExactFilter($requests, $filters, 'status');
             $this->applyExactFilter($requests, $filters, 'category');
@@ -51,15 +52,17 @@ class MaintenanceRequestController extends Controller
                 ),
             ]);
 
+            $paginatedRequests = $this->paginateTable($requests, $request, $filters, [
+                'created_at',
+                'requested_at',
+                'status',
+                'priority',
+                'category',
+            ])->through(fn (MaintenanceRequest $maintenanceRequest) => $this->maintenanceTableRow($maintenanceRequest, true));
+
             return Inertia::render('admin/maintenance/index', [
                 'mode' => 'tenant',
-                'requests' => $this->paginateTable($requests, $request, $filters, [
-                    'created_at',
-                    'requested_at',
-                    'status',
-                    'priority',
-                    'category',
-                ]),
+                'requests' => $paginatedRequests,
                 'filters' => $filters,
                 'counts' => $this->statusCounts($baseQuery, ['open', 'in_progress', 'resolved', 'cancelled'], $filters),
                 'assetOptions' => $tenantProfile?->leases->map(fn ($lease) => $lease->leaseable)->filter()->values() ?? [],
@@ -69,7 +72,7 @@ class MaintenanceRequestController extends Controller
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $baseQuery = $this->scopeByPortfolio(MaintenanceRequest::query(), $actor);
-        $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user']);
+        $requests = (clone $baseQuery)->with(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user', 'expenses']);
 
         $this->applyExactFilter($requests, $filters, 'portfolio_id');
         $this->applyExactFilter($requests, $filters, 'status');
@@ -95,15 +98,17 @@ class MaintenanceRequestController extends Controller
             ),
         ]);
 
+        $paginatedRequests = $this->paginateTable($requests, $request, $filters, [
+            'created_at',
+            'requested_at',
+            'status',
+            'priority',
+            'category',
+        ])->through(fn (MaintenanceRequest $maintenanceRequest) => $this->maintenanceTableRow($maintenanceRequest, false));
+
         return Inertia::render('admin/maintenance/index', [
             'mode' => 'manager',
-            'requests' => $this->paginateTable($requests, $request, $filters, [
-                'created_at',
-                'requested_at',
-                'status',
-                'priority',
-                'category',
-            ]),
+            'requests' => $paginatedRequests,
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['open', 'in_progress', 'resolved', 'cancelled'], $filters),
             'assetOptions' => $this->scopeByPortfolio(Asset::query(), $actor)->get(),
@@ -149,6 +154,7 @@ class MaintenanceRequestController extends Controller
                 'title' => $data['title'],
                 'description' => $data['description'],
                 'requested_at' => now(),
+                'due_at' => $this->dueAtForPriority($data['priority']),
             ]);
 
             $requestItem->updates()->create([
@@ -180,7 +186,7 @@ class MaintenanceRequestController extends Controller
         $this->ensurePortfolioAccess($actor, $portfolioId);
         $this->ensureMaintenanceReferencesBelongToPortfolio($data, $portfolioId);
 
-        MaintenanceRequest::query()->create([
+        $requestItem = MaintenanceRequest::query()->create([
             'portfolio_id' => $portfolioId,
             'asset_id' => $data['asset_id'],
             'tenant_profile_id' => $data['tenant_profile_id'],
@@ -193,6 +199,15 @@ class MaintenanceRequestController extends Controller
             'description' => $data['description'],
             'internal_notes' => $data['internal_notes'] ?? null,
             'requested_at' => now(),
+            'due_at' => $this->dueAtForPriority($data['priority']),
+            'resolved_at' => $data['status'] === 'resolved' ? now() : null,
+        ]);
+
+        $requestItem->updates()->create([
+            'user_id' => $actor->id,
+            'status_to' => $data['status'],
+            'is_public_comment' => false,
+            'comment' => 'Maintenance request created by management.',
         ]);
 
         return to_route('maintenance-requests.index')->with('success', 'Maintenance request created.');
@@ -229,25 +244,34 @@ class MaintenanceRequestController extends Controller
             'status' => ['required', 'string'],
             'internal_notes' => ['nullable', 'string'],
             'comment' => ['nullable', 'string'],
+            'is_public_comment' => ['nullable', 'boolean'],
         ]);
 
         $this->ensureMaintenanceReferencesBelongToPortfolio($data, $maintenanceRequest->portfolio_id);
 
         $previousStatus = $maintenanceRequest->status;
+        $previousPriority = $maintenanceRequest->priority;
+        $previousAssignee = $maintenanceRequest->assigned_to_user_id;
         $maintenanceRequest->update([
             'assigned_to_user_id' => $data['assigned_to_user_id'] ?? null,
             'priority' => $data['priority'],
             'status' => $data['status'],
             'internal_notes' => $data['internal_notes'] ?? null,
+            'due_at' => $data['status'] === 'resolved' ? $maintenanceRequest->due_at : $this->dueAtForPriority($data['priority']),
             'resolved_at' => $data['status'] === 'resolved' ? now() : null,
         ]);
 
-        if (! empty($data['comment']) || $previousStatus !== $maintenanceRequest->status) {
+        if (
+            ! empty($data['comment'])
+            || $previousStatus !== $maintenanceRequest->status
+            || $previousPriority !== $maintenanceRequest->priority
+            || (int) $previousAssignee !== (int) $maintenanceRequest->assigned_to_user_id
+        ) {
             $maintenanceRequest->updates()->create([
                 'user_id' => $actor->id,
                 'status_from' => $previousStatus,
                 'status_to' => $maintenanceRequest->status,
-                'is_public_comment' => false,
+                'is_public_comment' => (bool) ($data['is_public_comment'] ?? false),
                 'comment' => $data['comment'] ?? 'Maintenance request updated.',
             ]);
         }
@@ -326,5 +350,74 @@ class MaintenanceRequestController extends Controller
                 'Assigned user does not belong to this portfolio.'
             );
         }
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function maintenanceTableRow(MaintenanceRequest $maintenanceRequest, bool $publicOnly): array
+    {
+        $maintenanceRequest->loadMissing(['asset', 'tenantProfile.user', 'assignedTo', 'updates.user', 'expenses']);
+
+        $updates = $maintenanceRequest->updates
+            ->when($publicOnly, fn ($collection) => $collection->where('is_public_comment', true))
+            ->sortByDesc('created_at')
+            ->map(fn (MaintenanceUpdate $update) => [
+                'id' => $update->id,
+                'user' => $update->user?->name,
+                'status_from' => $update->status_from,
+                'status_to' => $update->status_to,
+                'is_public_comment' => $update->is_public_comment,
+                'comment' => $update->comment,
+                'created_at' => $update->created_at?->toIso8601String(),
+            ])
+            ->values()
+            ->all();
+
+        $expenses = $maintenanceRequest->expenses;
+
+        return [
+            'id' => $maintenanceRequest->id,
+            'title' => $maintenanceRequest->title,
+            'description' => $maintenanceRequest->description,
+            'status' => $maintenanceRequest->status,
+            'category' => $maintenanceRequest->category,
+            'priority' => $maintenanceRequest->priority,
+            'created_at' => $maintenanceRequest->created_at?->toIso8601String(),
+            'requested_at' => $maintenanceRequest->requested_at?->toIso8601String(),
+            'due_at' => $maintenanceRequest->due_at?->toIso8601String(),
+            'resolved_at' => $maintenanceRequest->resolved_at?->toIso8601String(),
+            'assigned_to_user_id' => $maintenanceRequest->assigned_to_user_id,
+            'assigned_to' => $maintenanceRequest->assignedTo ? [
+                'id' => $maintenanceRequest->assignedTo->id,
+                'name' => $maintenanceRequest->assignedTo->name,
+            ] : null,
+            'internal_notes' => $publicOnly ? null : $maintenanceRequest->internal_notes,
+            'asset' => $maintenanceRequest->asset ? [
+                'id' => $maintenanceRequest->asset->id,
+                'title_en' => $maintenanceRequest->asset->title_en,
+                'code' => $maintenanceRequest->asset->code,
+            ] : null,
+            'tenant_profile' => [
+                'id' => $maintenanceRequest->tenantProfile?->id,
+                'user' => [
+                    'name' => $maintenanceRequest->tenantProfile?->user?->name,
+                    'email' => $maintenanceRequest->tenantProfile?->user?->email,
+                ],
+            ],
+            'expense_total' => (float) $expenses->where('status', 'posted')->sum('amount'),
+            'expense_count' => $expenses->count(),
+            'updates' => $updates,
+        ];
+    }
+
+    private function dueAtForPriority(string $priority): \Carbon\CarbonInterface
+    {
+        return match ($priority) {
+            'urgent' => now()->addHours(24),
+            'high' => now()->addDays(2),
+            'low' => now()->addDays(7),
+            default => now()->addDays(4),
+        };
     }
 }
