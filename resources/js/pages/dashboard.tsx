@@ -36,9 +36,17 @@ type LeaseBalance = {
     currency: string;
 };
 
+type NextAction = {
+    label: string;
+    description: string;
+    href: string;
+    icon: string;
+};
+
 type DashboardPageProps = SharedProps & {
     mode: 'tenant' | 'portfolio' | 'superadmin';
     stats: Record<string, number | string | null>;
+    nextActions?: NextAction[];
     charts?: {
         occupancy?: Record<string, number>;
         paymentHealth?: Array<{
@@ -136,6 +144,7 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
     const expiringLeases = props.expiringLeases ?? [];
     const arrearsLeases = props.arrearsLeases ?? [];
     const setupChecklist = props.setupChecklist ?? [];
+    const nextActions = props.nextActions ?? [];
 
     return (
         <AdminLayout>
@@ -191,6 +200,8 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                     </Link>
                 </div>
             </section>
+
+            <NextActionDeck actions={nextActions} />
 
             <div className="row g-3 mb-4">
                 <div className="col-sm-6 col-xl-3">
@@ -453,6 +464,7 @@ function TenantDashboard({ props }: { props: DashboardPageProps }) {
     const payments = props.tenantPortal?.payments ?? [];
     const requests = props.tenantPortal?.requests ?? [];
     const documents = props.tenantPortal?.documents ?? [];
+    const nextActions = props.nextActions ?? [];
 
     return (
         <AdminLayout>
@@ -486,6 +498,8 @@ function TenantDashboard({ props }: { props: DashboardPageProps }) {
                     <strong>{props.stats.daysLeft ?? 0}</strong>
                 </div>
             </section>
+
+            <NextActionDeck actions={nextActions} />
 
             <div className="row g-3 mb-4">
                 <div className="col-sm-6 col-xl-3">
@@ -677,6 +691,35 @@ function SectionTitle({
                 </Link>
             ) : null}
         </div>
+    );
+}
+
+function NextActionDeck({ actions }: { actions: NextAction[] }) {
+    if (actions.length === 0) {
+        return null;
+    }
+
+    return (
+        <section className="pmc-next-action-grid">
+            {actions.map((action) => (
+                <Link
+                    key={`${action.href}-${action.label}`}
+                    href={action.href}
+                    className="pmc-next-action-card"
+                >
+                    <i className={`bi ${action.icon}`} />
+                    <div>
+                        <span>Next action</span>
+                        <strong>{action.label}</strong>
+                        <small>{action.description}</small>
+                    </div>
+                    <em>
+                        Open
+                        <i className="bi bi-arrow-right-short" />
+                    </em>
+                </Link>
+            ))}
+        </section>
     );
 }
 

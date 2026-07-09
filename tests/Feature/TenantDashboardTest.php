@@ -52,6 +52,7 @@ class TenantDashboardTest extends TestCase
                 ->where('stats.leaseCode', $lease->code)
                 ->where('stats.amountLeft', fn (int|float $amount) => (float) $amount === 2500.0)
                 ->where('tenantPortal.lease.code', $lease->code)
+                ->where('nextActions', fn ($actions) => collect($actions)->contains('label', 'Submit maintenance request'))
                 ->has('tenantPortal.payments', 1));
     }
 }

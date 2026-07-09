@@ -83,6 +83,7 @@ class DashboardController extends Controller
                             'download_url' => route('documents.download', $document),
                         ]) ?? [],
                 ],
+                'nextActions' => $this->tenantNextActions($activeLease !== null),
             ]);
         }
 
@@ -183,12 +184,18 @@ class DashboardController extends Controller
             ['label' => 'Add assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets'],
             ['label' => 'Add tenants', 'done' => (clone $this->scopeByPortfolio(TenantProfile::query(), $user))->exists(), 'href' => '/tenants'],
             ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases'],
-            ['label' => 'Publish website', 'done' => CmsPage::query()->where('status', 'published')->exists(), 'href' => '/cms'],
         ];
+
+        if ($user->hasRole('superadmin')) {
+            $setupChecklist[] = ['label' => 'Publish website', 'done' => CmsPage::query()->where('status', 'published')->exists(), 'href' => '/cms'];
+        }
+
+        $nextActions = $this->operationsNextActions($setupChecklist, $stats);
 
         return Inertia::render('dashboard', [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
             'stats' => $stats,
+            'nextActions' => $nextActions,
             'charts' => [
                 'occupancy' => $occupancy,
                 'paymentHealth' => $paymentHealth,
@@ -206,5 +213,115 @@ class DashboardController extends Controller
             'recentPayments' => (clone $paymentQuery)->with('tenantProfile.user')->latest('received_on')->limit(8)->get(),
             'recentMaintenance' => (clone $maintenanceQuery)->with('asset')->latest()->limit(8)->get(),
         ]);
+    }
+
+    /**
+     * @param  array<int, array{label:string, done:bool, href:string}>  $setupChecklist
+     * @param  array<string, mixed>  $stats
+     * @return array<int, array{label:string, description:string, href:string, icon:string}>
+     */
+    private function operationsNextActions(array $setupChecklist, array $stats): array
+    {
+        $actions = [];
+
+        if ((float) ($stats['arrears'] ?? 0) > 0) {
+            $actions[] = [
+                'label' => 'Collect outstanding rent',
+                'description' => 'Open payment and arrears views before balances get stale.',
+                'href' => '/payments',
+                'icon' => 'bi-cash-stack',
+            ];
+        }
+
+        if ((int) ($stats['openRequests'] ?? 0) > 0) {
+            $actions[] = [
+                'label' => 'Triage maintenance backlog',
+                'description' => 'Assign priority, publish tenant updates, and record service cost.',
+                'href' => '/maintenance-requests',
+                'icon' => 'bi-tools',
+            ];
+        }
+
+        foreach ($setupChecklist as $item) {
+            if ($item['done']) {
+                continue;
+            }
+
+            $actions[] = [
+                'label' => $item['label'],
+                'description' => match ($item['label']) {
+                    'Create portfolio' => 'Set the owner account boundary before adding data.',
+                    'Create users' => 'Add owner, manager, and tenant accounts with clean roles.',
+                    'Add assets' => 'Build buildings, floors, units, spaces, and stakeholder assignments.',
+                    'Add tenants' => 'Create tenant profiles before writing contracts.',
+                    'Create leases' => 'Connect tenants to rentable assets and generate installments.',
+                    'Publish website' => 'Use the CMS builder to publish the public landing page.',
+                    default => 'Complete this setup step before scaling operations.',
+                },
+                'href' => $item['href'],
+                'icon' => match ($item['label']) {
+                    'Create portfolio' => 'bi-buildings',
+                    'Create users' => 'bi-people',
+                    'Add assets' => 'bi-diagram-3',
+                    'Add tenants' => 'bi-person-badge',
+                    'Create leases' => 'bi-file-earmark-text',
+                    'Publish website' => 'bi-layout-wtf',
+                    default => 'bi-arrow-right-circle',
+                },
+            ];
+        }
+
+        $actions[] = [
+            'label' => 'Open operating manual',
+            'description' => 'Use workflows, page shortcuts, and control checks before changing production data.',
+            'href' => '/documentation',
+            'icon' => 'bi-journal-richtext',
+        ];
+
+        return array_slice($actions, 0, 4);
+    }
+
+    /**
+     * @return array<int, array{label:string, description:string, href:string, icon:string}>
+     */
+    private function tenantNextActions(bool $hasLease): array
+    {
+        if (! $hasLease) {
+            return [
+                [
+                    'label' => 'Wait for lease activation',
+                    'description' => 'Your owner or manager needs to assign a lease before rent and documents appear.',
+                    'href' => '/documentation',
+                    'icon' => 'bi-hourglass-split',
+                ],
+                [
+                    'label' => 'Read tenant guide',
+                    'description' => 'Learn how payments, documents, and maintenance requests work in this portal.',
+                    'href' => '/documentation',
+                    'icon' => 'bi-journal-richtext',
+                ],
+            ];
+        }
+
+        return [
+            [
+                'label' => 'Download contract',
+                'description' => 'Keep a copy of your current lease contract and tenant statement.',
+                'href' => '/dashboard',
+                'icon' => 'bi-file-earmark-arrow-down',
+            ],
+            [
+                'label' => 'Submit maintenance request',
+                'description' => 'Report electrical, plumbing, HVAC, or general issues from the service queue.',
+                'href' => '/maintenance-requests',
+                'icon' => 'bi-tools',
+            ],
+            [
+                'label' => 'Review tenant guide',
+                'description' => 'Check what you can see, download, and request from your portal.',
+                'href' => '/documentation',
+                'icon' => 'bi-journal-richtext',
+            ],
+        ];
     }
 }
