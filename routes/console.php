@@ -1,9 +1,14 @@
 <?php
 
+use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schedule;
+use Spatie\Permission\PermissionRegistrar;
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -24,6 +29,59 @@ Artisan::command('property:sync-public-storage', function () {
 
     $this->info("Copied public storage files to [{$destination}].");
 })->purpose('Mirror storage/app/public into public/storage when symlinks are unavailable.');
+
+Artisan::command('property:ensure-superadmin {email} {--password=} {--name=System Owner}', function (string $email) {
+    $password = $this->option('password');
+    $name = $this->option('name') ?: 'System Owner';
+    $userExists = User::query()->where('email', $email)->exists();
+
+    if (! $userExists && (! is_string($password) || $password === '')) {
+        $this->error('A password is required when creating a new superadmin.');
+
+        return 1;
+    }
+
+    Artisan::call('db:seed', [
+        '--class' => RolesAndPermissionsSeeder::class,
+        '--force' => true,
+    ]);
+
+    $user = DB::transaction(function () use ($email, $name, $password) {
+        $attributes = [
+            'portfolio_id' => null,
+            'name' => $name,
+            'preferred_locale' => 'en',
+            'status' => 'active',
+            'force_password_reset' => false,
+            'email_verified_at' => now(),
+        ];
+
+        if (is_string($password) && $password !== '') {
+            $attributes['password'] = Hash::make($password);
+        }
+
+        /** @var User $user */
+        $user = User::query()->updateOrCreate(
+            ['email' => $email],
+            $attributes,
+        );
+
+        DB::table('model_has_roles')
+            ->where('model_id', $user->id)
+            ->where('model_type', User::class)
+            ->delete();
+
+        $user->syncRoles(['superadmin']);
+
+        return $user;
+    });
+
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+    $this->info("Superadmin [{$user->email}] is ready with role type [{$user->getMorphClass()}].");
+
+    return 0;
+})->purpose('Create or repair the global superadmin account.');
 
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()
