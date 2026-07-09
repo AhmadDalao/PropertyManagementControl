@@ -80,6 +80,7 @@ type DashboardPageProps = SharedProps & {
     }>;
     tenantPortal?: {
         lease?: {
+            id: number;
             code: string;
             days_remaining: number;
             balance_remaining: number;
@@ -89,14 +90,22 @@ type DashboardPageProps = SharedProps & {
             started_at?: string;
             ends_at?: string;
             leaseable?: { title_en?: string; code?: string } | null;
+            contract_url?: string;
+            statement_url?: string;
         } | null;
-        documents?: Array<{ id: number; title_en: string; type: string }>;
+        documents?: Array<{
+            id: number;
+            title_en: string;
+            type: string;
+            download_url: string;
+        }>;
         payments?: Array<{
             id: number;
             amount: number;
             currency: string;
             received_on: string;
             reference?: string;
+            receipt_url?: string;
         }>;
         requests?: Array<{
             id: number;
@@ -545,14 +554,35 @@ function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             </strong>
                         </div>
                     </div>
+                    {lease ? (
+                        <div className="d-flex gap-2 mt-4 flex-wrap">
+                            <a
+                                href={lease.contract_url}
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                <i className="bi bi-file-earmark-text me-2" />
+                                Download contract
+                            </a>
+                            <a
+                                href={lease.statement_url}
+                                className="btn btn-outline-secondary btn-sm"
+                            >
+                                <i className="bi bi-receipt me-2" />
+                                Tenant statement
+                            </a>
+                        </div>
+                    ) : null}
                     <div className="pmc-document-list mt-4">
                         {documents.length > 0 ? (
                             documents.map((document) => (
-                                <div key={document.id}>
+                                <a
+                                    key={document.id}
+                                    href={document.download_url}
+                                >
                                     <i className="bi bi-file-earmark-text" />
                                     <strong>{document.title_en}</strong>
                                     <span>{document.type}</span>
-                                </div>
+                                </a>
                             ))
                         ) : (
                             <InlineEmptyState message="No contract documents are available yet." />
@@ -564,26 +594,36 @@ function TenantDashboard({ props }: { props: DashboardPageProps }) {
                     <SectionTitle
                         eyebrow="Payments"
                         title="Rent payment history"
-                        actionHref="/payments"
-                        actionLabel="Open payments"
                     />
-                    <ActivityTable
-                        empty="No posted payments yet."
-                        rows={payments.map((payment) => ({
-                            id: payment.id,
-                            title:
-                                payment.reference ?? `Receipt #${payment.id}`,
-                            meta: humanDate(
-                                payment.received_on,
-                                props.app.locale,
-                            ),
-                            value: currency(
-                                payment.amount,
-                                props.app.locale,
-                                payment.currency,
-                            ),
-                        }))}
-                    />
+                    {payments.length > 0 ? (
+                        <div className="pmc-activity-list">
+                            {payments.map((payment) => (
+                                <a key={payment.id} href={payment.receipt_url}>
+                                    <div>
+                                        <strong>
+                                            {payment.reference ??
+                                                `Receipt #${payment.id}`}
+                                        </strong>
+                                        <span>
+                                            {humanDate(
+                                                payment.received_on,
+                                                props.app.locale,
+                                            )}
+                                        </span>
+                                    </div>
+                                    <em>
+                                        {currency(
+                                            payment.amount,
+                                            props.app.locale,
+                                            payment.currency,
+                                        )}
+                                    </em>
+                                </a>
+                            ))}
+                        </div>
+                    ) : (
+                        <InlineEmptyState message="No posted payments yet." />
+                    )}
                 </section>
 
                 <section className="pmc-card p-4 pmc-dashboard-span-12">

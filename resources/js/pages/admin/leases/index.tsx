@@ -23,15 +23,47 @@ type LeaseRecord = {
     code: string;
     status: string;
     payment_frequency: string;
-    started_at: string;
-    ends_at: string;
+    started_at?: string | null;
+    ends_at?: string | null;
     signed_at?: string | null;
     rent_amount: number;
     deposit_amount: number;
     currency: string;
     notes?: string | null;
-    tenant_profile?: { user?: { name: string } };
-    leaseable?: { title_en: string };
+    tenant_profile?: { user?: { name?: string | null; email?: string | null } };
+    leaseable?: { title_en?: string | null; code?: string | null };
+    total_due: number;
+    total_paid: number;
+    balance_remaining: number;
+    days_remaining?: number | null;
+    installment_count: number;
+    overdue_count: number;
+    next_due_date?: string | null;
+    next_due_amount?: number | null;
+    installments: LeaseInstallmentRecord[];
+    documents: LeaseDocumentRecord[];
+};
+
+type LeaseInstallmentRecord = {
+    id: number;
+    sequence: number;
+    line_type: string;
+    label: string;
+    period_start?: string | null;
+    period_end?: string | null;
+    due_date?: string | null;
+    amount_due: number;
+    amount_paid: number;
+    remaining_amount: number;
+    status: string;
+};
+
+type LeaseDocumentRecord = {
+    id: number;
+    type: string;
+    title_en: string;
+    original_name?: string | null;
+    download_url: string;
 };
 
 type PageProps = SharedProps & {
@@ -47,6 +79,7 @@ type PageProps = SharedProps & {
 export default function LeasesPage() {
     const { props } = usePage<PageProps>();
     const [editing, setEditing] = useState<LeaseRecord | null>(null);
+    const [selectedLeaseId, setSelectedLeaseId] = useState<number | null>(null);
     const [signedContractLease, setSignedContractLease] = useState<string>('');
     const signedContractForm = useForm<{ signed_contract: File | null }>({
         signed_contract: null,
@@ -82,8 +115,8 @@ export default function LeasesPage() {
             asset_id: String(lease.leaseable_id),
             status: lease.status,
             payment_frequency: lease.payment_frequency,
-            started_at: lease.started_at,
-            ends_at: lease.ends_at,
+            started_at: lease.started_at ?? '',
+            ends_at: lease.ends_at ?? '',
             signed_at: lease.signed_at ?? '',
             rent_amount: lease.rent_amount,
             deposit_amount: lease.deposit_amount,
@@ -116,6 +149,11 @@ export default function LeasesPage() {
 
         form.post('/leases', { preserveScroll: true });
     };
+
+    const selectedLease =
+        props.leases.data.find((lease) => lease.id === selectedLeaseId) ??
+        props.leases.data[0] ??
+        null;
 
     const uploadSignedContract = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -291,11 +329,59 @@ export default function LeasesPage() {
                             <div className="row g-3">
                                 <div className="col-md-6">
                                     <label className="form-label pmc-form-label">
+                                        Status
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        value={form.data.status}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'status',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="draft">Draft</option>
+                                        <option value="active">Active</option>
+                                        <option value="expired">Expired</option>
+                                        <option value="terminated">
+                                            Terminated
+                                        </option>
+                                    </select>
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Frequency
+                                    </label>
+                                    <select
+                                        className="form-select"
+                                        value={form.data.payment_frequency}
+                                        disabled={Boolean(editing)}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'payment_frequency',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="monthly">Monthly</option>
+                                        <option value="quarterly">
+                                            Quarterly
+                                        </option>
+                                        <option value="yearly">Yearly</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
                                         Start
                                     </label>
                                     <input
                                         type="date"
                                         className="form-control"
+                                        disabled={Boolean(editing)}
                                         value={form.data.started_at}
                                         onChange={(event) =>
                                             form.setData(
@@ -312,6 +398,7 @@ export default function LeasesPage() {
                                     <input
                                         type="date"
                                         className="form-control"
+                                        disabled={Boolean(editing)}
                                         value={form.data.ends_at}
                                         onChange={(event) =>
                                             form.setData(
@@ -331,6 +418,7 @@ export default function LeasesPage() {
                                     <input
                                         type="number"
                                         className="form-control"
+                                        disabled={Boolean(editing)}
                                         value={form.data.rent_amount}
                                         onChange={(event) =>
                                             form.setData(
@@ -349,6 +437,7 @@ export default function LeasesPage() {
                                     <input
                                         type="number"
                                         className="form-control"
+                                        disabled={Boolean(editing)}
                                         value={form.data.deposit_amount}
                                         onChange={(event) =>
                                             form.setData(
@@ -361,6 +450,79 @@ export default function LeasesPage() {
                                     />
                                 </div>
                             </div>
+
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Signed at
+                                    </label>
+                                    <input
+                                        type="date"
+                                        className="form-control"
+                                        value={form.data.signed_at}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'signed_at',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Currency
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        maxLength={3}
+                                        disabled={Boolean(editing)}
+                                        value={form.data.currency}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'currency',
+                                                event.currentTarget.value.toUpperCase(),
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    Notes
+                                </label>
+                                <textarea
+                                    className="form-control"
+                                    rows={3}
+                                    value={form.data.notes}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'notes',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </div>
+
+                            {editing ? (
+                                <label className="form-check">
+                                    <input
+                                        type="checkbox"
+                                        className="form-check-input"
+                                        checked={form.data.resync_installments}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'resync_installments',
+                                                event.currentTarget.checked,
+                                            )
+                                        }
+                                    />
+                                    <span className="form-check-label">
+                                        Rebuild installments if no payments are
+                                        recorded
+                                    </span>
+                                </label>
+                            ) : null}
 
                             <button
                                 className="btn btn-primary"
@@ -416,6 +578,13 @@ export default function LeasesPage() {
                 </div>
 
                 <div className="col-xl-8">
+                    {selectedLease ? (
+                        <LeaseDetailPanel
+                            lease={selectedLease}
+                            locale={props.app.locale}
+                        />
+                    ) : null}
+
                     <div className="pmc-card p-4">
                         <DataTable
                             title="Lease lifecycle"
@@ -438,9 +607,20 @@ export default function LeasesPage() {
                                             <div className="fw-semibold">
                                                 {lease.code}
                                             </div>
-                                            <span className="pmc-chip pmc-chip--primary mt-2">
-                                                {lease.status}
-                                            </span>
+                                            <div className="d-flex gap-2 mt-2 flex-wrap">
+                                                <span className="pmc-chip pmc-chip--primary">
+                                                    {lease.status}
+                                                </span>
+                                                {lease.signed_at ? (
+                                                    <span className="pmc-chip pmc-chip--teal">
+                                                        signed
+                                                    </span>
+                                                ) : (
+                                                    <span className="pmc-chip">
+                                                        unsigned
+                                                    </span>
+                                                )}
+                                            </div>
                                         </>
                                     ),
                                 },
@@ -483,13 +663,62 @@ export default function LeasesPage() {
                                 },
                                 {
                                     key: 'rent',
-                                    label: 'Rent',
-                                    render: (lease) =>
-                                        currency(
-                                            lease.rent_amount,
-                                            props.app.locale,
-                                            lease.currency,
-                                        ),
+                                    label: 'Financials',
+                                    render: (lease) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {currency(
+                                                    lease.balance_remaining,
+                                                    props.app.locale,
+                                                    lease.currency,
+                                                )}{' '}
+                                                left
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {currency(
+                                                    lease.total_paid,
+                                                    props.app.locale,
+                                                    lease.currency,
+                                                )}{' '}
+                                                paid /{' '}
+                                                {currency(
+                                                    lease.total_due,
+                                                    props.app.locale,
+                                                    lease.currency,
+                                                )}{' '}
+                                                due
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
+                                    key: 'next',
+                                    label: 'Next due',
+                                    render: (lease) => (
+                                        <>
+                                            <div>
+                                                {humanDate(
+                                                    lease.next_due_date,
+                                                    props.app.locale,
+                                                )}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {lease.next_due_amount
+                                                    ? currency(
+                                                          lease.next_due_amount,
+                                                          props.app.locale,
+                                                          lease.currency,
+                                                      )
+                                                    : 'No open balance'}
+                                            </div>
+                                            {lease.overdue_count > 0 ? (
+                                                <span className="pmc-chip mt-2">
+                                                    {lease.overdue_count}{' '}
+                                                    overdue
+                                                </span>
+                                            ) : null}
+                                        </>
+                                    ),
                                 },
                                 {
                                     key: 'actions',
@@ -509,6 +738,15 @@ export default function LeasesPage() {
                                             >
                                                 Statement
                                             </a>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    setSelectedLeaseId(lease.id)
+                                                }
+                                            >
+                                                Details
+                                            </button>
                                             <button
                                                 type="button"
                                                 className="btn btn-primary btn-sm"
@@ -534,5 +772,152 @@ export default function LeasesPage() {
                 </div>
             </div>
         </AdminLayout>
+    );
+}
+
+function LeaseDetailPanel({
+    lease,
+    locale,
+}: {
+    lease: LeaseRecord;
+    locale: 'en' | 'ar';
+}) {
+    const paidPercent =
+        lease.total_due > 0
+            ? Math.min(100, (lease.total_paid / lease.total_due) * 100)
+            : 0;
+
+    return (
+        <section className="pmc-card p-4 mb-4 pmc-lease-control-panel">
+            <div className="d-flex flex-column flex-lg-row justify-content-between gap-3 mb-4">
+                <div>
+                    <div className="pmc-kicker mb-2">Selected lease</div>
+                    <h2 className="h4 mb-1">{lease.code}</h2>
+                    <p className="text-secondary mb-0">
+                        {lease.tenant_profile?.user?.name ?? 'No tenant'} ·{' '}
+                        {lease.leaseable?.title_en ?? 'No asset'}
+                    </p>
+                </div>
+                <div className="d-flex gap-2 flex-wrap">
+                    <a
+                        href={`/leases/${lease.id}/contract`}
+                        className="btn btn-outline-secondary btn-sm"
+                    >
+                        Contract
+                    </a>
+                    <a
+                        href={`/leases/${lease.id}/statement`}
+                        className="btn btn-outline-secondary btn-sm"
+                    >
+                        Statement
+                    </a>
+                </div>
+            </div>
+
+            <div className="pmc-lease-kpi-grid">
+                <LeaseKpi
+                    label="Paid"
+                    value={currency(lease.total_paid, locale, lease.currency)}
+                    detail={`${Math.round(paidPercent)}% collected`}
+                />
+                <LeaseKpi
+                    label="Remaining"
+                    value={currency(
+                        lease.balance_remaining,
+                        locale,
+                        lease.currency,
+                    )}
+                    detail={`${lease.installment_count} installments`}
+                />
+                <LeaseKpi
+                    label="Days left"
+                    value={String(lease.days_remaining ?? 0)}
+                    detail={humanDate(lease.ends_at, locale)}
+                />
+                <LeaseKpi
+                    label="Documents"
+                    value={String(lease.documents.length)}
+                    detail={lease.signed_at ? 'Signed' : 'Needs signature'}
+                />
+            </div>
+
+            <div className="pmc-lease-progress mt-4">
+                <span style={{ width: `${paidPercent}%` }} />
+            </div>
+
+            <div className="row g-4 mt-1">
+                <div className="col-lg-7">
+                    <div className="pmc-kicker mb-2">Installment schedule</div>
+                    <div className="pmc-installment-list">
+                        {lease.installments.map((installment) => (
+                            <div key={installment.id}>
+                                <div>
+                                    <strong>{installment.label}</strong>
+                                    <span>
+                                        Due{' '}
+                                        {humanDate(
+                                            installment.due_date,
+                                            locale,
+                                        )}{' '}
+                                        · {installment.status}
+                                    </span>
+                                </div>
+                                <em>
+                                    {currency(
+                                        installment.remaining_amount,
+                                        locale,
+                                        lease.currency,
+                                    )}{' '}
+                                    left
+                                </em>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="col-lg-5">
+                    <div className="pmc-kicker mb-2">Documents</div>
+                    <div className="pmc-document-list">
+                        {lease.documents.length > 0 ? (
+                            lease.documents.map((document) => (
+                                <a
+                                    key={document.id}
+                                    href={document.download_url}
+                                >
+                                    <i className="bi bi-file-earmark-text" />
+                                    <strong>{document.title_en}</strong>
+                                    <span>{document.type}</span>
+                                </a>
+                            ))
+                        ) : (
+                            <div>
+                                <i className="bi bi-file-earmark-x" />
+                                <strong>No documents yet</strong>
+                                <span>
+                                    Generate a contract or upload a signed file.
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function LeaseKpi({
+    label,
+    value,
+    detail,
+}: {
+    label: string;
+    value: string;
+    detail: string;
+}) {
+    return (
+        <div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{detail}</small>
+        </div>
     );
 }

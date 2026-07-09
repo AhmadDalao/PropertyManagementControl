@@ -177,7 +177,7 @@ class PaymentController extends Controller
     public function receipt(Request $request, Payment $payment): StreamedResponse
     {
         $actor = $this->actor($request);
-        $this->ensurePortfolioAccess($actor, $payment->portfolio_id);
+        $this->ensurePaymentReceiptAccess($actor, $payment);
         $payment->loadMissing('lease', 'tenantProfile.user', 'recordedBy', 'allocations.leaseInstallment');
 
         $pdf = Pdf::loadView('pdf.receipt', ['payment' => $payment]);
@@ -186,6 +186,21 @@ class PaymentController extends Controller
         return response()->streamDownload(
             fn () => print ($pdf->output()),
             "receipt-{$reference}.pdf"
+        );
+    }
+
+    private function ensurePaymentReceiptAccess(\App\Models\User $actor, Payment $payment): void
+    {
+        if ($actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
+            $this->ensurePortfolioAccess($actor, $payment->portfolio_id);
+
+            return;
+        }
+
+        abort_unless(
+            $actor->hasRole('tenant') && $payment->tenantProfile?->user_id === $actor->id,
+            403,
+            'You are not allowed to access this receipt.'
         );
     }
 }

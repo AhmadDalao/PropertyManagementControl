@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Lease;
 use App\Models\TenantProfile;
+use App\Models\User;
 use App\Services\LeaseFinancialService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
@@ -55,16 +56,18 @@ class LeaseController extends Controller
             ),
         ]);
 
+        $paginatedLeases = $this->paginateTable($leases, $request, $filters, [
+            'created_at',
+            'code',
+            'status',
+            'payment_frequency',
+            'started_at',
+            'ends_at',
+            'rent_amount',
+        ], 'started_at')->through(fn (Lease $lease) => $this->leaseTableRow($lease));
+
         return Inertia::render('admin/leases/index', [
-            'leases' => $this->paginateTable($leases, $request, $filters, [
-                'created_at',
-                'code',
-                'status',
-                'payment_frequency',
-                'started_at',
-                'ends_at',
-                'rent_amount',
-            ], 'started_at'),
+            'leases' => $paginatedLeases,
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['draft', 'active', 'expired', 'terminated'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
@@ -215,6 +218,7 @@ class LeaseController extends Controller
     public function uploadSignedContract(Request $request, Lease $lease): RedirectResponse
     {
         $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
         $data = $request->validate([
@@ -227,7 +231,7 @@ class LeaseController extends Controller
         Document::query()->create([
             'portfolio_id' => $lease->portfolio_id,
             'uploaded_by_user_id' => $actor->id,
-            'documentable_type' => Lease::class,
+            'documentable_type' => $lease->getMorphClass(),
             'documentable_id' => $lease->id,
             'type' => 'signed_contract',
             'title_en' => "Signed contract {$lease->code}",
@@ -246,7 +250,7 @@ class LeaseController extends Controller
     public function contract(Request $request, Lease $lease): StreamedResponse
     {
         $actor = $this->actor($request);
-        $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
+        $this->ensureLeaseAccess($actor, $lease);
         $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'portfolio');
 
         $pdf = Pdf::loadView('pdf.lease-contract', ['lease' => $lease]);
@@ -258,7 +262,7 @@ class LeaseController extends Controller
 
         Document::query()->updateOrCreate(
             [
-                'documentable_type' => Lease::class,
+                'documentable_type' => $lease->getMorphClass(),
                 'documentable_id' => $lease->id,
                 'type' => 'lease_contract',
             ],
@@ -282,11 +286,100 @@ class LeaseController extends Controller
     public function statement(Request $request, Lease $lease): StreamedResponse
     {
         $actor = $this->actor($request);
-        $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
+        $this->ensureLeaseAccess($actor, $lease);
         $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'payments');
 
         $pdf = Pdf::loadView('pdf.tenant-statement', ['lease' => $lease]);
 
         return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function leaseTableRow(Lease $lease): array
+    {
+        $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'documents');
+
+        $installments = $lease->installments;
+        $nextInstallment = $installments
+            ->whereIn('status', ['pending', 'partial'])
+            ->sortBy('due_date')
+            ->first();
+        $overdueCount = $installments
+            ->filter(fn ($installment) => $installment->status !== 'paid' && $installment->due_date?->isPast())
+            ->count();
+
+        return [
+            'id' => $lease->id,
+            'portfolio_id' => $lease->portfolio_id,
+            'tenant_profile_id' => $lease->tenant_profile_id,
+            'leaseable_id' => $lease->leaseable_id,
+            'code' => $lease->code,
+            'status' => $lease->status,
+            'payment_frequency' => $lease->payment_frequency,
+            'started_at' => $lease->started_at?->toDateString(),
+            'ends_at' => $lease->ends_at?->toDateString(),
+            'signed_at' => $lease->signed_at?->toDateString(),
+            'rent_amount' => (float) $lease->rent_amount,
+            'deposit_amount' => (float) $lease->deposit_amount,
+            'currency' => $lease->currency,
+            'notes' => $lease->notes,
+            'tenant_profile' => [
+                'id' => $lease->tenantProfile?->id,
+                'user' => [
+                    'name' => $lease->tenantProfile?->user?->name,
+                    'email' => $lease->tenantProfile?->user?->email,
+                ],
+            ],
+            'leaseable' => [
+                'id' => $lease->leaseable?->getKey(),
+                'title_en' => $lease->leaseable?->title_en,
+                'code' => $lease->leaseable?->code,
+            ],
+            'total_due' => (float) $lease->total_due,
+            'total_paid' => (float) $lease->total_paid,
+            'balance_remaining' => (float) $lease->balance_remaining,
+            'days_remaining' => $lease->days_remaining,
+            'installment_count' => $installments->count(),
+            'overdue_count' => $overdueCount,
+            'next_due_date' => $nextInstallment?->due_date?->toDateString(),
+            'next_due_amount' => $nextInstallment ? (float) $nextInstallment->remaining_amount : null,
+            'installments' => $installments->map(fn ($installment) => [
+                'id' => $installment->id,
+                'sequence' => $installment->sequence,
+                'line_type' => $installment->line_type,
+                'label' => $installment->label,
+                'period_start' => $installment->period_start?->toDateString(),
+                'period_end' => $installment->period_end?->toDateString(),
+                'due_date' => $installment->due_date?->toDateString(),
+                'amount_due' => (float) $installment->amount_due,
+                'amount_paid' => (float) $installment->amount_paid,
+                'remaining_amount' => (float) $installment->remaining_amount,
+                'status' => $installment->status,
+            ])->values()->all(),
+            'documents' => $lease->documents->map(fn (Document $document) => [
+                'id' => $document->id,
+                'type' => $document->type,
+                'title_en' => $document->title_en,
+                'original_name' => $document->original_name,
+                'download_url' => route('documents.download', $document),
+            ])->values()->all(),
+        ];
+    }
+
+    private function ensureLeaseAccess(User $actor, Lease $lease): void
+    {
+        if ($actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
+            $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
+
+            return;
+        }
+
+        abort_unless(
+            $actor->hasRole('tenant') && $lease->tenantProfile?->user_id === $actor->id,
+            403,
+            'You are not allowed to access this lease.'
+        );
     }
 }

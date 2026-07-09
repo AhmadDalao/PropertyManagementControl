@@ -46,10 +46,42 @@ class DashboardController extends Controller
                 ],
                 'tenantPortal' => [
                     'tenant' => $tenantProfile,
-                    'lease' => $activeLease,
-                    'payments' => $tenantProfile?->payments()->latest('received_on')->limit(8)->get() ?? [],
+                    'lease' => $activeLease ? [
+                        'id' => $activeLease->id,
+                        'code' => $activeLease->code,
+                        'days_remaining' => $activeLease->days_remaining,
+                        'balance_remaining' => (float) $activeLease->balance_remaining,
+                        'total_paid' => (float) $activeLease->total_paid,
+                        'rent_amount' => (float) $activeLease->rent_amount,
+                        'currency' => $activeLease->currency,
+                        'started_at' => $activeLease->started_at?->toDateString(),
+                        'ends_at' => $activeLease->ends_at?->toDateString(),
+                        'leaseable' => $activeLease->leaseable,
+                        'contract_url' => route('leases.contract', $activeLease),
+                        'statement_url' => route('leases.statement', $activeLease),
+                    ] : null,
+                    'payments' => $tenantProfile?->payments()
+                        ->latest('received_on')
+                        ->limit(8)
+                        ->get()
+                        ->map(fn (Payment $payment) => [
+                            'id' => $payment->id,
+                            'amount' => (float) $payment->amount,
+                            'currency' => $payment->currency,
+                            'received_on' => $payment->received_on?->toDateString(),
+                            'reference' => $payment->reference,
+                            'receipt_url' => route('payments.receipt', $payment),
+                        ]) ?? [],
                     'requests' => $tenantProfile?->maintenanceRequests()->latest()->limit(8)->get() ?? [],
-                    'documents' => $activeLease?->documents()->latest()->get() ?? [],
+                    'documents' => $activeLease?->documents()
+                        ->latest()
+                        ->get()
+                        ->map(fn ($document) => [
+                            'id' => $document->id,
+                            'title_en' => $document->title_en,
+                            'type' => $document->type,
+                            'download_url' => route('documents.download', $document),
+                        ]) ?? [],
                 ],
             ]);
         }
