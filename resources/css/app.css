@@ -2319,6 +2319,11 @@ a {
     background: rgba(255, 255, 255, 0.78);
 }
 
+.pmc-compact-list > div {
+    min-width: 0;
+    flex-wrap: wrap;
+}
+
 .pmc-checklist a {
     justify-content: flex-start;
     color: var(--pmc-text);
@@ -2379,6 +2384,8 @@ a {
     justify-content: flex-end;
     gap: 0.55rem;
     flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .pmc-code-textarea {
