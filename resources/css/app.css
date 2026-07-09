@@ -186,6 +186,37 @@ a {
     color: #0f6f63;
 }
 
+.pmc-media-preview {
+    display: block;
+    width: 100%;
+    max-height: 15rem;
+    object-fit: cover;
+    border: 1px solid var(--pmc-border);
+    border-radius: 1rem;
+    background: #fff;
+}
+
+.pmc-media-thumb,
+.pmc-media-file-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    flex: 0 0 3.25rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: 0.9rem;
+    background: #fff7ed;
+}
+
+.pmc-media-thumb {
+    object-fit: cover;
+}
+
+.pmc-media-file-icon {
+    display: grid;
+    place-items: center;
+    color: var(--pmc-primary);
+    font-size: 1.3rem;
+}
+
 .pmc-account-chip {
     display: inline-flex;
     align-items: center;

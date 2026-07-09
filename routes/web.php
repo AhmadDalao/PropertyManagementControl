@@ -70,6 +70,6 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'destroyPageSection'])->name('cms.page-sections.destroy');
 
     Route::resource('navigation-items', NavigationItemController::class)->only(['store', 'update', 'destroy']);
-    Route::resource('media-files', MediaFileController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('media-files', MediaFileController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 });
