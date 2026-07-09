@@ -10,7 +10,6 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut } from 'react-chartjs-2';
 
-import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
@@ -145,63 +144,87 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
     const arrearsLeases = props.arrearsLeases ?? [];
     const setupChecklist = props.setupChecklist ?? [];
     const nextActions = props.nextActions ?? [];
+    const healthScore = operationsHealthScore(setupChecklist, props.stats);
+    const cycleSteps = operationsCycleSteps(setupChecklist, props.stats);
 
     return (
         <AdminLayout>
             <Head title="Dashboard" />
-            <PageHeader
-                title={
-                    props.mode === 'superadmin'
-                        ? 'Platform Control Center'
-                        : 'Portfolio Control Center'
-                }
-                description="A guided operating view for property value, rent health, occupancy, tenant activity, and website readiness."
-                actions={
-                    <>
+
+            <section className="pmc-dashboard-brief">
+                <div>
+                    <div className="pmc-kicker mb-3">
+                        {props.mode === 'superadmin'
+                            ? 'Platform command'
+                            : 'Portfolio command'}
+                    </div>
+                    <h1>
+                        {props.mode === 'superadmin'
+                            ? 'Control every portfolio without opening ten tabs.'
+                            : 'Run the portfolio from asset setup to rent collection.'}
+                    </h1>
+                    <p>
+                        This is the operating brief: setup progress, rent
+                        health, service pressure, expiring contracts, and the
+                        next page to open.
+                    </p>
+                    <div className="pmc-dashboard-context">
+                        {props.mode === 'superadmin' ? (
+                            <>
+                                <span>
+                                    <i className="bi bi-buildings" />
+                                    {props.stats.totalPortfolios ?? 0}{' '}
+                                    portfolios
+                                </span>
+                                <span>
+                                    <i className="bi bi-people" />
+                                    {props.stats.totalUsers ?? 0} users
+                                </span>
+                            </>
+                        ) : null}
+                        <span>
+                            <i className="bi bi-file-earmark-text" />
+                            {props.stats.activeLeases ?? 0} active leases
+                        </span>
+                        <span>
+                            <i className="bi bi-tools" />
+                            {props.stats.openRequests ?? 0} open issues
+                        </span>
+                    </div>
+                </div>
+
+                <div className="pmc-dashboard-health">
+                    <div>
+                        <span>{healthScore}</span>
+                        <small>Operating score</small>
+                    </div>
+                    <p>
+                        {healthScore >= 80
+                            ? 'Healthy. Keep watching renewals, payments, and service backlog.'
+                            : healthScore >= 45
+                              ? 'Usable, but setup or collections still need attention.'
+                              : 'Not production-ready yet. Build the cycle before relying on reports.'}
+                    </p>
+                    <div className="pmc-command-actions">
                         <Link href="/assets" className="btn btn-primary">
                             <i className="bi bi-plus-lg me-2" />
                             Add asset
                         </Link>
-                        <Link
-                            href="/documentation"
-                            className="btn btn-outline-secondary"
-                        >
+                        <Link href="/reports" className="btn btn-light">
+                            <i className="bi bi-bar-chart-line me-2" />
+                            Reports
+                        </Link>
+                        <Link href="/documentation" className="btn btn-light">
+                            <i className="bi bi-journal-richtext me-2" />
                             Open docs
                         </Link>
-                    </>
-                }
-            />
-
-            <section className="pmc-command-hero">
-                <div>
-                    <div className="pmc-kicker mb-2">Today</div>
-                    <h2>
-                        {props.mode === 'superadmin'
-                            ? 'See every portfolio before problems become noise.'
-                            : 'Run the portfolio from assets to service requests.'}
-                    </h2>
-                    <p>
-                        Follow the checklist, watch arrears and expiring leases,
-                        and use quick actions instead of hunting through menus.
-                    </p>
-                </div>
-                <div className="pmc-command-actions">
-                    <Link href="/tenants" className="btn btn-light">
-                        <i className="bi bi-person-plus me-2" />
-                        Add tenant
-                    </Link>
-                    <Link href="/leases" className="btn btn-light">
-                        <i className="bi bi-file-earmark-plus me-2" />
-                        Create lease
-                    </Link>
-                    <Link href="/payments" className="btn btn-light">
-                        <i className="bi bi-cash-stack me-2" />
-                        Post payment
-                    </Link>
+                    </div>
                 </div>
             </section>
 
             <NextActionDeck actions={nextActions} />
+
+            <CycleMap steps={cycleSteps} />
 
             <div className="row g-3 mb-4">
                 <div className="col-sm-6 col-xl-3">
@@ -465,37 +488,68 @@ function TenantDashboard({ props }: { props: DashboardPageProps }) {
     const requests = props.tenantPortal?.requests ?? [];
     const documents = props.tenantPortal?.documents ?? [];
     const nextActions = props.nextActions ?? [];
+    const paidAmount = Number(props.stats.paidAmount ?? 0);
+    const amountLeft = Number(props.stats.amountLeft ?? 0);
+    const paymentBase = paidAmount + amountLeft;
+    const paymentProgress =
+        paymentBase > 0 ? Math.round((paidAmount / paymentBase) * 100) : 0;
 
     return (
         <AdminLayout>
             <Head title="Tenant Dashboard" />
-            <PageHeader
-                title="Tenant Portal"
-                description="Your rent, contract period, documents, payment history, and maintenance requests in one place."
-                actions={
+
+            <section className="pmc-tenant-command">
+                <div>
+                    <div className="pmc-kicker mb-3">Tenant portal</div>
+                    <h1>{lease?.leaseable?.title_en ?? 'No active lease'}</h1>
+                    <p>
+                        {lease
+                            ? `${lease.code} · ${lease.leaseable?.code ?? 'Asset'}`
+                            : 'Ask your property owner to create your lease and portal access before rent, documents, and service requests appear.'}
+                    </p>
+                    <div className="pmc-dashboard-context">
+                        <span>
+                            <i className="bi bi-calendar-check" />
+                            {props.stats.daysLeft ?? 0} days left
+                        </span>
+                        <span>
+                            <i className="bi bi-receipt" />
+                            {payments.length} payments
+                        </span>
+                        <span>
+                            <i className="bi bi-folder2-open" />
+                            {documents.length} documents
+                        </span>
+                    </div>
+                </div>
+
+                <div className="pmc-tenant-payment-card">
+                    <span>Payment progress</span>
+                    <strong>{paymentProgress}%</strong>
+                    <div className="pmc-tenant-progress">
+                        <i style={{ width: `${paymentProgress}%` }} />
+                    </div>
+                    <small>
+                        {currency(
+                            paidAmount,
+                            props.app.locale,
+                            lease?.currency ?? 'SAR',
+                        )}{' '}
+                        paid ·{' '}
+                        {currency(
+                            amountLeft,
+                            props.app.locale,
+                            lease?.currency ?? 'SAR',
+                        )}{' '}
+                        left
+                    </small>
                     <Link
                         href="/maintenance-requests"
-                        className="btn btn-primary"
+                        className="btn btn-primary mt-3"
                     >
                         <i className="bi bi-tools me-2" />
                         Request maintenance
                     </Link>
-                }
-            />
-
-            <section className="pmc-tenant-hero">
-                <div>
-                    <div className="pmc-kicker mb-2">Current rental</div>
-                    <h2>{lease?.leaseable?.title_en ?? 'No active lease'}</h2>
-                    <p>
-                        {lease
-                            ? `${lease.code} · ${lease.leaseable?.code ?? 'Asset'}`
-                            : 'Ask your property owner to create your lease and portal access.'}
-                    </p>
-                </div>
-                <div className="pmc-tenant-meter">
-                    <span>Contract days left</span>
-                    <strong>{props.stats.daysLeft ?? 0}</strong>
                 </div>
             </section>
 
@@ -723,6 +777,49 @@ function NextActionDeck({ actions }: { actions: NextAction[] }) {
     );
 }
 
+function CycleMap({
+    steps,
+}: {
+    steps: Array<{
+        label: string;
+        description: string;
+        done: boolean;
+        href: string;
+        icon: string;
+    }>;
+}) {
+    return (
+        <section className="pmc-cycle-map">
+            <div className="pmc-section-title">
+                <div>
+                    <div className="pmc-kicker mb-2">Operating cycle</div>
+                    <h2>Follow the property workflow in order</h2>
+                </div>
+                <Link
+                    href="/documentation"
+                    className="btn btn-outline-secondary btn-sm"
+                >
+                    How it works
+                </Link>
+            </div>
+            <div className="pmc-cycle-rail">
+                {steps.map((step, index) => (
+                    <Link
+                        key={step.label}
+                        href={step.href}
+                        className={step.done ? 'is-done' : ''}
+                    >
+                        <span>{index + 1}</span>
+                        <i className={`bi ${step.icon}`} />
+                        <strong>{step.label}</strong>
+                        <small>{step.description}</small>
+                    </Link>
+                ))}
+            </div>
+        </section>
+    );
+}
+
 function LeaseList({
     leases,
     locale,
@@ -762,6 +859,89 @@ function LeaseList({
             ))}
         </div>
     );
+}
+
+function operationsHealthScore(
+    setupChecklist: Array<{ done: boolean }>,
+    stats: DashboardPageProps['stats'],
+): number {
+    const setupScore =
+        setupChecklist.length > 0
+            ? (setupChecklist.filter((item) => item.done).length /
+                  setupChecklist.length) *
+              55
+            : 0;
+    const leaseScore = Number(stats.activeLeases ?? 0) > 0 ? 20 : 0;
+    const revenueScore = Number(stats.monthlyRevenue ?? 0) > 0 ? 15 : 0;
+    const servicePenalty = Math.min(Number(stats.openRequests ?? 0) * 4, 20);
+    const arrearsPenalty = Number(stats.arrears ?? 0) > 0 ? 15 : 0;
+
+    return Math.max(
+        0,
+        Math.min(
+            100,
+            Math.round(
+                setupScore +
+                    leaseScore +
+                    revenueScore -
+                    servicePenalty -
+                    arrearsPenalty,
+            ),
+        ),
+    );
+}
+
+function operationsCycleSteps(
+    setupChecklist: Array<{ label: string; done: boolean; href: string }>,
+    stats: DashboardPageProps['stats'],
+) {
+    const done = (label: string) =>
+        setupChecklist.find((item) => item.label === label)?.done ?? false;
+
+    return [
+        {
+            label: 'Portfolio',
+            description: 'Create the owner boundary and business profile.',
+            done: done('Create portfolio'),
+            href: '/portfolios',
+            icon: 'bi-buildings',
+        },
+        {
+            label: 'Assets',
+            description: 'Model buildings, floors, units, and spaces.',
+            done: done('Add assets'),
+            href: '/assets',
+            icon: 'bi-diagram-3',
+        },
+        {
+            label: 'Tenants',
+            description: 'Add tenant profiles and portal access.',
+            done: done('Add tenants'),
+            href: '/tenants',
+            icon: 'bi-person-badge',
+        },
+        {
+            label: 'Leases',
+            description: 'Generate contracts and installments.',
+            done: done('Create leases') || Number(stats.activeLeases ?? 0) > 0,
+            href: '/leases',
+            icon: 'bi-file-earmark-text',
+        },
+        {
+            label: 'Payments',
+            description: 'Post rent, receipts, and outstanding balances.',
+            done: Number(stats.monthlyRevenue ?? 0) > 0,
+            href: '/payments',
+            icon: 'bi-cash-stack',
+        },
+        {
+            label: 'Service',
+            description: 'Track maintenance requests and expenses.',
+            done: Number(stats.openRequests ?? 0) === 0,
+            href: '/maintenance-requests',
+            icon: 'bi-tools',
+        },
+    ];
 }
 
 function MiniMetricList({

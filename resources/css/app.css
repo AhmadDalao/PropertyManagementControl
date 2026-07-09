@@ -2489,6 +2489,225 @@ a {
     font-weight: 800;
 }
 
+.pmc-dashboard-brief,
+.pmc-tenant-command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(239, 108, 47, 0.16);
+    border-radius: 1.5rem;
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(239, 108, 47, 0.18),
+            transparent 34%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(12, 138, 124, 0.14),
+            transparent 36%
+        ),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), #fff7ed);
+    box-shadow: 0 24px 62px rgba(31, 33, 51, 0.08);
+}
+
+.pmc-dashboard-brief h1,
+.pmc-tenant-command h1 {
+    max-width: 50rem;
+    margin: 0;
+    color: #172033;
+    font-size: clamp(2rem, 4.8vw, 4.2rem);
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    line-height: 0.95;
+}
+
+.pmc-dashboard-brief p,
+.pmc-tenant-command p {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 1.03rem;
+}
+
+.pmc-dashboard-context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.25rem;
+}
+
+.pmc-dashboard-context span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.42rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.pmc-dashboard-health,
+.pmc-tenant-payment-card {
+    display: grid;
+    align-content: start;
+    gap: 0.8rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.pmc-dashboard-health > div:first-child {
+    display: grid;
+    min-height: 9rem;
+    place-items: center;
+    border-radius: 1rem;
+    background:
+        radial-gradient(circle, #fff 0 48%, transparent 49%),
+        conic-gradient(
+            from -90deg,
+            var(--pmc-secondary),
+            var(--pmc-primary),
+            var(--pmc-accent),
+            rgba(15, 23, 42, 0.08)
+        );
+    text-align: center;
+}
+
+.pmc-dashboard-health span,
+.pmc-tenant-payment-card strong {
+    display: block;
+    color: #172033;
+    font-size: 2.35rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.pmc-dashboard-health small,
+.pmc-tenant-payment-card span {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-dashboard-health p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.9rem;
+}
+
+.pmc-cycle-map {
+    margin-bottom: 1rem;
+    padding: clamp(1rem, 2.4vw, 1.35rem);
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 1.25rem;
+    background:
+        linear-gradient(135deg, rgba(12, 138, 124, 0.09), transparent),
+        rgba(255, 255, 255, 0.88);
+    box-shadow: 0 18px 44px rgba(31, 33, 51, 0.06);
+}
+
+.pmc-cycle-rail {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-cycle-rail a {
+    display: grid;
+    min-width: 0;
+    gap: 0.45rem;
+    padding: 0.85rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    background: #fff;
+    color: var(--pmc-text);
+}
+
+.pmc-cycle-rail a:hover {
+    border-color: rgba(239, 108, 47, 0.28);
+    color: var(--pmc-text);
+}
+
+.pmc-cycle-rail span,
+.pmc-cycle-rail i {
+    display: inline-grid;
+    place-items: center;
+}
+
+.pmc-cycle-rail span {
+    width: 1.8rem;
+    height: 1.8rem;
+    border-radius: 999px;
+    background: #162238;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 950;
+}
+
+.pmc-cycle-rail i {
+    width: 2.35rem;
+    height: 2.35rem;
+    border-radius: 0.8rem;
+    background: rgba(239, 108, 47, 0.12);
+    color: var(--pmc-primary);
+}
+
+.pmc-cycle-rail strong {
+    color: #172033;
+    font-weight: 950;
+}
+
+.pmc-cycle-rail small {
+    color: var(--pmc-muted);
+    line-height: 1.35;
+}
+
+.pmc-cycle-rail a.is-done {
+    border-color: rgba(12, 138, 124, 0.18);
+    background: rgba(12, 138, 124, 0.08);
+}
+
+.pmc-cycle-rail a.is-done span,
+.pmc-cycle-rail a.is-done i {
+    background: var(--pmc-secondary);
+    color: #fff;
+}
+
+.pmc-tenant-payment-card {
+    align-self: stretch;
+}
+
+.pmc-tenant-payment-card small {
+    color: var(--pmc-muted);
+}
+
+.pmc-tenant-progress {
+    overflow: hidden;
+    height: 0.85rem;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, 0.08);
+}
+
+.pmc-tenant-progress i {
+    display: block;
+    min-width: 0.4rem;
+    max-width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--pmc-secondary), var(--pmc-accent));
+}
+
 .pmc-asset-control-hero {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
@@ -3757,6 +3976,15 @@ a {
         justify-content: flex-start;
     }
 
+    .pmc-dashboard-brief,
+    .pmc-tenant-command {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-cycle-rail {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
     .pmc-command-hero,
     .pmc-tenant-hero,
     .pmc-cms-grid,
@@ -3854,6 +4082,30 @@ a {
     .pmc-command-actions,
     .pmc-tenant-meter {
         width: 100%;
+    }
+
+    .pmc-dashboard-brief,
+    .pmc-tenant-command {
+        padding: 1rem;
+        border-radius: 1.2rem;
+    }
+
+    .pmc-dashboard-context {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-dashboard-context span {
+        justify-content: center;
+        width: 100%;
+    }
+
+    .pmc-dashboard-health > div:first-child {
+        min-height: 7.5rem;
+    }
+
+    .pmc-cycle-rail {
+        grid-template-columns: 1fr;
     }
 
     .pmc-next-action-grid {
