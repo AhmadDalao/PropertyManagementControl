@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\CmsPage;
+use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
@@ -38,6 +39,7 @@ class AdminExportController extends Controller
             'payments' => $this->exportPayments($request),
             'maintenance-requests' => $this->exportMaintenance($request),
             'expenses' => $this->exportExpenses($request),
+            'documents' => $this->exportDocuments($request),
             'cms-pages' => $this->exportCmsPages($request),
             'media-files' => $this->exportMediaFiles($request),
         };
@@ -250,6 +252,50 @@ class AdminExportController extends Controller
         ]);
     }
 
+    private function exportDocuments(Request $request): StreamedResponse
+    {
+        $actor = $this->actor($request);
+        $filters = $this->tableFilters($request, [
+            'type' => 'all',
+            'attachment' => 'all',
+            'visibility' => 'all',
+            'date_from' => '',
+            'date_to' => '',
+        ]);
+        $query = $this->scopeByPortfolio(Document::query(), $actor)->with(['portfolio', 'uploadedBy']);
+        $this->applyExactFilter($query, $filters, 'portfolio_id');
+        $this->applyExactFilter($query, $filters, 'type');
+
+        if (($filters['attachment'] ?? 'all') !== 'all') {
+            $query->whereIn('documentable_type', $this->documentableExportTypes((string) $filters['attachment']));
+        }
+
+        if (($filters['visibility'] ?? 'all') === 'public') {
+            $query->where('is_public', true);
+        }
+
+        if (($filters['visibility'] ?? 'all') === 'private') {
+            $query->where('is_public', false);
+        }
+
+        $this->applyDateRange($query, $filters, 'created_at');
+        $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
+
+        return $this->csv('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', 'Public', 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
+            $row->title_en,
+            $row->title_ar,
+            $row->type,
+            class_basename($row->documentable_type).' #'.$row->documentable_id,
+            $row->original_name,
+            $row->mime_type,
+            $row->file_size,
+            $row->is_public ? 'Yes' : 'No',
+            $row->portfolio?->name_en,
+            $row->uploadedBy?->name,
+            $row->created_at?->toDateTimeString(),
+        ]);
+    }
+
     private function exportCmsPages(Request $request): StreamedResponse
     {
         $filters = $this->tableFilters($request, ['status' => 'all']);
@@ -321,10 +367,24 @@ class AdminExportController extends Controller
             'payments',
             'maintenance-requests',
             'expenses',
+            'documents',
             'users',
             'portfolios',
             'cms-pages',
             'media-files',
         ], true);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function documentableExportTypes(string $alias): array
+    {
+        return match ($alias) {
+            'lease' => ['lease', Lease::class],
+            'asset' => ['asset', Asset::class],
+            'payment' => ['payment', Payment::class],
+            default => [$alias],
+        };
     }
 }

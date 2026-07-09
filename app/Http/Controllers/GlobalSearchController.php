@@ -124,6 +124,12 @@ class GlobalSearchController extends Controller
             $results[] = $this->result('Users', $user->name, $user->email, $user->roles->pluck('name')->join(', '), route('users.index', ['search' => $user->email]));
         }
 
+        $documentQuery = $this->scopeByPortfolio(Document::query(), $actor);
+        $this->applySearch($documentQuery, $search, ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
+        foreach ($documentQuery->limit(5)->get() as $document) {
+            $results[] = $this->result('Documents', $document->title_en, $document->original_name, $document->type, route('documents.index', ['search' => $document->original_name ?: $document->title_en]));
+        }
+
         $mediaQuery = $this->scopeByPortfolio(MediaFile::query(), $actor);
         $this->applySearch($mediaQuery, $search, ['title_en', 'title_ar', 'collection', 'path']);
         foreach ($mediaQuery->limit(4)->get() as $media) {

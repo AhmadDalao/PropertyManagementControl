@@ -56,6 +56,8 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    Route::resource('documents', DocumentController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');
     Route::post('/cms/pages', [CmsPageController::class, 'store'])->name('cms.pages.store');
@@ -71,5 +73,4 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('navigation-items', NavigationItemController::class)->only(['store', 'update', 'destroy']);
     Route::resource('media-files', MediaFileController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 });

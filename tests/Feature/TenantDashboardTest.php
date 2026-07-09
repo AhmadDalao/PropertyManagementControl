@@ -50,7 +50,7 @@ class TenantDashboardTest extends TestCase
                 ->component('dashboard')
                 ->where('mode', 'tenant')
                 ->where('stats.leaseCode', $lease->code)
-                ->where('stats.amountLeft', 2500.0)
+                ->where('stats.amountLeft', fn (int|float $amount) => (float) $amount === 2500.0)
                 ->where('tenantPortal.lease.code', $lease->code)
                 ->has('tenantPortal.payments', 1));
     }

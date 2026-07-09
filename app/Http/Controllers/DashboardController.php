@@ -40,8 +40,8 @@ class DashboardController extends Controller
                 'stats' => [
                     'leaseCode' => $activeLease?->code,
                     'daysLeft' => $activeLease?->days_remaining,
-                    'amountLeft' => $activeLease?->balance_remaining ?? 0,
-                    'paidAmount' => $activeLease?->total_paid ?? 0,
+                    'amountLeft' => (float) ($activeLease?->balance_remaining ?? 0),
+                    'paidAmount' => (float) ($activeLease?->total_paid ?? 0),
                     'maintenanceRequests' => $tenantProfile?->maintenanceRequests->count() ?? 0,
                 ],
                 'tenantPortal' => [

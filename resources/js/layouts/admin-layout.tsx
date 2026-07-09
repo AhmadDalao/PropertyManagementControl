@@ -96,6 +96,12 @@ const NAV_GROUPS: NavGroup[] = [
                 icon: 'bi-graph-up-arrow',
                 roles: ['superadmin', 'owner', 'property_manager'],
             },
+            {
+                label: 'Documents',
+                href: '/documents',
+                icon: 'bi-folder2-open',
+                roles: ['superadmin', 'owner', 'property_manager'],
+            },
         ],
     },
     {
