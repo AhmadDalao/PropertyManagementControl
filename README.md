@@ -33,7 +33,9 @@ npm run build
 php artisan serve
 ```
 
-## Demo accounts
+## Local demo accounts
+
+These accounts are created only by the local/demo seeders. Production accounts are created by the system owner inside the app and are not committed here.
 
 - `superadmin@propertycontrol.test` / `password`
 - `owner@propertycontrol.test` / `password`

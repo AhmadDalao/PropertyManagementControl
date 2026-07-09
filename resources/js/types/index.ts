@@ -1,3 +1,5 @@
+import type { AppUser } from './auth';
+
 export type * from './auth';
 
 export type TranslationMap = Record<string, unknown>;
@@ -6,7 +8,7 @@ export type SharedProps = {
     name: string;
     url: string;
     auth: {
-        user: import('./auth').AppUser | null;
+        user: AppUser | null;
     };
     app: {
         name: string;
@@ -28,6 +30,7 @@ export type NavigationItemRecord = {
     title_en: string;
     title_ar: string;
     url?: string | null;
+    target?: string;
     location: string;
     sort_order: number;
     children?: NavigationItemRecord[];

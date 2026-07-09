@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\LandingContentSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -82,6 +83,14 @@ Artisan::command('property:ensure-superadmin {email} {--password=} {--name=Syste
 
     return 0;
 })->purpose('Create or repair the global superadmin account.');
+
+Artisan::command('property:seed-landing-content', function () {
+    $result = app(LandingContentSeeder::class)->seed();
+
+    $this->info("Landing page [{$result['page_id']}] seeded with {$result['sections']} sections and {$result['navigation_items']} navigation items.");
+
+    return 0;
+})->purpose('Seed editable public landing page CMS content.');
 
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()

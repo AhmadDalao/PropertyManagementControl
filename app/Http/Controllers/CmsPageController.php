@@ -6,11 +6,11 @@ use App\Models\CmsPage;
 use App\Models\CmsPageSection;
 use App\Models\CmsSection;
 use App\Models\NavigationItem;
-use Inertia\Inertia;
-use Inertia\Response;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CmsPageController extends Controller
 {
@@ -19,7 +19,12 @@ class CmsPageController extends Controller
         $page = CmsPage::query()
             ->where('is_homepage', true)
             ->where('status', 'published')
-            ->with(['pageSections.section', 'navigationItems'])
+            ->with([
+                'pageSections' => fn ($query) => $query
+                    ->where('is_visible', true)
+                    ->with(['section' => fn ($query) => $query->where('status', 'active')]),
+                'navigationItems',
+            ])
             ->first();
 
         return Inertia::render('public/home', [
@@ -32,7 +37,11 @@ class CmsPageController extends Controller
         $page = CmsPage::query()
             ->where('slug', $slug)
             ->where('status', 'published')
-            ->with(['pageSections.section'])
+            ->with([
+                'pageSections' => fn ($query) => $query
+                    ->where('is_visible', true)
+                    ->with(['section' => fn ($query) => $query->where('status', 'active')]),
+            ])
             ->firstOrFail();
 
         return Inertia::render('public/page', [

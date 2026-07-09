@@ -1,5 +1,6 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
 import type { NavigationItemRecord, SharedProps } from '@/types';
@@ -22,31 +23,81 @@ export function PublicLayout({ children }: PublicLayoutProps) {
     }, [props.app.direction, props.app.locale]);
 
     return (
-        <div className="container py-4 py-lg-5">
-            <div className="pmc-topbar p-3 p-lg-4 mb-4">
-                <div className="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
-                    <div>
-                        <div className="pmc-kicker mb-2">Property management control</div>
-                        <div className="h4 fw-bold mb-0">{props.app.name}</div>
-                    </div>
-
-                    <div className="d-flex flex-wrap gap-3 align-items-center">
-                        <nav className="d-flex gap-3 flex-wrap">
-                            {props.publicNavigation.header.map((item) => (
-                                <Link key={item.id} href={item.url || '/'} className="fw-semibold text-dark">
-                                    {itemLabel(item, locale)}
-                                </Link>
-                            ))}
-                        </nav>
-                        <LanguageSwitcher />
-                        <Link href="/login" className="btn btn-primary">
-                            Login
+        <div className="pmc-public-shell">
+            <header className="pmc-public-header">
+                <div className="container">
+                    <div className="pmc-public-nav">
+                        <Link href="/" className="pmc-public-brand">
+                            <span>PMC</span>
+                            <strong>{props.app.name}</strong>
                         </Link>
+
+                        <nav
+                            className="pmc-public-links"
+                            aria-label="Public navigation"
+                        >
+                            {props.publicNavigation.header.length > 0
+                                ? props.publicNavigation.header.map((item) => (
+                                      <PublicNavItem
+                                          key={item.id}
+                                          item={item}
+                                          locale={locale}
+                                      />
+                                  ))
+                                : defaultNavigation(locale).map((item) => (
+                                      <a key={item.href} href={item.href}>
+                                          {item.label}
+                                      </a>
+                                  ))}
+                        </nav>
+
+                        <div className="pmc-public-actions">
+                            <LanguageSwitcher />
+                            <Link href="/login" className="btn btn-primary">
+                                <i className="bi bi-box-arrow-in-right me-2" />
+                                {locale === 'ar'
+                                    ? 'دخول البوابة'
+                                    : 'Open Portal'}
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            {children}
+            <main className="pmc-public-main container">{children}</main>
         </div>
     );
+}
+
+function PublicNavItem({
+    item,
+    locale,
+}: {
+    item: NavigationItemRecord;
+    locale: 'en' | 'ar';
+}) {
+    const href = item.url || '/';
+    const label = itemLabel(item, locale);
+
+    if (href.startsWith('#')) {
+        return <a href={href}>{label}</a>;
+    }
+
+    return <Link href={href}>{label}</Link>;
+}
+
+function defaultNavigation(locale: 'en' | 'ar') {
+    if (locale === 'ar') {
+        return [
+            { label: 'المزايا', href: '#features' },
+            { label: 'مسار العمل', href: '#workflow' },
+            { label: 'الأسئلة', href: '#faq' },
+        ];
+    }
+
+    return [
+        { label: 'Features', href: '#features' },
+        { label: 'Workflow', href: '#workflow' },
+        { label: 'FAQ', href: '#faq' },
+    ];
 }

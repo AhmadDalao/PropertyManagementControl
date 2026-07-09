@@ -2,7 +2,7 @@
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 :root {
-    --pmc-bg: #fffaf3;
+    --pmc-bg: #fffdf8;
     --pmc-panel: rgba(255, 255, 255, 0.92);
     --pmc-border: rgba(26, 30, 48, 0.08);
     --pmc-text: #1b2430;
@@ -10,7 +10,9 @@
     --pmc-primary: #ef6c2f;
     --pmc-secondary: #0c8a7c;
     --pmc-accent: #ffca4b;
-    --pmc-shadow: 0 20px 60px rgba(31, 33, 51, 0.08);
+    --pmc-blue: #2563eb;
+    --pmc-shadow: 0 18px 50px rgba(31, 33, 51, 0.08);
+    --pmc-radius: 0.75rem;
     --bs-primary: var(--pmc-primary);
     --bs-secondary: var(--pmc-secondary);
     --bs-body-color: var(--pmc-text);
@@ -91,11 +93,11 @@ a {
 }
 
 .pmc-topbar {
-    border-radius: 1.5rem;
+    border-radius: var(--pmc-radius);
 }
 
 .pmc-card {
-    border-radius: 1.4rem;
+    border-radius: var(--pmc-radius);
 }
 
 .pmc-card--accent {
@@ -120,7 +122,7 @@ a {
 
 .pmc-kicker {
     text-transform: uppercase;
-    letter-spacing: 0.16em;
+    letter-spacing: 0;
     font-size: 0.72rem;
     font-weight: 700;
     color: var(--pmc-muted);
@@ -146,7 +148,7 @@ a {
     color: var(--pmc-muted);
     font-size: 0.78rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0;
     border-bottom-color: var(--pmc-border);
 }
 
@@ -158,7 +160,7 @@ a {
 .pmc-form-label {
     font-size: 0.76rem;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0;
     color: var(--pmc-muted);
     font-weight: 700;
 }
@@ -233,13 +235,549 @@ a {
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
+.btn-primary {
+    --bs-btn-bg: var(--pmc-primary);
+    --bs-btn-border-color: var(--pmc-primary);
+    --bs-btn-hover-bg: #d85a21;
+    --bs-btn-hover-border-color: #d85a21;
+    --bs-btn-active-bg: #bf4d1a;
+    --bs-btn-active-border-color: #bf4d1a;
+}
+
+.pmc-public-shell {
+    min-height: 100vh;
+}
+
+.pmc-public-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 0.75rem 0;
+    background: rgba(255, 253, 248, 0.88);
+    border-bottom: 1px solid rgba(26, 30, 48, 0.07);
+    backdrop-filter: blur(16px);
+}
+
+.pmc-public-nav {
+    min-height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pmc-public-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--pmc-text);
+}
+
+.pmc-public-brand span {
+    width: 2.35rem;
+    height: 2.35rem;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: var(--pmc-text);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.pmc-public-brand strong {
+    font-weight: 800;
+}
+
+.pmc-public-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    flex: 1;
+}
+
+.pmc-public-links a {
+    color: var(--pmc-muted);
+    font-weight: 700;
+}
+
+.pmc-public-links a:hover {
+    color: var(--pmc-text);
+}
+
+.pmc-public-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pmc-public-main {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.pmc-landing-hero {
+    min-height: min(720px, calc(100vh - 7rem));
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+    align-items: center;
+    gap: clamp(2rem, 4vw, 4rem);
+    padding: clamp(2rem, 5vw, 4.5rem) 0;
+}
+
+.pmc-hero-copy h1 {
+    max-width: 780px;
+    margin-bottom: 1rem;
+    font-size: clamp(2.5rem, 5.8vw, 5.7rem);
+    line-height: 0.95;
+    font-weight: 900;
+}
+
+.pmc-hero-copy p {
+    max-width: 680px;
+    margin-bottom: 1.5rem;
+    color: var(--pmc-muted);
+    font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+}
+
+.pmc-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.pmc-hero-stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    max-width: 760px;
+}
+
+.pmc-hero-stat,
+.pmc-metric-panel,
+.pmc-preview-tile,
+.pmc-control-list div,
+.pmc-strip-items div {
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.78);
+}
+
+.pmc-hero-stat {
+    padding: 0.9rem;
+}
+
+.pmc-hero-stat span,
+.pmc-metric-panel span,
+.pmc-preview-tile span,
+.pmc-control-list span,
+.pmc-strip-items span {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.84rem;
+    font-weight: 700;
+}
+
+.pmc-hero-stat strong,
+.pmc-metric-panel strong,
+.pmc-preview-tile strong,
+.pmc-control-list strong,
+.pmc-strip-items strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--pmc-text);
+    font-size: 1rem;
+}
+
+.pmc-dashboard-preview {
+    border-radius: 1rem;
+    border: 1px solid rgba(26, 30, 48, 0.1);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.96),
+            rgba(255, 251, 242, 0.88)
+        ),
+        linear-gradient(
+            135deg,
+            rgba(239, 108, 47, 0.12),
+            rgba(12, 138, 124, 0.12)
+        );
+    box-shadow: var(--pmc-shadow);
+    overflow: hidden;
+}
+
+.pmc-preview-topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--pmc-border);
+}
+
+.pmc-preview-topbar span {
+    width: 0.65rem;
+    height: 0.65rem;
+    border-radius: 999px;
+    background: var(--pmc-primary);
+}
+
+.pmc-preview-topbar span:nth-child(2) {
+    background: var(--pmc-accent);
+}
+
+.pmc-preview-topbar span:nth-child(3) {
+    background: var(--pmc-secondary);
+}
+
+.pmc-preview-topbar strong {
+    margin-inline-start: auto;
+    font-size: 0.9rem;
+}
+
+.pmc-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.pmc-preview-tile {
+    padding: 1rem;
+}
+
+.pmc-preview-table {
+    display: grid;
+    gap: 0.65rem;
+    padding: 0 1rem 1rem;
+}
+
+.pmc-preview-table div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.pmc-section-band {
+    padding: clamp(2rem, 5vw, 4rem) 0;
+}
+
+.pmc-section-heading {
+    max-width: 760px;
+    margin-bottom: 1.5rem;
+}
+
+.pmc-section-heading h2,
+.pmc-section-band h2,
+.pmc-operations-strip h2,
+.pmc-final-cta h2 {
+    margin: 0;
+    font-size: clamp(1.8rem, 3vw, 3rem);
+    line-height: 1;
+    font-weight: 900;
+}
+
+.pmc-section-copy {
+    color: var(--pmc-muted);
+    font-size: 1.05rem;
+}
+
+.pmc-role-grid,
+.pmc-feature-grid,
+.pmc-workflow,
+.pmc-setup-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.pmc-role-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pmc-feature-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pmc-workflow {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.pmc-role-card,
+.pmc-feature-item,
+.pmc-workflow-step,
+.pmc-setup-item {
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.84);
+    box-shadow: 0 10px 30px rgba(31, 33, 51, 0.05);
+}
+
+.pmc-role-card,
+.pmc-feature-item {
+    padding: 1.15rem;
+}
+
+.pmc-role-card i,
+.pmc-feature-item i,
+.pmc-chart-empty i,
+.pmc-setup-item i {
+    display: inline-grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    margin-bottom: 0.9rem;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: rgba(239, 108, 47, 0.12);
+    color: var(--pmc-primary);
+    font-size: 1.15rem;
+}
+
+.pmc-role-card h3,
+.pmc-feature-item h3,
+.pmc-workflow-step h3 {
+    margin-bottom: 0.5rem;
+    font-size: 1.05rem;
+    font-weight: 800;
+}
+
+.pmc-role-card p,
+.pmc-feature-item p,
+.pmc-workflow-step p,
+.pmc-operations-strip p,
+.pmc-final-cta p,
+.pmc-setup-panel p {
+    margin-bottom: 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-workflow-step {
+    padding: 1rem;
+}
+
+.pmc-workflow-step span {
+    display: inline-grid;
+    width: 2rem;
+    height: 2rem;
+    margin-bottom: 0.8rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--pmc-text);
+    color: #fff;
+    font-weight: 800;
+}
+
+.pmc-section-split,
+.pmc-operations-strip,
+.pmc-final-cta,
+.pmc-setup-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.05fr);
+    align-items: center;
+    gap: 2rem;
+}
+
+.pmc-control-list,
+.pmc-strip-items {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-control-list div,
+.pmc-strip-items div {
+    padding: 1rem;
+}
+
+.pmc-operations-strip,
+.pmc-final-cta,
+.pmc-setup-panel {
+    margin: 2rem 0;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    border-radius: 1rem;
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    background:
+        linear-gradient(
+            135deg,
+            rgba(239, 108, 47, 0.09),
+            rgba(12, 138, 124, 0.1)
+        ),
+        rgba(255, 255, 255, 0.78);
+}
+
+.pmc-final-cta {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.pmc-faq-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-faq-item {
+    padding: 1rem 1.15rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.pmc-faq-item summary {
+    cursor: pointer;
+    font-weight: 800;
+}
+
+.pmc-faq-item p {
+    margin: 0.75rem 0 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem 0;
+}
+
+.pmc-auth-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.pmc-auth-copy h1 {
+    max-width: 720px;
+    margin-bottom: 1rem;
+    font-size: clamp(2.25rem, 4vw, 4.25rem);
+    line-height: 0.98;
+    font-weight: 900;
+}
+
+.pmc-auth-copy p {
+    max-width: 640px;
+    color: var(--pmc-muted);
+    font-size: 1.1rem;
+}
+
+.pmc-auth-points {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.pmc-auth-points span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.76);
+    border: 1px solid var(--pmc-border);
+    font-weight: 700;
+}
+
+.pmc-chart-empty,
+.pmc-inline-empty {
+    min-height: 220px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--pmc-muted);
+    border: 1px dashed rgba(26, 30, 48, 0.16);
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.52);
+}
+
+.pmc-inline-empty {
+    min-height: 82px;
+}
+
+.pmc-chart-empty strong {
+    color: var(--pmc-text);
+    font-size: 1.05rem;
+}
+
+.pmc-setup-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pmc-setup-item {
+    padding: 1rem;
+    color: var(--pmc-text);
+}
+
+.pmc-setup-item strong,
+.pmc-setup-item span {
+    display: block;
+}
+
+.pmc-setup-item span {
+    color: var(--pmc-muted);
+}
+
 [dir='rtl'] .pmc-sidebar {
     border-right: none;
     border-left: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+[dir='rtl'] .pmc-preview-topbar strong {
+    margin-inline-start: 0;
+    margin-inline-end: auto;
+}
+
 @media (max-width: 991.98px) {
     .pmc-sidebar {
         width: 100%;
+    }
+
+    .pmc-public-nav {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .pmc-public-links {
+        justify-content: flex-start;
+        order: 3;
+        overflow-x: auto;
+        width: 100%;
+        padding-bottom: 0.15rem;
+    }
+
+    .pmc-public-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .pmc-landing-hero,
+    .pmc-section-split,
+    .pmc-operations-strip,
+    .pmc-final-cta,
+    .pmc-setup-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-role-grid,
+    .pmc-feature-grid,
+    .pmc-workflow,
+    .pmc-setup-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-hero-stat-row,
+    .pmc-preview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-final-cta {
+        text-align: start;
     }
 }
