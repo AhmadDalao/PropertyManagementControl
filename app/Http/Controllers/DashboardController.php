@@ -102,10 +102,12 @@ class DashboardController extends Controller
             'totalValue' => (float) (clone $assetQuery)->sum('valuation_amount'),
             'activeLeases' => (clone $leaseQuery)->where('status', 'active')->count(),
             'monthlyRevenue' => (float) (clone $paymentQuery)
+                ->where('status', 'posted')
                 ->whereMonth('received_on', now()->month)
                 ->whereYear('received_on', now()->year)
                 ->sum('amount'),
             'monthlyExpenses' => (float) (clone $expenseQuery)
+                ->where('status', 'posted')
                 ->whereMonth('incurred_on', now()->month)
                 ->whereYear('incurred_on', now()->year)
                 ->sum('amount'),
