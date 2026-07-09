@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -114,6 +115,55 @@ class AccountProfileManagementTest extends TestCase
         $tenant->refresh();
         $this->assertTrue($tenant->force_password_reset);
         $this->assertTrue(Hash::check('temporary-reset', $tenant->password));
+    }
+
+    public function test_user_management_creates_tenant_profile_for_tenant_role(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->post(route('users.store'), [
+                'name' => 'Portal Tenant',
+                'email' => 'portal-tenant@example.test',
+                'phone' => '+966500100200',
+                'preferred_locale' => 'ar',
+                'status' => 'active',
+                'password' => 'temporary-password',
+                'role' => 'tenant',
+            ])
+            ->assertRedirect(route('users.index'));
+
+        $tenant = User::query()->where('email', 'portal-tenant@example.test')->firstOrFail();
+
+        $this->assertTrue($tenant->hasRole('tenant'));
+        $this->assertDatabaseHas('tenant_profiles', [
+            'portfolio_id' => $portfolio->id,
+            'user_id' => $tenant->id,
+            'profile_type' => 'individual',
+            'status' => 'active',
+        ]);
+    }
+
+    public function test_user_management_syncs_tenant_profile_status(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio);
+        $profile = $this->createTenantProfile($portfolio, $tenant, ['status' => 'active']);
+
+        $this->actingAs($owner)
+            ->put(route('users.update', $tenant), [
+                'name' => $tenant->name,
+                'phone' => $tenant->phone,
+                'preferred_locale' => 'en',
+                'status' => 'suspended',
+                'role' => 'tenant',
+                'password' => '',
+            ])
+            ->assertRedirect(route('users.index'));
+
+        $this->assertSame('blocked', $profile->fresh()->status);
     }
 
     public function test_manager_cannot_manage_owner_account_in_the_same_portfolio(): void

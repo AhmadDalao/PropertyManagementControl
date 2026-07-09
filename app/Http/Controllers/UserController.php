@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\TenantProfile;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +24,7 @@ class UserController extends Controller
             'role' => 'all',
         ]);
         $baseQuery = $this->scopeByPortfolio(User::query(), $actor);
-        $users = (clone $baseQuery)->with('roles');
+        $users = (clone $baseQuery)->with(['roles', 'tenantProfile']);
 
         $this->applyExactFilter($users, $filters, 'portfolio_id');
         $this->applyExactFilter($users, $filters, 'status');
@@ -51,6 +53,7 @@ class UserController extends Controller
             'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'suspended'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'roleOptions' => $this->roleOptions($actor),
+            'userInsights' => $this->userInsights($baseQuery),
         ]);
     }
 
@@ -72,6 +75,7 @@ class UserController extends Controller
 
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
+        abort_if($data['role'] !== 'superadmin' && $portfolioId === null, 422, 'Select a portfolio before creating this role.');
         abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
 
         $user = DB::transaction(function () use ($data, $portfolioId) {
@@ -87,6 +91,7 @@ class UserController extends Controller
             ]);
 
             $user->syncRoles([$data['role']]);
+            $this->ensureTenantProfileForRole($user, $portfolioId, $data['role'], $data['status']);
 
             return $user;
         });
@@ -124,9 +129,11 @@ class UserController extends Controller
             $updates['force_password_reset'] = true;
         }
 
-        $user->update($updates);
-
-        $user->syncRoles([$data['role']]);
+        DB::transaction(function () use ($user, $updates, $data): void {
+            $user->update($updates);
+            $user->syncRoles([$data['role']]);
+            $this->ensureTenantProfileForRole($user, $user->portfolio_id, $data['role'], $data['status']);
+        });
 
         return to_route('users.index')->with('success', "User {$user->name} updated.");
     }
@@ -193,5 +200,59 @@ class UserController extends Controller
         }
 
         abort(403, 'You are not allowed to manage this account.');
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function userInsights(Builder $baseQuery): array
+    {
+        $roleCount = fn (string $role): int => (clone $baseQuery)
+            ->whereHas('roles', fn (Builder $query) => $query->where('name', $role))
+            ->count();
+
+        return [
+            'total' => (clone $baseQuery)->count(),
+            'active' => (clone $baseQuery)->where('status', 'active')->count(),
+            'suspended' => (clone $baseQuery)->where('status', 'suspended')->count(),
+            'temporary_passwords' => (clone $baseQuery)->where('force_password_reset', true)->count(),
+            'tenants_without_profile' => (clone $baseQuery)
+                ->whereHas('roles', fn (Builder $query) => $query->where('name', 'tenant'))
+                ->whereDoesntHave('tenantProfile')
+                ->count(),
+            'roles' => [
+                ['role' => 'superadmin', 'label' => 'Superadmin', 'count' => $roleCount('superadmin')],
+                ['role' => 'owner', 'label' => 'Owner', 'count' => $roleCount('owner')],
+                ['role' => 'property_manager', 'label' => 'Property manager', 'count' => $roleCount('property_manager')],
+                ['role' => 'tenant', 'label' => 'Tenant', 'count' => $roleCount('tenant')],
+            ],
+        ];
+    }
+
+    private function ensureTenantProfileForRole(User $user, ?int $portfolioId, string $role, string $status): void
+    {
+        if ($role !== 'tenant') {
+            return;
+        }
+
+        abort_if($portfolioId === null, 422, 'Tenant accounts must belong to a portfolio.');
+
+        TenantProfile::query()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'portfolio_id' => $portfolioId,
+                'profile_type' => 'individual',
+                'status' => $this->tenantProfileStatus($status),
+            ],
+        );
+    }
+
+    private function tenantProfileStatus(string $userStatus): string
+    {
+        return match ($userStatus) {
+            'suspended' => 'blocked',
+            'inactive' => 'inactive',
+            default => 'active',
+        };
     }
 }

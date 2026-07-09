@@ -5,7 +5,6 @@ import type { FormEvent } from 'react';
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
-import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import type {
     PaginatedData,
@@ -24,6 +23,7 @@ type UserRecord = {
     status: string;
     force_password_reset?: boolean;
     roles?: Array<{ name: string }>;
+    tenant_profile?: { id: number; status: string } | null;
 };
 
 type PageProps = SharedProps & {
@@ -32,11 +32,23 @@ type PageProps = SharedProps & {
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
     roleOptions: string[];
+    userInsights: {
+        total: number;
+        active: number;
+        suspended: number;
+        temporary_passwords: number;
+        tenants_without_profile: number;
+        roles: Array<{ role: string; label: string; count: number }>;
+    };
 };
 
 export default function UsersPage() {
     const { props } = usePage<PageProps>();
     const [editing, setEditing] = useState<UserRecord | null>(null);
+    const canCreateOwners = props.roleOptions.includes('owner');
+    const manageableRoleCards = roleCards.filter((role) =>
+        props.roleOptions.includes(role.role),
+    );
     const form = useForm({
         portfolio_id: String(
             props.auth.user?.portfolio_id ??
@@ -129,10 +141,95 @@ export default function UsersPage() {
     return (
         <AdminLayout>
             <Head title="Users" />
-            <PageHeader
-                title="Users"
-                description="Create owners, managers, and tenant accounts with controlled roles."
-            />
+
+            <section className="pmc-user-command">
+                <div>
+                    <div className="pmc-kicker mb-3">Access control</div>
+                    <h1>
+                        Create the right account, not another support ticket.
+                    </h1>
+                    <p>
+                        Owners and managers need a direct way to create users,
+                        reset access, and keep tenants connected to a proper
+                        tenant profile. This workspace controls that cycle.
+                    </p>
+                    <div className="pmc-user-command-meta">
+                        <span>
+                            <i className="bi bi-shield-lock" />
+                            Role scoped
+                        </span>
+                        <span>
+                            <i className="bi bi-key" />
+                            Temporary passwords tracked
+                        </span>
+                        <span>
+                            <i className="bi bi-person-badge" />
+                            Tenant profiles auto-created
+                        </span>
+                    </div>
+                </div>
+
+                <div className="pmc-user-insight-card">
+                    <div>
+                        <span>Total accounts</span>
+                        <strong>{props.userInsights.total}</strong>
+                    </div>
+                    <div className="pmc-user-insight-grid">
+                        <UserInsight
+                            label="Active"
+                            value={props.userInsights.active}
+                        />
+                        <UserInsight
+                            label="Suspended"
+                            value={props.userInsights.suspended}
+                        />
+                        <UserInsight
+                            label="Temp passwords"
+                            value={props.userInsights.temporary_passwords}
+                        />
+                        <UserInsight
+                            label="Profile gaps"
+                            value={props.userInsights.tenants_without_profile}
+                            tone={
+                                props.userInsights.tenants_without_profile > 0
+                                    ? 'risk'
+                                    : 'good'
+                            }
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section className="pmc-access-grid">
+                {manageableRoleCards.map((role) => (
+                    <div key={role.role} className="pmc-access-card">
+                        <i className={`bi ${role.icon}`} />
+                        <div>
+                            <strong>{role.title}</strong>
+                            <span>{role.description}</span>
+                        </div>
+                        <em>
+                            {props.userInsights.roles.find(
+                                (item) => item.role === role.role,
+                            )?.count ?? 0}{' '}
+                            accounts
+                        </em>
+                    </div>
+                ))}
+                {!canCreateOwners ? (
+                    <div className="pmc-access-card is-muted">
+                        <i className="bi bi-info-circle" />
+                        <div>
+                            <strong>Owner accounts are system-level</strong>
+                            <span>
+                                Portfolio owners can create managers and
+                                tenants. Superadmin creates owners and global
+                                system users.
+                            </span>
+                        </div>
+                    </div>
+                ) : null}
+            </section>
 
             <div className="row g-4">
                 <div className="col-xl-4">
@@ -164,7 +261,29 @@ export default function UsersPage() {
                             ) : null}
                         </div>
 
+                        {Object.keys(form.errors).length > 0 ? (
+                            <div className="alert alert-danger py-2 small">
+                                {Object.values(form.errors)[0]}
+                            </div>
+                        ) : null}
+
                         <form className="d-grid gap-3" onSubmit={submit}>
+                            <div className="pmc-user-form-guide">
+                                <i className="bi bi-person-check" />
+                                <div>
+                                    <strong>
+                                        {form.data.role === 'tenant'
+                                            ? 'Tenant account cycle'
+                                            : 'Access rule'}
+                                    </strong>
+                                    <span>
+                                        {form.data.role === 'tenant'
+                                            ? 'Creating a tenant here also creates the tenant profile needed for leases, payments, documents, and maintenance.'
+                                            : 'Assign the smallest role that can do the job. Managers run operations; tenants only see their own portal.'}
+                                    </span>
+                                </div>
+                            </div>
+
                             {props.auth.user?.roles.includes('superadmin') ? (
                                 <div>
                                     <label className="form-label pmc-form-label">
@@ -256,7 +375,7 @@ export default function UsersPage() {
                                     >
                                         {props.roleOptions.map((role) => (
                                             <option key={role} value={role}>
-                                                {role}
+                                                {roleLabel(role)}
                                             </option>
                                         ))}
                                     </select>
@@ -341,8 +460,8 @@ export default function UsersPage() {
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
                         <DataTable
-                            title="All users"
-                            description="Search by name, email, phone, or assigned role."
+                            title="Access directory"
+                            description="Search by name, email, phone, role, or status. Archive accounts instead of deleting audit history."
                             data={props.users}
                             filters={props.filters}
                             counts={props.counts}
@@ -370,10 +489,24 @@ export default function UsersPage() {
                                 {
                                     key: 'role',
                                     label: 'Role',
-                                    render: (user) =>
-                                        user.roles
-                                            ?.map((role) => role.name)
-                                            .join(', ') || '-',
+                                    render: (user) => (
+                                        <div className="d-flex gap-2 flex-wrap">
+                                            {user.roles?.length ? (
+                                                user.roles.map((role) => (
+                                                    <span
+                                                        key={role.name}
+                                                        className="pmc-role-chip"
+                                                    >
+                                                        {roleLabel(role.name)}
+                                                    </span>
+                                                ))
+                                            ) : (
+                                                <span className="pmc-chip">
+                                                    No role
+                                                </span>
+                                            )}
+                                        </div>
+                                    ),
                                 },
                                 {
                                     key: 'locale',
@@ -392,6 +525,14 @@ export default function UsersPage() {
                                             {user.force_password_reset ? (
                                                 <span className="pmc-chip">
                                                     temp password
+                                                </span>
+                                            ) : null}
+                                            {user.roles?.some(
+                                                (role) =>
+                                                    role.name === 'tenant',
+                                            ) && !user.tenant_profile ? (
+                                                <span className="pmc-chip pmc-chip--primary">
+                                                    profile missing
                                                 </span>
                                             ) : null}
                                         </div>
@@ -437,5 +578,60 @@ export default function UsersPage() {
                 </div>
             </div>
         </AdminLayout>
+    );
+}
+
+function UserInsight({
+    label,
+    value,
+    tone = 'default',
+}: {
+    label: string;
+    value: number;
+    tone?: 'default' | 'good' | 'risk';
+}) {
+    return (
+        <div className={`is-${tone}`}>
+            <span>{label}</span>
+            <strong>{value}</strong>
+        </div>
+    );
+}
+
+const roleCards = [
+    {
+        role: 'superadmin',
+        icon: 'bi-shield-lock',
+        title: 'Superadmin',
+        description:
+            'Controls platform-wide portfolios, website CMS, users, media, and system reporting.',
+    },
+    {
+        role: 'owner',
+        icon: 'bi-building-check',
+        title: 'Owner',
+        description:
+            'Controls one portfolio: assets, managers, tenants, leases, payments, reports, and module visibility.',
+    },
+    {
+        role: 'property_manager',
+        icon: 'bi-person-gear',
+        title: 'Property manager',
+        description:
+            'Runs daily operations for the assigned portfolio and can manage tenants and service work.',
+    },
+    {
+        role: 'tenant',
+        icon: 'bi-person-badge',
+        title: 'Tenant',
+        description:
+            'Uses the portal for lease documents, payment history, balance, days left, and maintenance requests.',
+    },
+];
+
+function roleLabel(role: string): string {
+    return (
+        roleCards.find((item) => item.role === role)?.title ??
+        role.replaceAll('_', ' ')
     );
 }
