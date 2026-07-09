@@ -1,11 +1,11 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
-import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { currency } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -28,6 +28,10 @@ type PortfolioRecord = {
     users_count?: number;
     assets_count?: number;
     leases_count?: number;
+    active_leases_count?: number;
+    open_maintenance_count?: number;
+    valuation_total?: number | null;
+    posted_revenue_total?: number | null;
     module_settings?: Record<string, boolean> | null;
 };
 
@@ -37,18 +41,35 @@ type ModuleDefinition = {
     description: string;
 };
 
+type PortfolioInsights = {
+    total: number;
+    active: number;
+    inactive: number;
+    archived: number;
+    assets: number;
+    users: number;
+    leases: number;
+    active_leases: number;
+    open_maintenance: number;
+    valuation_total: number;
+    posted_revenue_total: number;
+};
+
 type PageProps = SharedProps & {
     portfolios: PaginatedData<PortfolioRecord>;
+    portfolioInsights: PortfolioInsights;
     filters: TableFilters;
     counts: TableCount[];
     canCreate: boolean;
     canUpdate: boolean;
     moduleDefinitions: ModuleDefinition[];
+    statusOptions: string[];
 };
 
 export default function PortfoliosPage() {
     const { props } = usePage<PageProps>();
     const [editing, setEditing] = useState<PortfolioRecord | null>(null);
+    const isSuperadmin = props.auth.user?.roles.includes('superadmin') ?? false;
     const form = useForm({
         name_en: '',
         name_ar: '',
@@ -103,21 +124,95 @@ export default function PortfoliosPage() {
         form.post('/portfolios', { preserveScroll: true });
     };
 
+    const activeErrors = form.errors;
+    const canUseForm = props.canCreate || Boolean(editing && props.canUpdate);
+
     return (
         <AdminLayout>
             <Head title="Portfolios" />
-            <PageHeader
-                title="Portfolios"
-                description="Client account boundaries for owners, managers, assets, leases, and reporting."
-            />
 
-            <div className="row g-4">
+            <section className="pmc-portfolio-command mb-4">
+                <div>
+                    <span className="pmc-kicker">Portfolio control</span>
+                    <h1>
+                        {isSuperadmin
+                            ? 'Launch and govern every owner account from one boundary.'
+                            : 'Control the account boundary before assets, tenants, and money move.'}
+                    </h1>
+                    <p>
+                        {isSuperadmin
+                            ? 'Create client accounts, monitor operational size, archive safely, and control which modules each portfolio can use.'
+                            : 'Keep your portfolio profile, enabled modules, contact details, and operational footprint clean for managers and tenants.'}
+                    </p>
+                    <div className="pmc-portfolio-command-meta">
+                        <span>
+                            <i className="bi bi-diagram-3" />
+                            Client boundary
+                        </span>
+                        <span>
+                            <i className="bi bi-toggles" />
+                            Module control
+                        </span>
+                        <span>
+                            <i className="bi bi-shield-check" />
+                            Scoped records
+                        </span>
+                    </div>
+                </div>
+                <div className="pmc-portfolio-command-card">
+                    <span>Managed value</span>
+                    <strong>
+                        {currency(
+                            props.portfolioInsights.valuation_total,
+                            props.app.locale,
+                        )}
+                    </strong>
+                    <small>
+                        {props.portfolioInsights.active} active portfolio
+                        {props.portfolioInsights.active === 1 ? '' : 's'} ·{' '}
+                        {props.portfolioInsights.assets} assets
+                    </small>
+                </div>
+            </section>
+
+            <section className="pmc-portfolio-insight-grid mb-4">
+                <PortfolioInsight
+                    icon="bi-buildings"
+                    label="Portfolios"
+                    value={props.portfolioInsights.total.toLocaleString()}
+                    detail={`${props.portfolioInsights.active} active · ${props.portfolioInsights.archived} archived`}
+                    tone="teal"
+                />
+                <PortfolioInsight
+                    icon="bi-people"
+                    label="Users"
+                    value={props.portfolioInsights.users.toLocaleString()}
+                    detail="Owners, managers, tenants, and admins in scope"
+                    tone="orange"
+                />
+                <PortfolioInsight
+                    icon="bi-file-earmark-text"
+                    label="Active leases"
+                    value={props.portfolioInsights.active_leases.toLocaleString()}
+                    detail={`${props.portfolioInsights.leases} total lease records`}
+                    tone="sand"
+                />
+                <PortfolioInsight
+                    icon="bi-wrench-adjustable"
+                    label="Open service"
+                    value={props.portfolioInsights.open_maintenance.toLocaleString()}
+                    detail={`${currency(props.portfolioInsights.posted_revenue_total, props.app.locale)} posted revenue`}
+                    tone="red"
+                />
+            </section>
+
+            <div className="row g-4 align-items-start">
                 <div className="col-xl-4">
-                    <div className="pmc-card p-4">
+                    <div className="pmc-card p-4 pmc-portfolio-form-card">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <div className="pmc-kicker mb-2">
-                                    Portfolio form
+                                    Portfolio workspace
                                 </div>
                                 <h2 className="h4 mb-0">
                                     {editing
@@ -135,7 +230,36 @@ export default function PortfoliosPage() {
                                 </button>
                             ) : null}
                         </div>
-                        {props.canCreate || (editing && props.canUpdate) ? (
+
+                        {Object.keys(activeErrors).length > 0 ? (
+                            <div className="alert alert-danger small">
+                                {Object.values(activeErrors)[0]}
+                            </div>
+                        ) : null}
+
+                        <div className="pmc-portfolio-form-guide mb-3">
+                            <i
+                                className={`bi ${canUseForm ? 'bi-compass' : 'bi-eye'}`}
+                            />
+                            <div>
+                                <strong>
+                                    {canUseForm
+                                        ? editing
+                                            ? 'Update the client boundary'
+                                            : 'Create the account shell first'
+                                        : 'Read-only portfolio view'}
+                                </strong>
+                                <span>
+                                    {canUseForm
+                                        ? editing
+                                            ? 'Profile changes and module switches affect owner, manager, and tenant navigation immediately.'
+                                            : 'After creating a portfolio, add owner users, assets, tenants, leases, and payment records.'
+                                        : 'Managers can inspect portfolio details but cannot change owner-level module access.'}
+                                </span>
+                            </div>
+                        </div>
+
+                        {canUseForm ? (
                             <form className="d-grid gap-3" onSubmit={submit}>
                                 <div>
                                     <label className="form-label pmc-form-label">
@@ -213,15 +337,16 @@ export default function PortfoliosPage() {
                                                 )
                                             }
                                         >
-                                            <option value="active">
-                                                Active
-                                            </option>
-                                            <option value="inactive">
-                                                Inactive
-                                            </option>
-                                            <option value="archived">
-                                                Archived
-                                            </option>
+                                            {props.statusOptions.map(
+                                                (status) => (
+                                                    <option
+                                                        key={status}
+                                                        value={status}
+                                                    >
+                                                        {humanLabel(status)}
+                                                    </option>
+                                                ),
+                                            )}
                                         </select>
                                     </div>
                                 </div>
@@ -399,8 +524,12 @@ export default function PortfoliosPage() {
                 <div className="col-xl-8">
                     <div className="pmc-card p-4">
                         <DataTable
-                            title="All portfolios"
-                            description="Search by name, code, contact, city, or country."
+                            title={
+                                isSuperadmin
+                                    ? 'All portfolios'
+                                    : 'Your portfolio'
+                            }
+                            description="Search by name, code, contact, city, country, or account owner."
                             data={props.portfolios}
                             filters={props.filters}
                             counts={props.counts}
@@ -415,15 +544,12 @@ export default function PortfoliosPage() {
                                     label: 'Status',
                                     options: [
                                         { label: 'All', value: 'all' },
-                                        { label: 'Active', value: 'active' },
-                                        {
-                                            label: 'Inactive',
-                                            value: 'inactive',
-                                        },
-                                        {
-                                            label: 'Archived',
-                                            value: 'archived',
-                                        },
+                                        ...props.statusOptions.map(
+                                            (status) => ({
+                                                label: humanLabel(status),
+                                                value: status,
+                                            }),
+                                        ),
                                     ],
                                 },
                             ]}
@@ -491,12 +617,60 @@ export default function PortfoliosPage() {
                                     ),
                                 },
                                 {
+                                    key: 'financials',
+                                    label: 'Value',
+                                    render: (portfolio) => (
+                                        <>
+                                            <div className="fw-semibold">
+                                                {currency(
+                                                    portfolio.valuation_total ??
+                                                        0,
+                                                    props.app.locale,
+                                                    portfolio.default_currency ??
+                                                        'SAR',
+                                                )}
+                                            </div>
+                                            <div className="small text-secondary">
+                                                {currency(
+                                                    portfolio.posted_revenue_total ??
+                                                        0,
+                                                    props.app.locale,
+                                                    portfolio.default_currency ??
+                                                        'SAR',
+                                                )}{' '}
+                                                posted revenue
+                                            </div>
+                                        </>
+                                    ),
+                                },
+                                {
                                     key: 'status',
                                     label: 'Status',
                                     render: (portfolio) => (
-                                        <span className="pmc-chip pmc-chip--primary">
-                                            {portfolio.status}
-                                        </span>
+                                        <div className="d-grid gap-2 justify-items-start">
+                                            <StatusChip
+                                                label={humanLabel(
+                                                    portfolio.status,
+                                                )}
+                                                tone={
+                                                    portfolio.status ===
+                                                    'active'
+                                                        ? 'success'
+                                                        : portfolio.status ===
+                                                            'archived'
+                                                          ? 'neutral'
+                                                          : 'warning'
+                                                }
+                                            />
+                                            <span className="small text-secondary">
+                                                {portfolio.active_leases_count ??
+                                                    0}{' '}
+                                                active leases ·{' '}
+                                                {portfolio.open_maintenance_count ??
+                                                    0}{' '}
+                                                open service
+                                            </span>
+                                        </div>
                                     ),
                                 },
                                 {
@@ -553,4 +727,47 @@ function enabledModuleCount(
 ) {
     return definitions.filter((definition) => source?.[definition.key] ?? true)
         .length;
+}
+
+function PortfolioInsight({
+    icon,
+    label,
+    value,
+    detail,
+    tone,
+}: {
+    icon: string;
+    label: string;
+    value: ReactNode;
+    detail: string;
+    tone: 'teal' | 'orange' | 'sand' | 'red';
+}) {
+    return (
+        <div
+            className={`pmc-portfolio-insight-card pmc-portfolio-insight-${tone}`}
+        >
+            <div>
+                <i className={`bi ${icon}`} />
+            </div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{detail}</small>
+        </div>
+    );
+}
+
+function StatusChip({
+    label,
+    tone,
+}: {
+    label: string;
+    tone: 'success' | 'warning' | 'neutral';
+}) {
+    return <span className={`pmc-chip pmc-chip--${tone}`}>{label}</span>;
+}
+
+function humanLabel(value: string) {
+    return value
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

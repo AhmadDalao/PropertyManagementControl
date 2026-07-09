@@ -4,14 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
 use App\Support\PortfolioModules;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PortfolioController extends Controller
 {
+    /**
+     * @var array<int, string>
+     */
+    private array $statuses = ['active', 'inactive', 'archived'];
+
     public function index(Request $request): Response
     {
         $user = $this->actor($request);
@@ -21,7 +28,15 @@ class PortfolioController extends Controller
         $baseQuery = $this->scopeByPortfolio(Portfolio::query(), $user, 'id');
         $portfolios = (clone $baseQuery)
             ->with(['owner', 'users'])
-            ->withCount(['assets', 'users', 'leases']);
+            ->withCount([
+                'assets',
+                'users',
+                'leases',
+                'leases as active_leases_count' => fn ($query) => $query->where('status', 'active'),
+                'maintenanceRequests as open_maintenance_count' => fn ($query) => $query->whereIn('status', ['open', 'in_progress']),
+            ])
+            ->withSum(['assets as valuation_total' => fn ($query) => $query->where('status', '!=', 'archived')], 'valuation_amount')
+            ->withSum(['payments as posted_revenue_total' => fn ($query) => $query->where('status', 'posted')], 'amount');
 
         $this->applySearch($portfolios, $filters['search'], [
             'name_en',
@@ -42,11 +57,13 @@ class PortfolioController extends Controller
                 'status',
                 'city',
             ]),
+            'portfolioInsights' => $this->portfolioInsights($baseQuery),
             'filters' => $filters,
-            'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
+            'counts' => $this->statusCounts($baseQuery, $this->statuses, $filters),
             'canCreate' => $user->hasRole('superadmin'),
             'canUpdate' => $user->hasAnyRole(['superadmin', 'owner']),
             'moduleDefinitions' => PortfolioModules::definitions(),
+            'statusOptions' => $this->statuses,
         ]);
     }
 
@@ -65,7 +82,7 @@ class PortfolioController extends Controller
             'country' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
             'default_currency' => ['nullable', 'string', 'size:3'],
-            'status' => ['required', 'string', 'max:50'],
+            'status' => ['required', Rule::in($this->statuses)],
             'module_settings' => ['nullable', 'array'],
             'module_settings.*' => ['boolean'],
         ]);
@@ -95,7 +112,7 @@ class PortfolioController extends Controller
             'country' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
             'default_currency' => ['nullable', 'string', 'size:3'],
-            'status' => ['required', 'string', 'max:50'],
+            'status' => ['required', Rule::in($this->statuses)],
             'module_settings' => ['nullable', 'array'],
             'module_settings.*' => ['boolean'],
         ]);
@@ -115,5 +132,37 @@ class PortfolioController extends Controller
         $portfolio->update(['status' => 'archived']);
 
         return to_route('portfolios.index')->with('success', "Portfolio {$portfolio->name_en} archived.");
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    private function portfolioInsights(Builder $baseQuery): array
+    {
+        $portfolios = (clone $baseQuery)
+            ->withCount([
+                'assets',
+                'users',
+                'leases',
+                'leases as active_leases_count' => fn ($query) => $query->where('status', 'active'),
+                'maintenanceRequests as open_maintenance_count' => fn ($query) => $query->whereIn('status', ['open', 'in_progress']),
+            ])
+            ->withSum(['assets as valuation_total' => fn ($query) => $query->where('status', '!=', 'archived')], 'valuation_amount')
+            ->withSum(['payments as posted_revenue_total' => fn ($query) => $query->where('status', 'posted')], 'amount')
+            ->get();
+
+        return [
+            'total' => $portfolios->count(),
+            'active' => $portfolios->where('status', 'active')->count(),
+            'inactive' => $portfolios->where('status', 'inactive')->count(),
+            'archived' => $portfolios->where('status', 'archived')->count(),
+            'assets' => (int) $portfolios->sum('assets_count'),
+            'users' => (int) $portfolios->sum('users_count'),
+            'leases' => (int) $portfolios->sum('leases_count'),
+            'active_leases' => (int) $portfolios->sum('active_leases_count'),
+            'open_maintenance' => (int) $portfolios->sum('open_maintenance_count'),
+            'valuation_total' => (float) $portfolios->sum('valuation_total'),
+            'posted_revenue_total' => (float) $portfolios->sum('posted_revenue_total'),
+        ];
     }
 }

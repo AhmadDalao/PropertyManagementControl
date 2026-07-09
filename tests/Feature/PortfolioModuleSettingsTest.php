@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -94,6 +95,117 @@ class PortfolioModuleSettingsTest extends TestCase
             ->assertForbidden();
 
         $this->assertNotSame('Bad manager update', $portfolio->fresh()->name_en);
+    }
+
+    public function test_superadmin_portfolio_workspace_exposes_operational_insights(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Insight Account',
+            'name_ar' => 'حساب المؤشرات',
+            'code' => 'INSIGHT-A',
+        ]);
+        $archivedPortfolio = $this->createPortfolio([
+            'name_en' => 'Archived Account',
+            'status' => 'archived',
+            'code' => 'INSIGHT-B',
+        ]);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio, [
+            'title_en' => 'Valued Unit',
+            'valuation_amount' => 750000,
+        ]);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner);
+
+        Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'PORT-REV',
+            'type' => 'rent',
+            'method' => 'cash',
+            'status' => 'posted',
+            'received_on' => now()->toDateString(),
+            'amount' => 4200,
+            'currency' => 'SAR',
+        ]);
+
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Portfolio service backlog',
+            'description' => 'Needs attention.',
+            'requested_at' => now(),
+        ]);
+
+        $this->createAsset($archivedPortfolio, ['valuation_amount' => 100000]);
+
+        $this->actingAs($superadmin)
+            ->get(route('portfolios.index', ['search' => 'Insight Account']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/portfolios/index')
+                ->where('portfolioInsights.total', 2)
+                ->where('portfolioInsights.active', 1)
+                ->where('portfolioInsights.archived', 1)
+                ->where('portfolioInsights.assets', 2)
+                ->where('portfolioInsights.users', 2)
+                ->where('portfolioInsights.leases', 1)
+                ->where('portfolioInsights.active_leases', 1)
+                ->where('portfolioInsights.open_maintenance', 1)
+                ->where('portfolioInsights.valuation_total', 850000)
+                ->where('portfolioInsights.posted_revenue_total', 4200)
+                ->where('portfolios.total', 1)
+                ->where('portfolios.data.0.code', 'INSIGHT-A')
+                ->where('portfolios.data.0.active_leases_count', 1)
+                ->where('portfolios.data.0.open_maintenance_count', 1)
+                ->has('statusOptions', 3)
+            );
+    }
+
+    public function test_owner_portfolio_insights_do_not_leak_other_accounts(): void
+    {
+        $portfolio = $this->createPortfolio(['code' => 'OWNER-PORT']);
+        $foreignPortfolio = $this->createPortfolio(['code' => 'FOREIGN-PORT']);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->createAsset($portfolio, ['valuation_amount' => 300000]);
+        $this->createAsset($foreignPortfolio, ['valuation_amount' => 900000]);
+
+        $this->actingAs($owner)
+            ->get(route('portfolios.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/portfolios/index')
+                ->where('portfolioInsights.total', 1)
+                ->where('portfolioInsights.assets', 1)
+                ->where('portfolioInsights.valuation_total', 300000)
+                ->where('portfolios.total', 1)
+                ->where('portfolios.data.0.code', 'OWNER-PORT')
+            );
+    }
+
+    public function test_portfolio_status_must_use_known_status_option(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->put(route('portfolios.update', $portfolio), [
+                'name_en' => $portfolio->name_en,
+                'name_ar' => $portfolio->name_ar,
+                'status' => 'random-status',
+            ])
+            ->assertSessionHasErrors('status');
     }
 
     public function test_disabled_module_blocks_route_and_export_for_portfolio_users(): void
