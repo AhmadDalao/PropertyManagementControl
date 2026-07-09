@@ -85,6 +85,9 @@ export default function CmsPage() {
     const [editingSection, setEditingSection] = useState<SectionRecord | null>(
         null,
     );
+    const [sectionContentError, setSectionContentError] = useState<
+        string | null
+    >(null);
     const [editingNavigation, setEditingNavigation] =
         useState<NavigationRecord | null>(null);
 
@@ -174,6 +177,7 @@ export default function CmsPage() {
     };
 
     const startEditingSection = (section: SectionRecord) => {
+        setSectionContentError(null);
         sectionForm.setData({
             section_type: section.section_type,
             name_en: section.name_en,
@@ -186,6 +190,7 @@ export default function CmsPage() {
     };
 
     const clearSectionForm = () => {
+        setSectionContentError(null);
         setEditingSection(null);
         sectionForm.reset();
     };
@@ -195,7 +200,9 @@ export default function CmsPage() {
         const contentAr = parseJsonObject(sectionForm.data.content_ar_json);
 
         if (contentEn === null || contentAr === null) {
-            window.alert('Section content must be valid JSON objects.');
+            setSectionContentError(
+                'Section content must be valid JSON objects. Fix the advanced JSON fields or reload a guided template.',
+            );
 
             return;
         }
@@ -495,12 +502,13 @@ export default function CmsPage() {
                             <select
                                 className="form-select"
                                 value={sectionForm.data.section_type}
-                                onChange={(event) =>
+                                onChange={(event) => {
+                                    setSectionContentError(null);
                                     sectionForm.setData(
                                         'section_type',
                                         event.currentTarget.value,
-                                    )
-                                }
+                                    );
+                                }}
                             >
                                 <option value="hero">Hero</option>
                                 <option value="role_cards">Role cards</option>
@@ -540,34 +548,30 @@ export default function CmsPage() {
                                     )
                                 }
                             />
-                            <label className="form-label pmc-form-label mb-0">
-                                English content JSON
-                            </label>
-                            <textarea
-                                className="form-control pmc-code-textarea"
-                                rows={8}
-                                value={sectionForm.data.content_en_json}
-                                onChange={(event) =>
+                            <SectionContentEditor
+                                sectionType={sectionForm.data.section_type}
+                                contentEnJson={sectionForm.data.content_en_json}
+                                contentArJson={sectionForm.data.content_ar_json}
+                                onContentEnChange={(value) => {
+                                    setSectionContentError(null);
                                     sectionForm.setData(
                                         'content_en_json',
-                                        event.currentTarget.value,
-                                    )
-                                }
-                            />
-                            <label className="form-label pmc-form-label mb-0">
-                                Arabic content JSON
-                            </label>
-                            <textarea
-                                className="form-control pmc-code-textarea"
-                                rows={8}
-                                value={sectionForm.data.content_ar_json}
-                                onChange={(event) =>
+                                        value,
+                                    );
+                                }}
+                                onContentArChange={(value) => {
+                                    setSectionContentError(null);
                                     sectionForm.setData(
                                         'content_ar_json',
-                                        event.currentTarget.value,
-                                    )
-                                }
+                                        value,
+                                    );
+                                }}
                             />
+                            {sectionContentError ? (
+                                <div className="alert alert-warning mb-0 border-0">
+                                    {sectionContentError}
+                                </div>
+                            ) : null}
                             <select
                                 className="form-select"
                                 value={sectionForm.data.status}
@@ -1010,6 +1014,286 @@ export default function CmsPage() {
     );
 }
 
+type ContentField = {
+    key: string;
+    label: string;
+    type?: 'text' | 'textarea';
+};
+
+type ContentCollection = {
+    key: string;
+    label: string;
+    itemLabel: string;
+    fields: ContentField[];
+};
+
+type SectionContentSchema = {
+    description: string;
+    fields: ContentField[];
+    collections: ContentCollection[];
+};
+
+function SectionContentEditor({
+    sectionType,
+    contentEnJson,
+    contentArJson,
+    onContentEnChange,
+    onContentArChange,
+}: {
+    sectionType: string;
+    contentEnJson: string;
+    contentArJson: string;
+    onContentEnChange: (value: string) => void;
+    onContentArChange: (value: string) => void;
+}) {
+    const schema = sectionContentSchema(sectionType);
+
+    return (
+        <section className="pmc-guided-editor">
+            <header>
+                <div>
+                    <div className="pmc-kicker mb-1">Guided copy editor</div>
+                    <strong>{readableSectionType(sectionType)}</strong>
+                    <span>{schema.description}</span>
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => {
+                        onContentEnChange(
+                            jsonText(defaultSectionContent(sectionType, 'en')),
+                        );
+                        onContentArChange(
+                            jsonText(defaultSectionContent(sectionType, 'ar')),
+                        );
+                    }}
+                >
+                    Load template
+                </button>
+            </header>
+
+            <div className="pmc-guided-language-grid">
+                <ContentLanguagePanel
+                    language="en"
+                    schema={schema}
+                    contentJson={contentEnJson}
+                    onChange={onContentEnChange}
+                />
+                <ContentLanguagePanel
+                    language="ar"
+                    schema={schema}
+                    contentJson={contentArJson}
+                    onChange={onContentArChange}
+                />
+            </div>
+
+            <details className="pmc-guided-json">
+                <summary>
+                    <i className="bi bi-braces" />
+                    Advanced JSON editor
+                </summary>
+                <div className="pmc-guided-json-grid">
+                    <label>
+                        <span>English JSON</span>
+                        <textarea
+                            className="form-control pmc-code-textarea"
+                            rows={9}
+                            value={contentEnJson}
+                            onChange={(event) =>
+                                onContentEnChange(event.currentTarget.value)
+                            }
+                        />
+                    </label>
+                    <label>
+                        <span>Arabic JSON</span>
+                        <textarea
+                            className="form-control pmc-code-textarea"
+                            rows={9}
+                            value={contentArJson}
+                            onChange={(event) =>
+                                onContentArChange(event.currentTarget.value)
+                            }
+                        />
+                    </label>
+                </div>
+            </details>
+        </section>
+    );
+}
+
+function ContentLanguagePanel({
+    language,
+    schema,
+    contentJson,
+    onChange,
+}: {
+    language: 'en' | 'ar';
+    schema: SectionContentSchema;
+    contentJson: string;
+    onChange: (value: string) => void;
+}) {
+    const content = safeJsonObject(contentJson);
+
+    return (
+        <article className="pmc-guided-language-card">
+            <div className="pmc-guided-language-head">
+                <strong>{language === 'ar' ? 'Arabic' : 'English'}</strong>
+                <span>{language === 'ar' ? 'RTL copy' : 'Public copy'}</span>
+            </div>
+
+            <div className="pmc-guided-field-grid">
+                {schema.fields.map((field) => (
+                    <ContentFieldControl
+                        key={field.key}
+                        field={field}
+                        value={stringValue(content[field.key])}
+                        onChange={(value) =>
+                            updateContentField(
+                                contentJson,
+                                onChange,
+                                field.key,
+                                value,
+                            )
+                        }
+                    />
+                ))}
+            </div>
+
+            {schema.collections.map((collection) => (
+                <ContentCollectionEditor
+                    key={collection.key}
+                    collection={collection}
+                    contentJson={contentJson}
+                    content={content}
+                    onChange={onChange}
+                />
+            ))}
+        </article>
+    );
+}
+
+function ContentFieldControl({
+    field,
+    value,
+    onChange,
+}: {
+    field: ContentField;
+    value: string;
+    onChange: (value: string) => void;
+}) {
+    return (
+        <label className="pmc-guided-field">
+            <span>{field.label}</span>
+            {field.type === 'textarea' ? (
+                <textarea
+                    className="form-control"
+                    rows={3}
+                    value={value}
+                    onChange={(event) => onChange(event.currentTarget.value)}
+                />
+            ) : (
+                <input
+                    className="form-control"
+                    value={value}
+                    onChange={(event) => onChange(event.currentTarget.value)}
+                />
+            )}
+        </label>
+    );
+}
+
+function ContentCollectionEditor({
+    collection,
+    contentJson,
+    content,
+    onChange,
+}: {
+    collection: ContentCollection;
+    contentJson: string;
+    content: Record<string, unknown>;
+    onChange: (value: string) => void;
+}) {
+    const rows = Array.isArray(content[collection.key])
+        ? (content[collection.key] as unknown[])
+        : [];
+
+    return (
+        <section className="pmc-guided-collection">
+            <div className="pmc-guided-collection-head">
+                <strong>{collection.label}</strong>
+                <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() =>
+                        addCollectionRow(contentJson, onChange, collection)
+                    }
+                >
+                    <i className="bi bi-plus-lg me-1" />
+                    Add
+                </button>
+            </div>
+
+            {rows.length > 0 ? (
+                rows.map((row, index) => {
+                    const rowObject = isPlainObject(row) ? row : {};
+
+                    return (
+                        <article
+                            key={`${collection.key}-${index}`}
+                            className="pmc-guided-row"
+                        >
+                            <div className="pmc-guided-row-head">
+                                <span>
+                                    {collection.itemLabel} {index + 1}
+                                </span>
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-danger btn-sm"
+                                    onClick={() =>
+                                        removeCollectionRow(
+                                            contentJson,
+                                            onChange,
+                                            collection.key,
+                                            index,
+                                        )
+                                    }
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                            <div className="pmc-guided-field-grid">
+                                {collection.fields.map((field) => (
+                                    <ContentFieldControl
+                                        key={field.key}
+                                        field={field}
+                                        value={stringValue(
+                                            rowObject[field.key],
+                                        )}
+                                        onChange={(value) =>
+                                            updateCollectionField(
+                                                contentJson,
+                                                onChange,
+                                                collection.key,
+                                                index,
+                                                field.key,
+                                                value,
+                                            )
+                                        }
+                                    />
+                                ))}
+                            </div>
+                        </article>
+                    );
+                })
+            ) : (
+                <div className="pmc-inline-empty">
+                    No {collection.label.toLowerCase()} yet. Add one above.
+                </div>
+            )}
+        </section>
+    );
+}
+
 function BuilderCanvas({
     page,
     draggingId,
@@ -1174,6 +1458,497 @@ function ListPanel({
             </div>
         </section>
     );
+}
+
+function sectionContentSchema(sectionType: string): SectionContentSchema {
+    const headingFields: ContentField[] = [
+        { key: 'eyebrow', label: 'Eyebrow' },
+        { key: 'headline', label: 'Headline', type: 'textarea' },
+    ];
+    const bodyField: ContentField = {
+        key: 'body',
+        label: 'Body',
+        type: 'textarea',
+    };
+    const labelValueCollection: ContentCollection = {
+        key: 'items',
+        label: 'Items',
+        itemLabel: 'Item',
+        fields: [
+            { key: 'label', label: 'Label' },
+            { key: 'value', label: 'Value' },
+        ],
+    };
+
+    if (sectionType === 'hero') {
+        return {
+            description:
+                'Controls the top landing message, portal CTAs, stat chips, and preview tiles.',
+            fields: [
+                { key: 'eyebrow', label: 'Eyebrow' },
+                { key: 'headline', label: 'Headline', type: 'textarea' },
+                {
+                    key: 'subheadline',
+                    label: 'Subheadline',
+                    type: 'textarea',
+                },
+                { key: 'ctaPrimary', label: 'Primary CTA' },
+                { key: 'ctaSecondary', label: 'Secondary CTA' },
+            ],
+            collections: [
+                {
+                    key: 'stats',
+                    label: 'Stat chips',
+                    itemLabel: 'Stat',
+                    fields: [
+                        { key: 'label', label: 'Label' },
+                        { key: 'value', label: 'Value' },
+                    ],
+                },
+                {
+                    key: 'preview',
+                    label: 'Dashboard preview tiles',
+                    itemLabel: 'Tile',
+                    fields: [
+                        { key: 'label', label: 'Label' },
+                        { key: 'value', label: 'Value' },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'role_cards' || sectionType === 'feature_grid') {
+        return {
+            description:
+                'Controls a section heading and repeatable cards with icon, title, and copy.',
+            fields: headingFields,
+            collections: [
+                {
+                    key: 'items',
+                    label: 'Cards',
+                    itemLabel: 'Card',
+                    fields: [
+                        { key: 'icon', label: 'Bootstrap icon' },
+                        { key: 'title', label: 'Title' },
+                        { key: 'body', label: 'Body', type: 'textarea' },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'workflow') {
+        return {
+            description:
+                'Controls the workflow heading and ordered operating steps.',
+            fields: headingFields,
+            collections: [
+                {
+                    key: 'steps',
+                    label: 'Workflow steps',
+                    itemLabel: 'Step',
+                    fields: [
+                        { key: 'title', label: 'Title' },
+                        { key: 'body', label: 'Body', type: 'textarea' },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'dashboard_preview') {
+        return {
+            description:
+                'Controls the dashboard visibility section and its metric rows.',
+            fields: [...headingFields, bodyField],
+            collections: [
+                {
+                    key: 'metrics',
+                    label: 'Metrics',
+                    itemLabel: 'Metric',
+                    fields: [
+                        { key: 'label', label: 'Label' },
+                        { key: 'value', label: 'Value' },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'operations_strip') {
+        return {
+            description:
+                'Controls the horizontal operations strip and its KPI items.',
+            fields: [
+                { key: 'headline', label: 'Headline', type: 'textarea' },
+                bodyField,
+            ],
+            collections: [labelValueCollection],
+        };
+    }
+
+    if (sectionType === 'faq') {
+        return {
+            description:
+                'Controls the FAQ heading and repeatable question/answer rows.',
+            fields: headingFields,
+            collections: [
+                {
+                    key: 'items',
+                    label: 'Questions',
+                    itemLabel: 'Question',
+                    fields: [
+                        { key: 'question', label: 'Question' },
+                        { key: 'answer', label: 'Answer', type: 'textarea' },
+                    ],
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'final_cta') {
+        return {
+            description: 'Controls the final call-to-action before login.',
+            fields: [
+                { key: 'headline', label: 'Headline', type: 'textarea' },
+                bodyField,
+                { key: 'ctaPrimary', label: 'Primary CTA' },
+            ],
+            collections: [],
+        };
+    }
+
+    if (sectionType === 'metrics') {
+        return {
+            description: 'Controls compact label/value metric panels.',
+            fields: [],
+            collections: [labelValueCollection],
+        };
+    }
+
+    return {
+        description:
+            'Controls a simple content block. Use advanced JSON for custom structures.',
+        fields: [
+            { key: 'eyebrow', label: 'Eyebrow' },
+            { key: 'headline', label: 'Headline', type: 'textarea' },
+            bodyField,
+        ],
+        collections: [],
+    };
+}
+
+function defaultSectionContent(
+    sectionType: string,
+    language: 'en' | 'ar',
+): Record<string, unknown> {
+    const ar = language === 'ar';
+
+    if (sectionType === 'hero') {
+        return {
+            eyebrow: ar ? 'تشغيل العقارات' : 'Property operations',
+            headline: ar
+                ? 'أدر محفظتك العقارية من مركز تحكم واحد.'
+                : 'Run your property portfolio from one control center.',
+            subheadline: ar
+                ? 'تابع المباني والوحدات والمستأجرين والعقود والمدفوعات والصيانة من بوابة واحدة.'
+                : 'Track buildings, units, tenants, contracts, payments, and maintenance from one portal.',
+            ctaPrimary: ar ? 'فتح البوابة' : 'Open Portal',
+            ctaSecondary: ar ? 'استعراض المزايا' : 'Explore Features',
+            stats: [
+                {
+                    label: ar ? 'الأصول' : 'Assets',
+                    value: ar ? 'مباني ووحدات' : 'Buildings and units',
+                },
+                {
+                    label: ar ? 'العقود' : 'Contracts',
+                    value: ar ? 'مدفوعة ومتأخرة' : 'Paid and due',
+                },
+                {
+                    label: ar ? 'الصيانة' : 'Maintenance',
+                    value: ar ? 'طلبات مباشرة' : 'Live requests',
+                },
+            ],
+            preview: [
+                {
+                    label: ar ? 'الإشغال' : 'Occupancy',
+                    value: ar ? 'مباشر' : 'Live',
+                },
+                {
+                    label: ar ? 'التحصيل' : 'Collections',
+                    value: ar ? 'متابعة' : 'Tracked',
+                },
+                {
+                    label: ar ? 'الخدمة' : 'Service',
+                    value: ar ? 'مفتوح' : 'Open',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'role_cards') {
+        return {
+            eyebrow: ar ? 'بوابات حسب الدور' : 'Role-based portals',
+            headline: ar
+                ? 'كل مستخدم يرى ما يخصه فقط.'
+                : 'Every user sees only what they should manage.',
+            items: [
+                {
+                    icon: 'bi-shield-lock',
+                    title: ar ? 'مالك النظام' : 'Superadmin',
+                    body: ar
+                        ? 'يدير المنصة والموقع والمحافظ.'
+                        : 'Controls the platform, website, and portfolios.',
+                },
+                {
+                    icon: 'bi-buildings',
+                    title: ar ? 'المالك' : 'Owner',
+                    body: ar
+                        ? 'يتابع الأصول والمستأجرين والعقود.'
+                        : 'Runs assets, tenants, leases, and payments.',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'workflow') {
+        return {
+            eyebrow: ar ? 'مسار التشغيل' : 'Operating flow',
+            headline: ar
+                ? 'كل خطوة مرتبطة بما بعدها.'
+                : 'Every step connects to the next one.',
+            steps: [
+                {
+                    title: ar ? 'إنشاء محفظة' : 'Create portfolio',
+                    body: ar
+                        ? 'ابدأ بحدود المالك.'
+                        : 'Start with the owner boundary.',
+                },
+                {
+                    title: ar ? 'إضافة الأصول' : 'Add assets',
+                    body: ar
+                        ? 'أضف المباني والطوابق والوحدات.'
+                        : 'Add buildings, floors, and units.',
+                },
+                {
+                    title: ar ? 'إنشاء العقد' : 'Create lease',
+                    body: ar
+                        ? 'اربط المستأجر بالأصل.'
+                        : 'Connect tenant to asset.',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'dashboard_preview') {
+        return {
+            eyebrow: ar ? 'وضوح لوحة التحكم' : 'Dashboard visibility',
+            headline: ar
+                ? 'اعرف ما هو مستحق وما لم يتم حله.'
+                : 'Know what is due and unresolved.',
+            body: ar
+                ? 'راقب قيمة المحفظة والإشغال والتحصيل والصيانة.'
+                : 'Monitor portfolio value, occupancy, collections, and service.',
+            metrics: [
+                {
+                    label: ar ? 'الأصول' : 'Assets',
+                    value: ar ? 'مُدارة' : 'Managed',
+                },
+                {
+                    label: ar ? 'المدفوعات' : 'Payments',
+                    value: ar ? 'متابعة' : 'Tracked',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'feature_grid') {
+        return {
+            eyebrow: ar ? 'المزايا' : 'Features',
+            headline: ar
+                ? 'مصمم حول دورة العقار الحقيقية.'
+                : 'Built around the real property cycle.',
+            items: [
+                {
+                    icon: 'bi-diagram-3',
+                    title: ar ? 'إدارة الأصول' : 'Asset control',
+                    body: ar
+                        ? 'مبان وطوابق ووحدات.'
+                        : 'Buildings, floors, and units.',
+                },
+                {
+                    icon: 'bi-cash-stack',
+                    title: ar ? 'المدفوعات' : 'Payment tracking',
+                    body: ar
+                        ? 'مدفوع ومتبقي ومتأخر.'
+                        : 'Paid, remaining, and overdue.',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'operations_strip') {
+        return {
+            headline: ar
+                ? 'تابع التشغيل اليومي بدون فوضى.'
+                : 'Track daily operations without the mess.',
+            body: ar
+                ? 'العقود والمدفوعات والصيانة والتقارير في دورة واحدة.'
+                : 'Leases, payments, maintenance, and reports in one cycle.',
+            items: [
+                {
+                    label: ar ? 'العقود' : 'Leases',
+                    value: ar ? 'نشطة' : 'Active',
+                },
+                {
+                    label: ar ? 'الصيانة' : 'Maintenance',
+                    value: ar ? 'مفتوحة' : 'Open',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'faq') {
+        return {
+            eyebrow: ar ? 'الأسئلة' : 'FAQ',
+            headline: ar
+                ? 'أسئلة شائعة قبل البدء.'
+                : 'Questions before you start.',
+            items: [
+                {
+                    question: ar
+                        ? 'هل يدعم العربية؟'
+                        : 'Does it support Arabic?',
+                    answer: ar
+                        ? 'نعم، الواجهة والموقع يدعمان العربية والإنجليزية.'
+                        : 'Yes, the admin and public site support English and Arabic.',
+                },
+            ],
+        };
+    }
+
+    if (sectionType === 'final_cta') {
+        return {
+            headline: ar ? 'ابدأ من البوابة.' : 'Start from the portal.',
+            body: ar
+                ? 'سجل الدخول لإدارة الأصول والعقود والمدفوعات.'
+                : 'Sign in to manage assets, leases, and payments.',
+            ctaPrimary: ar ? 'فتح البوابة' : 'Open Portal',
+        };
+    }
+
+    if (sectionType === 'metrics') {
+        return {
+            items: [
+                {
+                    label: ar ? 'الأصول' : 'Assets',
+                    value: ar ? 'متابعة' : 'Tracked',
+                },
+                {
+                    label: ar ? 'العقود' : 'Leases',
+                    value: ar ? 'نشطة' : 'Active',
+                },
+            ],
+        };
+    }
+
+    return {
+        eyebrow: ar ? 'قسم قابل للتعديل' : 'Editable section',
+        headline: ar ? 'عنوان القسم' : 'Section headline',
+        body: ar ? 'اكتب محتوى القسم هنا.' : 'Write the section content here.',
+    };
+}
+
+function updateContentField(
+    contentJson: string,
+    onChange: (value: string) => void,
+    key: string,
+    value: string,
+) {
+    const next = safeJsonObject(contentJson);
+    next[key] = value;
+    onChange(jsonText(next));
+}
+
+function addCollectionRow(
+    contentJson: string,
+    onChange: (value: string) => void,
+    collection: ContentCollection,
+) {
+    const next = safeJsonObject(contentJson);
+    const rows = Array.isArray(next[collection.key])
+        ? [...(next[collection.key] as unknown[])]
+        : [];
+
+    rows.push(
+        Object.fromEntries(
+            collection.fields.map((field) => [
+                field.key,
+                field.key === 'icon' ? 'bi-grid' : '',
+            ]),
+        ),
+    );
+    next[collection.key] = rows;
+    onChange(jsonText(next));
+}
+
+function removeCollectionRow(
+    contentJson: string,
+    onChange: (value: string) => void,
+    collectionKey: string,
+    index: number,
+) {
+    const next = safeJsonObject(contentJson);
+    const rows = Array.isArray(next[collectionKey])
+        ? [...(next[collectionKey] as unknown[])]
+        : [];
+
+    rows.splice(index, 1);
+    next[collectionKey] = rows;
+    onChange(jsonText(next));
+}
+
+function updateCollectionField(
+    contentJson: string,
+    onChange: (value: string) => void,
+    collectionKey: string,
+    index: number,
+    fieldKey: string,
+    value: string,
+) {
+    const next = safeJsonObject(contentJson);
+    const rows = Array.isArray(next[collectionKey])
+        ? [...(next[collectionKey] as unknown[])]
+        : [];
+    const current = isPlainObject(rows[index]) ? rows[index] : {};
+
+    rows[index] = {
+        ...current,
+        [fieldKey]: value,
+    };
+    next[collectionKey] = rows;
+    onChange(jsonText(next));
+}
+
+function safeJsonObject(value: string): Record<string, unknown> {
+    try {
+        const parsed = JSON.parse(value || '{}') as unknown;
+
+        return isPlainObject(parsed) ? parsed : {};
+    } catch {
+        return {};
+    }
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return value !== null && !Array.isArray(value) && typeof value === 'object';
+}
+
+function readableSectionType(sectionType: string): string {
+    return sectionType
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (character) => character.toUpperCase());
 }
 
 function stringValue(value: unknown): string {

@@ -83,6 +83,94 @@ class CmsManagementTest extends TestCase
         $this->assertSame('archived', $section->fresh()->status);
     }
 
+    public function test_superadmin_can_store_and_update_guided_section_content(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->post(route('cms.sections.store'), [
+                'section_type' => 'feature_grid',
+                'name_en' => 'Guided features',
+                'name_ar' => 'مزايا موجهة',
+                'content_en' => [
+                    'eyebrow' => 'Features',
+                    'headline' => 'Built for the property cycle.',
+                    'items' => [
+                        [
+                            'icon' => 'bi-buildings',
+                            'title' => 'Asset control',
+                            'body' => 'Buildings, floors, and units.',
+                        ],
+                    ],
+                ],
+                'content_ar' => [
+                    'eyebrow' => 'المزايا',
+                    'headline' => 'مصمم لدورة العقار.',
+                    'items' => [
+                        [
+                            'icon' => 'bi-buildings',
+                            'title' => 'إدارة الأصول',
+                            'body' => 'مبان وطوابق ووحدات.',
+                        ],
+                    ],
+                ],
+                'status' => 'active',
+            ])
+            ->assertRedirect(route('cms.index'));
+
+        $section = CmsSection::query()
+            ->where('name_en', 'Guided features')
+            ->firstOrFail();
+
+        $this->assertSame(
+            'Asset control',
+            $section->content_en['items'][0]['title'],
+        );
+
+        $this->actingAs($superadmin)
+            ->put(route('cms.sections.update', $section), [
+                'section_type' => 'feature_grid',
+                'name_en' => 'Guided features updated',
+                'name_ar' => 'مزايا موجهة محدثة',
+                'content_en' => [
+                    'eyebrow' => 'Features',
+                    'headline' => 'Edited without raw JSON pain.',
+                    'items' => [
+                        [
+                            'icon' => 'bi-tools',
+                            'title' => 'Maintenance',
+                            'body' => 'Requests stay visible.',
+                        ],
+                    ],
+                ],
+                'content_ar' => [
+                    'eyebrow' => 'المزايا',
+                    'headline' => 'تعديل بدون صداع JSON.',
+                    'items' => [
+                        [
+                            'icon' => 'bi-tools',
+                            'title' => 'الصيانة',
+                            'body' => 'الطلبات تبقى واضحة.',
+                        ],
+                    ],
+                ],
+                'status' => 'active',
+            ])
+            ->assertRedirect(route('cms.index'));
+
+        $section->refresh();
+
+        $this->assertSame('Guided features updated', $section->name_en);
+        $this->assertSame(
+            'Maintenance',
+            $section->content_en['items'][0]['title'],
+        );
+        $this->assertSame(
+            'الصيانة',
+            $section->content_ar['items'][0]['title'],
+        );
+    }
+
     public function test_superadmin_can_update_navigation_item_placement_and_visibility(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');

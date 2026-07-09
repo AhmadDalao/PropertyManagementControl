@@ -2595,6 +2595,110 @@ a {
     font-weight: 800;
 }
 
+.pmc-guided-editor {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #fff8ee, #f2fffb);
+}
+
+.pmc-guided-editor > header,
+.pmc-guided-language-head,
+.pmc-guided-collection-head,
+.pmc-guided-row-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pmc-guided-editor > header strong,
+.pmc-guided-language-head strong,
+.pmc-guided-collection-head strong {
+    display: block;
+    font-weight: 950;
+}
+
+.pmc-guided-editor > header span,
+.pmc-guided-language-head span {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.86rem;
+}
+
+.pmc-guided-language-grid,
+.pmc-guided-json-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.pmc-guided-language-card,
+.pmc-guided-row,
+.pmc-guided-json {
+    min-width: 0;
+    padding: 0.9rem;
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    border-radius: 0.95rem;
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.pmc-guided-field-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.85rem;
+}
+
+.pmc-guided-field {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.pmc-guided-field span,
+.pmc-guided-json label > span {
+    color: var(--pmc-muted);
+    font-size: 0.74rem;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.pmc-guided-collection {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.pmc-guided-row {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-guided-row-head span {
+    color: var(--pmc-primary);
+    font-weight: 950;
+}
+
+.pmc-guided-json summary {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--pmc-text);
+    font-weight: 950;
+}
+
+.pmc-guided-json-grid {
+    margin-top: 0.9rem;
+}
+
+.pmc-guided-json label {
+    display: grid;
+    gap: 0.45rem;
+    min-width: 0;
+}
+
 .pmc-cms-lists {
     align-items: stretch;
 }
@@ -3267,10 +3371,20 @@ a {
     .pmc-doc-workflow-grid,
     .pmc-doc-shortcut-grid,
     .pmc-doc-control-grid,
+    .pmc-guided-language-grid,
+    .pmc-guided-json-grid,
     .pmc-doc-screen-body,
     .pmc-doc-screen-steps,
     .pmc-doc-workflow-steps {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-guided-editor > header,
+    .pmc-guided-language-head,
+    .pmc-guided-collection-head,
+    .pmc-guided-row-head {
+        align-items: stretch;
+        flex-direction: column;
     }
 
     .pmc-doc-group-head > span {
