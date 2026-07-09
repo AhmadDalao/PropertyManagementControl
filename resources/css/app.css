@@ -494,6 +494,313 @@ a {
     color: #0f6f63;
 }
 
+.pmc-report-command-center {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 26rem);
+    gap: 1rem;
+    align-items: stretch;
+    padding: clamp(1.25rem, 3vw, 2rem);
+    border: 1px solid rgba(239, 108, 47, 0.16);
+    border-radius: 1.5rem;
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(255, 202, 75, 0.28),
+            transparent 34%
+        ),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), #fff3e4 72%);
+    box-shadow: 0 22px 58px rgba(31, 33, 51, 0.08);
+}
+
+.pmc-report-command-center h1 {
+    max-width: 48rem;
+    margin: 0;
+    color: #172033;
+    font-size: clamp(2rem, 5vw, 4rem);
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    line-height: 0.96;
+}
+
+.pmc-report-command-center p {
+    max-width: 42rem;
+    margin: 1rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 1.02rem;
+}
+
+.pmc-report-context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-top: 1.35rem;
+}
+
+.pmc-report-context span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    color: #334155;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.pmc-report-health-card {
+    align-self: stretch;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1.35rem;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.pmc-report-meter {
+    display: grid;
+    min-height: 9rem;
+    place-items: center;
+    border-radius: 1rem;
+    background:
+        radial-gradient(circle, #fff 0 48%, transparent 49%),
+        conic-gradient(
+            from -90deg,
+            var(--pmc-secondary),
+            var(--pmc-primary),
+            var(--pmc-accent),
+            rgba(15, 23, 42, 0.08)
+        );
+    text-align: center;
+}
+
+.pmc-report-meter span {
+    display: block;
+    color: #172033;
+    font-size: 2rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.pmc-report-meter small {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-report-health-list {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+}
+
+.pmc-report-signal {
+    min-width: 0;
+    padding: 0.7rem;
+    border-radius: 0.9rem;
+    background: #fff8ef;
+}
+
+.pmc-report-signal small,
+.pmc-report-decision-card small,
+.pmc-report-action small {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-report-signal strong {
+    display: block;
+    margin-top: 0.2rem;
+    overflow: hidden;
+    color: #172033;
+    font-size: 0.95rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-report-signal.is-good {
+    background: rgba(12, 138, 124, 0.1);
+}
+
+.pmc-report-signal.is-risk {
+    background: rgba(239, 108, 47, 0.13);
+}
+
+.pmc-report-filter-card {
+    border: 1px solid rgba(12, 138, 124, 0.12);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 44px rgba(31, 33, 51, 0.06);
+}
+
+.pmc-report-filter-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-report-decision-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.pmc-report-decision-card {
+    display: flex;
+    min-width: 0;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1.15rem;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--pmc-text);
+    box-shadow: 0 14px 34px rgba(31, 33, 51, 0.06);
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.pmc-report-decision-card:hover {
+    border-color: rgba(239, 108, 47, 0.28);
+    box-shadow: 0 20px 48px rgba(31, 33, 51, 0.1);
+    color: var(--pmc-text);
+    transform: translateY(-2px);
+}
+
+.pmc-report-decision-card > span,
+.pmc-report-action > span {
+    display: inline-grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.95rem;
+    background: linear-gradient(135deg, #ef6c2f, #ffca4b);
+    color: #fff;
+    font-size: 1.1rem;
+}
+
+.pmc-report-decision-card div {
+    min-width: 0;
+}
+
+.pmc-report-decision-card strong {
+    display: block;
+    color: #172033;
+    font-size: 1.35rem;
+    font-weight: 950;
+    line-height: 1.05;
+}
+
+.pmc-report-decision-card em {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--pmc-muted);
+    font-size: 0.82rem;
+    font-style: normal;
+}
+
+.pmc-report-decision-card.is-good > span {
+    background: linear-gradient(135deg, #0c8a7c, #46c2ae);
+}
+
+.pmc-report-decision-card.is-warn > span {
+    background: linear-gradient(135deg, #ffb020, #ef6c2f);
+}
+
+.pmc-report-decision-card.is-risk > span {
+    background: linear-gradient(135deg, #d9480f, #ef6c2f);
+}
+
+.pmc-report-action-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 1rem;
+    align-items: stretch;
+    padding: clamp(1rem, 3vw, 1.35rem);
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 1.25rem;
+    background:
+        linear-gradient(135deg, rgba(12, 138, 124, 0.09), transparent),
+        rgba(255, 255, 255, 0.9);
+    box-shadow: 0 18px 46px rgba(31, 33, 51, 0.06);
+}
+
+.pmc-report-action-panel h2 {
+    margin: 0;
+    color: #172033;
+    font-size: clamp(1.35rem, 3vw, 2.15rem);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+}
+
+.pmc-report-action-panel p {
+    margin: 0.65rem 0 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-report-action-list {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.pmc-report-action {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+    padding: 0.8rem;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 1rem;
+    background: #fff;
+    color: var(--pmc-text);
+}
+
+.pmc-report-action:hover {
+    color: var(--pmc-text);
+    border-color: rgba(239, 108, 47, 0.24);
+}
+
+.pmc-report-action div {
+    min-width: 0;
+    flex: 1;
+}
+
+.pmc-report-action strong {
+    display: block;
+    color: #172033;
+    font-weight: 900;
+}
+
+.pmc-report-action > i {
+    color: var(--pmc-muted);
+    font-size: 1.35rem;
+}
+
+.pmc-report-action.is-good > span {
+    background: linear-gradient(135deg, #0c8a7c, #46c2ae);
+}
+
+.pmc-report-action.is-warn > span {
+    background: linear-gradient(135deg, #ffb020, #ef6c2f);
+}
+
+.pmc-report-action.is-risk > span {
+    background: linear-gradient(135deg, #d9480f, #ef6c2f);
+}
+
 .pmc-report-strip {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3464,6 +3771,15 @@ a {
         position: static;
     }
 
+    .pmc-report-command-center,
+    .pmc-report-action-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-report-decision-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .pmc-report-strip {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
@@ -3616,6 +3932,33 @@ a {
 
     .pmc-report-strip {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-report-command-center {
+        padding: 1rem;
+        border-radius: 1.2rem;
+    }
+
+    .pmc-report-context,
+    .pmc-report-filter-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-report-context span,
+    .pmc-report-filter-head .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pmc-report-health-list,
+    .pmc-report-decision-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-report-decision-card,
+    .pmc-report-action {
+        align-items: flex-start;
     }
 
     .pmc-lease-kpi-grid {
