@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -68,6 +69,7 @@ class LeaseController extends Controller
 
         return Inertia::render('admin/leases/index', [
             'leases' => $paginatedLeases,
+            'leaseInsights' => $this->leaseInsights($baseQuery),
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['draft', 'active', 'expired', 'terminated'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
@@ -95,8 +97,8 @@ class LeaseController extends Controller
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
             'tenant_profile_id' => ['required', 'integer', 'exists:tenant_profiles,id'],
             'asset_id' => ['required', 'integer', 'exists:assets,id'],
-            'status' => ['required', 'string'],
-            'payment_frequency' => ['required', 'string'],
+            'status' => ['required', Rule::in(['draft', 'active', 'expired', 'terminated'])],
+            'payment_frequency' => ['required', Rule::in(['monthly', 'quarterly', 'yearly'])],
             'started_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:started_at'],
             'signed_at' => ['nullable', 'date'],
@@ -166,7 +168,7 @@ class LeaseController extends Controller
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
         $data = $request->validate([
-            'status' => ['required', 'string'],
+            'status' => ['required', Rule::in(['draft', 'active', 'expired', 'terminated'])],
             'signed_at' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
             'resync_installments' => ['nullable', 'boolean'],
@@ -323,7 +325,10 @@ class LeaseController extends Controller
             'signed_at' => $lease->signed_at?->toDateString(),
             'rent_amount' => (float) $lease->rent_amount,
             'deposit_amount' => (float) $lease->deposit_amount,
+            'tax_amount' => (float) $lease->tax_amount,
+            'discount_amount' => (float) $lease->discount_amount,
             'currency' => $lease->currency,
+            'billing_day' => $lease->billing_day,
             'notes' => $lease->notes,
             'tenant_profile' => [
                 'id' => $lease->tenantProfile?->id,
@@ -345,6 +350,8 @@ class LeaseController extends Controller
             'overdue_count' => $overdueCount,
             'next_due_date' => $nextInstallment?->due_date?->toDateString(),
             'next_due_amount' => $nextInstallment ? (float) $nextInstallment->remaining_amount : null,
+            'open_installment_count' => $installments->whereIn('status', ['pending', 'partial'])->count(),
+            'paid_percent' => $lease->total_due > 0 ? round(min(100, ($lease->total_paid / $lease->total_due) * 100), 1) : 0,
             'installments' => $installments->map(fn ($installment) => [
                 'id' => $installment->id,
                 'sequence' => $installment->sequence,
@@ -365,6 +372,36 @@ class LeaseController extends Controller
                 'original_name' => $document->original_name,
                 'download_url' => route('documents.download', $document),
             ])->values()->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    private function leaseInsights(\Illuminate\Database\Eloquent\Builder $baseQuery): array
+    {
+        $leases = (clone $baseQuery)
+            ->with('installments')
+            ->get();
+
+        return [
+            'total' => $leases->count(),
+            'active' => $leases->where('status', 'active')->count(),
+            'draft' => $leases->where('status', 'draft')->count(),
+            'unsigned' => $leases->whereNull('signed_at')->count(),
+            'expiring_soon' => $leases
+                ->filter(fn (Lease $lease) => $lease->status === 'active'
+                    && $lease->ends_at
+                    && $lease->ends_at->betweenIncluded(now()->startOfDay(), now()->addDays(60)->endOfDay()))
+                ->count(),
+            'overdue' => $leases
+                ->filter(fn (Lease $lease) => $lease->installments->contains(
+                    fn ($installment) => $installment->status !== 'paid' && $installment->due_date?->isPast()
+                ))
+                ->count(),
+            'total_due' => (float) $leases->sum(fn (Lease $lease) => $lease->total_due),
+            'total_paid' => (float) $leases->sum(fn (Lease $lease) => $lease->total_paid),
+            'balance_remaining' => (float) $leases->sum(fn (Lease $lease) => $lease->balance_remaining),
         ];
     }
 

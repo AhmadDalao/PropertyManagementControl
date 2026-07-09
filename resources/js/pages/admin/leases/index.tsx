@@ -5,7 +5,6 @@ import type { FormEvent } from 'react';
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
-import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
 import type {
@@ -28,7 +27,10 @@ type LeaseRecord = {
     signed_at?: string | null;
     rent_amount: number;
     deposit_amount: number;
+    tax_amount: number;
+    discount_amount: number;
     currency: string;
+    billing_day?: number | null;
     notes?: string | null;
     tenant_profile?: { user?: { name?: string | null; email?: string | null } };
     leaseable?: { title_en?: string | null; code?: string | null };
@@ -38,6 +40,8 @@ type LeaseRecord = {
     days_remaining?: number | null;
     installment_count: number;
     overdue_count: number;
+    open_installment_count: number;
+    paid_percent: number;
     next_due_date?: string | null;
     next_due_amount?: number | null;
     installments: LeaseInstallmentRecord[];
@@ -68,6 +72,17 @@ type LeaseDocumentRecord = {
 
 type PageProps = SharedProps & {
     leases: PaginatedData<LeaseRecord>;
+    leaseInsights: {
+        total: number;
+        active: number;
+        draft: number;
+        unsigned: number;
+        expiring_soon: number;
+        overdue: number;
+        total_due: number;
+        total_paid: number;
+        balance_remaining: number;
+    };
     filters: TableFilters;
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
@@ -120,10 +135,10 @@ export default function LeasesPage() {
             signed_at: lease.signed_at ?? '',
             rent_amount: lease.rent_amount,
             deposit_amount: lease.deposit_amount,
-            tax_amount: 0,
-            discount_amount: 0,
+            tax_amount: lease.tax_amount,
+            discount_amount: lease.discount_amount,
             currency: lease.currency,
-            billing_day: 1,
+            billing_day: lease.billing_day ?? 1,
             notes: lease.notes ?? '',
             resync_installments: false,
         });
@@ -218,14 +233,85 @@ export default function LeasesPage() {
     return (
         <AdminLayout>
             <Head title="Leases" />
-            <PageHeader
-                title="Leases"
-                description="Create rent contracts, generate PDFs, upload signed files, and control installment schedules."
-            />
+
+            <section className="pmc-lease-command mb-4">
+                <div>
+                    <span className="pmc-kicker">Contract control</span>
+                    <h1>Build the lease once. Let every balance follow it.</h1>
+                    <p>
+                        Create contracts against rentable assets, generate the
+                        billing schedule by frequency, upload signed files, and
+                        keep payments tied to the exact due line.
+                    </p>
+                    <div className="pmc-lease-command-meta">
+                        <span>
+                            <i className="bi bi-calendar2-check" />
+                            Frequency-aware schedules
+                        </span>
+                        <span>
+                            <i className="bi bi-file-earmark-text" />
+                            Contract and statement PDFs
+                        </span>
+                        <span>
+                            <i className="bi bi-cash-coin" />
+                            Payment allocation ready
+                        </span>
+                    </div>
+                </div>
+                <div className="pmc-lease-command-card">
+                    <span>Open lease balance</span>
+                    <strong>
+                        {currency(
+                            props.leaseInsights.balance_remaining,
+                            props.app.locale,
+                            selectedLease?.currency ?? 'SAR',
+                        )}
+                    </strong>
+                    <small>
+                        {props.leaseInsights.active} active contract
+                        {props.leaseInsights.active === 1 ? '' : 's'}
+                    </small>
+                </div>
+            </section>
+
+            <section className="pmc-lease-insight-grid mb-4">
+                <LeaseInsightCard
+                    icon="bi-file-earmark-check"
+                    label="Active leases"
+                    value={String(props.leaseInsights.active)}
+                    detail={`${props.leaseInsights.total} total contracts`}
+                    tone="teal"
+                />
+                <LeaseInsightCard
+                    icon="bi-pen"
+                    label="Unsigned"
+                    value={String(props.leaseInsights.unsigned)}
+                    detail="Need signed document follow-up"
+                    tone="orange"
+                />
+                <LeaseInsightCard
+                    icon="bi-calendar-event"
+                    label="Expiring soon"
+                    value={String(props.leaseInsights.expiring_soon)}
+                    detail="Ending in the next 60 days"
+                    tone="sand"
+                />
+                <LeaseInsightCard
+                    icon="bi-exclamation-triangle"
+                    label="Overdue schedules"
+                    value={String(props.leaseInsights.overdue)}
+                    detail={currency(
+                        props.leaseInsights.balance_remaining,
+                        props.app.locale,
+                        selectedLease?.currency ?? 'SAR',
+                    )}
+                    tone="red"
+                />
+            </section>
 
             <div className="row g-4">
                 <div className="col-xl-4">
-                    <div className="pmc-card p-4 mb-4">
+                    <div className="pmc-card p-4 mb-4 pmc-lease-form-card">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <div className="pmc-kicker mb-2">
@@ -246,6 +332,28 @@ export default function LeasesPage() {
                                     Reset
                                 </button>
                             ) : null}
+                        </div>
+
+                        {Object.keys(form.errors).length > 0 ? (
+                            <div className="alert alert-danger small">
+                                {Object.values(form.errors)[0]}
+                            </div>
+                        ) : null}
+
+                        <div className="pmc-lease-form-guide mb-3">
+                            <i className="bi bi-info-circle" />
+                            <div>
+                                <strong>
+                                    {editing
+                                        ? 'Editing preserves the money trail.'
+                                        : 'The schedule is generated from this form.'}
+                                </strong>
+                                <span>
+                                    {editing
+                                        ? 'Only status, signature date, notes, and safe resync are editable after creation. If money exists, do not rewrite the billing schedule.'
+                                        : 'Frequency controls how many rent lines are created. Billing day controls when each line is due.'}
+                                </span>
+                            </div>
                         </div>
 
                         <form className="d-grid gap-3" onSubmit={submit}>
@@ -327,7 +435,7 @@ export default function LeasesPage() {
                             </div>
 
                             <div className="row g-3">
-                                <div className="col-md-6">
+                                <div className="col-md-4">
                                     <label className="form-label pmc-form-label">
                                         Status
                                     </label>
@@ -349,7 +457,7 @@ export default function LeasesPage() {
                                         </option>
                                     </select>
                                 </div>
-                                <div className="col-md-6">
+                                <div className="col-md-4">
                                     <label className="form-label pmc-form-label">
                                         Frequency
                                     </label>
@@ -370,6 +478,27 @@ export default function LeasesPage() {
                                         </option>
                                         <option value="yearly">Yearly</option>
                                     </select>
+                                </div>
+                                <div className="col-md-4">
+                                    <label className="form-label pmc-form-label">
+                                        Billing day
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="31"
+                                        className="form-control"
+                                        disabled={Boolean(editing)}
+                                        value={form.data.billing_day}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'billing_day',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
+                                        }
+                                    />
                                 </div>
                             </div>
 
@@ -404,6 +533,47 @@ export default function LeasesPage() {
                                             form.setData(
                                                 'ends_at',
                                                 event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Tax per cycle
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={Boolean(editing)}
+                                        value={form.data.tax_amount}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'tax_amount',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Discount per cycle
+                                    </label>
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        disabled={Boolean(editing)}
+                                        value={form.data.discount_amount}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'discount_amount',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
                                             )
                                         }
                                     />
@@ -827,7 +997,12 @@ function LeaseDetailPanel({
                         locale,
                         lease.currency,
                     )}
-                    detail={`${lease.installment_count} installments`}
+                    detail={`${lease.open_installment_count} open / ${lease.installment_count} total`}
+                />
+                <LeaseKpi
+                    label="Schedule"
+                    value={humanFrequency(lease.payment_frequency)}
+                    detail={`Billing day ${lease.billing_day ?? 'start'}`}
                 />
                 <LeaseKpi
                     label="Days left"
@@ -861,6 +1036,17 @@ function LeaseDetailPanel({
                                         )}{' '}
                                         · {installment.status}
                                     </span>
+                                    <small>
+                                        {humanDate(
+                                            installment.period_start,
+                                            locale,
+                                        )}{' '}
+                                        to{' '}
+                                        {humanDate(
+                                            installment.period_end,
+                                            locale,
+                                        )}
+                                    </small>
                                 </div>
                                 <em>
                                     {currency(
@@ -920,4 +1106,33 @@ function LeaseKpi({
             <small>{detail}</small>
         </div>
     );
+}
+
+function LeaseInsightCard({
+    icon,
+    label,
+    value,
+    detail,
+    tone,
+}: {
+    icon: string;
+    label: string;
+    value: string;
+    detail: string;
+    tone: 'teal' | 'orange' | 'sand' | 'red';
+}) {
+    return (
+        <div className={`pmc-lease-insight-card pmc-lease-insight-${tone}`}>
+            <div>
+                <i className={`bi ${icon}`} />
+            </div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{detail}</small>
+        </div>
+    );
+}
+
+function humanFrequency(frequency: string): string {
+    return frequency.replaceAll('_', ' ');
 }

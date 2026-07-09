@@ -78,8 +78,52 @@ class LeaseLifecycleWorkspaceTest extends TestCase
                 ->where('leases.data.0.total_paid', 2500)
                 ->where('leases.data.0.balance_remaining', 4500)
                 ->where('leases.data.0.installment_count', 4)
+                ->where('leases.data.0.open_installment_count', 3)
+                ->where('leases.data.0.paid_percent', 35.7)
+                ->where('leases.data.0.billing_day', null)
+                ->where('leases.data.0.tax_amount', 0)
+                ->where('leaseInsights.total', 1)
+                ->where('leaseInsights.active', 1)
+                ->where('leaseInsights.balance_remaining', 4500)
                 ->where('leases.data.0.documents.0.download_url', route('documents.download', $document))
                 ->has('leases.data.0.installments', 4));
+    }
+
+    public function test_lease_workspace_exposes_frequency_aware_schedule_rows(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Quarterly Tenant']);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio, ['title_en' => 'Quarterly Unit']);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, [
+            'started_at' => '2026-01-15',
+            'ends_at' => '2026-12-31',
+            'payment_frequency' => 'quarterly',
+            'rent_amount' => 9000,
+            'deposit_amount' => 3000,
+            'tax_amount' => 500,
+            'discount_amount' => 100,
+            'billing_day' => 10,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('leases.index', ['search' => $lease->code]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/leases/index')
+                ->where('leases.total', 1)
+                ->where('leases.data.0.code', $lease->code)
+                ->where('leases.data.0.payment_frequency', 'quarterly')
+                ->where('leases.data.0.installment_count', 5)
+                ->where('leases.data.0.total_due', 40600)
+                ->where('leases.data.0.billing_day', 10)
+                ->where('leases.data.0.tax_amount', 500)
+                ->where('leases.data.0.discount_amount', 100)
+                ->where('leases.data.0.installments.1.label', 'Rent Jan 15-Apr 14 2026')
+                ->where('leases.data.0.installments.1.due_date', '2026-01-15')
+                ->where('leases.data.0.installments.2.label', 'Rent Apr 15-Jul 14 2026')
+                ->where('leases.data.0.installments.2.due_date', '2026-04-10'));
     }
 
     public function test_tenant_dashboard_exposes_secure_contract_document_and_receipt_links(): void
