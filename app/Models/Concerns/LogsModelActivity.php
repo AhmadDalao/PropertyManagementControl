@@ -15,7 +15,16 @@ trait LogsModelActivity
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logFillable()
-            ->logOnlyDirty();
+            ->logAll()
+            ->logOnlyDirty()
+            ->logExcept([
+                'password',
+                'remember_token',
+                'created_at',
+                'updated_at',
+                'email_verified_at',
+                'last_login_at',
+            ])
+            ->dontLogEmptyChanges();
     }
 }

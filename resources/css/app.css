@@ -241,6 +241,31 @@ a {
     line-height: 1;
 }
 
+.pmc-audit-summary {
+    display: grid;
+    min-height: 8rem;
+    place-items: center;
+    border: 1px solid rgba(12, 138, 124, 0.14);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.72);
+    text-align: center;
+}
+
+.pmc-audit-summary span {
+    display: block;
+    color: var(--pmc-secondary);
+    font-size: clamp(2.4rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+}
+
+.pmc-audit-summary strong {
+    display: block;
+    color: var(--pmc-muted);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+}
+
 .pmc-media-preview {
     display: block;
     width: 100%;

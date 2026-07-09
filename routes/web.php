@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminExportController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\CmsPageController;
@@ -35,6 +36,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/documentation', [DocumentationController::class, 'index'])->name('documentation.index');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('/audit-logs/export', [AuditLogController::class, 'export'])->name('audit-logs.export');
     Route::get('/global-search', GlobalSearchController::class)->name('global-search');
     Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
 

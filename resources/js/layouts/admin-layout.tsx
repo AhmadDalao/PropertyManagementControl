@@ -33,6 +33,12 @@ const NAV_GROUPS: NavGroup[] = [
                 href: '/documentation',
                 icon: 'bi-journal-richtext',
             },
+            {
+                label: 'Audit History',
+                href: '/audit-logs',
+                icon: 'bi-clock-history',
+                roles: ['superadmin', 'owner', 'property_manager'],
+            },
         ],
     },
     {
