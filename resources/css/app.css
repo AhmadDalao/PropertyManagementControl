@@ -2182,6 +2182,115 @@ a {
     font-weight: 800;
 }
 
+.pmc-asset-control-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 1.25rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: clamp(1.15rem, 2.5vw, 1.8rem);
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    border-radius: 1.25rem;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(12, 138, 124, 0.14),
+            transparent 38%
+        ),
+        linear-gradient(135deg, #fff8ee, #ffffff);
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-asset-control-hero h2 {
+    max-width: 760px;
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.55rem, 2.6vw, 2.75rem);
+    line-height: 1;
+    font-weight: 950;
+}
+
+.pmc-asset-control-hero p {
+    max-width: 760px;
+    margin: 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-asset-flow {
+    display: flex;
+    max-width: 34rem;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.pmc-asset-flow span {
+    padding: 0.55rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.82);
+    color: var(--pmc-text);
+    font-size: 0.82rem;
+    font-weight: 950;
+    box-shadow: 0 8px 22px rgba(31, 33, 51, 0.055);
+}
+
+.pmc-asset-flow i {
+    color: var(--pmc-primary);
+}
+
+.pmc-asset-assignment-box,
+.pmc-form-section {
+    padding: 1rem;
+    border: 1px solid rgba(26, 30, 48, 0.08);
+    border-radius: 1rem;
+    background: linear-gradient(135deg, #fff8ee, #f2fffb);
+}
+
+.pmc-asset-assignment-box {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.pmc-asset-assignment-box strong {
+    display: block;
+    font-weight: 950;
+}
+
+.pmc-asset-assignment-box label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.pmc-asset-assignment-box label > span {
+    color: var(--pmc-muted);
+    font-size: 0.74rem;
+    font-weight: 950;
+    text-transform: uppercase;
+}
+
+.pmc-form-section summary {
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--pmc-text);
+    font-weight: 950;
+}
+
+.pmc-assignment-cell {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.pmc-assignment-cell span {
+    color: var(--pmc-muted);
+    font-size: 0.84rem;
+}
+
+.pmc-assignment-cell strong {
+    color: var(--pmc-text);
+}
+
 .pmc-next-action-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -3331,6 +3440,14 @@ a {
 
     .pmc-next-action-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-asset-control-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-asset-flow {
+        justify-content: flex-start;
     }
 
     .pmc-command-hero,

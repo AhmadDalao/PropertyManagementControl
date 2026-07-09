@@ -6,6 +6,7 @@ import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
+import { StatCard } from '@/components/stat-card';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency } from '@/lib/utils';
 import type {
@@ -42,14 +43,39 @@ type AssetRecord = {
     description_ar?: string | null;
     stakeholders?: StakeholderRecord[];
     parent?: { title_en: string } | null;
+    children_count?: number;
+    active_leases_count?: number;
+};
+
+type AssetInsights = {
+    total_assets: number;
+    total_value: number;
+    rentable_assets: number;
+    vacant_rentable_assets: number;
+    occupied_assets: number;
+    maintenance_assets: number;
+    buildings: number;
+    floors: number;
+    units: number;
+    spaces: number;
+    missing_owner: number;
+    missing_manager: number;
+    rentable_occupancy_rate: number;
 };
 
 type PageProps = SharedProps & {
     assets: PaginatedData<AssetRecord>;
     filters: TableFilters;
     counts: TableCount[];
+    insights: AssetInsights;
     portfolioOptions: Array<{ id: number; name: string }>;
-    parentOptions: Array<{ id: number; name: string }>;
+    parentOptions: Array<{
+        id: number;
+        name: string;
+        code: string;
+        asset_type: string;
+        portfolio_id: number;
+    }>;
     userOptions: Array<{ id: number; name: string; portfolio_id: number }>;
 };
 
@@ -194,6 +220,21 @@ export default function AssetsPage() {
         });
     }
 
+    const selectedPortfolioId = Number(form.data.portfolio_id || 0);
+    const scopedUsers = props.userOptions.filter(
+        (user) =>
+            selectedPortfolioId === 0 ||
+            user.portfolio_id === selectedPortfolioId,
+    );
+    const scopedParents = props.parentOptions.filter(
+        (asset) =>
+            (selectedPortfolioId === 0 ||
+                asset.portfolio_id === selectedPortfolioId) &&
+            asset.id !== editing?.id,
+    );
+    const ownerCandidates = scopedUsers;
+    const managerCandidates = scopedUsers;
+
     return (
         <AdminLayout>
             <Head title="Assets" />
@@ -201,6 +242,66 @@ export default function AssetsPage() {
                 title="Assets"
                 description="Track buildings, floors, units, departments, valuation, and who owns or manages them."
             />
+
+            <section className="pmc-asset-control-hero">
+                <div>
+                    <div className="pmc-kicker mb-2">Asset control cycle</div>
+                    <h2>Build the property tree before leases and reports.</h2>
+                    <p>
+                        Create the hierarchy, assign ownership and management,
+                        mark only rentable nodes, then track occupancy from the
+                        table.
+                    </p>
+                </div>
+                <div className="pmc-asset-flow">
+                    <span>Property</span>
+                    <i className="bi bi-arrow-right" />
+                    <span>Building</span>
+                    <i className="bi bi-arrow-right" />
+                    <span>Floor</span>
+                    <i className="bi bi-arrow-right" />
+                    <span>Unit / Space</span>
+                </div>
+            </section>
+
+            <div className="row g-3 mb-4">
+                <div className="col-sm-6 col-xl-3">
+                    <StatCard
+                        title="Assets"
+                        value={props.insights.total_assets}
+                        hint={`${props.insights.buildings} buildings · ${props.insights.units} units`}
+                        tone="accent"
+                    />
+                </div>
+                <div className="col-sm-6 col-xl-3">
+                    <StatCard
+                        title="Portfolio value"
+                        value={currency(
+                            props.insights.total_value,
+                            props.app.locale,
+                        )}
+                        hint={`${props.insights.spaces} spaces · ${props.insights.floors} floors`}
+                    />
+                </div>
+                <div className="col-sm-6 col-xl-3">
+                    <StatCard
+                        title="Rentable occupancy"
+                        value={`${props.insights.rentable_occupancy_rate}%`}
+                        hint={`${props.insights.vacant_rentable_assets} vacant of ${props.insights.rentable_assets} rentable`}
+                        tone="teal"
+                    />
+                </div>
+                <div className="col-sm-6 col-xl-3">
+                    <StatCard
+                        title="Assignment gaps"
+                        value={
+                            props.insights.missing_owner +
+                            props.insights.missing_manager
+                        }
+                        hint={`${props.insights.missing_owner} missing owner · ${props.insights.missing_manager} missing manager`}
+                    />
+                </div>
+            </div>
 
             <div className="row g-4">
                 <div className="col-xl-4">
@@ -236,12 +337,16 @@ export default function AssetsPage() {
                                     <select
                                         className="form-select"
                                         value={form.data.portfolio_id}
-                                        onChange={(event) =>
-                                            form.setData(
-                                                'portfolio_id',
-                                                event.currentTarget.value,
-                                            )
-                                        }
+                                        onChange={(event) => {
+                                            form.setData({
+                                                ...form.data,
+                                                portfolio_id:
+                                                    event.currentTarget.value,
+                                                parent_id: '',
+                                                primary_owner_user_id: '',
+                                                primary_manager_user_id: '',
+                                            });
+                                        }}
                                     >
                                         {props.portfolioOptions.map(
                                             (portfolio) => (
@@ -323,48 +428,61 @@ export default function AssetsPage() {
                                     }
                                 >
                                     <option value="">No parent</option>
-                                    {props.parentOptions.map((item) => (
+                                    {scopedParents.map((item) => (
                                         <option key={item.id} value={item.id}>
-                                            {item.name}
+                                            {item.name} · {item.code} ·{' '}
+                                            {item.asset_type}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
-                            <input
-                                className="form-control"
-                                placeholder="English title"
-                                value={form.data.title_en}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'title_en',
-                                        event.currentTarget.value,
-                                    )
-                                }
-                            />
-                            <input
-                                className="form-control"
-                                placeholder="Arabic title"
-                                value={form.data.title_ar}
-                                onChange={(event) =>
-                                    form.setData(
-                                        'title_ar',
-                                        event.currentTarget.value,
-                                    )
-                                }
-                            />
-                            {!editing ? (
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    English title
+                                </label>
                                 <input
                                     className="form-control"
-                                    placeholder="Code"
-                                    value={form.data.code}
+                                    value={form.data.title_en}
                                     onChange={(event) =>
                                         form.setData(
-                                            'code',
+                                            'title_en',
                                             event.currentTarget.value,
                                         )
                                     }
                                 />
+                            </div>
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    Arabic title
+                                </label>
+                                <input
+                                    className="form-control"
+                                    value={form.data.title_ar}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'title_ar',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </div>
+                            {!editing ? (
+                                <div>
+                                    <label className="form-label pmc-form-label">
+                                        Code
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        value={form.data.code}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'code',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
                             ) : null}
 
                             <div className="row g-3">
@@ -458,6 +576,161 @@ export default function AssetsPage() {
                                 </div>
                             </div>
 
+                            <div className="row g-3">
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Currency
+                                    </label>
+                                    <input
+                                        className="form-control text-uppercase"
+                                        maxLength={3}
+                                        value={form.data.currency}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'currency',
+                                                event.currentTarget.value.toUpperCase(),
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label pmc-form-label">
+                                        Level / floor label
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        value={form.data.level_label}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'level_label',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="form-label pmc-form-label">
+                                    Unit / space label
+                                </label>
+                                <input
+                                    className="form-control"
+                                    value={form.data.unit_label}
+                                    onChange={(event) =>
+                                        form.setData(
+                                            'unit_label',
+                                            event.currentTarget.value,
+                                        )
+                                    }
+                                />
+                            </div>
+
+                            <div className="pmc-asset-assignment-box">
+                                <div>
+                                    <div className="pmc-kicker mb-1">
+                                        Ownership and management
+                                    </div>
+                                    <strong>
+                                        Assign the people responsible for this
+                                        asset.
+                                    </strong>
+                                </div>
+                                <label>
+                                    <span>Primary owner</span>
+                                    <select
+                                        className="form-select"
+                                        value={form.data.primary_owner_user_id}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'primary_owner_user_id',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="">No owner</option>
+                                        {ownerCandidates.map((user) => (
+                                            <option
+                                                key={user.id}
+                                                value={user.id}
+                                            >
+                                                {user.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label>
+                                    <span>Primary manager</span>
+                                    <select
+                                        className="form-select"
+                                        value={
+                                            form.data.primary_manager_user_id
+                                        }
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'primary_manager_user_id',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="">No manager</option>
+                                        {managerCandidates.map((user) => (
+                                            <option
+                                                key={user.id}
+                                                value={user.id}
+                                            >
+                                                {user.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </label>
+                            </div>
+
+                            <details className="pmc-form-section">
+                                <summary>
+                                    <i className="bi bi-geo-alt" />
+                                    Address and descriptions
+                                </summary>
+                                <div className="d-grid gap-3 mt-3">
+                                    <textarea
+                                        className="form-control"
+                                        rows={2}
+                                        placeholder="Address"
+                                        value={form.data.address}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'address',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                    <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="English description"
+                                        value={form.data.description_en}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'description_en',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                    <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        placeholder="Arabic description"
+                                        value={form.data.description_ar}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'description_ar',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </details>
+
                             <div className="form-check">
                                 <input
                                     id="rentable"
@@ -514,10 +787,21 @@ export default function AssetsPage() {
                                             </div>
                                             <div className="small text-secondary">
                                                 {asset.title_ar}
+                                                {asset.parent
+                                                    ? ` · under ${asset.parent.title_en}`
+                                                    : ''}
                                             </div>
-                                            <span className="pmc-chip mt-2">
-                                                {asset.code}
-                                            </span>
+                                            <div className="d-flex gap-2 mt-2 flex-wrap">
+                                                <span className="pmc-chip">
+                                                    {asset.code}
+                                                </span>
+                                                {asset.children_count ? (
+                                                    <span className="pmc-chip pmc-chip--teal">
+                                                        {asset.children_count}{' '}
+                                                        children
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                         </>
                                     ),
                                 },
@@ -530,6 +814,19 @@ export default function AssetsPage() {
                                             <div className="small text-secondary">
                                                 {asset.usage_type}
                                             </div>
+                                            <div className="small text-secondary">
+                                                {asset.level_label
+                                                    ? `Level ${asset.level_label}`
+                                                    : ''}
+                                                {asset.unit_label
+                                                    ? ` · Unit ${asset.unit_label}`
+                                                    : ''}
+                                            </div>
+                                            {asset.rentable ? (
+                                                <span className="pmc-chip pmc-chip--primary mt-2">
+                                                    Rentable
+                                                </span>
+                                            ) : null}
                                         </>
                                     ),
                                 },
@@ -537,20 +834,70 @@ export default function AssetsPage() {
                                     key: 'occupancy',
                                     label: 'Occupancy',
                                     render: (asset) => (
-                                        <span className="pmc-chip pmc-chip--primary">
-                                            {asset.occupancy_status}
-                                        </span>
+                                        <div className="d-grid gap-2">
+                                            <span className="pmc-chip pmc-chip--primary">
+                                                {asset.occupancy_status}
+                                            </span>
+                                            <span className="small text-secondary">
+                                                {asset.status}
+                                                {asset.active_leases_count
+                                                    ? ` · ${asset.active_leases_count} active lease`
+                                                    : ''}
+                                            </span>
+                                        </div>
                                     ),
+                                },
+                                {
+                                    key: 'assignment',
+                                    label: 'Owner / manager',
+                                    render: (asset) => {
+                                        const owner = primaryStakeholder(
+                                            asset,
+                                            'owner',
+                                        );
+                                        const manager = primaryStakeholder(
+                                            asset,
+                                            'manager',
+                                        );
+
+                                        return (
+                                            <div className="pmc-assignment-cell">
+                                                <span>
+                                                    Owner:{' '}
+                                                    <strong>
+                                                        {owner ?? 'Unassigned'}
+                                                    </strong>
+                                                </span>
+                                                <span>
+                                                    Manager:{' '}
+                                                    <strong>
+                                                        {manager ??
+                                                            'Unassigned'}
+                                                    </strong>
+                                                </span>
+                                            </div>
+                                        );
+                                    },
                                 },
                                 {
                                     key: 'value',
                                     label: 'Value',
-                                    render: (asset) =>
-                                        currency(
-                                            asset.valuation_amount,
-                                            props.app.locale,
-                                            asset.currency,
-                                        ),
+                                    render: (asset) => (
+                                        <>
+                                            <div>
+                                                {currency(
+                                                    asset.valuation_amount,
+                                                    props.app.locale,
+                                                    asset.currency,
+                                                )}
+                                            </div>
+                                            {asset.area ? (
+                                                <div className="small text-secondary">
+                                                    {asset.area} sqm
+                                                </div>
+                                            ) : null}
+                                        </>
+                                    ),
                                 },
                                 {
                                     key: 'actions',
@@ -594,6 +941,17 @@ function assetTypeOptions(allLabel?: string) {
         { label: 'Unit', value: 'unit' },
         { label: 'Space', value: 'space' },
     ];
+}
+
+function primaryStakeholder(
+    asset: AssetRecord,
+    relationshipType: 'owner' | 'manager',
+): string | null {
+    return (
+        asset.stakeholders?.find(
+            (item) => item.relationship_type === relationshipType,
+        )?.user?.name ?? null
+    );
 }
 
 function usageTypeOptions(allLabel?: string) {

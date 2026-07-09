@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Lease;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,12 @@ class AssetController extends Controller
             'rentable' => 'all',
         ]);
         $baseQuery = $this->scopeByPortfolio(Asset::query(), $actor);
-        $assets = (clone $baseQuery)->with(['portfolio', 'parent', 'stakeholders.user']);
+        $assets = (clone $baseQuery)
+            ->with(['portfolio', 'parent', 'stakeholders.user'])
+            ->withCount([
+                'children',
+                'leases as active_leases_count' => fn ($query) => $query->where('status', 'active'),
+            ]);
 
         $this->applyExactFilter($assets, $filters, 'portfolio_id');
         $this->applyExactFilter($assets, $filters, 'status');
@@ -74,10 +80,14 @@ class AssetController extends Controller
             ]),
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
+            'insights' => $this->assetInsights($baseQuery, $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'parentOptions' => (clone $baseQuery)->orderBy('title_en')->get()->map(fn (Asset $asset) => [
                 'id' => $asset->id,
                 'name' => $asset->title_en,
+                'code' => $asset->code,
+                'asset_type' => $asset->asset_type,
+                'portfolio_id' => $asset->portfolio_id,
             ])->all(),
             'userOptions' => $userOptions,
         ]);
@@ -204,7 +214,7 @@ class AssetController extends Controller
         $assetIds = $this->assetAndDescendantIds($asset);
 
         if (Lease::query()
-            ->where('leaseable_type', Asset::class)
+            ->whereIn('leaseable_type', $this->assetLeaseableTypes())
             ->whereIn('leaseable_id', $assetIds)
             ->where('status', 'active')
             ->exists()) {
@@ -220,6 +230,46 @@ class AssetController extends Controller
         });
 
         return to_route('assets.index')->with('success', "Asset {$asset->title_en} archived.");
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function assetInsights(Builder $baseQuery, array $filters): array
+    {
+        $query = clone $baseQuery;
+        $this->applyExactFilter($query, $filters, 'portfolio_id');
+
+        $totalAssets = (clone $query)->count();
+        $rentableAssets = (clone $query)->where('rentable', true)->count();
+        $vacantRentableAssets = (clone $query)
+            ->where('rentable', true)
+            ->where('occupancy_status', 'vacant')
+            ->count();
+
+        return [
+            'total_assets' => $totalAssets,
+            'total_value' => (float) (clone $query)->sum('valuation_amount'),
+            'rentable_assets' => $rentableAssets,
+            'vacant_rentable_assets' => $vacantRentableAssets,
+            'occupied_assets' => (clone $query)->where('occupancy_status', 'occupied')->count(),
+            'maintenance_assets' => (clone $query)->where('occupancy_status', 'maintenance')->count(),
+            'buildings' => (clone $query)->where('asset_type', 'building')->count(),
+            'floors' => (clone $query)->where('asset_type', 'floor')->count(),
+            'units' => (clone $query)->where('asset_type', 'unit')->count(),
+            'spaces' => (clone $query)->where('asset_type', 'space')->count(),
+            'missing_owner' => (clone $query)->whereDoesntHave(
+                'stakeholders',
+                fn ($stakeholderQuery) => $stakeholderQuery->where('relationship_type', 'owner')->where('is_primary', true)
+            )->count(),
+            'missing_manager' => (clone $query)->whereDoesntHave(
+                'stakeholders',
+                fn ($stakeholderQuery) => $stakeholderQuery->where('relationship_type', 'manager')->where('is_primary', true)
+            )->count(),
+            'rentable_occupancy_rate' => $rentableAssets > 0
+                ? round((($rentableAssets - $vacantRentableAssets) / $rentableAssets) * 100, 1)
+                : 0,
+        ];
     }
 
     private function syncStakeholders(Asset $asset, ?int $ownerId, ?int $managerId): void
@@ -245,6 +295,16 @@ class AssetController extends Controller
                 'starts_on' => now()->toDateString(),
             ]);
         }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function assetLeaseableTypes(): array
+    {
+        $asset = new Asset();
+
+        return array_values(array_unique([Asset::class, $asset->getMorphClass()]));
     }
 
     /**
