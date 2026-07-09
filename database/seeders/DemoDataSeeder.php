@@ -439,7 +439,7 @@ class DemoDataSeeder extends Seeder
         Document::query()->create([
             'portfolio_id' => $portfolio->id,
             'uploaded_by_user_id' => $uploader->id,
-            'documentable_type' => Lease::class,
+            'documentable_type' => $lease->getMorphClass(),
             'documentable_id' => $lease->id,
             'type' => $type,
             'title_en' => $titleEn,

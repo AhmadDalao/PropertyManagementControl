@@ -112,6 +112,17 @@ Artisan::command('property:seed-demo-data {--fresh-demo : Rebuild the local data
 
     $this->info(Artisan::output());
     $this->info('Local property demo data is ready.');
+    $this->newLine();
+    $this->line('Local demo accounts, all using password [password]:');
+    $this->line('  superadmin@propertycontrol.test');
+    $this->line('  owner@propertycontrol.test');
+    $this->line('  manager@propertycontrol.test');
+    $this->line('  tenant@propertycontrol.test');
+    $this->line('  owner.jeddah@propertycontrol.test');
+    $this->line('  manager.jeddah@propertycontrol.test');
+    $this->line('  tenant.jeddah@propertycontrol.test');
+    $this->newLine();
+    $this->line('Open /dashboard, /documentation, /assets, /leases, /payments, and /maintenance-requests to review the full cycle.');
 
     return 0;
 })->purpose('Rebuild the local/staging database with rich demo property data. Blocked in production.');
