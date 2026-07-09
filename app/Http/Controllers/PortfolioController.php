@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Portfolio;
+use App\Support\PortfolioModules;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -44,6 +45,8 @@ class PortfolioController extends Controller
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
             'canCreate' => $user->hasRole('superadmin'),
+            'canUpdate' => $user->hasAnyRole(['superadmin', 'owner']),
+            'moduleDefinitions' => PortfolioModules::definitions(),
         ]);
     }
 
@@ -63,19 +66,15 @@ class PortfolioController extends Controller
             'address' => ['nullable', 'string'],
             'default_currency' => ['nullable', 'string', 'size:3'],
             'status' => ['required', 'string', 'max:50'],
+            'module_settings' => ['nullable', 'array'],
+            'module_settings.*' => ['boolean'],
         ]);
 
         $portfolio = Portfolio::query()->create([
             ...$data,
             'code' => $data['code'] ?: Str::upper(Str::random(6)),
             'slug' => Str::slug($data['name_en']).'-'.Str::lower(Str::random(4)),
-            'module_settings' => [
-                'assets' => true,
-                'tenants' => true,
-                'leases' => true,
-                'payments' => true,
-                'maintenance' => true,
-            ],
+            'module_settings' => PortfolioModules::normalize($data['module_settings'] ?? null),
         ]);
 
         return to_route('portfolios.index')->with('success', "Portfolio {$portfolio->name_en} created.");
@@ -84,6 +83,7 @@ class PortfolioController extends Controller
     public function update(Request $request, Portfolio $portfolio): RedirectResponse
     {
         $user = $this->actor($request);
+        $this->requireRoles($user, ['superadmin', 'owner']);
         $this->ensurePortfolioAccess($user, $portfolio->id);
 
         $data = $request->validate([
@@ -97,7 +97,10 @@ class PortfolioController extends Controller
             'default_currency' => ['nullable', 'string', 'size:3'],
             'status' => ['required', 'string', 'max:50'],
             'module_settings' => ['nullable', 'array'],
+            'module_settings.*' => ['boolean'],
         ]);
+
+        $data['module_settings'] = PortfolioModules::normalize($data['module_settings'] ?? $portfolio->module_settings);
 
         $portfolio->update($data);
 

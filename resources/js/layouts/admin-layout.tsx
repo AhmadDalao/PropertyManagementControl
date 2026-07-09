@@ -16,6 +16,7 @@ type NavItem = {
     href: string;
     icon: string;
     roles?: string[];
+    module?: string;
 };
 
 type NavGroup = {
@@ -55,18 +56,21 @@ const NAV_GROUPS: NavGroup[] = [
                 href: '/users',
                 icon: 'bi-people',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'users',
             },
             {
                 label: 'Assets',
                 href: '/assets',
                 icon: 'bi-diagram-3',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'assets',
             },
             {
                 label: 'Tenants',
                 href: '/tenants',
                 icon: 'bi-person-badge',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'tenants',
             },
         ],
     },
@@ -78,35 +82,41 @@ const NAV_GROUPS: NavGroup[] = [
                 href: '/leases',
                 icon: 'bi-file-earmark-text',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'leases',
             },
             {
                 label: 'Payments',
                 href: '/payments',
                 icon: 'bi-cash-stack',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'payments',
             },
             {
                 label: 'Maintenance',
                 href: '/maintenance-requests',
                 icon: 'bi-tools',
+                module: 'maintenance',
             },
             {
                 label: 'Expenses',
                 href: '/expenses',
                 icon: 'bi-receipt',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'expenses',
             },
             {
                 label: 'Reports',
                 href: '/reports',
                 icon: 'bi-graph-up-arrow',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'reports',
             },
             {
                 label: 'Documents',
                 href: '/documents',
                 icon: 'bi-folder2-open',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'documents',
             },
         ],
     },
@@ -124,6 +134,7 @@ const NAV_GROUPS: NavGroup[] = [
                 href: '/media-files',
                 icon: 'bi-images',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'media',
             },
         ],
     },
@@ -140,13 +151,31 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         document.documentElement.dir = props.app.direction;
     }, [props.app.direction, props.app.locale]);
 
+    const hasRoleAccess = (item: NavItem) =>
+        !item.roles || item.roles.some((role) => roles.includes(role));
+    const hasModuleAccess = (module?: string) => {
+        if (!module || roles.includes('superadmin')) {
+            return true;
+        }
+
+        if (!user?.portfolio) {
+            return false;
+        }
+
+        return user.portfolio.module_settings[module] !== false;
+    };
+    const canUse = (item: NavItem) =>
+        hasRoleAccess(item) && hasModuleAccess(item.module);
+
     const visibleGroups = NAV_GROUPS.map((group) => ({
         ...group,
-        items: group.items.filter(
-            (item) =>
-                !item.roles || item.roles.some((role) => roles.includes(role)),
-        ),
+        items: group.items.filter((item) => canUse(item)),
     })).filter((group) => group.items.length > 0);
+    const canCreateAsset =
+        roles.some((role) =>
+            ['superadmin', 'owner', 'property_manager'].includes(role),
+        ) && hasModuleAccess('assets');
+    const canOpenMaintenance = hasModuleAccess('maintenance');
 
     return (
         <div className="pmc-console-shell">
@@ -227,20 +256,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     {user ? <GlobalSearch /> : null}
 
                     <div className="pmc-topbar-actions">
-                        <Link
-                            href="/assets"
-                            className="btn btn-outline-secondary btn-sm pmc-quick-action"
-                        >
-                            <i className="bi bi-plus-circle" />
-                            Asset
-                        </Link>
-                        <Link
-                            href="/maintenance-requests"
-                            className="btn btn-outline-secondary btn-sm pmc-quick-action"
-                        >
-                            <i className="bi bi-tools" />
-                            Request
-                        </Link>
+                        {canCreateAsset ? (
+                            <Link
+                                href="/assets"
+                                className="btn btn-outline-secondary btn-sm pmc-quick-action"
+                            >
+                                <i className="bi bi-plus-circle" />
+                                Asset
+                            </Link>
+                        ) : null}
+                        {canOpenMaintenance ? (
+                            <Link
+                                href="/maintenance-requests"
+                                className="btn btn-outline-secondary btn-sm pmc-quick-action"
+                            >
+                                <i className="bi bi-tools" />
+                                Request
+                            </Link>
+                        ) : null}
                         <LanguageSwitcher />
                         {user ? (
                             <details className="pmc-account-menu">

@@ -159,6 +159,76 @@ a {
     font-size: 1.02rem;
 }
 
+.pmc-module-panel {
+    padding: 1rem;
+    border: 1px solid rgba(12, 138, 124, 0.13);
+    border-radius: 1.15rem;
+    background: linear-gradient(135deg, rgba(255, 248, 235, 0.88), #fff);
+}
+
+.pmc-module-grid {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-module-toggle {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.85rem;
+    border: 1px solid rgba(26, 30, 48, 0.09);
+    border-radius: 1rem;
+    background: #fff;
+    cursor: pointer;
+    transition:
+        border-color 180ms ease,
+        box-shadow 180ms ease,
+        transform 180ms ease;
+}
+
+.pmc-module-toggle:hover,
+.pmc-module-toggle.is-enabled {
+    border-color: rgba(12, 138, 124, 0.34);
+    box-shadow: 0 12px 28px rgba(12, 138, 124, 0.09);
+}
+
+.pmc-module-toggle input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--pmc-teal);
+}
+
+.pmc-module-toggle span {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.pmc-module-toggle strong {
+    color: var(--pmc-text);
+}
+
+.pmc-module-toggle small {
+    color: var(--pmc-muted);
+    line-height: 1.35;
+}
+
+.pmc-module-toggle em {
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: rgba(26, 30, 48, 0.06);
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-module-toggle.is-enabled em {
+    background: rgba(12, 138, 124, 0.12);
+    color: var(--pmc-teal);
+}
+
 .pmc-kicker {
     text-transform: uppercase;
     letter-spacing: 0;

@@ -28,6 +28,13 @@ type PortfolioRecord = {
     users_count?: number;
     assets_count?: number;
     leases_count?: number;
+    module_settings?: Record<string, boolean> | null;
+};
+
+type ModuleDefinition = {
+    key: string;
+    label: string;
+    description: string;
 };
 
 type PageProps = SharedProps & {
@@ -35,6 +42,8 @@ type PageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     canCreate: boolean;
+    canUpdate: boolean;
+    moduleDefinitions: ModuleDefinition[];
 };
 
 export default function PortfoliosPage() {
@@ -51,6 +60,7 @@ export default function PortfoliosPage() {
         address: '',
         default_currency: 'SAR',
         status: 'active',
+        module_settings: defaultModuleSettings(props.moduleDefinitions),
     });
 
     const startEditing = (portfolio: PortfolioRecord) => {
@@ -65,6 +75,10 @@ export default function PortfoliosPage() {
             address: portfolio.address ?? '',
             default_currency: portfolio.default_currency ?? 'SAR',
             status: portfolio.status,
+            module_settings: defaultModuleSettings(
+                props.moduleDefinitions,
+                portfolio.module_settings,
+            ),
         });
         setEditing(portfolio);
     };
@@ -121,47 +135,61 @@ export default function PortfoliosPage() {
                                 </button>
                             ) : null}
                         </div>
-                        {props.canCreate || editing ? (
+                        {props.canCreate || (editing && props.canUpdate) ? (
                             <form className="d-grid gap-3" onSubmit={submit}>
-                                <input
-                                    className="form-control"
-                                    placeholder="English name"
-                                    value={form.data.name_en}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'name_en',
-                                            event.currentTarget.value,
-                                        )
-                                    }
-                                />
-                                <input
-                                    className="form-control"
-                                    placeholder="Arabic name"
-                                    value={form.data.name_ar}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'name_ar',
-                                            event.currentTarget.value,
-                                        )
-                                    }
-                                />
-                                <input
-                                    className="form-control"
-                                    placeholder="Code"
-                                    disabled={Boolean(editing)}
-                                    value={form.data.code}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'code',
-                                            event.currentTarget.value,
-                                        )
-                                    }
-                                />
+                                <div>
+                                    <label className="form-label pmc-form-label">
+                                        English name
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        value={form.data.name_en}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'name_en',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <label className="form-label pmc-form-label">
+                                        Arabic name
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        value={form.data.name_ar}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'name_ar',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+                                <div>
+                                    <label className="form-label pmc-form-label">
+                                        Code
+                                    </label>
+                                    <input
+                                        className="form-control"
+                                        disabled={Boolean(editing)}
+                                        value={form.data.code}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'code',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
                                 <div className="row g-3">
                                     <div className="col-md-6">
+                                        <label className="form-label pmc-form-label">
+                                            City
+                                        </label>
                                         <input
                                             className="form-control"
-                                            placeholder="City"
                                             value={form.data.city}
                                             onChange={(event) =>
                                                 form.setData(
@@ -172,6 +200,9 @@ export default function PortfoliosPage() {
                                         />
                                     </div>
                                     <div className="col-md-6">
+                                        <label className="form-label pmc-form-label">
+                                            Status
+                                        </label>
                                         <select
                                             className="form-select"
                                             value={form.data.status}
@@ -194,17 +225,158 @@ export default function PortfoliosPage() {
                                         </select>
                                     </div>
                                 </div>
-                                <input
-                                    className="form-control"
-                                    placeholder="Contact email"
-                                    value={form.data.contact_email}
-                                    onChange={(event) =>
-                                        form.setData(
-                                            'contact_email',
-                                            event.currentTarget.value,
-                                        )
-                                    }
-                                />
+                                <div className="row g-3">
+                                    <div className="col-md-6">
+                                        <label className="form-label pmc-form-label">
+                                            Contact email
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            value={form.data.contact_email}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'contact_email',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-md-6">
+                                        <label className="form-label pmc-form-label">
+                                            Contact phone
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            value={form.data.contact_phone}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'contact_phone',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                                <div className="row g-3">
+                                    <div className="col-md-7">
+                                        <label className="form-label pmc-form-label">
+                                            Country
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            value={form.data.country}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'country',
+                                                    event.currentTarget.value,
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                    <div className="col-md-5">
+                                        <label className="form-label pmc-form-label">
+                                            Currency
+                                        </label>
+                                        <input
+                                            className="form-control"
+                                            maxLength={3}
+                                            value={form.data.default_currency}
+                                            onChange={(event) =>
+                                                form.setData(
+                                                    'default_currency',
+                                                    event.currentTarget.value.toUpperCase(),
+                                                )
+                                            }
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="form-label pmc-form-label">
+                                        Address
+                                    </label>
+                                    <textarea
+                                        className="form-control"
+                                        rows={3}
+                                        value={form.data.address}
+                                        onChange={(event) =>
+                                            form.setData(
+                                                'address',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    />
+                                </div>
+
+                                <section className="pmc-module-panel">
+                                    <div>
+                                        <div className="pmc-kicker mb-2">
+                                            Module visibility
+                                        </div>
+                                        <h3 className="h6 mb-1">
+                                            Owner-controlled portal modules
+                                        </h3>
+                                        <p className="text-secondary small mb-3">
+                                            Disabled modules disappear from
+                                            navigation and are blocked by the
+                                            backend for this portfolio.
+                                        </p>
+                                    </div>
+                                    <div className="pmc-module-grid">
+                                        {props.moduleDefinitions.map(
+                                            (definition) => {
+                                                const enabled = Boolean(
+                                                    form.data.module_settings[
+                                                        definition.key
+                                                    ],
+                                                );
+
+                                                return (
+                                                    <label
+                                                        key={definition.key}
+                                                        className={`pmc-module-toggle ${enabled ? 'is-enabled' : ''}`}
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={enabled}
+                                                            onChange={(event) =>
+                                                                form.setData(
+                                                                    'module_settings',
+                                                                    {
+                                                                        ...form
+                                                                            .data
+                                                                            .module_settings,
+                                                                        [definition.key]:
+                                                                            event
+                                                                                .currentTarget
+                                                                                .checked,
+                                                                    },
+                                                                )
+                                                            }
+                                                        />
+                                                        <span>
+                                                            <strong>
+                                                                {
+                                                                    definition.label
+                                                                }
+                                                            </strong>
+                                                            <small>
+                                                                {
+                                                                    definition.description
+                                                                }
+                                                            </small>
+                                                        </span>
+                                                        <em>
+                                                            {enabled
+                                                                ? 'On'
+                                                                : 'Off'}
+                                                        </em>
+                                                    </label>
+                                                );
+                                            },
+                                        )}
+                                    </div>
+                                </section>
+
                                 <button
                                     className="btn btn-primary"
                                     disabled={form.processing}
@@ -216,9 +388,9 @@ export default function PortfoliosPage() {
                             </form>
                         ) : (
                             <p className="text-secondary mb-0">
-                                Select your portfolio from the table to update
-                                its profile. Creating new portfolios is
-                                restricted to the system owner.
+                                {props.canUpdate
+                                    ? 'Select your portfolio from the table to update its profile and enabled modules.'
+                                    : 'Portfolio settings are owner-controlled. Managers can view the portfolio but cannot change module access.'}
                             </p>
                         )}
                     </div>
@@ -289,20 +461,33 @@ export default function PortfoliosPage() {
                                     key: 'activity',
                                     label: 'Activity',
                                     render: (portfolio) => (
-                                        <div className="d-flex gap-2 flex-wrap">
-                                            <span className="pmc-chip pmc-chip--teal">
-                                                {portfolio.assets_count ?? 0}{' '}
-                                                assets
-                                            </span>
-                                            <span className="pmc-chip">
-                                                {portfolio.users_count ?? 0}{' '}
-                                                users
-                                            </span>
-                                            <span className="pmc-chip">
-                                                {portfolio.leases_count ?? 0}{' '}
-                                                leases
-                                            </span>
-                                        </div>
+                                        <>
+                                            <div className="d-flex gap-2 flex-wrap">
+                                                <span className="pmc-chip pmc-chip--teal">
+                                                    {portfolio.assets_count ??
+                                                        0}{' '}
+                                                    assets
+                                                </span>
+                                                <span className="pmc-chip">
+                                                    {portfolio.users_count ?? 0}{' '}
+                                                    users
+                                                </span>
+                                                <span className="pmc-chip">
+                                                    {portfolio.leases_count ??
+                                                        0}{' '}
+                                                    leases
+                                                </span>
+                                            </div>
+                                            <div className="small text-secondary mt-2">
+                                                {enabledModuleCount(
+                                                    props.moduleDefinitions,
+                                                    portfolio.module_settings,
+                                                )}{' '}
+                                                of{' '}
+                                                {props.moduleDefinitions.length}{' '}
+                                                modules enabled
+                                            </div>
+                                        </>
                                     ),
                                 },
                                 {
@@ -320,15 +505,17 @@ export default function PortfoliosPage() {
                                     className: 'text-end',
                                     render: (portfolio) => (
                                         <div className="d-flex justify-content-end gap-2 flex-wrap">
-                                            <button
-                                                type="button"
-                                                className="btn btn-outline-secondary btn-sm"
-                                                onClick={() =>
-                                                    startEditing(portfolio)
-                                                }
-                                            >
-                                                Edit
-                                            </button>
+                                            {props.canUpdate ? (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-outline-secondary btn-sm"
+                                                    onClick={() =>
+                                                        startEditing(portfolio)
+                                                    }
+                                                >
+                                                    Edit
+                                                </button>
+                                            ) : null}
                                             {props.canCreate &&
                                             portfolio.status !== 'archived' ? (
                                                 <ArchiveAction
@@ -346,4 +533,24 @@ export default function PortfoliosPage() {
             </div>
         </AdminLayout>
     );
+}
+
+function defaultModuleSettings(
+    definitions: ModuleDefinition[],
+    source?: Record<string, boolean> | null,
+) {
+    return Object.fromEntries(
+        definitions.map((definition) => [
+            definition.key,
+            source?.[definition.key] ?? true,
+        ]),
+    );
+}
+
+function enabledModuleCount(
+    definitions: ModuleDefinition[],
+    source?: Record<string, boolean> | null,
+) {
+    return definitions.filter((definition) => source?.[definition.key] ?? true)
+        .length;
 }

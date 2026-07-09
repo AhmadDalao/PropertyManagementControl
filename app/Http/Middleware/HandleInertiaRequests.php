@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\NavigationItem;
+use App\Support\PortfolioModules;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -60,6 +61,13 @@ class HandleInertiaRequests extends Middleware
                         'force_password_reset' => $request->user()?->force_password_reset,
                         'last_login_at' => $request->user()?->last_login_at?->toIso8601String(),
                         'roles' => $request->user()?->getRoleNames()->values()->all(),
+                        'portfolio' => $request->user()?->portfolio ? [
+                            'id' => $request->user()->portfolio->id,
+                            'name_en' => $request->user()->portfolio->name_en,
+                            'name_ar' => $request->user()->portfolio->name_ar,
+                            'code' => $request->user()->portfolio->code,
+                            'module_settings' => PortfolioModules::normalize($request->user()->portfolio->module_settings),
+                        ] : null,
                     ]
                     : null,
             ],

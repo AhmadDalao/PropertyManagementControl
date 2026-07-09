@@ -13,6 +13,7 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -29,6 +30,9 @@ class AdminExportController extends Controller
         } else {
             $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         }
+
+        $module = PortfolioModules::exportResourceModule($resource);
+        abort_unless(! $module || PortfolioModules::enabledForUser($actor, $module), 403, 'This module is disabled for this portfolio.');
 
         return match ($resource) {
             'portfolios' => $this->exportPortfolios($request),

@@ -46,26 +46,27 @@ Route::middleware('auth')->group(function () {
     Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('assets', AssetController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::resource('leases', LeaseController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract');
-    Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract');
-    Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement');
+    Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:users');
+    Route::resource('assets', AssetController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:assets');
+    Route::resource('tenants', TenantController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:tenants');
+    Route::resource('leases', LeaseController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:leases');
+    Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');
+    Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
+    Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement')->middleware('portfolio.module:leases');
 
-    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:payments');
+    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
 
     Route::resource('maintenance-requests', MaintenanceRequestController::class)
         ->parameters(['maintenance-requests' => 'maintenanceRequest'])
-        ->only(['index', 'store', 'update', 'destroy']);
+        ->only(['index', 'store', 'update', 'destroy'])
+        ->middleware('portfolio.module:maintenance');
 
-    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export');
-    Route::resource('documents', DocumentController::class)->only(['index', 'store', 'update', 'destroy']);
-    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:expenses');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
+    Route::resource('documents', DocumentController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:documents');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download')->middleware('portfolio.module:documents');
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');
     Route::post('/cms/pages', [CmsPageController::class, 'store'])->name('cms.pages.store');
@@ -80,5 +81,5 @@ Route::middleware('auth')->group(function () {
     Route::delete('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'destroyPageSection'])->name('cms.page-sections.destroy');
 
     Route::resource('navigation-items', NavigationItemController::class)->only(['store', 'update', 'destroy']);
-    Route::resource('media-files', MediaFileController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::resource('media-files', MediaFileController::class)->only(['index', 'store', 'update', 'destroy'])->middleware('portfolio.module:media');
 });

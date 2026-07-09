@@ -9,6 +9,13 @@ export type AppUser = {
     force_password_reset?: boolean;
     last_login_at?: string | null;
     roles: string[];
+    portfolio?: {
+        id: number;
+        name_en: string;
+        name_ar: string;
+        code: string;
+        module_settings: Record<string, boolean>;
+    } | null;
 };
 
 export type Auth = {

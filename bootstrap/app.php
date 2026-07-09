@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsurePortfolioModuleEnabled;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -20,6 +21,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ], append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+        ]);
+        $middleware->alias([
+            'portfolio.module' => EnsurePortfolioModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
