@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -31,7 +32,12 @@ class PaymentController extends Controller
             'date_to' => '',
         ]);
         $baseQuery = $this->scopeByPortfolio(Payment::query(), $actor);
-        $payments = (clone $baseQuery)->with(['lease.leaseable', 'tenantProfile.user', 'allocations']);
+        $payments = (clone $baseQuery)->with([
+            'lease.installments',
+            'lease.leaseable',
+            'tenantProfile.user',
+            'allocations.leaseInstallment',
+        ]);
 
         $this->applyExactFilter($payments, $filters, 'portfolio_id');
         $this->applyExactFilter($payments, $filters, 'status');
@@ -60,14 +66,35 @@ class PaymentController extends Controller
                 'type',
                 'method',
                 'amount',
-            ], 'received_on'),
+            ], 'received_on')->through(fn (Payment $payment) => $this->paymentTableRow($payment)),
+            'paymentInsights' => $this->paymentInsights($baseQuery),
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['posted', 'pending', 'void'], $filters),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'leaseOptions' => $this->scopeByPortfolio(
-                Lease::query()->with('tenantProfile.user')->where('status', 'active'),
+                Lease::query()
+                    ->with(['tenantProfile.user', 'leaseable', 'installments'])
+                    ->where('status', 'active'),
                 $actor
-            )->get(),
+            )->get()->map(fn (Lease $lease) => [
+                'id' => $lease->id,
+                'portfolio_id' => $lease->portfolio_id,
+                'tenant_profile_id' => $lease->tenant_profile_id,
+                'code' => $lease->code,
+                'currency' => $lease->currency,
+                'balance_remaining' => (float) $lease->balance_remaining,
+                'total_due' => (float) $lease->total_due,
+                'total_paid' => (float) $lease->total_paid,
+                'tenant_profile' => [
+                    'user' => [
+                        'name' => $lease->tenantProfile?->user?->name,
+                    ],
+                ],
+                'leaseable' => [
+                    'title_en' => $lease->leaseable?->title_en,
+                    'code' => $lease->leaseable?->code,
+                ],
+            ])->values(),
             'tenantOptions' => $this->scopeByPortfolio(
                 TenantProfile::query()->with('user'),
                 $actor
@@ -84,9 +111,9 @@ class PaymentController extends Controller
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
             'lease_id' => ['required', 'integer', 'exists:leases,id'],
             'tenant_profile_id' => ['nullable', 'integer', 'exists:tenant_profiles,id'],
-            'type' => ['required', 'string'],
-            'method' => ['required', 'string'],
-            'status' => ['required', 'string'],
+            'type' => ['required', Rule::in(['rent', 'deposit', 'fee'])],
+            'method' => ['required', Rule::in(['bank_transfer', 'cash', 'card'])],
+            'status' => ['required', Rule::in(['posted', 'pending'])],
             'reference' => ['nullable', 'string', 'max:255', 'unique:payments,reference'],
             'received_on' => ['required', 'date'],
             'amount' => ['required', 'numeric', 'min:0.01'],
@@ -129,7 +156,9 @@ class PaymentController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        $this->leaseFinancials->allocatePayment($payment);
+        if ($payment->status === 'posted') {
+            $this->leaseFinancials->allocatePayment($payment);
+        }
 
         return to_route('payments.index')->with('success', 'Payment recorded successfully.');
     }
@@ -141,7 +170,7 @@ class PaymentController extends Controller
         $this->ensurePortfolioAccess($actor, $payment->portfolio_id);
 
         $data = $request->validate([
-            'status' => ['required', 'string'],
+            'status' => ['required', Rule::in(['posted', 'pending', 'void'])],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -149,16 +178,26 @@ class PaymentController extends Controller
             return back()->with('error', 'Voided payments cannot be reopened. Record a new payment instead.');
         }
 
-        if ($data['status'] === 'void' && $payment->status !== 'void') {
-            DB::transaction(function () use ($payment, $data) {
+        DB::transaction(function () use ($payment, $data) {
+            $originalStatus = $payment->status;
+
+            if ($data['status'] === 'void' && $originalStatus !== 'void') {
                 $this->leaseFinancials->voidPayment($payment);
                 $payment->update(['notes' => $data['notes'] ?? null]);
-            });
 
-            return to_route('payments.index')->with('success', 'Payment voided and allocations reversed.');
-        }
+                return;
+            }
 
-        $payment->update($data);
+            if ($originalStatus === 'posted' && $data['status'] === 'pending') {
+                $this->leaseFinancials->reverseAllocations($payment);
+            }
+
+            $payment->update($data);
+
+            if ($originalStatus !== 'posted' && $data['status'] === 'posted') {
+                $this->leaseFinancials->allocatePayment($payment->fresh());
+            }
+        });
 
         return to_route('payments.index')->with('success', 'Payment updated successfully.');
     }
@@ -187,6 +226,98 @@ class PaymentController extends Controller
             fn () => print ($pdf->output()),
             "receipt-{$reference}.pdf"
         );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function paymentTableRow(Payment $payment): array
+    {
+        $payment->loadMissing([
+            'lease.installments',
+            'lease.leaseable',
+            'tenantProfile.user',
+            'allocations.leaseInstallment',
+        ]);
+
+        $allocatedAmount = (float) $payment->allocations->sum('amount');
+
+        return [
+            'id' => $payment->id,
+            'portfolio_id' => $payment->portfolio_id,
+            'lease_id' => $payment->lease_id,
+            'tenant_profile_id' => $payment->tenant_profile_id,
+            'reference' => $payment->reference,
+            'amount' => (float) $payment->amount,
+            'currency' => $payment->currency,
+            'received_on' => $payment->received_on?->toDateString(),
+            'status' => $payment->status,
+            'type' => $payment->type,
+            'method' => $payment->method,
+            'notes' => $payment->notes,
+            'allocated_amount' => $allocatedAmount,
+            'unallocated_amount' => max(0, (float) $payment->amount - $allocatedAmount),
+            'allocation_count' => $payment->allocations->count(),
+            'receipt_url' => route('payments.receipt', $payment),
+            'tenant_profile' => [
+                'id' => $payment->tenantProfile?->id,
+                'user' => [
+                    'name' => $payment->tenantProfile?->user?->name,
+                    'email' => $payment->tenantProfile?->user?->email,
+                ],
+            ],
+            'lease' => [
+                'id' => $payment->lease?->id,
+                'code' => $payment->lease?->code,
+                'status' => $payment->lease?->status,
+                'balance_remaining' => $payment->lease ? (float) $payment->lease->balance_remaining : null,
+                'total_due' => $payment->lease ? (float) $payment->lease->total_due : null,
+                'total_paid' => $payment->lease ? (float) $payment->lease->total_paid : null,
+                'leaseable' => [
+                    'title_en' => $payment->lease?->leaseable?->title_en,
+                    'code' => $payment->lease?->leaseable?->code,
+                ],
+            ],
+            'allocations' => $payment->allocations->map(fn ($allocation) => [
+                'id' => $allocation->id,
+                'amount' => (float) $allocation->amount,
+                'allocation_type' => $allocation->allocation_type,
+                'installment' => [
+                    'id' => $allocation->leaseInstallment?->id,
+                    'label' => $allocation->leaseInstallment?->label,
+                    'due_date' => $allocation->leaseInstallment?->due_date?->toDateString(),
+                ],
+            ])->values()->all(),
+        ];
+    }
+
+    /**
+     * @return array<string, int|float>
+     */
+    private function paymentInsights(\Illuminate\Database\Eloquent\Builder $baseQuery): array
+    {
+        $payments = (clone $baseQuery)
+            ->with('allocations')
+            ->get();
+
+        $posted = $payments->where('status', 'posted');
+        $pending = $payments->where('status', 'pending');
+        $void = $payments->where('status', 'void');
+
+        return [
+            'total' => $payments->count(),
+            'posted_count' => $posted->count(),
+            'pending_count' => $pending->count(),
+            'void_count' => $void->count(),
+            'posted_amount' => (float) $posted->sum('amount'),
+            'pending_amount' => (float) $pending->sum('amount'),
+            'void_amount' => (float) $void->sum('amount'),
+            'allocated_amount' => (float) $posted->sum(fn (Payment $payment) => $payment->allocations->sum('amount')),
+            'unallocated_amount' => (float) $posted->sum(fn (Payment $payment) => max(0, (float) $payment->amount - (float) $payment->allocations->sum('amount'))),
+            'received_this_month' => (float) $posted
+                ->filter(fn (Payment $payment) => $payment->received_on?->isSameMonth(now()) ?? false)
+                ->sum('amount'),
+        ];
     }
 
     private function ensurePaymentReceiptAccess(\App\Models\User $actor, Payment $payment): void

@@ -56,13 +56,17 @@ class LeaseFinancialService
 
     public function allocatePayment(Payment $payment): void
     {
-        $payment->loadMissing('lease.installments', 'allocations');
+        if ($payment->status !== 'posted') {
+            return;
+        }
+
+        $payment->loadMissing('lease.installments');
 
         if (! $payment->lease) {
             return;
         }
 
-        $payment->allocations()->delete();
+        $this->reverseAllocations($payment);
 
         $remaining = (float) $payment->amount;
         /** @var LeaseInstallment $installment */
@@ -94,7 +98,7 @@ class LeaseFinancialService
         }
     }
 
-    public function voidPayment(Payment $payment): void
+    public function reverseAllocations(Payment $payment): void
     {
         $payment->loadMissing('allocations.leaseInstallment');
 
@@ -116,6 +120,11 @@ class LeaseFinancialService
         }
 
         $payment->allocations()->delete();
+    }
+
+    public function voidPayment(Payment $payment): void
+    {
+        $this->reverseAllocations($payment);
         $payment->update(['status' => 'void']);
     }
 }
