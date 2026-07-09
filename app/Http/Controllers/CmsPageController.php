@@ -8,6 +8,7 @@ use App\Models\CmsSection;
 use App\Models\NavigationItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -107,6 +108,10 @@ class CmsPageController extends Controller
             'is_visible' => ['nullable', 'boolean'],
         ]);
 
+        if ($data['is_homepage'] ?? false) {
+            CmsPage::query()->where('is_homepage', true)->update(['is_homepage' => false]);
+        }
+
         CmsPage::query()->create([
             ...$data,
             'slug' => $data['slug'] ?: Str::slug($data['title_en']),
@@ -124,6 +129,7 @@ class CmsPageController extends Controller
         $this->requireRoles($actor, ['superadmin']);
 
         $data = $request->validate([
+            'slug' => ['nullable', 'string', 'max:255', Rule::unique('cms_pages', 'slug')->ignore($cmsPage->id)],
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['required', 'string', 'max:255'],
             'excerpt_en' => ['nullable', 'string'],
@@ -137,14 +143,36 @@ class CmsPageController extends Controller
             'is_visible' => ['nullable', 'boolean'],
         ]);
 
+        if ($data['is_homepage'] ?? false) {
+            CmsPage::query()
+                ->whereKeyNot($cmsPage->id)
+                ->where('is_homepage', true)
+                ->update(['is_homepage' => false]);
+        }
+
         $cmsPage->update([
             ...$data,
+            'slug' => $data['slug'] ?: Str::slug($data['title_en']),
             'is_homepage' => (bool) ($data['is_homepage'] ?? false),
             'is_visible' => (bool) ($data['is_visible'] ?? true),
             'published_at' => $data['status'] === 'published' ? now() : null,
         ]);
 
         return to_route('cms.index')->with('success', 'Page updated successfully.');
+    }
+
+    public function destroy(Request $request, CmsPage $cmsPage): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        $cmsPage->update([
+            'status' => 'archived',
+            'is_visible' => false,
+            'is_homepage' => false,
+        ]);
+
+        return to_route('cms.index')->with('success', 'Page archived successfully.');
     }
 
     public function storeSection(Request $request): RedirectResponse
@@ -185,6 +213,16 @@ class CmsPageController extends Controller
         $cmsSection->update($data);
 
         return to_route('cms.index')->with('success', 'Section updated successfully.');
+    }
+
+    public function destroySection(Request $request, CmsSection $cmsSection): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        $cmsSection->update(['status' => 'archived']);
+
+        return to_route('cms.index')->with('success', 'Section archived successfully.');
     }
 
     public function attachSection(Request $request, CmsPage $cmsPage): RedirectResponse

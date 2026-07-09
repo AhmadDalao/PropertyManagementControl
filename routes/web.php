@@ -60,8 +60,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');
     Route::post('/cms/pages', [CmsPageController::class, 'store'])->name('cms.pages.store');
     Route::put('/cms/pages/{cmsPage}', [CmsPageController::class, 'update'])->name('cms.pages.update');
+    Route::delete('/cms/pages/{cmsPage}', [CmsPageController::class, 'destroy'])->name('cms.pages.destroy');
     Route::post('/cms/sections', [CmsPageController::class, 'storeSection'])->name('cms.sections.store');
     Route::put('/cms/sections/{cmsSection}', [CmsPageController::class, 'updateSection'])->name('cms.sections.update');
+    Route::delete('/cms/sections/{cmsSection}', [CmsPageController::class, 'destroySection'])->name('cms.sections.destroy');
     Route::post('/cms/pages/{cmsPage}/sections', [CmsPageController::class, 'attachSection'])->name('cms.pages.sections.store');
     Route::put('/cms/pages/{cmsPage}/sections/reorder', [CmsPageController::class, 'reorderPageSections'])->name('cms.pages.sections.reorder');
     Route::put('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'updatePageSection'])->name('cms.page-sections.update');

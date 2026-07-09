@@ -1821,7 +1821,7 @@ a {
 .pmc-lease-list a,
 .pmc-activity-list div,
 .pmc-document-list div,
-.pmc-compact-list div,
+.pmc-compact-list > div,
 .pmc-mini-metric-list div,
 .pmc-cms-status div,
 .pmc-tenant-contract div {
@@ -1880,6 +1880,24 @@ a {
     font-size: 0.78rem;
     font-style: normal;
     font-weight: 900;
+}
+
+.pmc-compact-list-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.pmc-code-textarea {
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    white-space: pre;
 }
 
 .pmc-mini-metric-list strong,
@@ -2063,6 +2081,8 @@ a {
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .pmc-toggle-card {

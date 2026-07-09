@@ -1,6 +1,9 @@
+import type { FormDataConvertible } from '@inertiajs/core';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 
+import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -16,6 +19,12 @@ type PageRecord = {
     title_en: string;
     title_ar?: string;
     slug: string;
+    excerpt_en?: string | null;
+    excerpt_ar?: string | null;
+    seo_title_en?: string | null;
+    seo_title_ar?: string | null;
+    seo_description_en?: string | null;
+    seo_description_ar?: string | null;
     status: string;
     is_homepage: boolean;
     is_visible: boolean;
@@ -29,6 +38,7 @@ type SectionRecord = {
     status: string;
     content_en?: Record<string, unknown> | null;
     content_ar?: Record<string, unknown> | null;
+    settings_json?: Record<string, unknown> | null;
 };
 
 type PageSectionRecord = {
@@ -44,10 +54,15 @@ type BuilderPageRecord = PageRecord & {
 
 type NavigationRecord = {
     id: number;
+    parent_id?: number | null;
+    cms_page_id?: number | null;
     title_en: string;
     title_ar?: string;
     url?: string | null;
     location: string;
+    target?: string | null;
+    sort_order?: number | null;
+    is_visible?: boolean;
 };
 
 type PageProps = SharedProps & {
@@ -66,6 +81,12 @@ export default function CmsPage() {
         props.builderPages[0]?.id ?? 0,
     );
     const [draggingId, setDraggingId] = useState<number | null>(null);
+    const [editingPage, setEditingPage] = useState<PageRecord | null>(null);
+    const [editingSection, setEditingSection] = useState<SectionRecord | null>(
+        null,
+    );
+    const [editingNavigation, setEditingNavigation] =
+        useState<NavigationRecord | null>(null);
 
     const selectedPage = useMemo(
         () =>
@@ -94,6 +115,16 @@ export default function CmsPage() {
         section_type: 'hero',
         name_en: '',
         name_ar: '',
+        content_en_json: jsonText({
+            eyebrow: 'Editable section',
+            headline: 'New section',
+            body: 'Update this copy from the CMS.',
+        }),
+        content_ar_json: jsonText({
+            eyebrow: 'قسم قابل للتعديل',
+            headline: 'قسم جديد',
+            body: 'يمكن تعديل هذا النص من إدارة الموقع.',
+        }),
         status: 'active',
     });
 
@@ -102,6 +133,132 @@ export default function CmsPage() {
         sort_order: selectedPage?.page_sections.length ?? 0,
         is_visible: true,
     });
+
+    const startEditingPage = (page: PageRecord) => {
+        pageForm.setData({
+            slug: page.slug,
+            title_en: page.title_en,
+            title_ar: page.title_ar ?? '',
+            excerpt_en: page.excerpt_en ?? '',
+            excerpt_ar: page.excerpt_ar ?? '',
+            seo_title_en: page.seo_title_en ?? '',
+            seo_title_ar: page.seo_title_ar ?? '',
+            seo_description_en: page.seo_description_en ?? '',
+            seo_description_ar: page.seo_description_ar ?? '',
+            status: page.status,
+            is_homepage: page.is_homepage,
+            is_visible: page.is_visible,
+        });
+        setEditingPage(page);
+        setSelectedPageId(page.id);
+    };
+
+    const clearPageForm = () => {
+        setEditingPage(null);
+        pageForm.reset();
+    };
+
+    const submitPageForm = () => {
+        const options = {
+            preserveScroll: true,
+            onSuccess: clearPageForm,
+        };
+
+        if (editingPage) {
+            pageForm.put(`/cms/pages/${editingPage.id}`, options);
+
+            return;
+        }
+
+        pageForm.post('/cms/pages', options);
+    };
+
+    const startEditingSection = (section: SectionRecord) => {
+        sectionForm.setData({
+            section_type: section.section_type,
+            name_en: section.name_en,
+            name_ar: section.name_ar ?? '',
+            content_en_json: jsonText(section.content_en ?? {}),
+            content_ar_json: jsonText(section.content_ar ?? {}),
+            status: section.status,
+        });
+        setEditingSection(section);
+    };
+
+    const clearSectionForm = () => {
+        setEditingSection(null);
+        sectionForm.reset();
+    };
+
+    const submitSectionForm = () => {
+        const contentEn = parseJsonObject(sectionForm.data.content_en_json);
+        const contentAr = parseJsonObject(sectionForm.data.content_ar_json);
+
+        if (contentEn === null || contentAr === null) {
+            window.alert('Section content must be valid JSON objects.');
+
+            return;
+        }
+
+        const payload = {
+            section_type: sectionForm.data.section_type,
+            name_en: sectionForm.data.name_en,
+            name_ar: sectionForm.data.name_ar,
+            content_en: contentEn,
+            content_ar: contentAr,
+            status: sectionForm.data.status,
+        };
+        const options = {
+            preserveScroll: true,
+            onSuccess: clearSectionForm,
+        };
+
+        if (editingSection) {
+            router.put(`/cms/sections/${editingSection.id}`, payload, options);
+
+            return;
+        }
+
+        router.post('/cms/sections', payload, options);
+    };
+
+    const startEditingNavigation = (item: NavigationRecord) => {
+        navigationForm.setData({
+            parent_id: item.parent_id ? String(item.parent_id) : '',
+            cms_page_id: item.cms_page_id ? String(item.cms_page_id) : '',
+            location: item.location,
+            title_en: item.title_en,
+            title_ar: item.title_ar ?? '',
+            url: item.url ?? '/',
+            target: item.target ?? '_self',
+            sort_order: item.sort_order ?? 0,
+            is_visible: item.is_visible ?? true,
+        });
+        setEditingNavigation(item);
+    };
+
+    const clearNavigationForm = () => {
+        setEditingNavigation(null);
+        navigationForm.reset();
+    };
+
+    const submitNavigationForm = () => {
+        const options = {
+            preserveScroll: true,
+            onSuccess: clearNavigationForm,
+        };
+
+        if (editingNavigation) {
+            navigationForm.put(
+                `/navigation-items/${editingNavigation.id}`,
+                options,
+            );
+
+            return;
+        }
+
+        navigationForm.post('/navigation-items', options);
+    };
 
     const navigationForm = useForm({
         parent_id: '',
@@ -165,16 +322,32 @@ export default function CmsPage() {
             <div className="pmc-cms-grid">
                 <aside className="pmc-cms-sidebar">
                     <div className="pmc-cms-form-card">
-                        <div className="pmc-kicker mb-2">Create page</div>
-                        <h2>Start a new public page</h2>
+                        <div className="d-flex justify-content-between gap-3 align-items-start">
+                            <div>
+                                <div className="pmc-kicker mb-2">
+                                    {editingPage ? 'Edit page' : 'Create page'}
+                                </div>
+                                <h2>
+                                    {editingPage
+                                        ? editingPage.title_en
+                                        : 'Start a new public page'}
+                                </h2>
+                            </div>
+                            {editingPage ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearPageForm}
+                                >
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
                         <form
                             className="d-grid gap-3"
                             onSubmit={(event) => {
                                 event.preventDefault();
-                                pageForm.post('/cms/pages', {
-                                    preserveScroll: true,
-                                    onSuccess: () => pageForm.reset(),
-                                });
+                                submitPageForm();
                             }}
                         >
                             <input
@@ -206,6 +379,30 @@ export default function CmsPage() {
                                 onChange={(event) =>
                                     pageForm.setData(
                                         'slug',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <textarea
+                                className="form-control"
+                                rows={2}
+                                placeholder="English excerpt"
+                                value={pageForm.data.excerpt_en}
+                                onChange={(event) =>
+                                    pageForm.setData(
+                                        'excerpt_en',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <textarea
+                                className="form-control"
+                                rows={2}
+                                placeholder="Arabic excerpt"
+                                value={pageForm.data.excerpt_ar}
+                                onChange={(event) =>
+                                    pageForm.setData(
+                                        'excerpt_ar',
                                         event.currentTarget.value,
                                     )
                                 }
@@ -244,39 +441,55 @@ export default function CmsPage() {
                                     </label>
                                 </div>
                             </div>
+                            <label className="pmc-toggle-card">
+                                <input
+                                    type="checkbox"
+                                    checked={pageForm.data.is_visible}
+                                    onChange={(event) =>
+                                        pageForm.setData(
+                                            'is_visible',
+                                            event.currentTarget.checked,
+                                        )
+                                    }
+                                />
+                                <span>Visible in public site</span>
+                            </label>
                             <button
                                 className="btn btn-primary"
                                 disabled={pageForm.processing}
                             >
-                                Create page
+                                {editingPage ? 'Update page' : 'Create page'}
                             </button>
                         </form>
                     </div>
 
                     <div className="pmc-cms-form-card">
-                        <div className="pmc-kicker mb-2">Section library</div>
-                        <h2>Create reusable section</h2>
+                        <div className="d-flex justify-content-between gap-3 align-items-start">
+                            <div>
+                                <div className="pmc-kicker mb-2">
+                                    Section library
+                                </div>
+                                <h2>
+                                    {editingSection
+                                        ? `Edit ${editingSection.name_en}`
+                                        : 'Create reusable section'}
+                                </h2>
+                            </div>
+                            {editingSection ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearSectionForm}
+                                >
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
                         <form
                             className="d-grid gap-3"
                             onSubmit={(event) => {
                                 event.preventDefault();
-                                sectionForm.transform((data) => ({
-                                    ...data,
-                                    content_en: {
-                                        eyebrow: 'Editable section',
-                                        headline: data.name_en,
-                                        body: 'Update this copy from the CMS.',
-                                    },
-                                    content_ar: {
-                                        eyebrow: 'قسم قابل للتعديل',
-                                        headline: data.name_ar,
-                                        body: 'يمكن تعديل هذا النص من إدارة الموقع.',
-                                    },
-                                }));
-                                sectionForm.post('/cms/sections', {
-                                    preserveScroll: true,
-                                    onSuccess: () => sectionForm.reset(),
-                                });
+                                submitSectionForm();
                             }}
                         >
                             <select
@@ -327,28 +540,120 @@ export default function CmsPage() {
                                     )
                                 }
                             />
+                            <label className="form-label pmc-form-label mb-0">
+                                English content JSON
+                            </label>
+                            <textarea
+                                className="form-control pmc-code-textarea"
+                                rows={8}
+                                value={sectionForm.data.content_en_json}
+                                onChange={(event) =>
+                                    sectionForm.setData(
+                                        'content_en_json',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <label className="form-label pmc-form-label mb-0">
+                                Arabic content JSON
+                            </label>
+                            <textarea
+                                className="form-control pmc-code-textarea"
+                                rows={8}
+                                value={sectionForm.data.content_ar_json}
+                                onChange={(event) =>
+                                    sectionForm.setData(
+                                        'content_ar_json',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            />
+                            <select
+                                className="form-select"
+                                value={sectionForm.data.status}
+                                onChange={(event) =>
+                                    sectionForm.setData(
+                                        'status',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                                <option value="archived">Archived</option>
+                            </select>
                             <button
                                 className="btn btn-outline-secondary"
                                 disabled={sectionForm.processing}
                             >
-                                Create section
+                                {editingSection
+                                    ? 'Update section'
+                                    : 'Create section'}
                             </button>
                         </form>
                     </div>
 
                     <div className="pmc-cms-form-card">
-                        <div className="pmc-kicker mb-2">Header menu</div>
-                        <h2>Add navigation item</h2>
+                        <div className="d-flex justify-content-between gap-3 align-items-start">
+                            <div>
+                                <div className="pmc-kicker mb-2">
+                                    Header menu
+                                </div>
+                                <h2>
+                                    {editingNavigation
+                                        ? `Edit ${editingNavigation.title_en}`
+                                        : 'Add navigation item'}
+                                </h2>
+                            </div>
+                            {editingNavigation ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={clearNavigationForm}
+                                >
+                                    Reset
+                                </button>
+                            ) : null}
+                        </div>
                         <form
                             className="d-grid gap-3"
                             onSubmit={(event) => {
                                 event.preventDefault();
-                                navigationForm.post('/navigation-items', {
-                                    preserveScroll: true,
-                                    onSuccess: () => navigationForm.reset(),
-                                });
+                                submitNavigationForm();
                             }}
                         >
+                            <div className="row g-2">
+                                <div className="col-6">
+                                    <select
+                                        className="form-select"
+                                        value={navigationForm.data.location}
+                                        onChange={(event) =>
+                                            navigationForm.setData(
+                                                'location',
+                                                event.currentTarget.value,
+                                            )
+                                        }
+                                    >
+                                        <option value="header">Header</option>
+                                        <option value="footer">Footer</option>
+                                    </select>
+                                </div>
+                                <div className="col-6">
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        value={navigationForm.data.sort_order}
+                                        onChange={(event) =>
+                                            navigationForm.setData(
+                                                'sort_order',
+                                                Number(
+                                                    event.currentTarget.value,
+                                                ),
+                                            )
+                                        }
+                                    />
+                                </div>
+                            </div>
                             <input
                                 className="form-control"
                                 placeholder="English label"
@@ -371,6 +676,23 @@ export default function CmsPage() {
                                     )
                                 }
                             />
+                            <select
+                                className="form-select"
+                                value={navigationForm.data.cms_page_id}
+                                onChange={(event) =>
+                                    navigationForm.setData(
+                                        'cms_page_id',
+                                        event.currentTarget.value,
+                                    )
+                                }
+                            >
+                                <option value="">Custom URL</option>
+                                {props.pageOptions.map((page) => (
+                                    <option key={page.id} value={page.id}>
+                                        {page.title_en}
+                                    </option>
+                                ))}
+                            </select>
                             <input
                                 className="form-control"
                                 placeholder="URL or anchor"
@@ -382,11 +704,26 @@ export default function CmsPage() {
                                     )
                                 }
                             />
+                            <label className="pmc-toggle-card">
+                                <input
+                                    type="checkbox"
+                                    checked={navigationForm.data.is_visible}
+                                    onChange={(event) =>
+                                        navigationForm.setData(
+                                            'is_visible',
+                                            event.currentTarget.checked,
+                                        )
+                                    }
+                                />
+                                <span>Visible in menu</span>
+                            </label>
                             <button
                                 className="btn btn-outline-secondary"
                                 disabled={navigationForm.processing}
                             >
-                                Create nav item
+                                {editingNavigation
+                                    ? 'Update nav item'
+                                    : 'Create nav item'}
                             </button>
                         </form>
                     </div>
@@ -492,6 +829,7 @@ export default function CmsPage() {
                                 draggingId={draggingId}
                                 setDraggingId={setDraggingId}
                                 reorderSections={reorderSections}
+                                startEditingSection={startEditingSection}
                             />
                         ) : (
                             <div className="pmc-empty-state">
@@ -575,6 +913,30 @@ export default function CmsPage() {
                                         </span>
                                     ),
                                 },
+                                {
+                                    key: 'actions',
+                                    label: 'Actions',
+                                    className: 'text-end',
+                                    render: (page) => (
+                                        <div className="d-flex justify-content-end gap-2 flex-wrap">
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline-secondary btn-sm"
+                                                onClick={() =>
+                                                    startEditingPage(page)
+                                                }
+                                            >
+                                                Edit
+                                            </button>
+                                            {page.status !== 'archived' ? (
+                                                <ArchiveAction
+                                                    href={`/cms/pages/${page.id}`}
+                                                    confirmMessage={`Archive page ${page.title_en}? It will be hidden from the public site.`}
+                                                />
+                                            ) : null}
+                                        </div>
+                                    ),
+                                },
                             ]}
                         />
                     </section>
@@ -589,6 +951,25 @@ export default function CmsPage() {
                                 subtitle: section.name_ar ?? '',
                                 meta: section.section_type,
                                 badge: section.status,
+                                actions: (
+                                    <div className="d-flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() =>
+                                                startEditingSection(section)
+                                            }
+                                        >
+                                            Edit
+                                        </button>
+                                        {section.status !== 'archived' ? (
+                                            <ArchiveAction
+                                                href={`/cms/sections/${section.id}`}
+                                                confirmMessage={`Archive section ${section.name_en}? Attached pages will stop rendering it once inactive.`}
+                                            />
+                                        ) : null}
+                                    </div>
+                                ),
                             }))}
                         />
                         <ListPanel
@@ -599,7 +980,27 @@ export default function CmsPage() {
                                 title: item.title_en,
                                 subtitle: item.title_ar ?? '',
                                 meta: item.url ?? '-',
-                                badge: item.location,
+                                badge: item.is_visible
+                                    ? item.location
+                                    : `${item.location} hidden`,
+                                actions: (
+                                    <div className="d-flex gap-2 flex-wrap">
+                                        <button
+                                            type="button"
+                                            className="btn btn-outline-secondary btn-sm"
+                                            onClick={() =>
+                                                startEditingNavigation(item)
+                                            }
+                                        >
+                                            Edit
+                                        </button>
+                                        <ArchiveAction
+                                            href={`/navigation-items/${item.id}`}
+                                            label="Delete"
+                                            confirmMessage={`Delete navigation item ${item.title_en}?`}
+                                        />
+                                    </div>
+                                ),
                             }))}
                         />
                     </div>
@@ -614,6 +1015,7 @@ function BuilderCanvas({
     draggingId,
     setDraggingId,
     reorderSections,
+    startEditingSection,
 }: {
     page: BuilderPageRecord;
     draggingId: number | null;
@@ -623,6 +1025,7 @@ function BuilderCanvas({
         targetId: number,
         page: BuilderPageRecord,
     ) => void;
+    startEditingSection: (section: SectionRecord) => void;
 }) {
     const sections = [...page.page_sections].sort(
         (a, b) => a.sort_order - b.sort_order,
@@ -683,6 +1086,31 @@ function BuilderCanvas({
                             <span className="pmc-chip pmc-chip--teal">
                                 {section?.status ?? 'missing'}
                             </span>
+                            {section ? (
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary btn-sm"
+                                    onClick={() => startEditingSection(section)}
+                                >
+                                    Edit copy
+                                </button>
+                            ) : null}
+                            <button
+                                type="button"
+                                className="btn btn-outline-secondary btn-sm"
+                                onClick={() =>
+                                    router.put(
+                                        `/cms/page-sections/${item.id}`,
+                                        {
+                                            sort_order: item.sort_order,
+                                            is_visible: !item.is_visible,
+                                        },
+                                        { preserveScroll: true },
+                                    )
+                                }
+                            >
+                                {item.is_visible ? 'Hide' : 'Show'}
+                            </button>
                             <form
                                 onSubmit={(event) => {
                                     event.preventDefault();
@@ -720,6 +1148,7 @@ function ListPanel({
         subtitle: string;
         meta: string;
         badge: string;
+        actions?: ReactNode;
     }>;
 }) {
     return (
@@ -733,7 +1162,10 @@ function ListPanel({
                                 <strong>{row.title}</strong>
                                 <span>{row.subtitle || row.meta}</span>
                             </div>
-                            <em>{row.badge}</em>
+                            <div className="pmc-compact-list-actions">
+                                <em>{row.badge}</em>
+                                {row.actions}
+                            </div>
                         </div>
                     ))
                 ) : (
@@ -746,4 +1178,28 @@ function ListPanel({
 
 function stringValue(value: unknown): string {
     return typeof value === 'string' ? value : '';
+}
+
+function jsonText(value: Record<string, unknown>): string {
+    return JSON.stringify(value, null, 2);
+}
+
+function parseJsonObject(
+    value: string,
+): Record<string, FormDataConvertible> | null {
+    try {
+        const parsed = JSON.parse(value || '{}') as unknown;
+
+        if (
+            parsed === null ||
+            Array.isArray(parsed) ||
+            typeof parsed !== 'object'
+        ) {
+            return null;
+        }
+
+        return parsed as Record<string, FormDataConvertible>;
+    } catch {
+        return null;
+    }
 }
