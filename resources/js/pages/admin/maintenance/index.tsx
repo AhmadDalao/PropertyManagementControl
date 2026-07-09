@@ -1,11 +1,10 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import type { FormEvent } from 'react';
+import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
-import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency, humanDate } from '@/lib/utils';
 import type {
@@ -26,6 +25,7 @@ type RequestRecord = {
     requested_at?: string | null;
     due_at?: string | null;
     resolved_at?: string | null;
+    is_overdue: boolean;
     assigned_to_user_id?: number | null;
     assigned_to?: { id: number; name: string } | null;
     internal_notes?: string | null;
@@ -49,12 +49,28 @@ type MaintenanceUpdateRecord = {
     created_at?: string | null;
 };
 
+type MaintenanceInsights = {
+    total: number;
+    open: number;
+    in_progress: number;
+    resolved: number;
+    cancelled: number;
+    urgent: number;
+    overdue: number;
+    unassigned: number;
+    posted_expenses: number;
+};
+
 type PageProps = SharedProps & {
     mode: 'tenant' | 'manager';
     requests: PaginatedData<RequestRecord>;
+    maintenanceInsights: MaintenanceInsights;
     filters: TableFilters;
     counts: TableCount[];
-    assetOptions: Array<{ id: number; title_en: string }>;
+    categoryOptions: string[];
+    priorityOptions: string[];
+    statusOptions: string[];
+    assetOptions: Array<{ id: number; title_en: string; code?: string | null }>;
     tenantProfile?: { id: number };
     tenantOptions?: Array<{ id: number; user?: { name: string } }>;
     userOptions?: Array<{ id: number; name: string }>;
@@ -78,7 +94,7 @@ export default function MaintenancePage() {
     const managerForm = useForm({
         asset_id: String(props.assetOptions[0]?.id ?? ''),
         tenant_profile_id: String(props.tenantOptions?.[0]?.id ?? ''),
-        assigned_to_user_id: String(props.userOptions?.[0]?.id ?? ''),
+        assigned_to_user_id: '',
         category: 'plumbing',
         priority: 'medium',
         status: 'open',
@@ -165,10 +181,10 @@ export default function MaintenancePage() {
             label: 'Status',
             options: [
                 { label: 'All', value: 'all' },
-                { label: 'Open', value: 'open' },
-                { label: 'In progress', value: 'in_progress' },
-                { label: 'Resolved', value: 'resolved' },
-                { label: 'Cancelled', value: 'cancelled' },
+                ...props.statusOptions.map((status) => ({
+                    label: humanLabel(status),
+                    value: status,
+                })),
             ],
         },
         {
@@ -176,10 +192,10 @@ export default function MaintenancePage() {
             label: 'Category',
             options: [
                 { label: 'All', value: 'all' },
-                { label: 'Electricity', value: 'electricity' },
-                { label: 'Plumbing', value: 'plumbing' },
-                { label: 'AC', value: 'ac' },
-                { label: 'General', value: 'general' },
+                ...props.categoryOptions.map((category) => ({
+                    label: humanLabel(category),
+                    value: category,
+                })),
             ],
         },
         {
@@ -187,31 +203,115 @@ export default function MaintenancePage() {
             label: 'Priority',
             options: [
                 { label: 'All', value: 'all' },
-                { label: 'Low', value: 'low' },
-                { label: 'Medium', value: 'medium' },
-                { label: 'High', value: 'high' },
-                { label: 'Urgent', value: 'urgent' },
+                ...props.priorityOptions.map((priority) => ({
+                    label: humanLabel(priority),
+                    value: priority,
+                })),
             ],
         },
         { name: 'date_from', label: 'From', type: 'date' },
         { name: 'date_to', label: 'To', type: 'date' },
     ];
 
+    const activeErrors =
+        props.mode === 'tenant' ? tenantForm.errors : managerForm.errors;
+    const activeRequestCount =
+        props.maintenanceInsights.open + props.maintenanceInsights.in_progress;
+    const cannotSubmit =
+        props.mode === 'tenant'
+            ? props.assetOptions.length === 0
+            : !editing &&
+              (props.assetOptions.length === 0 ||
+                  (props.tenantOptions?.length ?? 0) === 0);
+
     return (
         <AdminLayout>
             <Head title="Maintenance" />
-            <PageHeader
-                title="Maintenance"
-                description="Submit requests, assign work, and track service history."
-            />
 
-            <div className="row g-4">
+            <section className="pmc-maintenance-command mb-4">
+                <div>
+                    <span className="pmc-kicker">Service control</span>
+                    <h1>
+                        {props.mode === 'tenant'
+                            ? 'Request maintenance and track every owner update.'
+                            : 'Triage tenant service without losing the paper trail.'}
+                    </h1>
+                    <p>
+                        {props.mode === 'tenant'
+                            ? 'Submit issues for your rented asset, add access notes, and follow public updates from open to resolved.'
+                            : 'Prioritize urgent work, assign owners or managers, separate public tenant updates from internal notes, and roll posted expenses into reports.'}
+                    </p>
+                    <div className="pmc-maintenance-command-meta">
+                        <span>
+                            <i className="bi bi-stopwatch" />
+                            SLA due dates
+                        </span>
+                        <span>
+                            <i className="bi bi-chat-square-text" />
+                            Public/private timeline
+                        </span>
+                        <span>
+                            <i className="bi bi-cash-coin" />
+                            Expense rollups
+                        </span>
+                    </div>
+                </div>
+                <div className="pmc-maintenance-command-card">
+                    <span>
+                        {props.mode === 'tenant'
+                            ? 'Active requests'
+                            : 'Open backlog'}
+                    </span>
+                    <strong>{activeRequestCount.toLocaleString()}</strong>
+                    <small>
+                        {props.mode === 'tenant'
+                            ? `${props.maintenanceInsights.resolved} resolved in your history`
+                            : `${props.maintenanceInsights.unassigned} unassigned · ${props.maintenanceInsights.urgent} urgent`}
+                    </small>
+                </div>
+            </section>
+
+            <section className="pmc-maintenance-insight-grid mb-4">
+                <MaintenanceInsight
+                    icon="bi-wrench-adjustable"
+                    label="Active work"
+                    value={activeRequestCount.toLocaleString()}
+                    detail={`${props.maintenanceInsights.open} open · ${props.maintenanceInsights.in_progress} in progress`}
+                    tone="teal"
+                />
+                <MaintenanceInsight
+                    icon="bi-lightning-charge"
+                    label="Urgent"
+                    value={props.maintenanceInsights.urgent.toLocaleString()}
+                    detail="Needs same-day operational attention"
+                    tone="orange"
+                />
+                <MaintenanceInsight
+                    icon="bi-exclamation-triangle"
+                    label="Overdue"
+                    value={props.maintenanceInsights.overdue.toLocaleString()}
+                    detail="Past due and not resolved or cancelled"
+                    tone="red"
+                />
+                <MaintenanceInsight
+                    icon="bi-receipt"
+                    label="Posted costs"
+                    value={currency(
+                        props.maintenanceInsights.posted_expenses,
+                        props.app.locale,
+                    )}
+                    detail={`${props.maintenanceInsights.total} total request${props.maintenanceInsights.total === 1 ? '' : 's'} tracked`}
+                    tone="sand"
+                />
+            </section>
+
+            <div className="row g-4 align-items-start">
                 <div className="col-xl-4">
-                    <div className="pmc-card p-4">
+                    <div className="pmc-card p-4 pmc-maintenance-form-card">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>
                                 <div className="pmc-kicker mb-2">
-                                    Request form
+                                    Maintenance workspace
                                 </div>
                                 <h2 className="h4 mb-0">
                                     {editing
@@ -229,6 +329,35 @@ export default function MaintenancePage() {
                                 </button>
                             ) : null}
                         </div>
+
+                        {Object.keys(activeErrors).length > 0 ? (
+                            <div className="alert alert-danger small">
+                                {Object.values(activeErrors)[0]}
+                            </div>
+                        ) : null}
+
+                        <div className="pmc-maintenance-form-guide mb-3">
+                            <i
+                                className={`bi ${props.mode === 'tenant' ? 'bi-house-heart' : 'bi-router'}`}
+                            />
+                            <div>
+                                <strong>
+                                    {props.mode === 'tenant'
+                                        ? 'Start with the rented asset'
+                                        : editing
+                                          ? 'Triage changes are audited'
+                                          : 'Create a clean service record'}
+                                </strong>
+                                <span>
+                                    {props.mode === 'tenant'
+                                        ? 'Only assets tied to your active lease are available here.'
+                                        : editing
+                                          ? 'Assignee, priority, status, notes, and public comments are stored in the request timeline.'
+                                          : 'Pick the asset and tenant first. Assignment is optional until you know who owns the work.'}
+                                </span>
+                            </div>
+                        </div>
+
                         <form className="d-grid gap-3" onSubmit={submit}>
                             {editing && props.mode === 'manager' ? (
                                 <>
@@ -278,16 +407,18 @@ export default function MaintenancePage() {
                                                     )
                                                 }
                                             >
-                                                <option value="low">Low</option>
-                                                <option value="medium">
-                                                    Medium
-                                                </option>
-                                                <option value="high">
-                                                    High
-                                                </option>
-                                                <option value="urgent">
-                                                    Urgent
-                                                </option>
+                                                {props.priorityOptions.map(
+                                                    (priority) => (
+                                                        <option
+                                                            key={priority}
+                                                            value={priority}
+                                                        >
+                                                            {humanLabel(
+                                                                priority,
+                                                            )}
+                                                        </option>
+                                                    ),
+                                                )}
                                             </select>
                                         </div>
                                         <div className="col-md-6">
@@ -305,18 +436,16 @@ export default function MaintenancePage() {
                                                     )
                                                 }
                                             >
-                                                <option value="open">
-                                                    Open
-                                                </option>
-                                                <option value="in_progress">
-                                                    In progress
-                                                </option>
-                                                <option value="resolved">
-                                                    Resolved
-                                                </option>
-                                                <option value="cancelled">
-                                                    Cancelled
-                                                </option>
+                                                {props.statusOptions.map(
+                                                    (status) => (
+                                                        <option
+                                                            key={status}
+                                                            value={status}
+                                                        >
+                                                            {humanLabel(status)}
+                                                        </option>
+                                                    ),
+                                                )}
                                             </select>
                                         </div>
                                     </div>
@@ -390,13 +519,25 @@ export default function MaintenancePage() {
                                                               .value,
                                                       )
                                             }
+                                            disabled={
+                                                props.assetOptions.length === 0
+                                            }
                                         >
+                                            {props.assetOptions.length === 0 ? (
+                                                <option value="">
+                                                    No active rentable asset
+                                                    available
+                                                </option>
+                                            ) : null}
                                             {props.assetOptions.map((asset) => (
                                                 <option
                                                     key={asset.id}
                                                     value={asset.id}
                                                 >
                                                     {asset.title_en}
+                                                    {asset.code
+                                                        ? ` · ${asset.code}`
+                                                        : ''}
                                                 </option>
                                             ))}
                                         </select>
@@ -420,7 +561,17 @@ export default function MaintenancePage() {
                                                             .value,
                                                     )
                                                 }
+                                                disabled={
+                                                    (props.tenantOptions
+                                                        ?.length ?? 0) === 0
+                                                }
                                             >
+                                                {(props.tenantOptions?.length ??
+                                                    0) === 0 ? (
+                                                    <option value="">
+                                                        Add a tenant first
+                                                    </option>
+                                                ) : null}
                                                 {props.tenantOptions?.map(
                                                     (tenant) => (
                                                         <option
@@ -467,16 +618,18 @@ export default function MaintenancePage() {
                                                           )
                                                 }
                                             >
-                                                <option value="electricity">
-                                                    Electricity
-                                                </option>
-                                                <option value="plumbing">
-                                                    Plumbing
-                                                </option>
-                                                <option value="ac">AC</option>
-                                                <option value="general">
-                                                    General
-                                                </option>
+                                                {props.categoryOptions.map(
+                                                    (category) => (
+                                                        <option
+                                                            key={category}
+                                                            value={category}
+                                                        >
+                                                            {humanLabel(
+                                                                category,
+                                                            )}
+                                                        </option>
+                                                    ),
+                                                )}
                                             </select>
                                         </div>
                                         <div className="col-md-6">
@@ -508,16 +661,18 @@ export default function MaintenancePage() {
                                                           )
                                                 }
                                             >
-                                                <option value="low">Low</option>
-                                                <option value="medium">
-                                                    Medium
-                                                </option>
-                                                <option value="high">
-                                                    High
-                                                </option>
-                                                <option value="urgent">
-                                                    Urgent
-                                                </option>
+                                                {props.priorityOptions.map(
+                                                    (priority) => (
+                                                        <option
+                                                            key={priority}
+                                                            value={priority}
+                                                        >
+                                                            {humanLabel(
+                                                                priority,
+                                                            )}
+                                                        </option>
+                                                    ),
+                                                )}
                                             </select>
                                         </div>
                                     </div>
@@ -538,18 +693,16 @@ export default function MaintenancePage() {
                                                     )
                                                 }
                                             >
-                                                <option value="open">
-                                                    Open
-                                                </option>
-                                                <option value="in_progress">
-                                                    In progress
-                                                </option>
-                                                <option value="resolved">
-                                                    Resolved
-                                                </option>
-                                                <option value="cancelled">
-                                                    Cancelled
-                                                </option>
+                                                {props.statusOptions.map(
+                                                    (status) => (
+                                                        <option
+                                                            key={status}
+                                                            value={status}
+                                                        >
+                                                            {humanLabel(status)}
+                                                        </option>
+                                                    ),
+                                                )}
                                             </select>
                                         </div>
                                     ) : null}
@@ -602,9 +755,10 @@ export default function MaintenancePage() {
                             <button
                                 className="btn btn-primary"
                                 disabled={
-                                    props.mode === 'tenant'
+                                    (props.mode === 'tenant'
                                         ? tenantForm.processing
-                                        : managerForm.processing
+                                        : managerForm.processing) ||
+                                    cannotSubmit
                                 }
                             >
                                 {editing ? 'Update request' : 'Submit request'}
@@ -666,6 +820,11 @@ export default function MaintenancePage() {
                                                     props.app.locale,
                                                 )}
                                             </div>
+                                            {requestItem.is_overdue ? (
+                                                <span className="pmc-chip pmc-chip--danger mt-2">
+                                                    Overdue
+                                                </span>
+                                            ) : null}
                                         </>
                                     ),
                                 },
@@ -708,18 +867,40 @@ export default function MaintenancePage() {
                                     key: 'priority',
                                     label: 'Priority',
                                     render: (requestItem) => (
-                                        <span className="pmc-chip">
-                                            {requestItem.priority}
-                                        </span>
+                                        <StatusChip
+                                            label={humanLabel(
+                                                requestItem.priority,
+                                            )}
+                                            tone={
+                                                requestItem.priority ===
+                                                'urgent'
+                                                    ? 'danger'
+                                                    : requestItem.priority ===
+                                                        'high'
+                                                      ? 'warning'
+                                                      : 'neutral'
+                                            }
+                                        />
                                     ),
                                 },
                                 {
                                     key: 'status',
                                     label: 'Status',
                                     render: (requestItem) => (
-                                        <span className="pmc-chip pmc-chip--primary">
-                                            {requestItem.status}
-                                        </span>
+                                        <StatusChip
+                                            label={humanLabel(
+                                                requestItem.status,
+                                            )}
+                                            tone={
+                                                requestItem.status ===
+                                                'resolved'
+                                                    ? 'success'
+                                                    : requestItem.status ===
+                                                        'cancelled'
+                                                      ? 'neutral'
+                                                      : 'primary'
+                                            }
+                                        />
                                     ),
                                 },
                                 {
@@ -946,4 +1127,47 @@ function MaintenanceKpi({
             <small>{detail}</small>
         </div>
     );
+}
+
+function MaintenanceInsight({
+    icon,
+    label,
+    value,
+    detail,
+    tone,
+}: {
+    icon: string;
+    label: string;
+    value: ReactNode;
+    detail: string;
+    tone: 'teal' | 'orange' | 'sand' | 'red';
+}) {
+    return (
+        <div
+            className={`pmc-maintenance-insight-card pmc-maintenance-insight-${tone}`}
+        >
+            <div>
+                <i className={`bi ${icon}`} />
+            </div>
+            <span>{label}</span>
+            <strong>{value}</strong>
+            <small>{detail}</small>
+        </div>
+    );
+}
+
+function StatusChip({
+    label,
+    tone,
+}: {
+    label: string;
+    tone: 'primary' | 'success' | 'warning' | 'danger' | 'neutral';
+}) {
+    return <span className={`pmc-chip pmc-chip--${tone}`}>{label}</span>;
+}
+
+function humanLabel(value: string) {
+    return value
+        .replaceAll('_', ' ')
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }

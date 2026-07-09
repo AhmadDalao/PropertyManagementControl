@@ -84,7 +84,130 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('requests.data.0.assigned_to.name', 'Service Manager')
                 ->where('requests.data.0.expense_total', 350)
                 ->where('requests.data.0.internal_notes', 'Call vendor before visiting.')
+                ->where('requests.data.0.is_overdue', false)
+                ->where('maintenanceInsights.total', 1)
+                ->where('maintenanceInsights.in_progress', 1)
+                ->where('maintenanceInsights.posted_expenses', 350)
+                ->has('categoryOptions', 4)
+                ->has('priorityOptions', 4)
+                ->has('statusOptions', 4)
                 ->has('requests.data.0.updates', 2));
+    }
+
+    public function test_tenant_request_uses_the_active_lease_for_the_selected_asset(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $firstAsset = $this->createAsset($portfolio, ['title_en' => 'First rented unit']);
+        $secondAsset = $this->createAsset($portfolio, ['title_en' => 'Second rented unit']);
+        $this->createLease($portfolio, $tenant, $firstAsset, $owner, ['code' => 'LEASE-FIRST']);
+        $secondLease = $this->createLease($portfolio, $tenant, $secondAsset, $owner, ['code' => 'LEASE-SECOND']);
+
+        $this->actingAs($tenantUser)
+            ->post(route('maintenance-requests.store'), [
+                'asset_id' => $secondAsset->id,
+                'category' => 'electricity',
+                'priority' => 'high',
+                'title' => 'Panel sparks',
+                'description' => 'The electrical panel sparks when AC starts.',
+            ])
+            ->assertRedirect(route('maintenance-requests.index'));
+
+        $this->assertDatabaseHas('maintenance_requests', [
+            'asset_id' => $secondAsset->id,
+            'lease_id' => $secondLease->id,
+            'tenant_profile_id' => $tenant->id,
+            'title' => 'Panel sparks',
+        ]);
+    }
+
+    public function test_manager_update_preserves_due_date_until_priority_changes(): void
+    {
+        $this->travelTo('2026-01-15 10:00:00');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+
+        $requestItem = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'assigned_to_user_id' => $manager->id,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Door lock issue',
+            'description' => 'Main lock is hard to turn.',
+            'requested_at' => now(),
+            'due_at' => now()->addDays(4),
+        ]);
+
+        $this->travelTo('2026-01-15 12:00:00');
+
+        $this->actingAs($owner)
+            ->put(route('maintenance-requests.update', $requestItem), [
+                'assigned_to_user_id' => $manager->id,
+                'priority' => 'medium',
+                'status' => 'in_progress',
+                'internal_notes' => 'Vendor contacted.',
+            ])
+            ->assertRedirect(route('maintenance-requests.index'));
+
+        $requestItem->refresh();
+        $this->assertSame('2026-01-19 10:00:00', $requestItem->due_at->toDateTimeString());
+
+        $this->travelTo('2026-01-15 13:00:00');
+
+        $this->actingAs($owner)
+            ->put(route('maintenance-requests.update', $requestItem), [
+                'assigned_to_user_id' => $manager->id,
+                'priority' => 'urgent',
+                'status' => 'in_progress',
+                'internal_notes' => 'Escalated.',
+            ])
+            ->assertRedirect(route('maintenance-requests.index'));
+
+        $requestItem->refresh();
+        $this->assertSame('2026-01-16 13:00:00', $requestItem->due_at->toDateTimeString());
+    }
+
+    public function test_manager_cannot_assign_service_request_to_tenant_user(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+
+        $requestItem = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'plumbing',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Sink blocked',
+            'description' => 'Kitchen sink drains slowly.',
+            'requested_at' => now(),
+            'due_at' => now()->addDays(4),
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('maintenance-requests.update', $requestItem), [
+                'assigned_to_user_id' => $tenantUser->id,
+                'priority' => 'medium',
+                'status' => 'in_progress',
+                'internal_notes' => 'Should not assign to tenant.',
+            ])
+            ->assertStatus(422);
     }
 
     public function test_tenant_queue_only_exposes_public_timeline_and_allows_public_comment(): void
