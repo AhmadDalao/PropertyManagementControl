@@ -1,0 +1,15 @@
+.pmc-card {
+    border-color: rgba(15, 23, 42, 0.07);
+    box-shadow: var(--pmc-shadow-soft);
+}
+
+.pmc-section-title h2 {
+    color: #142033;
+    letter-spacing: -0.035em;
+}
+
+.pmc-inline-empty,
+.pmc-chart-empty {
+    border: 1px dashed rgba(15, 23, 42, 0.13);
+    background: #fffaf2;
+}

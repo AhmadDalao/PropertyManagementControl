@@ -1,0 +1,17 @@
+.pmc-public-header {
+    backdrop-filter: blur(18px);
+}
+
+.pmc-public-main {
+    background:
+        radial-gradient(
+            circle at 18% 0%,
+            rgba(12, 138, 124, 0.08),
+            transparent 24rem
+        ),
+        radial-gradient(
+            circle at 88% 10%,
+            rgba(239, 108, 47, 0.08),
+            transparent 24rem
+        );
+}

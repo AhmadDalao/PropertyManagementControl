@@ -5,140 +5,13 @@ import type { ReactNode } from 'react';
 import { FlashBanner } from '@/components/flash-banner';
 import { GlobalSearch } from '@/components/global-search';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { MODULE_NAV_GROUPS } from '@/modules/registry';
+import type { ModuleNavItem } from '@/modules/registry';
 import type { SharedProps } from '@/types';
 
 type AdminLayoutProps = {
     children: ReactNode;
 };
-
-type NavItem = {
-    label: string;
-    href: string;
-    icon: string;
-    roles?: string[];
-    module?: string;
-};
-
-type NavGroup = {
-    label: string;
-    items: NavItem[];
-};
-
-const NAV_GROUPS: NavGroup[] = [
-    {
-        label: 'Command',
-        items: [
-            { label: 'Dashboard', href: '/dashboard', icon: 'bi-grid-1x2' },
-            {
-                label: 'Documentation',
-                href: '/documentation',
-                icon: 'bi-journal-richtext',
-            },
-            {
-                label: 'Audit History',
-                href: '/audit-logs',
-                icon: 'bi-clock-history',
-                roles: ['superadmin', 'owner', 'property_manager'],
-            },
-        ],
-    },
-    {
-        label: 'Portfolio',
-        items: [
-            {
-                label: 'Portfolios',
-                href: '/portfolios',
-                icon: 'bi-buildings',
-                roles: ['superadmin', 'owner', 'property_manager'],
-            },
-            {
-                label: 'Users',
-                href: '/users',
-                icon: 'bi-people',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'users',
-            },
-            {
-                label: 'Assets',
-                href: '/assets',
-                icon: 'bi-diagram-3',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'assets',
-            },
-            {
-                label: 'Tenants',
-                href: '/tenants',
-                icon: 'bi-person-badge',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'tenants',
-            },
-        ],
-    },
-    {
-        label: 'Operations',
-        items: [
-            {
-                label: 'Leases',
-                href: '/leases',
-                icon: 'bi-file-earmark-text',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'leases',
-            },
-            {
-                label: 'Payments',
-                href: '/payments',
-                icon: 'bi-cash-stack',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'payments',
-            },
-            {
-                label: 'Maintenance',
-                href: '/maintenance-requests',
-                icon: 'bi-tools',
-                module: 'maintenance',
-            },
-            {
-                label: 'Expenses',
-                href: '/expenses',
-                icon: 'bi-receipt',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'expenses',
-            },
-            {
-                label: 'Reports',
-                href: '/reports',
-                icon: 'bi-graph-up-arrow',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'reports',
-            },
-            {
-                label: 'Documents',
-                href: '/documents',
-                icon: 'bi-folder2-open',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'documents',
-            },
-        ],
-    },
-    {
-        label: 'Website',
-        items: [
-            {
-                label: 'Website Control',
-                href: '/cms',
-                icon: 'bi-layout-wtf',
-                roles: ['superadmin'],
-            },
-            {
-                label: 'Media',
-                href: '/media-files',
-                icon: 'bi-images',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'media',
-            },
-        ],
-    },
-];
 
 export function AdminLayout({ children }: AdminLayoutProps) {
     const { props, url } = usePage<SharedProps>();
@@ -151,7 +24,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         document.documentElement.dir = props.app.direction;
     }, [props.app.direction, props.app.locale]);
 
-    const hasRoleAccess = (item: NavItem) =>
+    const hasRoleAccess = (item: ModuleNavItem) =>
         !item.roles || item.roles.some((role) => roles.includes(role));
     const hasModuleAccess = (module?: string) => {
         if (!module || roles.includes('superadmin')) {
@@ -164,10 +37,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
         return user.portfolio.module_settings[module] !== false;
     };
-    const canUse = (item: NavItem) =>
+    const canUse = (item: ModuleNavItem) =>
         hasRoleAccess(item) && hasModuleAccess(item.module);
 
-    const visibleGroups = NAV_GROUPS.map((group) => ({
+    const visibleGroups = MODULE_NAV_GROUPS.map((group) => ({
         ...group,
         items: group.items.filter((item) => canUse(item)),
     })).filter((group) => group.items.length > 0);

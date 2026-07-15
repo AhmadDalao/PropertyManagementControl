@@ -1,0 +1,18 @@
+:root {
+    --pmc-bg: #fffdf8;
+    --pmc-panel: rgba(255, 255, 255, 0.94);
+    --pmc-border: rgba(26, 30, 48, 0.08);
+    --pmc-text: #1b2430;
+    --pmc-muted: #6f7683;
+    --pmc-primary: #ef6c2f;
+    --pmc-secondary: #0c8a7c;
+    --pmc-accent: #ffca4b;
+    --pmc-blue: #2563eb;
+    --pmc-success-soft: #e9fbf7;
+    --pmc-warning-soft: #fff6db;
+    --pmc-danger-soft: #fff0ed;
+    --pmc-shadow: 0 18px 50px rgba(31, 33, 51, 0.08);
+    --pmc-shadow-soft: 0 12px 32px rgba(31, 33, 51, 0.06);
+    --pmc-radius: 0.75rem;
+    --pmc-radius-lg: 1.35rem;
+}

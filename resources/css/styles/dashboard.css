@@ -1,0 +1,110 @@
+.pmc-dashboard-brief,
+.pmc-tenant-command {
+    position: relative;
+    overflow: hidden;
+    border-radius: 34px;
+    border: 1px solid rgba(15, 118, 110, 0.12);
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(255, 202, 75, 0.32),
+            transparent 18rem
+        ),
+        radial-gradient(
+            circle at 10% 10%,
+            rgba(12, 138, 124, 0.13),
+            transparent 20rem
+        ),
+        linear-gradient(135deg, #ffffff 0%, #fff8ed 48%, #effdfb 100%);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.pmc-dashboard-brief h1,
+.pmc-tenant-command h1 {
+    max-width: 760px;
+    color: #102033;
+    font-size: clamp(2.35rem, 5vw, 5rem);
+    line-height: 0.94;
+    letter-spacing: -0.075em;
+}
+
+.pmc-dashboard-health,
+.pmc-tenant-payment-card {
+    border: 1px solid rgba(255, 255, 255, 0.75);
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow: var(--pmc-shadow-soft);
+    backdrop-filter: blur(16px);
+}
+
+.pmc-dashboard-health > div:first-child {
+    background: linear-gradient(135deg, var(--pmc-secondary), #15b8a6);
+}
+
+.pmc-next-action-card,
+.pmc-cycle-map,
+.pmc-dashboard-grid > .pmc-card {
+    border-radius: 28px;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: var(--pmc-shadow-soft);
+}
+
+.pmc-next-action-card {
+    transform: translateY(0);
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease;
+}
+
+.pmc-next-action-card:hover {
+    border-color: rgba(239, 108, 47, 0.28);
+    box-shadow: 0 18px 48px rgba(239, 108, 47, 0.13);
+    transform: translateY(-2px);
+}
+
+.pmc-cycle-rail a {
+    min-height: 11rem;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.92),
+            rgba(255, 250, 242, 0.92)
+        ),
+        #fff;
+}
+
+.pmc-cycle-rail a.is-done {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(233, 251, 247, 0.95),
+            rgba(255, 255, 255, 0.92)
+        ),
+        #fff;
+}
+
+.pmc-activity-list a,
+.pmc-activity-list > div,
+.pmc-lease-list a {
+    border-radius: 18px;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-dashboard-brief,
+    .pmc-tenant-command,
+    .pmc-cycle-map,
+    .pmc-dashboard-grid > .pmc-card {
+        border-radius: 24px;
+    }
+
+    .pmc-dashboard-brief h1,
+    .pmc-tenant-command h1 {
+        font-size: clamp(2.2rem, 15vw, 3.9rem);
+    }
+
+    .pmc-command-actions .btn,
+    .pmc-tenant-payment-card .btn {
+        width: 100%;
+    }
+}
