@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Services\LandingContentSeeder;
+use App\Services\ShowcaseDataSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -126,6 +127,29 @@ Artisan::command('property:seed-demo-data {--fresh-demo : Rebuild the local data
 
     return 0;
 })->purpose('Rebuild the local/staging database with rich demo property data. Blocked in production.');
+
+Artisan::command('property:seed-showcase-data {--confirm-production : Allow non-destructive showcase seeding in production}', function (ShowcaseDataSeeder $seeder) {
+    if (app()->environment('production') && ! $this->option('confirm-production')) {
+        $this->error('Production showcase seeding needs --confirm-production. This command is non-destructive, but it creates visible dummy records.');
+
+        return 1;
+    }
+
+    Artisan::call('db:seed', [
+        '--class' => RolesAndPermissionsSeeder::class,
+        '--force' => true,
+    ]);
+
+    $result = $seeder->seed();
+
+    $this->info('Showcase data is ready.');
+    foreach ($result as $label => $count) {
+        $this->line("  {$label}: {$count} created");
+    }
+    $this->line('Existing showcase records were updated in place.');
+
+    return 0;
+})->purpose('Seed non-destructive showcase portfolios, assets, leases, payments, reports, and CMS content.');
 
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()

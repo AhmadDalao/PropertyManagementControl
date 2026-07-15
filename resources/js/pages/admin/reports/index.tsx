@@ -548,8 +548,8 @@ export default function ReportsPage() {
                 </div>
             </div>
 
-            <div className="row g-4">
-                <div className="col-xl-7">
+            <div className="pmc-report-section-grid">
+                <div className="pmc-report-section-card is-wide">
                     <ChartCard
                         title="Revenue by month"
                         empty={Object.keys(revenueSource).length === 0}
@@ -570,7 +570,7 @@ export default function ReportsPage() {
                     </ChartCard>
                 </div>
 
-                <div className="col-xl-5">
+                <div className="pmc-report-section-card">
                     <ChartCard
                         title="Asset mix"
                         empty={Object.keys(assetMixSource).length === 0}
@@ -595,7 +595,7 @@ export default function ReportsPage() {
                     </ChartCard>
                 </div>
 
-                <div className="col-xl-6">
+                <div className="pmc-report-section-card">
                     <ChartCard
                         title="Expense categories"
                         empty={Object.keys(expenseSource).length === 0}
@@ -616,7 +616,7 @@ export default function ReportsPage() {
                     </ChartCard>
                 </div>
 
-                <div className="col-xl-6">
+                <div className="pmc-report-section-card">
                     <ChartCard
                         title="Maintenance status"
                         empty={Object.keys(maintenanceSource).length === 0}
@@ -640,7 +640,7 @@ export default function ReportsPage() {
                     </ChartCard>
                 </div>
 
-                <div className="col-xl-7">
+                <div className="pmc-report-section-card is-wide">
                     <ReportTable
                         title="Arrears watchlist"
                         emptyText="No leases with outstanding balances in this scope."
@@ -669,7 +669,7 @@ export default function ReportsPage() {
                     />
                 </div>
 
-                <div className="col-xl-5">
+                <div className="pmc-report-section-card">
                     <ReportTable
                         title="Top revenue assets"
                         emptyText="No asset-linked revenue in this report range."
@@ -686,7 +686,7 @@ export default function ReportsPage() {
                     />
                 </div>
 
-                <div className="col-xl-6">
+                <div className="pmc-report-section-card">
                     <ReportTable
                         title="Recent payments"
                         emptyText="No posted payments in this report range."
@@ -710,7 +710,7 @@ export default function ReportsPage() {
                     />
                 </div>
 
-                <div className="col-xl-6">
+                <div className="pmc-report-section-card">
                     <ReportTable
                         title="Recent expenses"
                         emptyText="No posted expenses in this report range."
@@ -734,7 +734,7 @@ export default function ReportsPage() {
                     />
                 </div>
 
-                <div className="col-12">
+                <div className="pmc-report-section-card is-full">
                     <ReportTable
                         title="Maintenance backlog"
                         emptyText="No open or in-progress maintenance requests."
