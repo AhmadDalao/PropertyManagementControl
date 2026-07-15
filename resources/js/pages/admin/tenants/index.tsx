@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -182,6 +183,12 @@ export default function TenantsPage() {
                         emergency details, company data, address, notes, and
                         lease readiness before contracts and maintenance start.
                     </p>
+                    <CreatePageShortcut
+                        href="/tenants/create"
+                        label="Create profile"
+                        icon="bi-person-badge"
+                        description="Open a guided tenant profile form with portal account, identity, address, and emergency details."
+                    />
                     <div className="pmc-tenant-workspace-meta">
                         <span>
                             <i className="bi bi-person-badge" />
@@ -560,7 +567,7 @@ export default function TenantsPage() {
                             counts={props.counts}
                             basePath="/tenants"
                             createHref="/tenants/create"
-                            createLabel="Create tenant"
+                            createLabel="Create profile"
                             rowHref={(tenant) => `/tenants/${tenant.id}`}
                             exportHref={exportUrl(
                                 '/exports/tenants',
@@ -716,24 +723,24 @@ const tenantWorkflowCards = [
         icon: 'bi-person-plus',
         title: 'Create profile',
         body: 'Capture identity, emergency contact, address, and portal login.',
-        href: '/tenants',
+        href: '/tenants/create',
     },
     {
         icon: 'bi-file-earmark-plus',
         title: 'Create lease',
         body: 'Attach the tenant to a rentable asset and generate installments.',
-        href: '/leases',
+        href: '/leases/create',
     },
     {
         icon: 'bi-folder2-open',
-        title: 'Attach documents',
+        title: 'Create document',
         body: 'Keep signed contracts, IDs, and tenant statements traceable.',
-        href: '/documents',
+        href: '/documents/create',
     },
     {
         icon: 'bi-tools',
-        title: 'Handle service',
+        title: 'Create request',
         body: 'Let tenants submit maintenance and track owner/manager updates.',
-        href: '/maintenance-requests',
+        href: '/maintenance-requests/create',
     },
 ];

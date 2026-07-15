@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -138,6 +139,13 @@ export default function MediaPage() {
             <PageHeader
                 title="Media"
                 description="Upload and reuse visual assets for pages, banners, and supporting content."
+            />
+
+            <CreatePageShortcut
+                href="/media-files/create"
+                label="Create media"
+                icon="bi-image"
+                description="Open a media form to upload an image or file with collection, visibility, and bilingual alt text."
             />
 
             <div className="row g-4">
@@ -321,7 +329,7 @@ export default function MediaPage() {
                             counts={props.counts}
                             basePath="/media-files"
                             createHref="/media-files/create"
-                            createLabel="Upload media"
+                            createLabel="Create media"
                             rowHref={(mediaFile) =>
                                 `/media-files/${mediaFile.id}`
                             }

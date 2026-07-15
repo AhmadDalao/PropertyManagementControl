@@ -181,11 +181,11 @@ class DashboardController extends Controller
             ]);
 
         $setupChecklist = [
-            ['label' => 'Create portfolio', 'done' => $user->hasRole('superadmin') ? Portfolio::query()->exists() : (bool) $user->portfolio_id, 'href' => '/portfolios'],
-            ['label' => 'Create users', 'done' => $stats['totalUsers'] > 1, 'href' => '/users'],
-            ['label' => 'Add assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets'],
-            ['label' => 'Add tenants', 'done' => (clone $this->scopeByPortfolio(TenantProfile::query(), $user))->exists(), 'href' => '/tenants'],
-            ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases'],
+            ['label' => 'Create portfolio', 'done' => $user->hasRole('superadmin') ? Portfolio::query()->exists() : (bool) $user->portfolio_id, 'href' => '/portfolios/create'],
+            ['label' => 'Create users', 'done' => $stats['totalUsers'] > 1, 'href' => '/users/create'],
+            ['label' => 'Create assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets/create'],
+            ['label' => 'Create profiles', 'done' => (clone $this->scopeByPortfolio(TenantProfile::query(), $user))->exists(), 'href' => '/tenants/create'],
+            ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases/create'],
         ];
 
         if ($user->hasRole('superadmin')) {
@@ -254,8 +254,8 @@ class DashboardController extends Controller
                 'description' => match ($item['label']) {
                     'Create portfolio' => 'Set the owner account boundary before adding data.',
                     'Create users' => 'Add owner, manager, and tenant accounts with clean roles.',
-                    'Add assets' => 'Build buildings, floors, units, spaces, and stakeholder assignments.',
-                    'Add tenants' => 'Create tenant profiles before writing contracts.',
+                    'Create assets' => 'Build buildings, floors, units, spaces, and stakeholder assignments.',
+                    'Create profiles' => 'Create tenant profiles before writing contracts.',
                     'Create leases' => 'Connect tenants to rentable assets and generate installments.',
                     'Publish website' => 'Use the CMS builder to publish the public landing page.',
                     default => 'Complete this setup step before scaling operations.',
@@ -264,8 +264,8 @@ class DashboardController extends Controller
                 'icon' => match ($item['label']) {
                     'Create portfolio' => 'bi-buildings',
                     'Create users' => 'bi-people',
-                    'Add assets' => 'bi-diagram-3',
-                    'Add tenants' => 'bi-person-badge',
+                    'Create assets' => 'bi-diagram-3',
+                    'Create profiles' => 'bi-person-badge',
                     'Create leases' => 'bi-file-earmark-text',
                     'Publish website' => 'bi-layout-wtf',
                     default => 'bi-arrow-right-circle',

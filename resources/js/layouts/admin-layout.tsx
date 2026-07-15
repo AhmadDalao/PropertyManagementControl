@@ -262,7 +262,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                 className="btn btn-outline-secondary btn-sm pmc-quick-action"
                             >
                                 <i className="bi bi-plus-circle" />
-                                Asset
+                                Create asset
                             </Link>
                         ) : null}
                         {canOpenMaintenance ? (
@@ -271,7 +271,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                 className="btn btn-outline-secondary btn-sm pmc-quick-action"
                             >
                                 <i className="bi bi-tools" />
-                                Request
+                                Create request
                             </Link>
                         ) : null}
                         <LanguageSwitcher />

@@ -29,7 +29,11 @@ class DashboardGuidanceTest extends TestCase
                 ->component('dashboard')
                 ->where('mode', 'portfolio')
                 ->where('nextActions', fn ($actions) => collect($actions)->contains('label', 'Create users')
-                    && collect($actions)->contains('label', 'Add assets')
+                    && collect($actions)->contains('label', 'Create assets')
+                    && collect($actions)->contains('label', 'Create profiles')
+                    && collect($actions)->contains('href', '/users/create')
+                    && collect($actions)->contains('href', '/assets/create')
+                    && collect($actions)->contains('href', '/tenants/create')
                     && ! collect($actions)->contains('label', 'Create portfolio'))
             );
     }

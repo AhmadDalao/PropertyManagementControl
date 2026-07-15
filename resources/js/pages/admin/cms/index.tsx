@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -324,6 +325,13 @@ export default function CmsPage() {
                         Preview site
                     </Link>
                 }
+            />
+
+            <CreatePageShortcut
+                href="/cms/pages/create"
+                label="Create page"
+                icon="bi-layout-text-window-reverse"
+                description="Open a page form for slug, bilingual titles, SEO copy, visibility, and publish state."
             />
 
             <div className="pmc-cms-grid">

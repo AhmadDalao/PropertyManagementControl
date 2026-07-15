@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -153,6 +154,12 @@ export default function UsersPage() {
                         reset access, and keep tenants connected to a proper
                         tenant profile. This workspace controls that cycle.
                     </p>
+                    <CreatePageShortcut
+                        href="/users/create"
+                        label="Create user"
+                        icon="bi-person-plus"
+                        description="Open a clean user form with role, portfolio, access, and temporary-password fields."
+                    />
                     <div className="pmc-user-command-meta">
                         <span>
                             <i className="bi bi-shield-lock" />

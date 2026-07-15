@@ -100,11 +100,15 @@ export function DataTable<T extends { id?: number | string }>({
                 <div className="pmc-table-head-actions">
                     {createHref ? (
                         <Link
-                            className="btn btn-primary btn-sm"
+                            className="pmc-create-page-button"
                             href={createHref}
+                            title={`${createLabel} on a dedicated page`}
                         >
-                            <i className="bi bi-plus-lg me-2" />
-                            {createLabel}
+                            <span>
+                                <i className="bi bi-plus-lg" />
+                                {createLabel}
+                            </span>
+                            <small>Open form page</small>
                         </Link>
                     ) : null}
                     {exportHref ? (

@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency } from '@/lib/utils';
@@ -174,6 +175,15 @@ export default function PortfoliosPage() {
                     </small>
                 </div>
             </section>
+
+            {props.canCreate ? (
+                <CreatePageShortcut
+                    href="/portfolios/create"
+                    label="Create portfolio"
+                    icon="bi-buildings"
+                    description="Open a portfolio form for owner account boundary, contact details, currency, and module controls."
+                />
+            ) : null}
 
             <section className="pmc-portfolio-insight-grid mb-4">
                 <PortfolioInsight

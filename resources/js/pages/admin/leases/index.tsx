@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -243,6 +244,12 @@ export default function LeasesPage() {
                         billing schedule by frequency, upload signed files, and
                         keep payments tied to the exact due line.
                     </p>
+                    <CreatePageShortcut
+                        href="/leases/create"
+                        label="Create lease"
+                        icon="bi-file-earmark-plus"
+                        description="Open a lease form to select tenant, asset, dates, rent, deposit, and payment frequency."
+                    />
                     <div className="pmc-lease-command-meta">
                         <span>
                             <i className="bi bi-calendar2-check" />

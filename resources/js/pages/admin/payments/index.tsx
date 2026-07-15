@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -249,6 +250,12 @@ export default function PaymentsPage() {
                         payments stay visible without touching tenant balances.
                         Voids reverse allocations, not just labels.
                     </p>
+                    <CreatePageShortcut
+                        href="/payments/create"
+                        label="Create payment"
+                        icon="bi-cash-stack"
+                        description="Open a payment form to choose lease, tenant, method, amount, status, and reference."
+                    />
                     <div className="pmc-payment-command-meta">
                         <span>
                             <i className="bi bi-receipt" />
@@ -669,7 +676,7 @@ export default function PaymentsPage() {
                             counts={props.counts}
                             basePath="/payments"
                             createHref="/payments/create"
-                            createLabel="Record payment"
+                            createLabel="Create payment"
                             rowHref={(payment) => `/payments/${payment.id}`}
                             exportHref={exportUrl(
                                 '/exports/payments',

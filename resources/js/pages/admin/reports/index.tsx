@@ -972,7 +972,7 @@ function buildReportActions(summary: PageProps['summary']) {
             icon: 'bi-file-earmark-plus',
             title: 'Create leases to activate reporting',
             detail: 'Assets and tenants need active leases before occupancy and revenue reports mean anything.',
-            href: '/leases',
+            href: '/leases/create',
             tone: 'is-neutral',
         });
     }

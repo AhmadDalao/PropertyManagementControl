@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -241,6 +242,16 @@ export default function MaintenancePage() {
                             ? 'Submit issues for your rented asset, add access notes, and follow public updates from open to resolved.'
                             : 'Prioritize urgent work, assign owners or managers, separate public tenant updates from internal notes, and roll posted expenses into reports.'}
                     </p>
+                    <CreatePageShortcut
+                        href="/maintenance-requests/create"
+                        label="Create request"
+                        icon="bi-tools"
+                        description={
+                            props.mode === 'tenant'
+                                ? 'Open a request form for your rented asset, category, priority, and issue details.'
+                                : 'Open a service request form with tenant, asset, priority, assignment, and internal notes.'
+                        }
+                    />
                     <div className="pmc-maintenance-command-meta">
                         <span>
                             <i className="bi bi-stopwatch" />
@@ -792,7 +803,7 @@ export default function MaintenancePage() {
                             counts={props.counts}
                             basePath="/maintenance-requests"
                             createHref="/maintenance-requests/create"
-                            createLabel="New request"
+                            createLabel="Create request"
                             rowHref={(requestItem) =>
                                 `/maintenance-requests/${requestItem.id}`
                             }

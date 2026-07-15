@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -250,6 +251,12 @@ export default function DocumentsPage() {
                         it and tenants only see files they are allowed to
                         download.
                     </p>
+                    <CreatePageShortcut
+                        href="/documents/create"
+                        label="Create document"
+                        icon="bi-file-earmark-plus"
+                        description="Open a document form to attach signed papers, contracts, receipts, and tenant statements."
+                    />
                     <div className="pmc-document-command-meta">
                         <span>
                             <i className="bi bi-file-earmark-lock" />
@@ -607,7 +614,7 @@ export default function DocumentsPage() {
                             counts={props.counts}
                             basePath="/documents"
                             createHref="/documents/create"
-                            createLabel="Upload document"
+                            createLabel="Create document"
                             rowHref={(document) => `/documents/${document.id}`}
                             exportHref={exportUrl(
                                 '/exports/documents',

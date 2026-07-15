@@ -67,6 +67,87 @@
     gap: 0.65rem;
 }
 
+.pmc-create-page-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 12rem;
+    padding: 0.75rem 1rem;
+    border: 0;
+    border-radius: 18px;
+    color: #fff;
+    text-decoration: none;
+    background: linear-gradient(135deg, #0f766e, #f97316);
+    box-shadow: 0 16px 38px rgba(15, 118, 110, 0.22);
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+.pmc-create-page-button:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 20px 45px rgba(249, 115, 22, 0.24);
+}
+
+.pmc-create-page-button span,
+.pmc-create-page-button small {
+    display: block;
+}
+
+.pmc-create-page-button span {
+    font-weight: 900;
+    line-height: 1;
+}
+
+.pmc-create-page-button i {
+    margin-inline-end: 0.45rem;
+}
+
+.pmc-create-page-button small {
+    margin-top: 0.25rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-create-page-shortcut {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1rem 0 1.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(15, 118, 110, 0.14);
+    border-radius: 24px;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgba(20, 184, 166, 0.12),
+            transparent 30%
+        ),
+        linear-gradient(135deg, #ffffff, #fff7ed);
+}
+
+.pmc-create-page-shortcut > div > span {
+    display: block;
+    color: #0f766e;
+    font-size: 0.72rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-create-page-shortcut > div > strong {
+    display: block;
+    margin-top: 0.25rem;
+    color: #102a43;
+    font-size: 1rem;
+}
+
 .pmc-resource-stat-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -447,6 +528,7 @@
 
     .pmc-resource-actions,
     .pmc-table-head-actions,
+    .pmc-create-page-shortcut,
     .pmc-report-preset-form {
         width: 100%;
         justify-content: stretch;
@@ -454,6 +536,7 @@
 
     .pmc-resource-actions > *,
     .pmc-table-head-actions > *,
+    .pmc-create-page-shortcut > *,
     .pmc-report-preset-form > * {
         flex: 1;
     }
@@ -483,6 +566,7 @@
     }
 
     .pmc-resource-form-actions,
+    .pmc-create-page-shortcut,
     .pmc-cms-builder-section,
     .pmc-report-preset-card {
         display: grid;

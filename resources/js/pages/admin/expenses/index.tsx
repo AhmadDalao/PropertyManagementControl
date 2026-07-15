@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -217,6 +218,12 @@ export default function ExpensesPage() {
                         stay visible for review. Maintenance-linked costs roll
                         into the service ticket and owner reports.
                     </p>
+                    <CreatePageShortcut
+                        href="/expenses/create"
+                        label="Create expense"
+                        icon="bi-receipt"
+                        description="Open an expense form for asset, lease, maintenance link, vendor, date, amount, and status."
+                    />
                     <div className="pmc-expense-command-meta">
                         <span>
                             <i className="bi bi-tools" />
@@ -576,7 +583,7 @@ export default function ExpensesPage() {
                             counts={props.counts}
                             basePath="/expenses"
                             createHref="/expenses/create"
-                            createLabel="Record expense"
+                            createLabel="Create expense"
                             rowHref={(expense) => `/expenses/${expense.id}`}
                             exportHref={exportUrl(
                                 '/exports/expenses',

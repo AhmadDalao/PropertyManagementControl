@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 
 import { ArchiveAction } from '@/components/archive-action';
+import { CreatePageShortcut } from '@/components/create-page-shortcut';
 import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
@@ -252,6 +253,12 @@ export default function AssetsPage() {
                         mark only rentable nodes, then track occupancy from the
                         table.
                     </p>
+                    <CreatePageShortcut
+                        href="/assets/create"
+                        label="Create asset"
+                        icon="bi-building-add"
+                        description="Open a dedicated asset form for property, building, floor, unit, or space details."
+                    />
                 </div>
                 <div className="pmc-asset-flow">
                     <span>Property</span>
