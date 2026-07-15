@@ -9,6 +9,7 @@ use App\Models\ReportPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 class ReportsManagementTest extends TestCase
 {
@@ -125,11 +126,24 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.export'))
             ->assertOk();
 
-        $csv = $export->streamedContent();
+        $this->assertStringContainsString(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            (string) $export->headers->get('content-type'),
+        );
+        $this->assertStringContainsString('.xlsx', (string) $export->headers->get('content-disposition'));
 
-        $this->assertStringContainsString('Own leak', $csv);
-        $this->assertStringNotContainsString('Foreign outage', $csv);
-        $this->assertStringNotContainsString('9000', $csv);
+        $xlsxPath = $export->baseResponse->getFile()->getPathname();
+
+        $this->assertSame('PK', substr((string) file_get_contents($xlsxPath), 0, 2));
+
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($xlsxPath));
+        $sheetXml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        $this->assertStringContainsString('Own leak', $sheetXml);
+        $this->assertStringNotContainsString('Foreign outage', $sheetXml);
+        $this->assertStringNotContainsString('9000', $sheetXml);
     }
 
     public function test_report_date_filters_limit_financial_activity(): void

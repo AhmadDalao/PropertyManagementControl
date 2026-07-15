@@ -345,7 +345,7 @@ class LeaseController extends Controller
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
         $data = $request->validate([
-            'signed_contract' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:10240'],
+            'signed_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
         $file = $data['signed_contract'];

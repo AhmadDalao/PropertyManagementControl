@@ -8,12 +8,13 @@ use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\ReportPreset;
+use App\Services\XlsxWorkbook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportController extends Controller
 {
@@ -84,56 +85,19 @@ class ReportController extends Controller
         return to_route('reports.index', $this->reportFilters($request))->with('success', 'Report preset removed.');
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, XlsxWorkbook $workbook): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
         $filters = $this->reportFilters($request);
         $report = $this->buildReport($request, $filters);
-        $filename = 'portfolio-report-'.now()->format('Ymd-His').'.csv';
+        $filename = 'portfolio-report-'.now()->format('Ymd-His').'.xlsx';
+        $path = $workbook->create($this->reportRows($report, $filters));
 
-        return response()->streamDownload(function () use ($report, $filters): void {
-            $handle = fopen('php://output', 'w');
-
-            fputcsv($handle, ['Property Management Control Report']);
-            fputcsv($handle, ['Date From', $filters['date_from'] ?: 'All']);
-            fputcsv($handle, ['Date To', $filters['date_to'] ?: 'All']);
-            fputcsv($handle, []);
-            fputcsv($handle, ['Section', 'Metric', 'Value']);
-
-            foreach ($report['summary'] as $metric => $value) {
-                fputcsv($handle, ['Summary', str($metric)->snake(' ')->title()->toString(), $value]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Revenue by Month', 'Month', 'Amount']);
-            foreach ($report['charts']['revenueByMonth'] as $month => $amount) {
-                fputcsv($handle, ['Revenue by Month', $month, $amount]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Expense by Category', 'Category', 'Amount']);
-            foreach ($report['charts']['expenseByCategory'] as $category => $amount) {
-                fputcsv($handle, ['Expense by Category', $category, $amount]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Arrears', 'Lease', 'Tenant', 'Asset', 'Balance', 'Currency']);
-            foreach ($report['arrearsLeases'] as $lease) {
-                fputcsv($handle, ['Arrears', $lease['code'], $lease['tenant'], $lease['asset'], $lease['balance_remaining'], $lease['currency']]);
-            }
-
-            fputcsv($handle, []);
-            fputcsv($handle, ['Maintenance Backlog', 'ID', 'Title', 'Asset', 'Status', 'Priority']);
-            foreach ($report['maintenanceBacklog'] as $request) {
-                fputcsv($handle, ['Maintenance Backlog', $request['id'], $request['title'], $request['asset'], $request['status'], $request['priority']]);
-            }
-
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**
@@ -265,6 +229,66 @@ class ReportController extends Controller
                 ->values()
                 ->all(),
         ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $report
+     * @param  array<string, mixed>  $filters
+     * @return array<int, array<int, mixed>>
+     */
+    private function reportRows(array $report, array $filters): array
+    {
+        $rows = [
+            ['Property Management Control Report'],
+            ['Date From', $filters['date_from'] ?: 'All'],
+            ['Date To', $filters['date_to'] ?: 'All'],
+            [],
+            ['Section', 'Metric', 'Value'],
+        ];
+
+        foreach ($report['summary'] as $metric => $value) {
+            $rows[] = ['Summary', str($metric)->snake(' ')->title()->toString(), $value];
+        }
+
+        $rows[] = [];
+        $rows[] = ['Revenue by Month', 'Month', 'Amount'];
+        foreach ($report['charts']['revenueByMonth'] as $month => $amount) {
+            $rows[] = ['Revenue by Month', $month, $amount];
+        }
+
+        $rows[] = [];
+        $rows[] = ['Expense by Category', 'Category', 'Amount'];
+        foreach ($report['charts']['expenseByCategory'] as $category => $amount) {
+            $rows[] = ['Expense by Category', $category, $amount];
+        }
+
+        $rows[] = [];
+        $rows[] = ['Arrears', 'Lease', 'Tenant', 'Asset', 'Balance', 'Currency'];
+        foreach ($report['arrearsLeases'] as $lease) {
+            $rows[] = [
+                'Arrears',
+                $lease['code'],
+                $lease['tenant'],
+                $lease['asset'],
+                $lease['balance_remaining'],
+                $lease['currency'],
+            ];
+        }
+
+        $rows[] = [];
+        $rows[] = ['Maintenance Backlog', 'ID', 'Title', 'Asset', 'Status', 'Priority'];
+        foreach ($report['maintenanceBacklog'] as $request) {
+            $rows[] = [
+                'Maintenance Backlog',
+                $request['id'],
+                $request['title'],
+                $request['asset'],
+                $request['status'],
+                $request['priority'],
+            ];
+        }
+
+        return $rows;
     }
 
     /**

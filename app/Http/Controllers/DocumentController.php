@@ -155,7 +155,7 @@ class DocumentController extends Controller
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['nullable', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
-            'file' => ['required', 'file', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
         ]);
 
         [$documentableAlias, $documentable] = $this->resolveDocumentable(
@@ -283,7 +283,14 @@ class DocumentController extends Controller
         ];
 
         if ($document === null) {
-            $fields[] = ['name' => 'file', 'label' => 'File', 'type' => 'file', 'required' => true];
+            $fields[] = [
+                'name' => 'file',
+                'label' => 'PDF file',
+                'type' => 'file',
+                'required' => true,
+                'accept' => '.pdf,application/pdf',
+                'help' => 'Contracts, signed papers, receipts, and proof files must be uploaded as PDF. Maximum upload size: 10 MB.',
+            ];
         }
 
         return [

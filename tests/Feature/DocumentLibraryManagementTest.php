@@ -100,6 +100,33 @@ class DocumentLibraryManagementTest extends TestCase
         $this->assertDatabaseMissing('documents', ['title_en' => 'Foreign contract']);
     }
 
+    public function test_document_uploads_must_be_pdf_files(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $tenantUser),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->actingAs($owner)
+            ->post(route('documents.store'), [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'title_en' => 'Bad signed contract',
+                'file' => UploadedFile::fake()->image('signed-contract.jpg'),
+            ])
+            ->assertSessionHasErrors('file');
+
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Bad signed contract']);
+    }
+
     public function test_document_index_and_export_do_not_leak_foreign_portfolio_documents(): void
     {
         Storage::fake('local');

@@ -208,7 +208,7 @@ export default function ReportsPage() {
                         </span>
                         <span>
                             <i className="bi bi-download" />
-                            CSV-ready
+                            Excel-ready
                         </span>
                     </div>
                 </div>
@@ -244,7 +244,7 @@ export default function ReportsPage() {
                     <div className="d-grid gap-2 mt-3">
                         <a href={exportHref} className="btn btn-primary">
                             <i className="bi bi-download me-2" />
-                            Export CSV report
+                            Export Excel report
                         </a>
                         <Link
                             href="/payments"
@@ -266,7 +266,7 @@ export default function ReportsPage() {
                         <div className="pmc-kicker mb-2">Report filters</div>
                         <h2 className="h5 mb-1">Change the operating window</h2>
                         <p className="mb-0 text-secondary">
-                            Filters update the cards, charts, tables, and CSV
+                            Filters update the cards, charts, tables, and Excel
                             export using the same permission scope.
                         </p>
                     </div>

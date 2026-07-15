@@ -567,12 +567,14 @@ export default function DocumentsPage() {
                                     <i className="bi bi-cloud-arrow-up" />
                                     <span>
                                         {form.data.file?.name ??
-                                            'Choose PDF, Word, JPG, or PNG'}
+                                            'Choose a PDF document'}
                                     </span>
-                                    <small>Maximum upload size: 10 MB</small>
+                                    <small>
+                                        PDF only. Maximum upload size: 10 MB.
+                                    </small>
                                     <input
                                         type="file"
-                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                        accept=".pdf,application/pdf"
                                         onChange={(event) =>
                                             form.setData(
                                                 'file',

@@ -739,6 +739,7 @@ export default function LeasesPage() {
                             <input
                                 type="file"
                                 className="form-control"
+                                accept=".pdf,application/pdf"
                                 onChange={(event) =>
                                     signedContractForm.setData(
                                         'signed_contract',
@@ -746,6 +747,9 @@ export default function LeasesPage() {
                                     )
                                 }
                             />
+                            <small className="text-secondary">
+                                Upload the signed-off contract as a PDF only.
+                            </small>
                             <button
                                 className="btn btn-outline-secondary"
                                 disabled={signedContractForm.processing}

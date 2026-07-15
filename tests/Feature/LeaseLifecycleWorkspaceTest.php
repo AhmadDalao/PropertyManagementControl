@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\Payment;
 use App\Services\LeaseFinancialService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -124,6 +125,32 @@ class LeaseLifecycleWorkspaceTest extends TestCase
                 ->where('leases.data.0.installments.1.due_date', '2026-01-15')
                 ->where('leases.data.0.installments.2.label', 'Rent Apr 15-Jul 14 2026')
                 ->where('leases.data.0.installments.2.due_date', '2026-04-10'));
+    }
+
+    public function test_signed_contract_upload_requires_pdf(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $tenantUser),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->actingAs($owner)
+            ->post(route('leases.signed-contract', $lease), [
+                'signed_contract' => UploadedFile::fake()->image('signed-contract.png'),
+            ])
+            ->assertSessionHasErrors('signed_contract');
+
+        $this->assertDatabaseMissing('documents', [
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+        ]);
     }
 
     public function test_tenant_dashboard_exposes_secure_contract_document_and_receipt_links(): void

@@ -40,6 +40,7 @@ export type ResourceField = {
     step?: string;
     min?: string | number;
     max?: string | number;
+    accept?: string;
 };
 
 export type DetailItem = {
@@ -328,6 +329,7 @@ function ResourceInput({
                 <input
                     className="form-control"
                     type="file"
+                    accept={field.accept}
                     onChange={(event) =>
                         onChange(event.currentTarget.files?.[0] ?? null)
                     }
