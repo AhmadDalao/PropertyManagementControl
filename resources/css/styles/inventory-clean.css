@@ -1,0 +1,1177 @@
+/* Inventory-clean pass: admin screens are for finding records, opening records, and acting fast. */
+:root {
+    --pmc-bg: #ffffff;
+    --pmc-panel: #ffffff;
+    --pmc-clean-ink: #0f0f0f;
+    --pmc-clean-muted: #737373;
+    --pmc-clean-line: #dedbd5;
+    --pmc-clean-soft: #fbfaf7;
+    --pmc-clean-chip: #f7eddd;
+    --pmc-clean-gold: #ffc107;
+    --pmc-clean-gold-hover: #f0b400;
+    --pmc-primary: #e5a900;
+    --pmc-secondary: #0b7f73;
+    --pmc-accent: #ffc107;
+    --pmc-border: #dedbd5;
+    --pmc-shadow: none;
+    --pmc-shadow-soft: none;
+    --pmc-radius: 0.65rem;
+    --pmc-radius-lg: 1rem;
+}
+
+body {
+    background: #ffffff;
+    color: var(--pmc-clean-ink);
+}
+
+.pmc-console-shell {
+    display: block;
+    min-height: 100vh;
+    background: #ffffff !important;
+}
+
+.pmc-console-main {
+    min-width: 0;
+    padding: 0;
+    background: #ffffff;
+}
+
+.pmc-console-content {
+    width: min(100%, 1480px);
+    margin-inline: auto;
+    padding: 2rem clamp(1rem, 3.5vw, 2.65rem) 4rem;
+}
+
+.pmc-console-sidebar {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: 70;
+    width: min(21rem, calc(100vw - 2rem));
+    height: 100dvh;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+}
+
+[dir='rtl'] .pmc-console-sidebar {
+    transform: translateX(110%);
+}
+
+.pmc-console-sidebar.is-open,
+[dir='rtl'] .pmc-console-sidebar.is-open {
+    transform: translateX(0);
+}
+
+.pmc-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 65;
+    display: block;
+    pointer-events: none;
+    background: rgba(15, 15, 15, 0);
+    transition: background-color 0.2s ease;
+}
+
+.pmc-sidebar-backdrop.is-open {
+    pointer-events: auto;
+    background: rgba(15, 15, 15, 0.28);
+}
+
+.pmc-mobile-close {
+    display: inline-grid;
+}
+
+.pmc-console-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    display: grid;
+    grid-template-columns: auto minmax(220px, 430px) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0.72rem clamp(1rem, 3vw, 2rem);
+    border: 0;
+    border-bottom: 1px solid #eeeeef;
+    border-radius: 0;
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: none;
+    backdrop-filter: blur(14px);
+}
+
+.pmc-topbar-left {
+    min-width: 0;
+}
+
+.pmc-menu-trigger {
+    display: inline-flex;
+    min-width: 2.55rem;
+    min-height: 2.55rem;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #111111;
+    box-shadow: none;
+}
+
+.pmc-menu-trigger span {
+    display: none;
+}
+
+.pmc-menu-trigger:hover,
+.pmc-notification-trigger:hover,
+.pmc-account-menu summary:hover {
+    border-color: #d7c5a5;
+    background: #fffaf0;
+}
+
+.pmc-global-search {
+    position: relative;
+    grid-column: 2;
+    width: min(100%, 430px);
+    max-width: none;
+    margin: 0;
+}
+
+.pmc-global-search label {
+    min-height: 2.55rem;
+    padding: 0 1rem;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+.pmc-global-search label:focus-within {
+    border-color: #d4b56f;
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.18);
+}
+
+.pmc-global-search input {
+    min-height: 2.4rem;
+    color: #111111;
+    font-size: 0.9rem;
+    font-weight: 750;
+}
+
+.pmc-global-search input::placeholder {
+    color: #8d8d8d;
+}
+
+.pmc-global-search-panel {
+    border-color: var(--pmc-clean-line);
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(15, 15, 15, 0.12);
+}
+
+.pmc-topbar-actions {
+    grid-column: 4;
+    gap: 0.6rem;
+    margin-inline-start: 0;
+}
+
+.pmc-notification-trigger {
+    display: inline-grid;
+    width: 2.55rem;
+    height: 2.55rem;
+    place-items: center;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #111111;
+}
+
+.pmc-topbar-actions .btn-group {
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.pmc-topbar-actions .btn-group .btn {
+    border: 0;
+    border-radius: 0;
+}
+
+.pmc-account-menu summary {
+    min-height: 2.55rem;
+    max-width: 18rem;
+    padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+    border: 1px solid #e5e0d8;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: none;
+}
+
+[dir='rtl'] .pmc-account-menu summary {
+    padding: 0.25rem 0.25rem 0.25rem 0.75rem;
+}
+
+.pmc-account-menu summary > span {
+    background: #111111;
+    box-shadow: 0 0 0 3px #203ecf;
+}
+
+.pmc-account-menu strong {
+    color: #111111;
+    font-size: 0.82rem;
+}
+
+.pmc-account-menu small {
+    color: #666666;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.pmc-account-panel {
+    border-color: var(--pmc-clean-line);
+    box-shadow: 0 24px 60px rgba(15, 15, 15, 0.14);
+}
+
+.pmc-page-head,
+.pmc-resource-header,
+.pmc-dashboard-brief,
+.pmc-portfolio-command,
+.pmc-tenant-command,
+.pmc-document-command,
+.pmc-user-command,
+.pmc-tenant-workspace-hero,
+.pmc-payment-command,
+.pmc-lease-command,
+.pmc-maintenance-command,
+.pmc-expense-command,
+.pmc-report-command-center,
+.pmc-asset-control-hero,
+.pmc-command-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    margin-bottom: 1.45rem !important;
+    padding: 1.25rem 0 1.5rem;
+    border: 0;
+    border-bottom: 1px solid #eeeeef;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    overflow: visible;
+}
+
+.pmc-dashboard-brief::before,
+.pmc-portfolio-command::before,
+.pmc-tenant-command::before,
+.pmc-document-command::before,
+.pmc-user-command::before,
+.pmc-payment-command::before,
+.pmc-lease-command::before,
+.pmc-maintenance-command::before,
+.pmc-expense-command::before,
+.pmc-report-command-center::before,
+.pmc-asset-control-hero::before,
+.pmc-command-hero::before {
+    content: none !important;
+}
+
+.pmc-kicker,
+.pmc-page-head .pmc-kicker,
+.pmc-resource-header .pmc-kicker {
+    color: #8a6f00;
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.pmc-page-title,
+.pmc-resource-header h1,
+.pmc-dashboard-brief h1,
+.pmc-tenant-command h1,
+.pmc-portfolio-command h1,
+.pmc-document-command h1,
+.pmc-user-command h1,
+.pmc-payment-command h1,
+.pmc-lease-command h1,
+.pmc-maintenance-command h1,
+.pmc-expense-command h1,
+.pmc-report-command-center h1,
+.pmc-asset-control-hero h2,
+.pmc-command-hero h2 {
+    max-width: 880px;
+    margin: 0;
+    color: #111111;
+    font-size: clamp(1.9rem, 3.3vw, 2.8rem);
+    font-weight: 950;
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+}
+
+.pmc-page-head p,
+.pmc-resource-header p,
+.pmc-dashboard-brief p,
+.pmc-tenant-command p,
+.pmc-portfolio-command p,
+.pmc-document-command p,
+.pmc-user-command p,
+.pmc-payment-command p,
+.pmc-lease-command p,
+.pmc-maintenance-command p,
+.pmc-expense-command p,
+.pmc-report-command-center p,
+.pmc-asset-control-hero p,
+.pmc-command-hero p {
+    max-width: 760px;
+    margin-top: 0.75rem;
+    color: var(--pmc-clean-muted);
+    font-size: 0.98rem;
+    line-height: 1.55;
+}
+
+.pmc-page-actions,
+.pmc-resource-actions,
+.pmc-command-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.7rem;
+    flex-wrap: wrap;
+}
+
+.pmc-portfolio-command-meta,
+.pmc-document-command-meta,
+.pmc-user-command-meta,
+.pmc-tenant-workspace-meta,
+.pmc-payment-command-meta,
+.pmc-lease-command-meta,
+.pmc-maintenance-command-meta,
+.pmc-expense-command-meta,
+.pmc-dashboard-context {
+    margin-top: 1rem;
+}
+
+.pmc-portfolio-command-meta span,
+.pmc-document-command-meta span,
+.pmc-user-command-meta span,
+.pmc-tenant-workspace-meta span,
+.pmc-payment-command-meta span,
+.pmc-lease-command-meta span,
+.pmc-maintenance-command-meta span,
+.pmc-expense-command-meta span,
+.pmc-dashboard-context span,
+.pmc-filter-chip,
+.pmc-chip,
+.badge {
+    border: 1px solid #eadfce;
+    border-radius: 999px;
+    background: var(--pmc-clean-chip);
+    color: #171717;
+    font-weight: 850;
+}
+
+.pmc-portfolio-command-card,
+.pmc-lease-command-card,
+.pmc-maintenance-command-card,
+.pmc-payment-command-card,
+.pmc-expense-command-card,
+.pmc-dashboard-health {
+    width: min(100%, 21rem);
+    border: 1px solid #111111;
+    border-radius: 1rem;
+    background: #111111 !important;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+.pmc-dashboard-brief {
+    align-items: flex-start;
+}
+
+.pmc-dashboard-health > div:first-child {
+    min-height: auto !important;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    background: linear-gradient(135deg, #0b7f73, #46b8a6) !important;
+}
+
+.pmc-dashboard-health > div:first-child span {
+    font-size: 2.25rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.pmc-portfolio-command-card span,
+.pmc-portfolio-command-card small,
+.pmc-lease-command-card span,
+.pmc-lease-command-card small,
+.pmc-maintenance-command-card span,
+.pmc-maintenance-command-card small,
+.pmc-payment-command-card span,
+.pmc-payment-command-card small,
+.pmc-expense-command-card span,
+.pmc-expense-command-card small,
+.pmc-dashboard-health span,
+.pmc-dashboard-health small,
+.pmc-dashboard-health p,
+.pmc-dashboard-health strong {
+    color: #ffffff !important;
+}
+
+.pmc-card,
+.pmc-resource-form-shell,
+.pmc-resource-form,
+.pmc-resource-form-brief,
+.pmc-resource-detail-card,
+.pmc-next-action-card,
+.pmc-cycle-map,
+.pmc-dashboard-grid > .pmc-card,
+.pmc-cms-form-card,
+.pmc-cms-sidebar,
+.pmc-doc-sidebar,
+.pmc-inline-empty,
+.pmc-chart-empty,
+.pmc-report-action-panel,
+.pmc-report-strip > *,
+.pmc-operations-table {
+    border: 1px solid var(--pmc-clean-line) !important;
+    border-radius: 1rem !important;
+    background: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.pmc-card--accent,
+.pmc-stat-card.pmc-card--accent,
+.pmc-resource-stat-primary {
+    border-color: #111111 !important;
+    background: #111111 !important;
+    color: #ffffff;
+}
+
+.pmc-card--accent .pmc-kicker,
+.pmc-card--accent .pmc-metric,
+.pmc-card--accent .text-secondary,
+.pmc-stat-card.pmc-card--accent .pmc-kicker,
+.pmc-stat-card.pmc-card--accent .pmc-metric,
+.pmc-stat-card.pmc-card--accent .text-secondary,
+.pmc-resource-stat-primary span,
+.pmc-resource-stat-primary strong {
+    color: #ffffff !important;
+}
+
+.pmc-card--teal,
+.pmc-stat-card.pmc-card--teal {
+    border-color: #b9d8d1 !important;
+    background: #f4fbf9 !important;
+}
+
+.pmc-stat-card,
+.pmc-resource-stat,
+[class$='-insight'],
+[class$='-insight-card'] {
+    min-height: 8.25rem;
+}
+
+.pmc-metric,
+.pmc-resource-stat strong,
+[class$='-insight'] strong,
+[class$='-insight-card'] strong {
+    color: #111111;
+    font-size: clamp(1.8rem, 2.5vw, 2.35rem);
+    font-weight: 950;
+    letter-spacing: -0.055em;
+}
+
+.pmc-create-page-shortcut {
+    align-items: center;
+    margin-bottom: 1.35rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.pmc-create-page-shortcut > div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.pmc-create-page-shortcut > div > span {
+    color: #8a6f00;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.pmc-create-page-shortcut > div > strong {
+    color: var(--pmc-clean-muted);
+    font-size: 0.95rem;
+    font-weight: 650;
+}
+
+.btn-primary,
+.pmc-create-page-button,
+.pmc-resource-actions .btn-primary,
+.pmc-command-actions .btn-primary {
+    min-height: 2.75rem;
+    border: 1px solid var(--pmc-clean-gold) !important;
+    border-radius: 0.55rem;
+    background: var(--pmc-clean-gold) !important;
+    color: #111111 !important;
+    font-weight: 900;
+    box-shadow: none !important;
+}
+
+.btn-primary:hover,
+.pmc-create-page-button:hover,
+.pmc-resource-actions .btn-primary:hover,
+.pmc-command-actions .btn-primary:hover {
+    border-color: var(--pmc-clean-gold-hover) !important;
+    background: var(--pmc-clean-gold-hover) !important;
+    color: #111111 !important;
+    transform: none;
+}
+
+.btn-outline-secondary,
+.btn-light,
+.pmc-export-button {
+    min-height: 2.6rem;
+    border: 1px solid var(--pmc-clean-line) !important;
+    border-radius: 0.55rem;
+    background: #ffffff !important;
+    color: #111111 !important;
+    font-weight: 850;
+    box-shadow: none !important;
+}
+
+.btn-outline-secondary:hover,
+.btn-light:hover,
+.pmc-export-button:hover {
+    border-color: #d5bf96 !important;
+    background: #fffaf0 !important;
+}
+
+.pmc-create-page-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.7rem 1rem;
+}
+
+.pmc-create-page-button span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.pmc-operations-table {
+    display: grid;
+    gap: 0;
+    margin-top: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.pmc-operations-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.35rem 0;
+}
+
+.pmc-table-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+}
+
+.pmc-table-heading strong {
+    color: #111111;
+    font-size: 1rem;
+    font-weight: 950;
+}
+
+.pmc-table-icon {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: transparent;
+    color: #8a6f00;
+}
+
+.pmc-table-count {
+    min-width: 2.25rem;
+    padding: 0.35rem 0.72rem;
+    border-radius: 999px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.pmc-table-copy,
+.pmc-table-results {
+    color: var(--pmc-clean-muted);
+}
+
+.pmc-table-head-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.pmc-filter-chips {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    padding: 1rem 1.35rem 0;
+}
+
+.pmc-filter-chip {
+    min-height: 2rem;
+    padding: 0.4rem 0.75rem;
+    border-color: #eadfce;
+    background: var(--pmc-clean-chip);
+    color: #111111;
+}
+
+.pmc-filter-chip.active {
+    border-color: #111111;
+    background: #111111;
+    color: #ffffff;
+}
+
+.pmc-table-toolbar {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 1rem 1.35rem 1.15rem;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-clean-line);
+    border-radius: 0.9rem;
+    background: var(--pmc-clean-soft);
+}
+
+.pmc-table-page-size,
+.pmc-table-filter,
+.pmc-table-search {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.pmc-table-page-size {
+    flex: 0 0 auto;
+    grid-template-columns: auto 5rem auto;
+    align-items: center;
+}
+
+.pmc-table-page-size span,
+.pmc-table-filter span {
+    color: #2f2f2f;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.pmc-table-search {
+    position: relative;
+    flex: 1 1 260px;
+}
+
+.pmc-table-filter {
+    flex: 1 1 180px;
+    max-width: 240px;
+}
+
+.pmc-table-search i {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    top: 50%;
+    color: #8f8f8f;
+    transform: translateY(-50%);
+}
+
+.pmc-table-search .form-control {
+    padding-inline-start: 2.35rem;
+}
+
+[dir='rtl'] .pmc-table-search .form-control {
+    padding-inline-start: 0.85rem;
+    padding-inline-end: 2.35rem;
+}
+
+.form-control,
+.form-select,
+.pmc-table-search .form-control,
+.pmc-table-page-size .form-select,
+.pmc-table-filter .form-select,
+.pmc-table-filter .form-control,
+.pmc-resource-field .form-control,
+.pmc-resource-field .form-select,
+.pmc-resource-field textarea {
+    min-height: 2.75rem;
+    border: 1px solid var(--pmc-clean-line);
+    border-radius: 0.55rem;
+    background-color: #ffffff;
+    color: #111111;
+    box-shadow: none;
+}
+
+.form-control:focus,
+.form-select:focus,
+.pmc-resource-field .form-control:focus,
+.pmc-resource-field .form-select:focus {
+    border-color: #d4b56f;
+    box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.18);
+}
+
+.pmc-table-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin-inline-start: auto;
+}
+
+.pmc-table-scroll {
+    margin: 0 1.35rem 1.15rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow-x: auto;
+}
+
+.pmc-data-table {
+    min-width: 920px;
+    margin: 0;
+    border-collapse: collapse;
+}
+
+.pmc-data-table thead th {
+    border-bottom: 1px solid #ebe7df;
+    background: var(--pmc-clean-soft);
+    color: #575757;
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-data-table tbody td {
+    border-bottom: 1px solid #eeeae3;
+    color: #111111;
+    vertical-align: middle;
+}
+
+.pmc-data-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.pmc-data-table tbody tr:hover {
+    background: #fffaf0;
+    transform: none;
+}
+
+.pmc-table-row-link {
+    color: #111111;
+    font-weight: 900;
+}
+
+.pmc-table-footer {
+    padding: 0 1.35rem 1.25rem;
+    border-top: 0;
+}
+
+.pmc-page-button {
+    border: 1px solid var(--pmc-clean-line);
+    border-radius: 0.5rem;
+    background: #ffffff;
+    color: #111111;
+    font-weight: 850;
+}
+
+.pmc-page-button.active {
+    border-color: #111111;
+    background: #111111;
+    color: #ffffff;
+}
+
+.pmc-empty-state {
+    border-color: #eadfce;
+    background: #fffaf0;
+}
+
+.pmc-empty-state i {
+    color: #8a6f00;
+}
+
+.pmc-dashboard-grid,
+.pmc-resource-stat-grid,
+.pmc-portfolio-insight-grid,
+.pmc-tenant-insight-grid,
+.pmc-tenant-onboarding-grid,
+.pmc-payment-insight-grid,
+.pmc-lease-insight-grid,
+.pmc-maintenance-insight-grid,
+.pmc-expense-insight-grid,
+.pmc-user-insight-grid,
+.pmc-document-insight-grid,
+.pmc-report-strip,
+.pmc-report-decision-grid {
+    gap: 1rem;
+}
+
+.pmc-console-content > .row {
+    --bs-gutter-x: 1rem;
+    --bs-gutter-y: 1rem;
+}
+
+.pmc-console-content > .row > [class*='col-xl-'],
+.pmc-console-content > .row > [class*='col-lg-'] {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.pmc-console-content > .row > [class*='col-xl-8'],
+.pmc-console-content > .row > [class*='col-lg-8'] {
+    order: 1;
+}
+
+.pmc-console-content > .row > [class*='col-xl-4'],
+.pmc-console-content > .row > [class*='col-lg-4'] {
+    order: 2;
+}
+
+.pmc-console-content [class*='-form-card'],
+.pmc-console-content .pmc-cms-form-card {
+    border-color: var(--pmc-clean-line) !important;
+    background: #ffffff !important;
+}
+
+.pmc-console-content [class*='-form-card'] h2,
+.pmc-cms-form-card h2 {
+    color: #111111;
+    font-weight: 950;
+    letter-spacing: -0.035em;
+}
+
+.pmc-asset-control-hero {
+    align-items: center;
+    padding: 0.35rem 0 1rem;
+}
+
+.pmc-asset-control-hero h2 {
+    font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+    letter-spacing: -0.045em;
+}
+
+.pmc-asset-control-hero p {
+    max-width: 44rem;
+    font-size: 0.92rem;
+}
+
+.pmc-asset-control-hero .pmc-create-page-shortcut {
+    margin-top: 0.8rem;
+    margin-bottom: 0;
+}
+
+.pmc-asset-flow {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.pmc-asset-flow span {
+    display: inline-flex;
+    min-height: 2.45rem;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid #eee7db;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #111111;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.pmc-asset-flow i {
+    color: #b08a00;
+}
+
+@media (min-width: 576px) {
+    .pmc-console-content .row.g-3 > .col-sm-6 {
+        flex: 0 0 auto;
+        width: 50%;
+        max-width: 50%;
+    }
+}
+
+@media (min-width: 1200px) {
+    .pmc-console-content .row.g-3 > .col-xl-3 {
+        flex: 0 0 auto;
+        width: 25%;
+        max-width: 25%;
+    }
+
+    .pmc-console-content .row.g-3 > .col-xl-4 {
+        flex: 0 0 auto;
+        width: 33.333333%;
+        max-width: 33.333333%;
+    }
+
+    .pmc-console-content .row.g-3 > .col-xl-6 {
+        flex: 0 0 auto;
+        width: 50%;
+        max-width: 50%;
+    }
+}
+
+.pmc-resource-form-shell {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.35fr) minmax(0, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.pmc-resource-form {
+    border: 0 !important;
+    padding: 0;
+}
+
+.pmc-resource-form-brief {
+    padding: 1rem;
+    background: var(--pmc-clean-soft) !important;
+}
+
+.pmc-resource-field span,
+.pmc-resource-check strong,
+.pmc-form-label {
+    color: #2f2f2f;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.pmc-resource-form-actions {
+    border-top-color: #eeeae3;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-console-topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .pmc-global-search {
+        grid-column: 2;
+        width: 100%;
+    }
+
+    .pmc-topbar-actions {
+        grid-column: 3;
+    }
+
+    .pmc-topbar-actions .btn-group {
+        display: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-console-content {
+        padding: 1.25rem 0.85rem 3rem;
+    }
+
+    .pmc-console-topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        gap: 0.55rem;
+        padding: 0.65rem 0.85rem;
+    }
+
+    .pmc-notification-trigger {
+        display: none;
+    }
+
+    .pmc-account-menu summary {
+        padding: 0.2rem;
+    }
+
+    .pmc-account-menu summary div {
+        display: none;
+    }
+
+    .pmc-page-head,
+    .pmc-resource-header,
+    .pmc-dashboard-brief,
+    .pmc-portfolio-command,
+    .pmc-tenant-command,
+    .pmc-document-command,
+    .pmc-user-command,
+    .pmc-tenant-workspace-hero,
+    .pmc-payment-command,
+    .pmc-lease-command,
+    .pmc-maintenance-command,
+    .pmc-expense-command,
+    .pmc-report-command-center,
+    .pmc-asset-control-hero,
+    .pmc-command-hero {
+        align-items: stretch;
+        flex-direction: column;
+        padding-top: 0.75rem;
+    }
+
+    .pmc-page-title,
+    .pmc-resource-header h1,
+    .pmc-dashboard-brief h1,
+    .pmc-tenant-command h1,
+    .pmc-portfolio-command h1,
+    .pmc-document-command h1,
+    .pmc-user-command h1,
+    .pmc-payment-command h1,
+    .pmc-lease-command h1,
+    .pmc-maintenance-command h1,
+    .pmc-expense-command h1,
+    .pmc-report-command-center h1,
+    .pmc-asset-control-hero h2,
+    .pmc-command-hero h2 {
+        font-size: clamp(2rem, 13vw, 3.25rem);
+    }
+
+    .pmc-portfolio-command-card,
+    .pmc-lease-command-card,
+    .pmc-maintenance-command-card,
+    .pmc-payment-command-card,
+    .pmc-expense-command-card,
+    .pmc-dashboard-health {
+        width: 100%;
+    }
+
+    .pmc-create-page-shortcut,
+    .pmc-operations-head,
+    .pmc-table-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-create-page-shortcut > *,
+    .pmc-table-head-actions,
+    .pmc-table-head-actions > *,
+    .pmc-page-actions > *,
+    .pmc-resource-actions > *,
+    .pmc-command-actions > * {
+        width: 100%;
+    }
+
+    .pmc-table-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+        margin: 1rem 0.85rem;
+    }
+
+    .pmc-table-page-size {
+        grid-template-columns: auto minmax(5rem, 8rem) auto;
+        justify-content: start;
+    }
+
+    .pmc-table-search,
+    .pmc-table-filter,
+    .pmc-table-actions {
+        width: 100%;
+        max-width: none;
+        margin-inline-start: 0;
+    }
+
+    .pmc-filter-chips,
+    .pmc-operations-head,
+    .pmc-table-footer {
+        padding-inline: 0.85rem;
+    }
+
+    .pmc-table-scroll {
+        margin-inline: 0.85rem;
+        overflow: visible;
+    }
+
+    .pmc-data-table {
+        display: block;
+        min-width: 0;
+    }
+
+    .pmc-data-table thead {
+        display: none;
+    }
+
+    .pmc-data-table tbody {
+        display: grid;
+        gap: 0.85rem;
+    }
+
+    .pmc-data-table tr,
+    .pmc-data-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .pmc-data-table tbody tr {
+        display: grid;
+        gap: 0.45rem;
+        padding: 0.9rem;
+        border: 1px solid #eadfce;
+        border-radius: 1rem;
+        background: #fffaf0;
+    }
+
+    .pmc-data-table tbody td {
+        display: grid;
+        grid-template-columns: minmax(7rem, 0.38fr) minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+        padding: 0.35rem 0 !important;
+        border: 0;
+        white-space: normal;
+    }
+
+    .pmc-data-table tbody td::before {
+        content: attr(data-label);
+        color: #777777;
+        font-size: 0.7rem;
+        font-weight: 950;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .pmc-data-table tbody td.text-end {
+        text-align: start !important;
+    }
+
+    .pmc-data-table tbody td.text-end > div {
+        justify-content: stretch !important;
+    }
+
+    .pmc-data-table tbody td.text-end .btn,
+    .pmc-data-table tbody td.text-end form,
+    .pmc-data-table tbody td.text-end button {
+        width: 100%;
+    }
+
+    .pmc-resource-form-shell {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 460px) {
+    .pmc-console-topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .pmc-global-search input {
+        font-size: 0.82rem;
+    }
+
+    .pmc-data-table tbody td {
+        grid-template-columns: 1fr;
+    }
+}

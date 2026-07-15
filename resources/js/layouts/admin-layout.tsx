@@ -44,11 +44,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ...group,
         items: group.items.filter((item) => canUse(item)),
     })).filter((group) => group.items.length > 0);
-    const canCreateAsset =
-        roles.some((role) =>
-            ['superadmin', 'owner', 'property_manager'].includes(role),
-        ) && hasModuleAccess('assets');
-    const canOpenMaintenance = hasModuleAccess('maintenance');
 
     return (
         <div className="pmc-console-shell">
@@ -118,35 +113,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                             <i className="bi bi-list" />
                             <span>Menu</span>
                         </button>
-                        <div>
-                            <span className="pmc-eyebrow">
-                                {roles.join(' / ') || 'Visitor'}
-                            </span>
-                            <h1>Control center</h1>
-                        </div>
                     </div>
 
                     {user ? <GlobalSearch /> : null}
 
                     <div className="pmc-topbar-actions">
-                        {canCreateAsset ? (
-                            <Link
-                                href="/assets/create"
-                                className="btn btn-outline-secondary btn-sm pmc-quick-action"
-                            >
-                                <i className="bi bi-plus-circle" />
-                                Create asset
-                            </Link>
-                        ) : null}
-                        {canOpenMaintenance ? (
-                            <Link
-                                href="/maintenance-requests/create"
-                                className="btn btn-outline-secondary btn-sm pmc-quick-action"
-                            >
-                                <i className="bi bi-tools" />
-                                Create request
-                            </Link>
-                        ) : null}
+                        <button
+                            type="button"
+                            className="pmc-notification-trigger"
+                            aria-label="Notifications"
+                        >
+                            <i className="bi bi-bell" />
+                        </button>
                         <LanguageSwitcher />
                         {user ? (
                             <details className="pmc-account-menu">

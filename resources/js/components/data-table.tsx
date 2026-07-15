@@ -88,7 +88,7 @@ export function DataTable<T extends { id?: number | string }>({
                 <div>
                     <div className="pmc-table-heading">
                         <span className="pmc-table-icon">
-                            <i className="bi bi-table" />
+                            <i className="bi bi-box-seam" />
                         </span>
                         <strong>{title}</strong>
                         <span className="pmc-table-count">{data.total}</span>
@@ -108,7 +108,6 @@ export function DataTable<T extends { id?: number | string }>({
                                 <i className="bi bi-plus-lg" />
                                 {createLabel}
                             </span>
-                            <small>Open form page</small>
                         </Link>
                     ) : null}
                     {exportHref ? (
@@ -159,6 +158,7 @@ export function DataTable<T extends { id?: number | string }>({
                             </option>
                         ))}
                     </select>
+                    <span>entries</span>
                 </label>
 
                 <label className="pmc-table-search">

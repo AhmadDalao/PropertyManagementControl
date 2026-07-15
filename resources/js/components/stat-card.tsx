@@ -19,7 +19,7 @@ export function StatCard({
               : '';
 
     return (
-        <div className={`pmc-card p-4 h-100 ${toneClass}`}>
+        <div className={`pmc-card pmc-stat-card p-4 h-100 ${toneClass}`}>
             <div className="pmc-kicker mb-3">{title}</div>
             <div className="pmc-metric mb-2">{value ?? '-'}</div>
             {hint ? <div className="text-secondary small">{hint}</div> : null}

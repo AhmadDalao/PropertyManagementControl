@@ -3,20 +3,24 @@ import type { ReactNode } from 'react';
 type PageHeaderProps = {
     title: string;
     description: string;
+    eyebrow?: string;
     actions?: ReactNode;
 };
 
-export function PageHeader({ title, description, actions }: PageHeaderProps) {
+export function PageHeader({
+    title,
+    description,
+    eyebrow = 'Property operations',
+    actions,
+}: PageHeaderProps) {
     return (
-        <div className="d-flex flex-column flex-lg-row gap-3 justify-content-between align-items-lg-end mb-4">
+        <section className="pmc-page-head">
             <div>
-                <div className="pmc-kicker mb-2">
-                    Property management control
-                </div>
+                <div className="pmc-kicker mb-2">{eyebrow}</div>
                 <h1 className="pmc-page-title mb-2">{title}</h1>
                 <p className="text-secondary mb-0">{description}</p>
             </div>
-            {actions ? <div className="d-flex gap-2">{actions}</div> : null}
-        </div>
+            {actions ? <div className="pmc-page-actions">{actions}</div> : null}
+        </section>
     );
 }

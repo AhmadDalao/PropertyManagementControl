@@ -16,7 +16,7 @@ export function CreatePageShortcut({
     return (
         <div className="pmc-create-page-shortcut">
             <div>
-                <span>Dedicated form page</span>
+                <span>Create page</span>
                 <strong>{description}</strong>
             </div>
             <Link href={href} className="pmc-create-page-button">
@@ -24,7 +24,6 @@ export function CreatePageShortcut({
                     <i className={`bi ${icon}`} />
                     {label}
                 </span>
-                <small>Open form page</small>
             </Link>
         </div>
     );
