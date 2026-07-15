@@ -2877,7 +2877,42 @@ a {
 }
 
 .pmc-console-content {
+    width: min(100%, 1320px);
+    margin-inline: auto;
     padding: 1rem 0.25rem 3rem;
+}
+
+.pmc-console-content > .row {
+    --bs-gutter-y: 1rem;
+}
+
+.pmc-console-content > .row > [class*='col-xl-'],
+.pmc-console-content > .row > [class*='col-lg-'] {
+    flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+}
+
+.pmc-console-content > section[class*='-command'],
+.pmc-console-content .pmc-report-command-center,
+.pmc-console-content .pmc-report-action-panel,
+.pmc-console-content .pmc-asset-control-hero,
+.pmc-console-content .pmc-dashboard-brief,
+.pmc-console-content .pmc-cms-grid,
+.pmc-console-content .pmc-doc-layout,
+.pmc-console-content .pmc-doc-columns {
+    grid-template-columns: 1fr;
+}
+
+.pmc-console-content [class*='-form-card'],
+.pmc-console-content .pmc-cms-sidebar,
+.pmc-console-content .pmc-doc-sidebar {
+    position: static;
+    top: auto;
+}
+
+.pmc-console-content [class*='-form-card'] {
+    box-shadow: 0 16px 42px rgba(31, 33, 51, 0.06);
 }
 
 .pmc-sidebar-backdrop {
