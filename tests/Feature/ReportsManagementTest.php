@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
+use App\Models\ReportPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -193,5 +194,86 @@ class ReportsManagementTest extends TestCase
         $this->actingAs($tenant)
             ->get(route('reports.export'))
             ->assertForbidden();
+    }
+
+    public function test_owner_can_save_and_remove_portfolio_report_presets(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), [
+                'resource' => 'portfolio-report',
+                'title_en' => 'Arrears watch',
+                'title_ar' => 'متابعة المتأخرات',
+                'visibility' => 'portfolio',
+                'is_default' => true,
+                'filters_json' => [
+                    'date_from' => '2026-01-01',
+                    'date_to' => '2026-01-31',
+                    'preset' => 'arrears',
+                ],
+            ])
+            ->assertRedirect();
+
+        $preset = ReportPreset::query()->firstOrFail();
+
+        $this->assertSame($portfolio->id, $preset->portfolio_id);
+        $this->assertSame($owner->id, $preset->user_id);
+        $this->assertSame('portfolio-report', $preset->resource);
+        $this->assertSame('portfolio', $preset->visibility);
+        $this->assertTrue($preset->is_default);
+        $this->assertSame('arrears', $preset->filters_json['preset']);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('savedPresets', 1)
+                ->where('savedPresets.0.title_en', 'Arrears watch'));
+
+        $this->actingAs($owner)
+            ->delete(route('reports.presets.destroy', $preset))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('report_presets', ['id' => $preset->id]);
+    }
+
+    public function test_only_superadmin_can_create_global_report_presets(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $otherPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $otherOwner = $this->createUserWithRole('owner', $otherPortfolio);
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $payload = [
+            'resource' => 'portfolio-report',
+            'title_en' => 'Global finance view',
+            'visibility' => 'global',
+            'filters_json' => ['date_from' => '2026-01-01'],
+        ];
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), $payload)
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('report_presets', ['title_en' => 'Global finance view']);
+
+        $this->actingAs($superadmin)
+            ->post(route('reports.presets.store'), $payload)
+            ->assertRedirect();
+
+        $preset = ReportPreset::query()->firstOrFail();
+
+        $this->assertNull($preset->portfolio_id);
+        $this->assertSame('global', $preset->visibility);
+
+        $this->actingAs($otherOwner)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('savedPresets', 1)
+                ->where('savedPresets.0.title_en', 'Global finance view'));
     }
 }

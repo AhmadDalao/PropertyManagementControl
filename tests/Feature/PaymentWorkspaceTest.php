@@ -104,7 +104,7 @@ class PaymentWorkspaceTest extends TestCase
         $lease = $this->createLease($portfolio, $tenant, $asset, $owner);
         $firstInstallment = $lease->installments()->orderBy('sequence')->firstOrFail();
 
-        $this->actingAs($owner)
+        $response = $this->actingAs($owner)
             ->post(route('payments.store'), [
                 'lease_id' => $lease->id,
                 'tenant_profile_id' => $tenant->id,
@@ -115,10 +115,12 @@ class PaymentWorkspaceTest extends TestCase
                 'received_on' => now()->toDateString(),
                 'amount' => 1000,
                 'currency' => 'SAR',
-            ])
-            ->assertRedirect(route('payments.index'));
+            ]);
 
         $payment = Payment::query()->where('reference', 'PENDING-NO-ALLOC')->firstOrFail();
+
+        $response->assertRedirect(route('payments.show', $payment));
+
         $this->assertSame(0, $payment->allocations()->count());
         $this->assertSame(0.0, (float) $firstInstallment->fresh()->amount_paid);
 
@@ -127,7 +129,7 @@ class PaymentWorkspaceTest extends TestCase
                 'status' => 'posted',
                 'notes' => 'Money confirmed.',
             ])
-            ->assertRedirect(route('payments.index'));
+            ->assertRedirect(route('payments.show', $payment));
 
         $this->assertSame('posted', $payment->fresh()->status);
         $this->assertSame(1, $payment->allocations()->count());
@@ -138,7 +140,7 @@ class PaymentWorkspaceTest extends TestCase
                 'status' => 'pending',
                 'notes' => 'Bank confirmation was wrong.',
             ])
-            ->assertRedirect(route('payments.index'));
+            ->assertRedirect(route('payments.show', $payment));
 
         $this->assertSame('pending', $payment->fresh()->status);
         $this->assertSame(0, $payment->allocations()->count());

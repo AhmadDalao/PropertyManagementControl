@@ -62,7 +62,7 @@ class PortfolioModuleSettingsTest extends TestCase
                     'media' => false,
                 ],
             ])
-            ->assertRedirect(route('portfolios.index'));
+            ->assertRedirect(route('portfolios.show', $portfolio));
 
         $portfolio->refresh();
         $this->assertSame('Updated Portfolio', $portfolio->name_en);
@@ -270,7 +270,7 @@ class PortfolioModuleSettingsTest extends TestCase
         $this->actingAs($owner)
             ->getJson(route('global-search', ['q' => 'MOD-ASSET']))
             ->assertOk()
-            ->assertJsonPath('direct_url', route('assets.index', ['search' => 'MOD-ASSET']));
+            ->assertJsonPath('direct_url', route('assets.show', $asset));
     }
 
     public function test_superadmin_bypasses_portfolio_module_blocks(): void

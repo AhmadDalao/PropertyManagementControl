@@ -93,6 +93,138 @@ class AssetController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->assetFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, Asset $asset): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
+
+        $asset->loadMissing([
+            'portfolio',
+            'parent',
+            'children',
+            'stakeholders.user',
+            'leases.tenantProfile.user',
+            'leases.installments',
+            'maintenanceRequests.tenantProfile.user',
+            'maintenanceRequests.assignedTo',
+            'expenses',
+            'documents',
+        ]);
+
+        $activeLease = $asset->leases->firstWhere('status', 'active');
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Asset detail',
+                    'title' => $asset->title_en,
+                    'description' => trim($asset->code.' · '.$asset->asset_type.' · '.$asset->usage_type),
+                    'backHref' => route('assets.index'),
+                    'backLabel' => 'All assets',
+                    'actions' => [
+                        ['label' => 'Edit asset', 'href' => route('assets.edit', $asset), 'variant' => 'primary'],
+                        ['label' => 'Create child', 'href' => route('assets.create', ['parent_id' => $asset->id]), 'variant' => 'secondary'],
+                        ['label' => 'Create lease', 'href' => route('leases.create', ['asset_id' => $asset->id]), 'variant' => 'secondary'],
+                    ],
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Valuation', 'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency, 'tone' => 'primary'],
+                    ['label' => 'Occupancy', 'value' => $asset->occupancy_status, 'tone' => $asset->occupancy_status === 'occupied' ? 'teal' : 'muted'],
+                    ['label' => 'Children', 'value' => $asset->children->count()],
+                    ['label' => 'Open maintenance', 'value' => $asset->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count(), 'tone' => 'danger'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Asset profile',
+                        'description' => 'Core identity, hierarchy, and usage classification.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Arabic title', 'value' => $asset->title_ar],
+                            ['label' => 'Code', 'value' => $asset->code],
+                            ['label' => 'Portfolio', 'value' => $asset->portfolio?->name_en, 'href' => $asset->portfolio ? route('portfolios.show', $asset->portfolio) : null],
+                            ['label' => 'Parent', 'value' => $asset->parent?->title_en, 'href' => $asset->parent ? route('assets.show', $asset->parent) : null],
+                            ['label' => 'Rentable', 'value' => $asset->rentable ? 'Yes' : 'No'],
+                            ['label' => 'Status', 'value' => $asset->status],
+                            ['label' => 'Area', 'value' => $asset->area ? $asset->area.' sqm' : null],
+                            ['label' => 'Address', 'value' => $asset->address],
+                        ]),
+                    ],
+                    [
+                        'title' => 'Ownership and management',
+                        'description' => 'People responsible for this property node.',
+                        'items' => $asset->stakeholders->map(fn ($stakeholder) => [
+                            'label' => str($stakeholder->relationship_type)->headline()->toString(),
+                            'value' => $stakeholder->user?->name,
+                            'href' => $stakeholder->user ? route('users.show', $stakeholder->user) : null,
+                            'tone' => $stakeholder->is_primary ? 'primary' : 'muted',
+                        ])->values()->all(),
+                    ],
+                    [
+                        'title' => 'Active rental',
+                        'description' => 'Current lease connected to this asset.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Lease', 'value' => $activeLease?->code, 'href' => $activeLease ? route('leases.show', $activeLease) : null],
+                            ['label' => 'Tenant', 'value' => $activeLease?->tenantProfile?->user?->name, 'href' => $activeLease?->tenantProfile ? route('tenants.show', $activeLease->tenantProfile) : null],
+                            ['label' => 'Balance', 'value' => $activeLease ? number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency : null],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Child assets',
+                        'description' => 'Floors, units, spaces, and other nested records.',
+                        'columns' => ['Asset', 'Type', 'Occupancy', 'Open'],
+                        'rows' => $asset->children->map(fn (Asset $child) => [
+                            'Asset' => $child->title_en,
+                            'Type' => $child->asset_type,
+                            'Occupancy' => $child->occupancy_status,
+                            'Open' => ['label' => 'Open', 'href' => route('assets.show', $child)],
+                        ])->all(),
+                        'emptyText' => 'No child assets yet.',
+                        'actionHref' => route('assets.create', ['parent_id' => $asset->id]),
+                        'actionLabel' => 'Add child',
+                    ],
+                    [
+                        'title' => 'Maintenance',
+                        'description' => 'Requests submitted for this asset.',
+                        'columns' => ['Request', 'Tenant', 'Status', 'Priority'],
+                        'rows' => $asset->maintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
+                            'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
+                            'Tenant' => $maintenanceRequest->tenantProfile?->user?->name ?? '-',
+                            'Status' => $maintenanceRequest->status,
+                            'Priority' => $maintenanceRequest->priority,
+                        ])->all(),
+                        'emptyText' => 'No maintenance requests for this asset.',
+                    ],
+                ],
+                'documents' => $this->documentStrip($asset->documents),
+                'timeline' => $this->activityTimeline($asset),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, Asset $asset): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
+        $asset->loadMissing('stakeholders.user');
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->assetFormPage($actor, $asset),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -149,7 +281,7 @@ class AssetController extends Controller
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
 
-        return to_route('assets.index')->with('success', "Asset {$asset->title_en} created.");
+        return to_route('assets.show', $asset)->with('success', "Asset {$asset->title_en} created.");
     }
 
     public function update(Request $request, Asset $asset): RedirectResponse
@@ -202,7 +334,7 @@ class AssetController extends Controller
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
 
-        return to_route('assets.index')->with('success', "Asset {$asset->title_en} updated.");
+        return to_route('assets.show', $asset)->with('success', "Asset {$asset->title_en} updated.");
     }
 
     public function destroy(Request $request, Asset $asset): RedirectResponse
@@ -297,18 +429,124 @@ class AssetController extends Controller
         }
     }
 
+    private function assetFormPage(User $actor, ?Asset $asset = null): array
+    {
+        $portfolioId = $asset?->portfolio_id ?? (int) request('portfolio_id', $actor->portfolio_id ?? $this->portfolioOptions($actor)[0]['id'] ?? 0);
+        $owner = $asset?->stakeholders?->firstWhere('relationship_type', 'owner');
+        $manager = $asset?->stakeholders?->firstWhere('relationship_type', 'manager');
+        $parentOptions = $this->scopeByPortfolio(Asset::query()->orderBy('title_en'), $actor)
+            ->when($asset, fn ($query) => $query->whereKeyNot($asset->id))
+            ->get()
+            ->map(fn (Asset $record) => [
+                'value' => $record->id,
+                'label' => $record->title_en.' · '.$record->code.' · '.$record->asset_type,
+            ])
+            ->prepend(['value' => '', 'label' => 'No parent'])
+            ->values()
+            ->all();
+        $userOptions = $this->scopeByPortfolio(
+            User::query()->whereDoesntHave('roles', fn ($query) => $query->where('name', 'tenant'))->orderBy('name'),
+            $actor
+        )->get()->map(fn (User $user) => ['value' => $user->id, 'label' => $user->name])
+            ->prepend(['value' => '', 'label' => 'Unassigned'])
+            ->values()
+            ->all();
+
+        $fields = [];
+
+        if ($actor->hasRole('superadmin') && $asset === null) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'required' => true,
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'parent_id', 'label' => 'Parent asset', 'type' => 'select', 'options' => $parentOptions],
+            ['name' => 'asset_type', 'label' => 'Asset type', 'type' => 'select', 'required' => true, 'options' => $this->valueOptions(['property', 'building', 'floor', 'unit', 'space'])],
+            ['name' => 'usage_type', 'label' => 'Usage type', 'type' => 'select', 'required' => true, 'options' => $this->valueOptions(['residential', 'commercial', 'mixed', 'personal'])],
+            ['name' => 'title_en', 'label' => 'English title', 'required' => true],
+            ['name' => 'title_ar', 'label' => 'Arabic title', 'required' => true],
+        ];
+
+        if ($asset === null) {
+            $fields[] = ['name' => 'code', 'label' => 'Code', 'help' => 'Leave blank to generate one.'];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'required' => true, 'options' => $this->valueOptions(['active', 'inactive', 'archived'])],
+            ['name' => 'occupancy_status', 'label' => 'Occupancy', 'type' => 'select', 'required' => true, 'options' => $this->valueOptions(['vacant', 'occupied', 'reserved', 'maintenance'])],
+            ['name' => 'valuation_amount', 'label' => 'Valuation', 'type' => 'number', 'min' => 0],
+            ['name' => 'currency', 'label' => 'Currency', 'placeholder' => 'SAR'],
+            ['name' => 'area', 'label' => 'Area', 'type' => 'number', 'min' => 0],
+            ['name' => 'level_label', 'label' => 'Floor / level label'],
+            ['name' => 'unit_label', 'label' => 'Unit / space label'],
+            ['name' => 'primary_owner_user_id', 'label' => 'Primary owner', 'type' => 'select', 'options' => $userOptions],
+            ['name' => 'primary_manager_user_id', 'label' => 'Primary manager', 'type' => 'select', 'options' => $userOptions],
+            ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'description_en', 'label' => 'English description', 'type' => 'textarea'],
+            ['name' => 'description_ar', 'label' => 'Arabic description', 'type' => 'textarea'],
+            ['name' => 'rentable', 'label' => 'Rentable', 'type' => 'checkbox', 'help' => 'Only rentable assets can be leased.'],
+        ];
+
+        return [
+            'title' => $asset ? 'Edit '.$asset->title_en : 'Create asset',
+            'description' => 'Build the property tree cleanly before leases, documents, and reports depend on it.',
+            'backHref' => $asset ? route('assets.show', $asset) : route('assets.index'),
+            'backLabel' => $asset ? 'Asset detail' : 'All assets',
+            'action' => $asset ? route('assets.update', $asset) : route('assets.store'),
+            'method' => $asset ? 'put' : 'post',
+            'submitLabel' => $asset ? 'Update asset' : 'Create asset',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) $portfolioId,
+                'parent_id' => (string) ($asset?->parent_id ?? request('parent_id', '')),
+                'asset_type' => $asset?->asset_type ?? 'building',
+                'usage_type' => $asset?->usage_type ?? 'residential',
+                'title_en' => $asset?->title_en ?? '',
+                'title_ar' => $asset?->title_ar ?? '',
+                'code' => $asset?->code ?? '',
+                'status' => $asset?->status ?? 'active',
+                'occupancy_status' => $asset?->occupancy_status ?? 'vacant',
+                'valuation_amount' => (float) ($asset?->valuation_amount ?? 0),
+                'currency' => $asset?->currency ?? 'SAR',
+                'area' => (float) ($asset?->area ?? 0),
+                'level_label' => $asset?->level_label ?? '',
+                'unit_label' => $asset?->unit_label ?? '',
+                'primary_owner_user_id' => (string) ($owner?->user_id ?? ''),
+                'primary_manager_user_id' => (string) ($manager?->user_id ?? ''),
+                'address' => $asset?->address ?? '',
+                'description_en' => $asset?->description_en ?? '',
+                'description_ar' => $asset?->description_ar ?? '',
+                'rentable' => (bool) ($asset?->rentable ?? false),
+            ],
+        ];
+    }
+
+    private function valueOptions(array $values): array
+    {
+        return collect($values)
+            ->map(fn (string $value) => ['value' => $value, 'label' => str($value)->replace('_', ' ')->headline()->toString()])
+            ->all();
+    }
+
     /**
      * @return array<int, string>
      */
     private function assetLeaseableTypes(): array
     {
-        $asset = new Asset();
+        $asset = new Asset;
 
         return array_values(array_unique([Asset::class, $asset->getMorphClass()]));
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function ensureAssetReferencesBelongToPortfolio(array $data, int $portfolioId, ?Asset $currentAsset = null): void
     {

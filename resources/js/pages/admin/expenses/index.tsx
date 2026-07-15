@@ -575,6 +575,9 @@ export default function ExpensesPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/expenses"
+                            createHref="/expenses/create"
+                            createLabel="Record expense"
+                            rowHref={(expense) => `/expenses/${expense.id}`}
                             exportHref={exportUrl(
                                 '/exports/expenses',
                                 props.filters,

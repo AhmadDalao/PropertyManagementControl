@@ -19,6 +19,7 @@ use App\Models\NavigationItem;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Portfolio;
+use App\Models\ReportPreset;
 use App\Models\TenantProfile;
 use App\Models\User;
 use Carbon\CarbonImmutable;
@@ -71,6 +72,7 @@ class AppServiceProvider extends ServiceProvider
             'navigation_item' => NavigationItem::class,
             'media_file' => MediaFile::class,
             'label_override' => LabelOverride::class,
+            'report_preset' => ReportPreset::class,
         ]);
 
         Date::use(CarbonImmutable::class);

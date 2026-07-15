@@ -42,7 +42,7 @@ class CmsManagementTest extends TestCase
                 'is_homepage' => true,
                 'is_visible' => true,
             ])
-            ->assertRedirect(route('cms.index'));
+            ->assertRedirect(route('cms.pages.show', $newHome));
 
         $this->assertFalse($oldHome->fresh()->is_homepage);
         $this->assertTrue($newHome->fresh()->is_homepage);

@@ -18,7 +18,7 @@ class MediaManagementTest extends TestCase
 
         $superadmin = $this->createUserWithRole('superadmin');
 
-        $this->actingAs($superadmin)
+        $response = $this->actingAs($superadmin)
             ->post(route('media-files.store'), [
                 'portfolio_id' => null,
                 'collection' => 'homepage',
@@ -28,10 +28,12 @@ class MediaManagementTest extends TestCase
                 'alt_text_ar' => 'صورة البطل',
                 'visibility' => 'public',
                 'file' => UploadedFile::fake()->image('hero.jpg'),
-            ])
-            ->assertRedirect(route('media-files.index'));
+            ]);
 
         $media = MediaFile::query()->firstOrFail();
+
+        $response->assertRedirect(route('media-files.show', $media));
+
         $this->assertNull($media->portfolio_id);
         Storage::disk('public')->assertExists($media->path);
 
@@ -45,7 +47,7 @@ class MediaManagementTest extends TestCase
                 'alt_text_ar' => 'وصف محدث',
                 'visibility' => 'private',
             ])
-            ->assertRedirect(route('media-files.index'));
+            ->assertRedirect(route('media-files.show', $media));
 
         $media->refresh();
 
@@ -118,7 +120,7 @@ class MediaManagementTest extends TestCase
                 'alt_text_ar' => 'صورة الوحدة',
                 'visibility' => 'private',
             ])
-            ->assertRedirect(route('media-files.index'));
+            ->assertRedirect(route('media-files.show', $media));
 
         $this->assertSame('apartments', $media->fresh()->collection);
         $this->assertSame('private', $media->fresh()->visibility);

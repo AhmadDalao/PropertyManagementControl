@@ -7,7 +7,9 @@ use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
+use App\Models\ReportPreset;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,7 +29,59 @@ class ReportController extends Controller
             ...$report,
             'filters' => $filters,
             'portfolioOptions' => $this->portfolioOptions($actor),
+            'savedPresets' => $this->reportPresets($actor),
         ]);
+    }
+
+    public function storePreset(Request $request): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        $data = $request->validate([
+            'resource' => ['required', 'string', 'max:80'],
+            'title_en' => ['required', 'string', 'max:255'],
+            'title_ar' => ['nullable', 'string', 'max:255'],
+            'visibility' => ['required', 'in:private,portfolio,global'],
+            'is_default' => ['nullable', 'boolean'],
+            'filters_json' => ['nullable', 'array'],
+        ]);
+
+        abort_if(! $actor->hasRole('superadmin') && $data['visibility'] === 'global', 403);
+
+        $portfolioId = $actor->hasRole('superadmin') && $data['visibility'] === 'global'
+            ? null
+            : $actor->portfolio_id;
+
+        ReportPreset::query()->create([
+            'portfolio_id' => $portfolioId,
+            'user_id' => $actor->id,
+            'resource' => $data['resource'],
+            'title_en' => $data['title_en'],
+            'title_ar' => $data['title_ar'] ?? null,
+            'filters_json' => $data['filters_json'] ?? $this->reportFilters($request),
+            'visibility' => $data['visibility'],
+            'is_default' => (bool) ($data['is_default'] ?? false),
+        ]);
+
+        return to_route('reports.index', $this->reportFilters($request))->with('success', 'Report preset saved.');
+    }
+
+    public function destroyPreset(Request $request, ReportPreset $reportPreset): RedirectResponse
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        abort_unless(
+            $actor->hasRole('superadmin')
+            || $reportPreset->user_id === $actor->id
+            || ($reportPreset->visibility === 'portfolio' && $reportPreset->portfolio_id === $actor->portfolio_id && $actor->hasRole('owner')),
+            403
+        );
+
+        $reportPreset->delete();
+
+        return to_route('reports.index', $this->reportFilters($request))->with('success', 'Report preset removed.');
     }
 
     public function export(Request $request): StreamedResponse
@@ -223,6 +277,41 @@ class ReportController extends Controller
             'date_to' => trim((string) $request->query('date_to', now()->toDateString())),
             'portfolio_id' => $this->nullableInteger($request->query('portfolio_id')),
         ];
+    }
+
+    private function reportPresets(mixed $actor): array
+    {
+        return ReportPreset::query()
+            ->where('resource', 'portfolio-report')
+            ->where(function (Builder $query) use ($actor): void {
+                $query
+                    ->where('user_id', $actor->id)
+                    ->orWhere(function (Builder $globalQuery): void {
+                        $globalQuery
+                            ->where('visibility', 'global')
+                            ->whereNull('portfolio_id');
+                    });
+
+                if ($actor->portfolio_id) {
+                    $query->orWhere(function (Builder $portfolioQuery) use ($actor): void {
+                        $portfolioQuery
+                            ->where('portfolio_id', $actor->portfolio_id)
+                            ->where('visibility', 'portfolio');
+                    });
+                }
+            })
+            ->latest()
+            ->get()
+            ->map(fn (ReportPreset $preset) => [
+                'id' => $preset->id,
+                'title_en' => $preset->title_en,
+                'title_ar' => $preset->title_ar,
+                'visibility' => $preset->visibility,
+                'is_default' => $preset->is_default,
+                'filters' => $preset->filters_json ?? [],
+                'url' => route('reports.index', $preset->filters_json ?? []),
+            ])
+            ->all();
     }
 
     private function scopedReportQuery(Builder $query, mixed $actor, array $filters): Builder

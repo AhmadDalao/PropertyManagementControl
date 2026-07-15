@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\TenantProfile;
+use App\Models\User;
 use App\Services\LeaseFinancialService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -102,6 +104,96 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->paymentFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, Payment $payment): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensurePaymentReceiptAccess($actor, $payment);
+        $payment->loadMissing([
+            'portfolio',
+            'lease.leaseable',
+            'lease.installments',
+            'tenantProfile.user',
+            'recordedBy',
+            'allocations.leaseInstallment',
+            'documents',
+        ]);
+        $adminMode = $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Payment detail',
+                    'title' => $payment->reference ?: 'Payment #'.$payment->id,
+                    'description' => trim($payment->status.' · '.$payment->method.' · '.$payment->type),
+                    'backHref' => $adminMode ? route('payments.index') : route('dashboard'),
+                    'backLabel' => $adminMode ? 'All payments' : 'Dashboard',
+                    'actions' => array_values(array_filter([
+                        $adminMode ? ['label' => 'Review payment', 'href' => route('payments.edit', $payment), 'variant' => 'primary'] : null,
+                        $payment->status === 'posted' ? ['label' => 'Download receipt', 'href' => route('payments.receipt', $payment), 'variant' => 'secondary'] : null,
+                        ['label' => 'Open lease', 'href' => route('leases.show', $payment->lease), 'variant' => 'secondary'],
+                    ])),
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Amount', 'value' => number_format((float) $payment->amount, 2).' '.$payment->currency, 'tone' => 'primary'],
+                    ['label' => 'Allocated', 'value' => number_format((float) $payment->allocated_amount, 2).' '.$payment->currency, 'tone' => 'teal'],
+                    ['label' => 'Unallocated', 'value' => number_format((float) $payment->unallocated_amount, 2).' '.$payment->currency],
+                    ['label' => 'Status', 'value' => $payment->status, 'tone' => $payment->status === 'void' ? 'danger' : 'teal'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Payment record',
+                        'description' => 'Manual payment tracking and receipt context.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Tenant', 'value' => $payment->tenantProfile?->user?->name, 'href' => $payment->tenantProfile ? route('tenants.show', $payment->tenantProfile) : null],
+                            ['label' => 'Lease', 'value' => $payment->lease?->code, 'href' => $payment->lease ? route('leases.show', $payment->lease) : null],
+                            ['label' => 'Asset', 'value' => $payment->lease?->leaseable?->title_en, 'href' => $payment->lease?->leaseable ? route('assets.show', $payment->lease->leaseable) : null],
+                            ['label' => 'Portfolio', 'value' => $payment->portfolio?->name_en, 'href' => $payment->portfolio ? route('portfolios.show', $payment->portfolio) : null],
+                            ['label' => 'Recorded by', 'value' => $payment->recordedBy?->name, 'href' => $payment->recordedBy ? route('users.show', $payment->recordedBy) : null],
+                            ['label' => 'Received on', 'value' => $payment->received_on?->toDateString()],
+                            ['label' => 'Notes', 'value' => $payment->notes],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Allocations',
+                        'description' => 'Installments this payment touched.',
+                        'columns' => ['Installment', 'Due date', 'Amount'],
+                        'rows' => $payment->allocations->map(fn ($allocation) => [
+                            'Installment' => '#'.$allocation->leaseInstallment?->sequence,
+                            'Due date' => $allocation->leaseInstallment?->due_date?->toDateString(),
+                            'Amount' => number_format((float) $allocation->amount, 2).' '.$payment->currency,
+                        ])->all(),
+                        'emptyText' => 'No allocations yet. Pending and void payments do not allocate.',
+                    ],
+                ],
+                'documents' => $this->documentStrip($payment->documents),
+                'timeline' => $this->activityTimeline($payment),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, Payment $payment): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $payment->portfolio_id);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->paymentFormPage($actor, $payment),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -160,7 +252,7 @@ class PaymentController extends Controller
             $this->leaseFinancials->allocatePayment($payment);
         }
 
-        return to_route('payments.index')->with('success', 'Payment recorded successfully.');
+        return to_route('payments.show', $payment)->with('success', 'Payment recorded successfully.');
     }
 
     public function update(Request $request, Payment $payment): RedirectResponse
@@ -199,7 +291,7 @@ class PaymentController extends Controller
             }
         });
 
-        return to_route('payments.index')->with('success', 'Payment updated successfully.');
+        return to_route('payments.show', $payment)->with('success', 'Payment updated successfully.');
     }
 
     public function destroy(Request $request, Payment $payment): RedirectResponse
@@ -226,6 +318,91 @@ class PaymentController extends Controller
             fn () => print ($pdf->output()),
             "receipt-{$reference}.pdf"
         );
+    }
+
+    private function paymentFormPage(User $actor, ?Payment $payment = null): array
+    {
+        if ($payment) {
+            return [
+                'title' => 'Review payment '.($payment->reference ?: '#'.$payment->id),
+                'description' => 'Change payment state carefully. Voiding reverses allocations and keeps the audit trail.',
+                'backHref' => route('payments.show', $payment),
+                'backLabel' => 'Payment detail',
+                'action' => route('payments.update', $payment),
+                'method' => 'put',
+                'submitLabel' => 'Update payment',
+                'fields' => [
+                    ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['posted', 'pending', 'void'])],
+                    ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
+                ],
+                'initialValues' => [
+                    'status' => $payment->status,
+                    'notes' => $payment->notes ?? '',
+                ],
+            ];
+        }
+
+        $leaseOptions = $this->scopeByPortfolio(
+            Lease::query()->with(['tenantProfile.user', 'leaseable', 'installments'])->where('status', 'active'),
+            $actor
+        )->get()->map(fn (Lease $lease) => [
+            'value' => $lease->id,
+            'label' => $lease->code.' · '.($lease->tenantProfile?->user?->name ?? 'tenant').' · '.($lease->leaseable?->title_en ?? 'asset'),
+        ])->all();
+        $tenantOptions = $this->scopeByPortfolio(TenantProfile::query()->with('user'), $actor)
+            ->get()
+            ->map(fn (TenantProfile $tenant) => ['value' => $tenant->id, 'label' => $tenant->user?->name ?? 'Tenant #'.$tenant->id])
+            ->prepend(['value' => '', 'label' => 'Use selected lease tenant'])
+            ->values()
+            ->all();
+        $fields = [];
+
+        if ($actor->hasRole('superadmin')) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'lease_id', 'label' => 'Lease', 'type' => 'select', 'required' => true, 'options' => $leaseOptions],
+            ['name' => 'tenant_profile_id', 'label' => 'Tenant override', 'type' => 'select', 'options' => $tenantOptions],
+            ['name' => 'type', 'label' => 'Payment type', 'type' => 'select', 'options' => $this->fieldOptions(['rent', 'deposit', 'fee'])],
+            ['name' => 'method', 'label' => 'Method', 'type' => 'select', 'options' => $this->fieldOptions(['bank_transfer', 'cash', 'card'])],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['posted', 'pending'])],
+            ['name' => 'reference', 'label' => 'Reference'],
+            ['name' => 'received_on', 'label' => 'Received on', 'type' => 'date', 'required' => true],
+            ['name' => 'amount', 'label' => 'Amount', 'type' => 'number', 'min' => 0.01, 'required' => true],
+            ['name' => 'currency', 'label' => 'Currency'],
+            ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
+        ];
+
+        return [
+            'title' => 'Record payment',
+            'description' => 'Post manual rent, deposit, or fees against an active lease.',
+            'backHref' => route('payments.index'),
+            'backLabel' => 'All payments',
+            'action' => route('payments.store'),
+            'method' => 'post',
+            'submitLabel' => 'Record payment',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) request('portfolio_id', $actor->portfolio_id ?? $this->portfolioOptions($actor)[0]['id'] ?? ''),
+                'lease_id' => (string) request('lease_id', $leaseOptions[0]['value'] ?? ''),
+                'tenant_profile_id' => (string) request('tenant_profile_id', ''),
+                'type' => 'rent',
+                'method' => 'bank_transfer',
+                'status' => 'posted',
+                'reference' => '',
+                'received_on' => now()->toDateString(),
+                'amount' => 0,
+                'currency' => 'SAR',
+                'notes' => '',
+            ],
+        ];
     }
 
     /**
@@ -294,7 +471,7 @@ class PaymentController extends Controller
     /**
      * @return array<string, int|float>
      */
-    private function paymentInsights(\Illuminate\Database\Eloquent\Builder $baseQuery): array
+    private function paymentInsights(Builder $baseQuery): array
     {
         $payments = (clone $baseQuery)
             ->with('allocations')
@@ -320,7 +497,7 @@ class PaymentController extends Controller
         ];
     }
 
-    private function ensurePaymentReceiptAccess(\App\Models\User $actor, Payment $payment): void
+    private function ensurePaymentReceiptAccess(User $actor, Payment $payment): void
     {
         if ($actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
             $this->ensurePortfolioAccess($actor, $payment->portfolio_id);

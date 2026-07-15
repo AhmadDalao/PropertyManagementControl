@@ -9,6 +9,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Services\LeaseFinancialService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -88,6 +89,126 @@ class LeaseController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->leaseFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, Lease $lease): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensureLeaseAccess($actor, $lease);
+        $lease->loadMissing([
+            'portfolio',
+            'tenantProfile.user',
+            'leaseable',
+            'managedBy',
+            'installments',
+            'payments.allocations.leaseInstallment',
+            'documents',
+        ]);
+        $adminMode = $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Lease detail',
+                    'title' => $lease->code,
+                    'description' => trim(($lease->tenantProfile?->user?->name ?? 'Tenant').' · '.($lease->leaseable?->title_en ?? 'Asset').' · '.$lease->status),
+                    'backHref' => $adminMode ? route('leases.index') : route('dashboard'),
+                    'backLabel' => $adminMode ? 'All leases' : 'Dashboard',
+                    'actions' => array_values(array_filter([
+                        $adminMode ? ['label' => 'Edit lease', 'href' => route('leases.edit', $lease), 'variant' => 'primary'] : null,
+                        ['label' => 'Contract PDF', 'href' => route('leases.contract', $lease), 'variant' => 'secondary'],
+                        ['label' => 'Tenant statement', 'href' => route('leases.statement', $lease), 'variant' => 'secondary'],
+                        $adminMode ? ['label' => 'Record payment', 'href' => route('payments.create', ['lease_id' => $lease->id]), 'variant' => 'secondary'] : null,
+                    ])),
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Total due', 'value' => number_format((float) $lease->total_due, 2).' '.$lease->currency, 'tone' => 'primary'],
+                    ['label' => 'Paid', 'value' => number_format((float) $lease->total_paid, 2).' '.$lease->currency, 'tone' => 'teal'],
+                    ['label' => 'Remaining', 'value' => number_format((float) $lease->balance_remaining, 2).' '.$lease->currency, 'tone' => $lease->balance_remaining > 0 ? 'danger' : 'teal'],
+                    ['label' => 'Days left', 'value' => $lease->days_remaining ?? 'Ended'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Contract',
+                        'description' => 'Tenant, rented asset, dates, billing, and manager.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Tenant', 'value' => $lease->tenantProfile?->user?->name, 'href' => $lease->tenantProfile ? route('tenants.show', $lease->tenantProfile) : null],
+                            ['label' => 'Asset', 'value' => $lease->leaseable?->title_en, 'href' => $lease->leaseable ? route('assets.show', $lease->leaseable) : null],
+                            ['label' => 'Portfolio', 'value' => $lease->portfolio?->name_en, 'href' => $lease->portfolio ? route('portfolios.show', $lease->portfolio) : null],
+                            ['label' => 'Managed by', 'value' => $lease->managedBy?->name, 'href' => $lease->managedBy ? route('users.show', $lease->managedBy) : null],
+                            ['label' => 'Started', 'value' => $lease->started_at?->toDateString()],
+                            ['label' => 'Ends', 'value' => $lease->ends_at?->toDateString()],
+                            ['label' => 'Signed', 'value' => $lease->signed_at?->toDateString() ?? 'Not signed'],
+                            ['label' => 'Frequency', 'value' => $lease->payment_frequency],
+                            ['label' => 'Notes', 'value' => $lease->notes],
+                        ]),
+                    ],
+                    [
+                        'title' => 'Amounts',
+                        'description' => 'Operational rent values used to generate installments.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Rent amount', 'value' => number_format((float) $lease->rent_amount, 2).' '.$lease->currency],
+                            ['label' => 'Deposit', 'value' => number_format((float) $lease->deposit_amount, 2).' '.$lease->currency],
+                            ['label' => 'Tax', 'value' => number_format((float) $lease->tax_amount, 2).' '.$lease->currency],
+                            ['label' => 'Discount', 'value' => number_format((float) $lease->discount_amount, 2).' '.$lease->currency],
+                            ['label' => 'Billing day', 'value' => $lease->billing_day],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Installments',
+                        'description' => 'Due schedule and allocation state.',
+                        'columns' => ['#', 'Due date', 'Status', 'Due', 'Paid'],
+                        'rows' => $lease->installments->map(fn ($installment) => [
+                            '#' => $installment->sequence,
+                            'Due date' => $installment->due_date?->toDateString(),
+                            'Status' => $installment->status,
+                            'Due' => number_format((float) $installment->amount_due, 2),
+                            'Paid' => number_format((float) $installment->amount_paid, 2),
+                        ])->all(),
+                        'emptyText' => 'No installments generated yet.',
+                    ],
+                    [
+                        'title' => 'Payments',
+                        'description' => 'Money posted against this lease.',
+                        'columns' => ['Payment', 'Date', 'Status', 'Amount'],
+                        'rows' => $lease->payments->map(fn ($payment) => [
+                            'Payment' => $payment->reference ?: '#'.$payment->id,
+                            'Date' => $payment->received_on?->toDateString(),
+                            'Status' => $payment->status,
+                            'Amount' => number_format((float) $payment->amount, 2).' '.$payment->currency,
+                        ])->all(),
+                        'emptyText' => 'No payments recorded yet.',
+                        'actionHref' => route('payments.create', ['lease_id' => $lease->id]),
+                        'actionLabel' => 'Record payment',
+                    ],
+                ],
+                'documents' => $this->documentStrip($lease->documents),
+                'timeline' => $this->activityTimeline($lease),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, Lease $lease): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->leaseFormPage($actor, $lease),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -158,7 +279,7 @@ class LeaseController extends Controller
         $this->leaseFinancials->syncInstallments($lease);
         $asset->update(['occupancy_status' => 'occupied']);
 
-        return to_route('leases.index')->with('success', "Lease {$lease->code} created.");
+        return to_route('leases.show', $lease)->with('success', "Lease {$lease->code} created.");
     }
 
     public function update(Request $request, Lease $lease): RedirectResponse
@@ -184,7 +305,7 @@ class LeaseController extends Controller
             $this->leaseFinancials->syncInstallments($lease);
         }
 
-        return to_route('leases.index')->with('success', "Lease {$lease->code} updated.");
+        return to_route('leases.show', $lease)->with('success', "Lease {$lease->code} updated.");
     }
 
     public function destroy(Request $request, Lease $lease): RedirectResponse
@@ -246,7 +367,7 @@ class LeaseController extends Controller
             'is_public' => false,
         ]);
 
-        return to_route('leases.index')->with('success', 'Signed contract uploaded.');
+        return to_route('leases.show', $lease)->with('success', 'Signed contract uploaded.');
     }
 
     public function contract(Request $request, Lease $lease): StreamedResponse
@@ -294,6 +415,98 @@ class LeaseController extends Controller
         $pdf = Pdf::loadView('pdf.tenant-statement', ['lease' => $lease]);
 
         return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf");
+    }
+
+    private function leaseFormPage(User $actor, ?Lease $lease = null): array
+    {
+        if ($lease) {
+            return [
+                'title' => 'Edit '.$lease->code,
+                'description' => 'Update the lease state, signature date, and notes. Financial edits stay locked once payments exist.',
+                'backHref' => route('leases.show', $lease),
+                'backLabel' => 'Lease detail',
+                'action' => route('leases.update', $lease),
+                'method' => 'put',
+                'submitLabel' => 'Update lease',
+                'fields' => [
+                    ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['draft', 'active', 'expired', 'terminated'])],
+                    ['name' => 'signed_at', 'label' => 'Signed at', 'type' => 'date'],
+                    ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
+                    ['name' => 'resync_installments', 'label' => 'Regenerate installments', 'type' => 'checkbox', 'help' => 'Only works when no payments exist.'],
+                ],
+                'initialValues' => [
+                    'status' => $lease->status,
+                    'signed_at' => $lease->signed_at?->toDateString() ?? '',
+                    'notes' => $lease->notes ?? '',
+                    'resync_installments' => false,
+                ],
+            ];
+        }
+
+        $tenantOptions = $this->scopeByPortfolio(TenantProfile::query()->with('user')->whereNotNull('user_id')->orderBy('id'), $actor)
+            ->get()
+            ->map(fn (TenantProfile $tenant) => ['value' => $tenant->id, 'label' => ($tenant->user?->name ?? 'Tenant #'.$tenant->id)])
+            ->all();
+        $assetOptions = $this->scopeByPortfolio(Asset::query()->where('rentable', true)->orderBy('title_en'), $actor)
+            ->get()
+            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->all();
+        $fields = [];
+
+        if ($actor->hasRole('superadmin')) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'tenant_profile_id', 'label' => 'Tenant', 'type' => 'select', 'required' => true, 'options' => $tenantOptions],
+            ['name' => 'asset_id', 'label' => 'Rentable asset', 'type' => 'select', 'required' => true, 'options' => $assetOptions],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['draft', 'active', 'expired', 'terminated'])],
+            ['name' => 'payment_frequency', 'label' => 'Payment frequency', 'type' => 'select', 'options' => $this->fieldOptions(['monthly', 'quarterly', 'yearly'])],
+            ['name' => 'started_at', 'label' => 'Start date', 'type' => 'date', 'required' => true],
+            ['name' => 'ends_at', 'label' => 'End date', 'type' => 'date', 'required' => true],
+            ['name' => 'signed_at', 'label' => 'Signed date', 'type' => 'date'],
+            ['name' => 'rent_amount', 'label' => 'Rent amount', 'type' => 'number', 'min' => 0, 'required' => true],
+            ['name' => 'deposit_amount', 'label' => 'Deposit', 'type' => 'number', 'min' => 0],
+            ['name' => 'tax_amount', 'label' => 'Tax', 'type' => 'number', 'min' => 0],
+            ['name' => 'discount_amount', 'label' => 'Discount', 'type' => 'number', 'min' => 0],
+            ['name' => 'currency', 'label' => 'Currency'],
+            ['name' => 'billing_day', 'label' => 'Billing day', 'type' => 'number', 'min' => 1, 'max' => 31],
+            ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
+        ];
+
+        return [
+            'title' => 'Create lease',
+            'description' => 'Attach one tenant to one rentable asset and generate the installment schedule.',
+            'backHref' => route('leases.index'),
+            'backLabel' => 'All leases',
+            'action' => route('leases.store'),
+            'method' => 'post',
+            'submitLabel' => 'Create lease',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) request('portfolio_id', $actor->portfolio_id ?? $this->portfolioOptions($actor)[0]['id'] ?? ''),
+                'tenant_profile_id' => (string) request('tenant_profile_id', $tenantOptions[0]['value'] ?? ''),
+                'asset_id' => (string) request('asset_id', $assetOptions[0]['value'] ?? ''),
+                'status' => 'active',
+                'payment_frequency' => 'monthly',
+                'started_at' => now()->toDateString(),
+                'ends_at' => now()->addYear()->toDateString(),
+                'signed_at' => '',
+                'rent_amount' => 0,
+                'deposit_amount' => 0,
+                'tax_amount' => 0,
+                'discount_amount' => 0,
+                'currency' => 'SAR',
+                'billing_day' => 1,
+                'notes' => '',
+            ],
+        ];
     }
 
     /**
@@ -378,7 +591,7 @@ class LeaseController extends Controller
     /**
      * @return array<string, int|float>
      */
-    private function leaseInsights(\Illuminate\Database\Eloquent\Builder $baseQuery): array
+    private function leaseInsights(Builder $baseQuery): array
     {
         $leases = (clone $baseQuery)
             ->with('installments')

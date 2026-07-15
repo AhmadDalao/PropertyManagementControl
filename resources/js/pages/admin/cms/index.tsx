@@ -855,6 +855,9 @@ export default function CmsPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/cms"
+                            createHref="/cms/pages/create"
+                            createLabel="Create page"
+                            rowHref={(page) => `/cms/pages/${page.id}`}
                             exportHref={exportUrl(
                                 '/exports/cms-pages',
                                 props.filters,

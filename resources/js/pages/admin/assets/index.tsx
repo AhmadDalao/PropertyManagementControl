@@ -771,6 +771,9 @@ export default function AssetsPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/assets"
+                            createHref="/assets/create"
+                            createLabel="Create asset"
+                            rowHref={(asset) => `/assets/${asset.id}`}
                             exportHref={exportUrl(
                                 '/exports/assets',
                                 props.filters,

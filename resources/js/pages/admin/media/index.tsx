@@ -320,6 +320,11 @@ export default function MediaPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/media-files"
+                            createHref="/media-files/create"
+                            createLabel="Upload media"
+                            rowHref={(mediaFile) =>
+                                `/media-files/${mediaFile.id}`
+                            }
                             exportHref={exportUrl(
                                 '/exports/media-files',
                                 props.filters,

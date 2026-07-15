@@ -466,6 +466,9 @@ export default function UsersPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/users"
+                            createHref="/users/create"
+                            createLabel="Create user"
+                            rowHref={(user) => `/users/${user.id}`}
                             exportHref={exportUrl(
                                 '/exports/users',
                                 props.filters,

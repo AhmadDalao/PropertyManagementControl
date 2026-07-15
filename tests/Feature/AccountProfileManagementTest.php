@@ -110,7 +110,7 @@ class AccountProfileManagementTest extends TestCase
                 'role' => 'tenant',
                 'password' => 'temporary-reset',
             ])
-            ->assertRedirect(route('users.index'));
+            ->assertRedirect(route('users.show', $tenant));
 
         $tenant->refresh();
         $this->assertTrue($tenant->force_password_reset);
@@ -122,7 +122,7 @@ class AccountProfileManagementTest extends TestCase
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
 
-        $this->actingAs($owner)
+        $response = $this->actingAs($owner)
             ->post(route('users.store'), [
                 'name' => 'Portal Tenant',
                 'email' => 'portal-tenant@example.test',
@@ -131,10 +131,11 @@ class AccountProfileManagementTest extends TestCase
                 'status' => 'active',
                 'password' => 'temporary-password',
                 'role' => 'tenant',
-            ])
-            ->assertRedirect(route('users.index'));
+            ]);
 
         $tenant = User::query()->where('email', 'portal-tenant@example.test')->firstOrFail();
+
+        $response->assertRedirect(route('users.show', $tenant));
 
         $this->assertTrue($tenant->hasRole('tenant'));
         $this->assertDatabaseHas('tenant_profiles', [
@@ -161,7 +162,7 @@ class AccountProfileManagementTest extends TestCase
                 'role' => 'tenant',
                 'password' => '',
             ])
-            ->assertRedirect(route('users.index'));
+            ->assertRedirect(route('users.show', $tenant));
 
         $this->assertSame('blocked', $profile->fresh()->status);
     }

@@ -559,6 +559,9 @@ export default function TenantsPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/tenants"
+                            createHref="/tenants/create"
+                            createLabel="Create tenant"
+                            rowHref={(tenant) => `/tenants/${tenant.id}`}
                             exportHref={exportUrl(
                                 '/exports/tenants',
                                 props.filters,

@@ -763,6 +763,9 @@ export default function LeasesPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/leases"
+                            createHref="/leases/create"
+                            createLabel="Create lease"
+                            rowHref={(lease) => `/leases/${lease.id}`}
                             exportHref={exportUrl(
                                 '/exports/leases',
                                 props.filters,

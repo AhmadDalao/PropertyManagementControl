@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\TenantProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -63,7 +64,7 @@ class TenantManagementWorkspaceTest extends TestCase
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
 
-        $this->actingAs($owner)
+        $response = $this->actingAs($owner)
             ->post(route('tenants.store'), [
                 'name' => 'Blocked Tenant',
                 'email' => 'blocked-tenant@example.test',
@@ -78,13 +79,14 @@ class TenantManagementWorkspaceTest extends TestCase
                 'address' => 'Jeddah',
                 'notes' => 'Needs manual onboarding review.',
                 'status' => 'blocked',
-            ])
-            ->assertRedirect(route('tenants.index'));
+            ]);
 
-        $tenant = \App\Models\TenantProfile::query()
+        $tenant = TenantProfile::query()
             ->where('national_id', 'TEN-100')
             ->with('user')
             ->firstOrFail();
+
+        $response->assertRedirect(route('tenants.show', $tenant));
 
         $this->assertSame('blocked', $tenant->status);
         $this->assertSame('suspended', $tenant->user?->status);
@@ -105,7 +107,7 @@ class TenantManagementWorkspaceTest extends TestCase
                 'notes' => 'Ready for lease.',
                 'status' => 'active',
             ])
-            ->assertRedirect(route('tenants.index'));
+            ->assertRedirect(route('tenants.show', $tenant));
 
         $tenant->refresh()->load('user');
 

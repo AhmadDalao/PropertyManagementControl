@@ -66,7 +66,7 @@ class GlobalSearchController extends Controller
             $portfolioQuery = Portfolio::query();
             $this->applySearch($portfolioQuery, $search, ['name_en', 'name_ar', 'code', 'contact_email']);
             foreach ($portfolioQuery->limit(5)->get() as $portfolio) {
-                $results[] = $this->result('Portfolios', $portfolio->name_en, $portfolio->code, $portfolio->status, route('portfolios.index', ['search' => $portfolio->code]));
+                $results[] = $this->result('Portfolios', $portfolio->name_en, $portfolio->code, $portfolio->status, route('portfolios.show', $portfolio));
             }
         }
 
@@ -74,7 +74,7 @@ class GlobalSearchController extends Controller
             $assetQuery = $this->scopeByPortfolio(Asset::query(), $actor);
             $this->applySearch($assetQuery, $search, ['title_en', 'title_ar', 'code', 'address']);
             foreach ($assetQuery->limit(6)->get() as $asset) {
-                $results[] = $this->result('Assets', $asset->title_en, $asset->code.' · '.$asset->asset_type, $asset->occupancy_status, route('assets.index', ['search' => $asset->code]));
+                $results[] = $this->result('Assets', $asset->title_en, $asset->code.' · '.$asset->asset_type, $asset->occupancy_status, route('assets.show', $asset));
             }
         }
 
@@ -86,7 +86,7 @@ class GlobalSearchController extends Controller
                 fn ($query, $term, $like) => $query->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('phone', 'like', $like)),
             ]);
             foreach ($tenantQuery->limit(5)->get() as $tenant) {
-                $results[] = $this->result('Tenants', $tenant->user?->name ?? 'Tenant #'.$tenant->id, $tenant->user?->email ?? $tenant->company_name ?? '', $tenant->status, route('tenants.index', ['search' => $tenant->user?->email ?? $tenant->company_name]));
+                $results[] = $this->result('Tenants', $tenant->user?->name ?? 'Tenant #'.$tenant->id, $tenant->user?->email ?? $tenant->company_name ?? '', $tenant->status, route('tenants.show', $tenant));
             }
         }
 
@@ -98,7 +98,7 @@ class GlobalSearchController extends Controller
                 fn ($query, $term, $like) => $query->orWhereHasMorph('leaseable', [Asset::class], fn ($assetQuery) => $assetQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)),
             ]);
             foreach ($leaseQuery->limit(5)->get() as $lease) {
-                $results[] = $this->result('Leases', $lease->code, ($lease->tenantProfile?->user?->name ?? '-').' · '.($lease->leaseable?->title_en ?? '-'), $lease->status, route('leases.index', ['search' => $lease->code]));
+                $results[] = $this->result('Leases', $lease->code, ($lease->tenantProfile?->user?->name ?? '-').' · '.($lease->leaseable?->title_en ?? '-'), $lease->status, route('leases.show', $lease));
             }
         }
 
@@ -111,7 +111,7 @@ class GlobalSearchController extends Controller
                 fn ($query, $term, $like) => $query->orWhereHas('lease', fn ($leaseQuery) => $leaseQuery->where('code', 'like', $like)),
             ]);
             foreach ($paymentQuery->limit(5)->get() as $payment) {
-                $results[] = $this->result('Payments', $payment->reference ?: '#'.$payment->id, $payment->tenantProfile?->user?->name ?? $payment->lease?->code ?? '', $payment->status, route('payments.index', ['search' => $payment->reference ?: $payment->id]));
+                $results[] = $this->result('Payments', $payment->reference ?: '#'.$payment->id, $payment->tenantProfile?->user?->name ?? $payment->lease?->code ?? '', $payment->status, route('payments.show', $payment));
             }
         }
 
@@ -125,7 +125,7 @@ class GlobalSearchController extends Controller
                 fn ($query, $term, $like) => $query->orWhereHas('tenantProfile.user', fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)),
             ]);
             foreach ($maintenanceQuery->limit(5)->get() as $maintenance) {
-                $results[] = $this->result('Maintenance', '#'.$maintenance->id.' '.$maintenance->title, $maintenance->asset?->title_en ?? $maintenance->tenantProfile?->user?->name ?? '', $maintenance->status, route('maintenance-requests.index', ['search' => $maintenance->id]));
+                $results[] = $this->result('Maintenance', '#'.$maintenance->id.' '.$maintenance->title, $maintenance->asset?->title_en ?? $maintenance->tenantProfile?->user?->name ?? '', $maintenance->status, route('maintenance-requests.show', $maintenance));
             }
         }
 
@@ -133,7 +133,7 @@ class GlobalSearchController extends Controller
             $userQuery = $this->scopeByPortfolio(User::query()->with('roles'), $actor);
             $this->applySearch($userQuery, $search, ['name', 'email', 'phone']);
             foreach ($userQuery->limit(5)->get() as $user) {
-                $results[] = $this->result('Users', $user->name, $user->email, $user->roles->pluck('name')->join(', '), route('users.index', ['search' => $user->email]));
+                $results[] = $this->result('Users', $user->name, $user->email, $user->roles->pluck('name')->join(', '), route('users.show', $user));
             }
         }
 
@@ -141,7 +141,7 @@ class GlobalSearchController extends Controller
             $documentQuery = $this->scopeByPortfolio(Document::query(), $actor);
             $this->applySearch($documentQuery, $search, ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
             foreach ($documentQuery->limit(5)->get() as $document) {
-                $results[] = $this->result('Documents', $document->title_en, $document->original_name, $document->type, route('documents.index', ['search' => $document->original_name ?: $document->title_en]));
+                $results[] = $this->result('Documents', $document->title_en, $document->original_name, $document->type, route('documents.show', $document));
             }
         }
 
@@ -149,7 +149,7 @@ class GlobalSearchController extends Controller
             $mediaQuery = $this->scopeByPortfolio(MediaFile::query(), $actor);
             $this->applySearch($mediaQuery, $search, ['title_en', 'title_ar', 'collection', 'path']);
             foreach ($mediaQuery->limit(4)->get() as $media) {
-                $results[] = $this->result('Media', $media->title_en ?: 'Media #'.$media->id, $media->collection, $media->visibility, route('media-files.index', ['search' => $media->title_en ?: $media->path]));
+                $results[] = $this->result('Media', $media->title_en ?: 'Media #'.$media->id, $media->collection, $media->visibility, route('media-files.show', $media));
             }
         }
 
@@ -157,7 +157,7 @@ class GlobalSearchController extends Controller
             $pageQuery = CmsPage::query();
             $this->applySearch($pageQuery, $search, ['title_en', 'title_ar', 'slug']);
             foreach ($pageQuery->limit(4)->get() as $page) {
-                $results[] = $this->result('CMS Pages', $page->title_en, $page->slug, $page->status, route('cms.index', ['search' => $page->slug]));
+                $results[] = $this->result('CMS Pages', $page->title_en, $page->slug, $page->status, route('cms.pages.show', $page));
             }
         }
 
@@ -180,7 +180,7 @@ class GlobalSearchController extends Controller
             $leaseQuery = Lease::query()->with('leaseable')->where('tenant_profile_id', $tenantProfile->id);
             $this->applySearch($leaseQuery, $search, ['code']);
             foreach ($leaseQuery->limit(5)->get() as $lease) {
-                $results[] = $this->result('My Leases', $lease->code, $lease->leaseable?->title_en ?? '', $lease->status, route('dashboard', ['search' => $lease->code]));
+                $results[] = $this->result('My Leases', $lease->code, $lease->leaseable?->title_en ?? '', $lease->status, route('leases.show', $lease));
             }
         }
 
@@ -188,7 +188,7 @@ class GlobalSearchController extends Controller
             $paymentQuery = Payment::query()->with('lease')->where('tenant_profile_id', $tenantProfile->id);
             $this->applySearch($paymentQuery, $search, ['reference', 'notes']);
             foreach ($paymentQuery->limit(5)->get() as $payment) {
-                $results[] = $this->result('My Payments', $payment->reference ?: '#'.$payment->id, $payment->lease?->code ?? '', $payment->status, route('dashboard', ['search' => $payment->reference ?: $payment->id]));
+                $results[] = $this->result('My Payments', $payment->reference ?: '#'.$payment->id, $payment->lease?->code ?? '', $payment->status, route('payments.show', $payment));
             }
         }
 
@@ -196,7 +196,7 @@ class GlobalSearchController extends Controller
             $maintenanceQuery = MaintenanceRequest::query()->with('asset')->where('tenant_profile_id', $tenantProfile->id);
             $this->applySearch($maintenanceQuery, $search, ['title', 'description', 'category']);
             foreach ($maintenanceQuery->limit(5)->get() as $maintenance) {
-                $results[] = $this->result('My Maintenance', '#'.$maintenance->id.' '.$maintenance->title, $maintenance->asset?->title_en ?? '', $maintenance->status, route('maintenance-requests.index', ['search' => $maintenance->id]));
+                $results[] = $this->result('My Maintenance', '#'.$maintenance->id.' '.$maintenance->title, $maintenance->asset?->title_en ?? '', $maintenance->status, route('maintenance-requests.show', $maintenance));
             }
         }
 
@@ -219,28 +219,28 @@ class GlobalSearchController extends Controller
         if ($this->moduleEnabled($actor, 'assets')) {
             $asset = $this->scopeByPortfolio(Asset::query(), $actor)->where('code', $search)->first();
             if ($asset) {
-                return route('assets.index', ['search' => $asset->code]);
+                return route('assets.show', $asset);
             }
         }
 
         if ($this->moduleEnabled($actor, 'leases')) {
             $lease = $this->scopeByPortfolio(Lease::query(), $actor)->where('code', $search)->first();
             if ($lease) {
-                return route('leases.index', ['search' => $lease->code]);
+                return route('leases.show', $lease);
             }
         }
 
         if ($this->moduleEnabled($actor, 'payments')) {
             $payment = $this->scopeByPortfolio(Payment::query(), $actor)->where('reference', $search)->first();
             if ($payment) {
-                return route('payments.index', ['search' => $payment->reference]);
+                return route('payments.show', $payment);
             }
         }
 
         if ($this->moduleEnabled($actor, 'maintenance') && ctype_digit($search)) {
             $maintenance = $this->scopeByPortfolio(MaintenanceRequest::query(), $actor)->whereKey((int) $search)->first();
             if ($maintenance) {
-                return route('maintenance-requests.index', ['search' => $maintenance->id]);
+                return route('maintenance-requests.show', $maintenance);
             }
         }
 
@@ -254,16 +254,25 @@ class GlobalSearchController extends Controller
             return '';
         }
 
-        if ($this->moduleEnabled($actor, 'leases') && Lease::query()->where('tenant_profile_id', $tenantProfile->id)->where('code', $search)->exists()) {
-            return route('dashboard');
+        if ($this->moduleEnabled($actor, 'leases')) {
+            $lease = Lease::query()->where('tenant_profile_id', $tenantProfile->id)->where('code', $search)->first();
+            if ($lease) {
+                return route('leases.show', $lease);
+            }
         }
 
-        if ($this->moduleEnabled($actor, 'payments') && Payment::query()->where('tenant_profile_id', $tenantProfile->id)->where('reference', $search)->exists()) {
-            return route('dashboard');
+        if ($this->moduleEnabled($actor, 'payments')) {
+            $payment = Payment::query()->where('tenant_profile_id', $tenantProfile->id)->where('reference', $search)->first();
+            if ($payment) {
+                return route('payments.show', $payment);
+            }
         }
 
-        if ($this->moduleEnabled($actor, 'maintenance') && ctype_digit($search) && MaintenanceRequest::query()->where('tenant_profile_id', $tenantProfile->id)->whereKey((int) $search)->exists()) {
-            return route('maintenance-requests.index', ['search' => $search]);
+        if ($this->moduleEnabled($actor, 'maintenance') && ctype_digit($search)) {
+            $maintenance = MaintenanceRequest::query()->where('tenant_profile_id', $tenantProfile->id)->whereKey((int) $search)->first();
+            if ($maintenance) {
+                return route('maintenance-requests.show', $maintenance);
+            }
         }
 
         return '';

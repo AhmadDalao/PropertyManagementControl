@@ -258,7 +258,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     <div className="pmc-topbar-actions">
                         {canCreateAsset ? (
                             <Link
-                                href="/assets"
+                                href="/assets/create"
                                 className="btn btn-outline-secondary btn-sm pmc-quick-action"
                             >
                                 <i className="bi bi-plus-circle" />
@@ -267,7 +267,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         ) : null}
                         {canOpenMaintenance ? (
                             <Link
-                                href="/maintenance-requests"
+                                href="/maintenance-requests/create"
                                 className="btn btn-outline-secondary btn-sm pmc-quick-action"
                             >
                                 <i className="bi bi-tools" />

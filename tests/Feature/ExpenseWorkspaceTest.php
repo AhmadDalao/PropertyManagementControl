@@ -118,7 +118,7 @@ class ExpenseWorkspaceTest extends TestCase
             'requested_at' => now(),
         ]);
 
-        $this->actingAs($owner)
+        $response = $this->actingAs($owner)
             ->post(route('expenses.store'), [
                 'maintenance_request_id' => $maintenanceRequest->id,
                 'category' => 'maintenance',
@@ -129,8 +129,13 @@ class ExpenseWorkspaceTest extends TestCase
                 'currency' => 'SAR',
                 'vendor_name' => 'Electric Team',
                 'status' => 'posted',
-            ])
-            ->assertRedirect(route('expenses.index'));
+            ]);
+
+        $expense = ExpenseEntry::query()
+            ->where('title', 'Breaker replacement')
+            ->firstOrFail();
+
+        $response->assertRedirect(route('expenses.show', $expense));
 
         $this->assertDatabaseHas('expense_entries', [
             'title' => 'Breaker replacement',

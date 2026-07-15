@@ -791,6 +791,11 @@ export default function MaintenancePage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/maintenance-requests"
+                            createHref="/maintenance-requests/create"
+                            createLabel="New request"
+                            rowHref={(requestItem) =>
+                                `/maintenance-requests/${requestItem.id}`
+                            }
                             exportHref={
                                 props.mode === 'manager'
                                     ? exportUrl(

@@ -55,13 +55,13 @@ class AdminTableSearchTest extends TestCase
         $foreignPortfolio = $this->createPortfolio(['code' => 'SEA-B', 'slug' => 'sea-b']);
         $owner = $this->createUserWithRole('owner', $ownerPortfolio);
 
-        $this->createAsset($ownerPortfolio, ['title_en' => 'Search Visible', 'code' => 'SEARCH-YES']);
+        $asset = $this->createAsset($ownerPortfolio, ['title_en' => 'Search Visible', 'code' => 'SEARCH-YES']);
         $this->createAsset($foreignPortfolio, ['title_en' => 'Search Hidden', 'code' => 'SEARCH-NO']);
 
         $this->actingAs($owner)
             ->getJson(route('global-search', ['q' => 'SEARCH-YES']))
             ->assertOk()
-            ->assertJsonPath('direct_url', route('assets.index', ['search' => 'SEARCH-YES']));
+            ->assertJsonPath('direct_url', route('assets.show', $asset));
 
         $this->actingAs($owner)
             ->getJson(route('global-search', ['q' => 'SEARCH-NO']))

@@ -148,6 +148,125 @@ class MaintenanceRequestController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->maintenanceFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, MaintenanceRequest $maintenanceRequest): Response
+    {
+        $actor = $this->actor($request);
+
+        if ($actor->hasRole('tenant')) {
+            abort_if($maintenanceRequest->tenantProfile?->user_id !== $actor->id, 403);
+        } else {
+            $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+            $this->ensurePortfolioAccess($actor, $maintenanceRequest->portfolio_id);
+        }
+
+        $maintenanceRequest->loadMissing([
+            'portfolio',
+            'asset',
+            'lease',
+            'tenantProfile.user',
+            'submittedBy',
+            'assignedTo',
+            'updates.user',
+            'expenses',
+        ]);
+        $adminMode = ! $actor->hasRole('tenant');
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Maintenance detail',
+                    'title' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
+                    'description' => trim($maintenanceRequest->category.' · '.$maintenanceRequest->priority.' · '.$maintenanceRequest->status),
+                    'backHref' => route('maintenance-requests.index'),
+                    'backLabel' => 'Maintenance queue',
+                    'actions' => array_values(array_filter([
+                        ['label' => $actor->hasRole('tenant') ? 'Add comment' : 'Triage request', 'href' => route('maintenance-requests.edit', $maintenanceRequest), 'variant' => 'primary'],
+                        $adminMode ? ['label' => 'Open asset', 'href' => route('assets.show', $maintenanceRequest->asset), 'variant' => 'secondary'] : null,
+                    ])),
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Status', 'value' => $maintenanceRequest->status, 'tone' => $maintenanceRequest->status === 'resolved' ? 'teal' : 'primary'],
+                    ['label' => 'Priority', 'value' => $maintenanceRequest->priority, 'tone' => in_array($maintenanceRequest->priority, ['high', 'urgent'], true) ? 'danger' : 'muted'],
+                    ['label' => 'Updates', 'value' => $maintenanceRequest->updates->count()],
+                    ['label' => 'Cost', 'value' => number_format((float) $maintenanceRequest->expenses->sum('amount'), 2), 'tone' => 'primary'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Request',
+                        'description' => 'Problem, people, asset, and SLA context.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Asset', 'value' => $maintenanceRequest->asset?->title_en, 'href' => $maintenanceRequest->asset ? route('assets.show', $maintenanceRequest->asset) : null],
+                            ['label' => 'Tenant', 'value' => $maintenanceRequest->tenantProfile?->user?->name, 'href' => $maintenanceRequest->tenantProfile ? route('tenants.show', $maintenanceRequest->tenantProfile) : null],
+                            ['label' => 'Lease', 'value' => $maintenanceRequest->lease?->code, 'href' => $maintenanceRequest->lease ? route('leases.show', $maintenanceRequest->lease) : null],
+                            ['label' => 'Submitted by', 'value' => $maintenanceRequest->submittedBy?->name],
+                            ['label' => 'Assigned to', 'value' => $maintenanceRequest->assignedTo?->name],
+                            ['label' => 'Requested at', 'value' => $maintenanceRequest->requested_at?->toDateTimeString()],
+                            ['label' => 'Due at', 'value' => $maintenanceRequest->due_at?->toDateTimeString()],
+                            ['label' => 'Resolved at', 'value' => $maintenanceRequest->resolved_at?->toDateTimeString()],
+                            ['label' => 'Description', 'value' => $maintenanceRequest->description],
+                            ['label' => 'Internal notes', 'value' => $actor->hasRole('tenant') ? null : $maintenanceRequest->internal_notes],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Updates',
+                        'description' => 'Public comments, internal notes, and status transitions.',
+                        'columns' => ['By', 'From', 'To', 'Comment'],
+                        'rows' => $maintenanceRequest->updates->map(fn (MaintenanceUpdate $update) => [
+                            'By' => $update->user?->name ?? 'System',
+                            'From' => $update->status_from ?? '-',
+                            'To' => $update->status_to ?? '-',
+                            'Comment' => $update->comment,
+                        ])->all(),
+                        'emptyText' => 'No updates yet.',
+                    ],
+                    [
+                        'title' => 'Expenses',
+                        'description' => 'Maintenance costs linked to this request.',
+                        'columns' => ['Expense', 'Vendor', 'Status', 'Amount'],
+                        'rows' => $maintenanceRequest->expenses->map(fn ($expense) => [
+                            'Expense' => $expense->title,
+                            'Vendor' => $expense->vendor_name ?? '-',
+                            'Status' => $expense->status,
+                            'Amount' => number_format((float) $expense->amount, 2).' '.$expense->currency,
+                        ])->all(),
+                        'emptyText' => 'No expenses linked yet.',
+                        'actionHref' => $actor->hasRole('tenant') ? null : route('expenses.create', ['maintenance_request_id' => $maintenanceRequest->id]),
+                        'actionLabel' => 'Add expense',
+                    ],
+                ],
+                'documents' => [],
+                'timeline' => $this->activityTimeline($maintenanceRequest),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, MaintenanceRequest $maintenanceRequest): Response
+    {
+        $actor = $this->actor($request);
+
+        if ($actor->hasRole('tenant')) {
+            abort_if($maintenanceRequest->tenantProfile?->user_id !== $actor->id, 403);
+        } else {
+            $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+            $this->ensurePortfolioAccess($actor, $maintenanceRequest->portfolio_id);
+        }
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->maintenanceFormPage($actor, $maintenanceRequest),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -197,7 +316,7 @@ class MaintenanceRequestController extends Controller
                 'comment' => 'Maintenance request created by tenant.',
             ]);
 
-            return to_route('maintenance-requests.index')->with('success', 'Maintenance request submitted.');
+            return to_route('maintenance-requests.show', $requestItem)->with('success', 'Maintenance request submitted.');
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -243,7 +362,7 @@ class MaintenanceRequestController extends Controller
             'comment' => 'Maintenance request created by management.',
         ]);
 
-        return to_route('maintenance-requests.index')->with('success', 'Maintenance request created.');
+        return to_route('maintenance-requests.show', $requestItem)->with('success', 'Maintenance request created.');
     }
 
     public function update(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
@@ -265,7 +384,7 @@ class MaintenanceRequestController extends Controller
                 'comment' => $data['comment'],
             ]);
 
-            return to_route('maintenance-requests.index')->with('success', 'Comment added to maintenance request.');
+            return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', 'Comment added to maintenance request.');
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -309,7 +428,7 @@ class MaintenanceRequestController extends Controller
             ]);
         }
 
-        return to_route('maintenance-requests.index')->with('success', 'Maintenance request updated.');
+        return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', 'Maintenance request updated.');
     }
 
     public function destroy(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
@@ -350,6 +469,163 @@ class MaintenanceRequestController extends Controller
         ]);
 
         return to_route('maintenance-requests.index')->with('success', 'Maintenance request cancelled.');
+    }
+
+    private function maintenanceFormPage(User $actor, ?MaintenanceRequest $maintenanceRequest = null): array
+    {
+        if ($maintenanceRequest) {
+            if ($actor->hasRole('tenant')) {
+                return [
+                    'title' => 'Add maintenance comment',
+                    'description' => 'Send a public update to the owner or manager.',
+                    'backHref' => route('maintenance-requests.show', $maintenanceRequest),
+                    'backLabel' => 'Request detail',
+                    'action' => route('maintenance-requests.update', $maintenanceRequest),
+                    'method' => 'put',
+                    'submitLabel' => 'Add comment',
+                    'fields' => [
+                        ['name' => 'comment', 'label' => 'Comment', 'type' => 'textarea', 'required' => true],
+                    ],
+                    'initialValues' => [
+                        'comment' => '',
+                    ],
+                ];
+            }
+
+            $userOptions = $this->scopeByPortfolio(
+                User::query()->whereHas('roles', fn ($query) => $query->whereIn('name', ['owner', 'property_manager']))->orderBy('name'),
+                $actor
+            )->get()->map(fn (User $user) => ['value' => $user->id, 'label' => $user->name])
+                ->prepend(['value' => '', 'label' => 'Unassigned'])
+                ->values()
+                ->all();
+
+            return [
+                'title' => 'Triage request #'.$maintenanceRequest->id,
+                'description' => 'Assign, prioritize, change status, and leave a visible or internal update.',
+                'backHref' => route('maintenance-requests.show', $maintenanceRequest),
+                'backLabel' => 'Request detail',
+                'action' => route('maintenance-requests.update', $maintenanceRequest),
+                'method' => 'put',
+                'submitLabel' => 'Update request',
+                'fields' => [
+                    ['name' => 'assigned_to_user_id', 'label' => 'Assignee', 'type' => 'select', 'options' => $userOptions],
+                    ['name' => 'priority', 'label' => 'Priority', 'type' => 'select', 'options' => $this->fieldOptions($this->priorities)],
+                    ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions($this->statuses)],
+                    ['name' => 'internal_notes', 'label' => 'Internal notes', 'type' => 'textarea'],
+                    ['name' => 'comment', 'label' => 'Update comment', 'type' => 'textarea'],
+                    ['name' => 'is_public_comment', 'label' => 'Show comment to tenant', 'type' => 'checkbox'],
+                ],
+                'initialValues' => [
+                    'assigned_to_user_id' => (string) ($maintenanceRequest->assigned_to_user_id ?? ''),
+                    'priority' => $maintenanceRequest->priority,
+                    'status' => $maintenanceRequest->status,
+                    'internal_notes' => $maintenanceRequest->internal_notes ?? '',
+                    'comment' => '',
+                    'is_public_comment' => false,
+                ],
+            ];
+        }
+
+        if ($actor->hasRole('tenant')) {
+            $tenantProfile = TenantProfile::query()
+                ->where('user_id', $actor->id)
+                ->with(['leases' => fn ($query) => $query->where('status', 'active')->with('leaseable')])
+                ->first();
+            $assetOptions = $tenantProfile?->leases
+                ->map(fn ($lease) => $lease->leaseable)
+                ->filter()
+                ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+                ->values()
+                ->all() ?? [];
+
+            return [
+                'title' => 'Submit maintenance request',
+                'description' => 'Tell the owner what broke and where. Keep it clear; photos can be added later through documents.',
+                'backHref' => route('maintenance-requests.index'),
+                'backLabel' => 'My requests',
+                'action' => route('maintenance-requests.store'),
+                'method' => 'post',
+                'submitLabel' => 'Submit request',
+                'fields' => [
+                    ['name' => 'asset_id', 'label' => 'Rented asset', 'type' => 'select', 'required' => true, 'options' => $assetOptions],
+                    ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => $this->fieldOptions($this->categories)],
+                    ['name' => 'priority', 'label' => 'Priority', 'type' => 'select', 'options' => $this->fieldOptions($this->priorities)],
+                    ['name' => 'title', 'label' => 'Issue title', 'required' => true],
+                    ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'required' => true],
+                ],
+                'initialValues' => [
+                    'asset_id' => (string) request('asset_id', $assetOptions[0]['value'] ?? ''),
+                    'category' => 'general',
+                    'priority' => 'medium',
+                    'title' => '',
+                    'description' => '',
+                ],
+            ];
+        }
+
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $assetOptions = $this->scopeByPortfolio(Asset::query()->orderBy('title_en'), $actor)
+            ->get()
+            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->all();
+        $tenantOptions = $this->scopeByPortfolio(TenantProfile::query()->with('user'), $actor)
+            ->get()
+            ->map(fn (TenantProfile $tenant) => ['value' => $tenant->id, 'label' => $tenant->user?->name ?? 'Tenant #'.$tenant->id])
+            ->all();
+        $userOptions = $this->scopeByPortfolio(
+            User::query()->whereHas('roles', fn ($query) => $query->whereIn('name', ['owner', 'property_manager']))->orderBy('name'),
+            $actor
+        )->get()->map(fn (User $user) => ['value' => $user->id, 'label' => $user->name])
+            ->prepend(['value' => '', 'label' => 'Unassigned'])
+            ->values()
+            ->all();
+        $fields = [];
+
+        if ($actor->hasRole('superadmin')) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'asset_id', 'label' => 'Asset', 'type' => 'select', 'required' => true, 'options' => $assetOptions],
+            ['name' => 'tenant_profile_id', 'label' => 'Tenant', 'type' => 'select', 'required' => true, 'options' => $tenantOptions],
+            ['name' => 'assigned_to_user_id', 'label' => 'Assignee', 'type' => 'select', 'options' => $userOptions],
+            ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => $this->fieldOptions($this->categories)],
+            ['name' => 'priority', 'label' => 'Priority', 'type' => 'select', 'options' => $this->fieldOptions($this->priorities)],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions($this->statuses)],
+            ['name' => 'title', 'label' => 'Issue title', 'required' => true],
+            ['name' => 'description', 'label' => 'Description', 'type' => 'textarea', 'required' => true],
+            ['name' => 'internal_notes', 'label' => 'Internal notes', 'type' => 'textarea'],
+        ];
+
+        return [
+            'title' => 'Create maintenance request',
+            'description' => 'Open an issue, attach it to the right tenant and asset, then triage from the detail page.',
+            'backHref' => route('maintenance-requests.index'),
+            'backLabel' => 'Maintenance queue',
+            'action' => route('maintenance-requests.store'),
+            'method' => 'post',
+            'submitLabel' => 'Create request',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) request('portfolio_id', $actor->portfolio_id ?? $this->portfolioOptions($actor)[0]['id'] ?? ''),
+                'asset_id' => (string) request('asset_id', $assetOptions[0]['value'] ?? ''),
+                'tenant_profile_id' => (string) request('tenant_profile_id', $tenantOptions[0]['value'] ?? ''),
+                'assigned_to_user_id' => '',
+                'category' => 'general',
+                'priority' => 'medium',
+                'status' => 'open',
+                'title' => '',
+                'description' => '',
+                'internal_notes' => '',
+            ],
+        ];
     }
 
     /**

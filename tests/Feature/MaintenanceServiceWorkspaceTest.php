@@ -105,15 +105,20 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         $this->createLease($portfolio, $tenant, $firstAsset, $owner, ['code' => 'LEASE-FIRST']);
         $secondLease = $this->createLease($portfolio, $tenant, $secondAsset, $owner, ['code' => 'LEASE-SECOND']);
 
-        $this->actingAs($tenantUser)
+        $response = $this->actingAs($tenantUser)
             ->post(route('maintenance-requests.store'), [
                 'asset_id' => $secondAsset->id,
                 'category' => 'electricity',
                 'priority' => 'high',
                 'title' => 'Panel sparks',
                 'description' => 'The electrical panel sparks when AC starts.',
-            ])
-            ->assertRedirect(route('maintenance-requests.index'));
+            ]);
+
+        $requestItem = MaintenanceRequest::query()
+            ->where('title', 'Panel sparks')
+            ->firstOrFail();
+
+        $response->assertRedirect(route('maintenance-requests.show', $requestItem));
 
         $this->assertDatabaseHas('maintenance_requests', [
             'asset_id' => $secondAsset->id,
@@ -158,7 +163,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 'status' => 'in_progress',
                 'internal_notes' => 'Vendor contacted.',
             ])
-            ->assertRedirect(route('maintenance-requests.index'));
+            ->assertRedirect(route('maintenance-requests.show', $requestItem));
 
         $requestItem->refresh();
         $this->assertSame('2026-01-19 10:00:00', $requestItem->due_at->toDateTimeString());
@@ -172,7 +177,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 'status' => 'in_progress',
                 'internal_notes' => 'Escalated.',
             ])
-            ->assertRedirect(route('maintenance-requests.index'));
+            ->assertRedirect(route('maintenance-requests.show', $requestItem));
 
         $requestItem->refresh();
         $this->assertSame('2026-01-16 13:00:00', $requestItem->due_at->toDateTimeString());
@@ -262,7 +267,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->put(route('maintenance-requests.update', $requestItem), [
                 'comment' => 'The breaker panel is accessible after 5 PM.',
             ])
-            ->assertRedirect(route('maintenance-requests.index'));
+            ->assertRedirect(route('maintenance-requests.show', $requestItem));
 
         $this->assertDatabaseHas('maintenance_updates', [
             'maintenance_request_id' => $requestItem->id,
@@ -303,7 +308,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 'comment' => 'Technician is scheduled for today.',
                 'is_public_comment' => true,
             ])
-            ->assertRedirect(route('maintenance-requests.index'));
+            ->assertRedirect(route('maintenance-requests.show', $requestItem));
 
         $requestItem->refresh();
         $this->assertSame('in_progress', $requestItem->status);

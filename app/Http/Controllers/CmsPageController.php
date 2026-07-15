@@ -8,8 +8,8 @@ use App\Models\CmsSection;
 use App\Models\NavigationItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -88,6 +88,40 @@ class CmsPageController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->cmsPageFormPage(),
+        ]);
+    }
+
+    public function builder(Request $request, CmsPage $cmsPage): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        $cmsPage->loadMissing(['pageSections.section', 'navigationItems']);
+
+        return Inertia::render('admin/cms/builder', [
+            'page' => $cmsPage,
+            'sections' => CmsSection::query()->orderBy('name_en')->get(),
+            'timeline' => $this->activityTimeline($cmsPage),
+        ]);
+    }
+
+    public function edit(Request $request, CmsPage $cmsPage): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->cmsPageFormPage($cmsPage),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -112,7 +146,7 @@ class CmsPageController extends Controller
             CmsPage::query()->where('is_homepage', true)->update(['is_homepage' => false]);
         }
 
-        CmsPage::query()->create([
+        $cmsPage = CmsPage::query()->create([
             ...$data,
             'slug' => $data['slug'] ?: Str::slug($data['title_en']),
             'is_homepage' => (bool) ($data['is_homepage'] ?? false),
@@ -120,7 +154,7 @@ class CmsPageController extends Controller
             'published_at' => $data['status'] === 'published' ? now() : null,
         ]);
 
-        return to_route('cms.index')->with('success', 'Page created successfully.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page created successfully.');
     }
 
     public function update(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -158,7 +192,7 @@ class CmsPageController extends Controller
             'published_at' => $data['status'] === 'published' ? now() : null,
         ]);
 
-        return to_route('cms.index')->with('success', 'Page updated successfully.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page updated successfully.');
     }
 
     public function destroy(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -247,7 +281,7 @@ class CmsPageController extends Controller
             ],
         );
 
-        return to_route('cms.index')->with('success', 'Section attached to page.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', 'Section attached to page.');
     }
 
     public function updatePageSection(Request $request, CmsPageSection $cmsPageSection): RedirectResponse
@@ -267,7 +301,7 @@ class CmsPageController extends Controller
             'settings_json' => $data['settings_json'] ?? null,
         ]);
 
-        return to_route('cms.index')->with('success', 'Page section updated.');
+        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', 'Page section updated.');
     }
 
     public function reorderPageSections(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -295,7 +329,7 @@ class CmsPageController extends Controller
                 ->update(['sort_order' => $index + 1]);
         }
 
-        return to_route('cms.index')->with('success', 'Page sections reordered.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page sections reordered.');
     }
 
     public function destroyPageSection(CmsPageSection $cmsPageSection): RedirectResponse
@@ -305,6 +339,47 @@ class CmsPageController extends Controller
 
         $cmsPageSection->delete();
 
-        return to_route('cms.index')->with('success', 'Page section removed.');
+        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', 'Page section removed.');
+    }
+
+    private function cmsPageFormPage(?CmsPage $cmsPage = null): array
+    {
+        return [
+            'title' => $cmsPage ? 'Edit '.$cmsPage->title_en : 'Create CMS page',
+            'description' => 'Create the bilingual page shell, then compose sections in the visual builder.',
+            'backHref' => $cmsPage ? route('cms.pages.show', $cmsPage) : route('cms.index'),
+            'backLabel' => $cmsPage ? 'Page builder' : 'Website control',
+            'action' => $cmsPage ? route('cms.pages.update', $cmsPage) : route('cms.pages.store'),
+            'method' => $cmsPage ? 'put' : 'post',
+            'submitLabel' => $cmsPage ? 'Update page' : 'Create page',
+            'fields' => [
+                ['name' => 'slug', 'label' => 'Slug', 'help' => 'Leave blank to generate from English title.'],
+                ['name' => 'title_en', 'label' => 'English title', 'required' => true],
+                ['name' => 'title_ar', 'label' => 'Arabic title', 'required' => true],
+                ['name' => 'excerpt_en', 'label' => 'English excerpt', 'type' => 'textarea'],
+                ['name' => 'excerpt_ar', 'label' => 'Arabic excerpt', 'type' => 'textarea'],
+                ['name' => 'seo_title_en', 'label' => 'SEO title EN'],
+                ['name' => 'seo_title_ar', 'label' => 'SEO title AR'],
+                ['name' => 'seo_description_en', 'label' => 'SEO description EN', 'type' => 'textarea'],
+                ['name' => 'seo_description_ar', 'label' => 'SEO description AR', 'type' => 'textarea'],
+                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['draft', 'published', 'archived'])],
+                ['name' => 'is_homepage', 'label' => 'Set as homepage', 'type' => 'checkbox'],
+                ['name' => 'is_visible', 'label' => 'Visible in public site', 'type' => 'checkbox'],
+            ],
+            'initialValues' => [
+                'slug' => $cmsPage?->slug ?? '',
+                'title_en' => $cmsPage?->title_en ?? '',
+                'title_ar' => $cmsPage?->title_ar ?? '',
+                'excerpt_en' => $cmsPage?->excerpt_en ?? '',
+                'excerpt_ar' => $cmsPage?->excerpt_ar ?? '',
+                'seo_title_en' => $cmsPage?->seo_title_en ?? '',
+                'seo_title_ar' => $cmsPage?->seo_title_ar ?? '',
+                'seo_description_en' => $cmsPage?->seo_description_en ?? '',
+                'seo_description_ar' => $cmsPage?->seo_description_ar ?? '',
+                'status' => $cmsPage?->status ?? 'draft',
+                'is_homepage' => (bool) ($cmsPage?->is_homepage ?? false),
+                'is_visible' => (bool) ($cmsPage?->is_visible ?? true),
+            ],
+        ];
     }
 }

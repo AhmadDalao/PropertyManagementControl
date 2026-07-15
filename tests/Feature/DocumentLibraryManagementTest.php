@@ -23,7 +23,7 @@ class DocumentLibraryManagementTest extends TestCase
         $tenantProfile = $this->createTenantProfile($portfolio, $tenantUser);
         $lease = $this->createLease($portfolio, $tenantProfile, $this->createAsset($portfolio), $owner);
 
-        $this->actingAs($owner)
+        $response = $this->actingAs($owner)
             ->post(route('documents.store'), [
                 'documentable_type' => 'lease',
                 'documentable_id' => $lease->id,
@@ -32,10 +32,11 @@ class DocumentLibraryManagementTest extends TestCase
                 'title_ar' => 'العقد الموقع',
                 'is_public' => true,
                 'file' => UploadedFile::fake()->create('signed-contract.pdf', 64, 'application/pdf'),
-            ])
-            ->assertRedirect(route('documents.index'));
+            ]);
 
         $document = Document::query()->firstOrFail();
+
+        $response->assertRedirect(route('documents.show', $document));
 
         $this->assertSame($portfolio->id, $document->portfolio_id);
         $this->assertSame('lease', $document->documentable_type);
@@ -52,7 +53,7 @@ class DocumentLibraryManagementTest extends TestCase
                 'title_ar' => 'كشف المستأجر',
                 'is_public' => false,
             ])
-            ->assertRedirect(route('documents.index'));
+            ->assertRedirect(route('documents.show', $document));
 
         $document->refresh();
 

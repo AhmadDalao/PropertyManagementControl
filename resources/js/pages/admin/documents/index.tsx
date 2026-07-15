@@ -606,6 +606,9 @@ export default function DocumentsPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/documents"
+                            createHref="/documents/create"
+                            createLabel="Upload document"
+                            rowHref={(document) => `/documents/${document.id}`}
                             exportHref={exportUrl(
                                 '/exports/documents',
                                 props.filters,

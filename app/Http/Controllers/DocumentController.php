@@ -68,6 +68,80 @@ class DocumentController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->documentFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, Document $document): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensureDocumentManagementAccess($actor, $document);
+        $document->loadMissing(['portfolio', 'uploadedBy', 'documentable']);
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Document detail',
+                    'title' => $document->title_en ?: $document->original_name,
+                    'description' => trim($document->type.' · '.$document->original_name),
+                    'backHref' => route('documents.index'),
+                    'backLabel' => 'All documents',
+                    'actions' => [
+                        ['label' => 'Edit document', 'href' => route('documents.edit', $document), 'variant' => 'primary'],
+                        ['label' => 'Download', 'href' => route('documents.download', $document), 'variant' => 'secondary'],
+                    ],
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Type', 'value' => $document->type, 'tone' => 'primary'],
+                    ['label' => 'Visibility', 'value' => $document->is_public ? 'Public' : 'Private'],
+                    ['label' => 'Size', 'value' => number_format((float) $document->file_size / 1024, 1).' KB'],
+                    ['label' => 'MIME', 'value' => $document->mime_type],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'File record',
+                        'description' => 'Stored file, attachment target, and uploader.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Arabic title', 'value' => $document->title_ar],
+                            ['label' => 'Original name', 'value' => $document->original_name],
+                            ['label' => 'Portfolio', 'value' => $document->portfolio?->name_en, 'href' => $document->portfolio ? route('portfolios.show', $document->portfolio) : null],
+                            ['label' => 'Uploaded by', 'value' => $document->uploadedBy?->name, 'href' => $document->uploadedBy ? route('users.show', $document->uploadedBy) : null],
+                            ['label' => 'Attachment type', 'value' => $document->documentable_type],
+                            ['label' => 'Attachment ID', 'value' => $document->documentable_id],
+                            ['label' => 'Disk', 'value' => $document->disk],
+                            ['label' => 'Path', 'value' => $document->file_path],
+                        ]),
+                    ],
+                ],
+                'related' => [],
+                'documents' => [[
+                    'id' => $document->id,
+                    'title' => $document->title_en ?: $document->original_name,
+                    'subtitle' => $document->original_name,
+                    'badge' => $document->is_public ? 'Public' : 'Private',
+                    'href' => route('documents.download', $document),
+                ]],
+                'timeline' => $this->activityTimeline($document),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, Document $document): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensureDocumentManagementAccess($actor, $document);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->documentFormPage($actor, $document),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -100,7 +174,7 @@ class DocumentController extends Controller
         $file = $data['file'];
         $path = $file->store("documents/library/{$portfolioId}", 'local');
 
-        Document::query()->create([
+        $document = Document::query()->create([
             'portfolio_id' => $portfolioId,
             'uploaded_by_user_id' => $actor->id,
             'documentable_type' => $documentableAlias,
@@ -116,7 +190,7 @@ class DocumentController extends Controller
             'is_public' => (bool) ($data['is_public'] ?? false),
         ]);
 
-        return to_route('documents.index')->with('success', 'Document uploaded successfully.');
+        return to_route('documents.show', $document)->with('success', 'Document uploaded successfully.');
     }
 
     public function update(Request $request, Document $document): RedirectResponse
@@ -157,7 +231,7 @@ class DocumentController extends Controller
             'is_public' => (bool) ($data['is_public'] ?? false),
         ]);
 
-        return to_route('documents.index')->with('success', 'Document details updated successfully.');
+        return to_route('documents.show', $document)->with('success', 'Document details updated successfully.');
     }
 
     public function destroy(Document $document): RedirectResponse
@@ -179,6 +253,59 @@ class DocumentController extends Controller
         abort_unless($this->canDownload($actor, $document), 403);
 
         return Storage::disk($document->disk)->download($document->file_path, $document->original_name);
+    }
+
+    private function documentFormPage(User $actor, ?Document $document = null): array
+    {
+        $fields = [];
+
+        if ($actor->hasRole('superadmin')) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))
+                    ->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])
+                    ->prepend(['value' => '', 'label' => 'Use attached record portfolio'])
+                    ->values()
+                    ->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'documentable_type', 'label' => 'Attach to', 'type' => 'select', 'required' => true, 'options' => $this->fieldOptions(['lease', 'asset', 'payment'])],
+            ['name' => 'documentable_id', 'label' => 'Attached record ID', 'type' => 'number', 'required' => true, 'help' => 'Use the ID from the lease, asset, or payment detail URL.'],
+            ['name' => 'type', 'label' => 'Document type', 'required' => true, 'placeholder' => 'lease_contract, signed_contract, receipt'],
+            ['name' => 'title_en', 'label' => 'English title', 'required' => true],
+            ['name' => 'title_ar', 'label' => 'Arabic title'],
+            ['name' => 'is_public', 'label' => 'Visible to tenant when allowed', 'type' => 'checkbox'],
+        ];
+
+        if ($document === null) {
+            $fields[] = ['name' => 'file', 'label' => 'File', 'type' => 'file', 'required' => true];
+        }
+
+        return [
+            'title' => $document ? 'Edit document' : 'Upload document',
+            'description' => 'Attach contracts, receipts, signed papers, and proof files to operational records.',
+            'backHref' => $document ? route('documents.show', $document) : route('documents.index'),
+            'backLabel' => $document ? 'Document detail' : 'All documents',
+            'action' => $document ? route('documents.update', $document) : route('documents.store'),
+            'method' => $document ? 'put' : 'post',
+            'submitLabel' => $document ? 'Update document' : 'Upload document',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) ($document?->portfolio_id ?? request('portfolio_id', $actor->portfolio_id ?? '')),
+                'documentable_type' => (string) request('documentable_type', $document ? $this->documentableAlias($this->documentableTypes()[$document->documentable_type] ?? $document->documentable_type) : 'lease'),
+                'documentable_id' => (string) request('documentable_id', $document?->documentable_id ?? ''),
+                'type' => $document?->type ?? '',
+                'title_en' => $document?->title_en ?? '',
+                'title_ar' => $document?->title_ar ?? '',
+                'is_public' => (bool) ($document?->is_public ?? false),
+                'file' => null,
+            ],
+        ];
     }
 
     private function ensureDocumentManagementAccess(User $actor, Document $document): void

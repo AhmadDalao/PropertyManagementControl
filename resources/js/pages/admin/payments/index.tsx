@@ -668,6 +668,9 @@ export default function PaymentsPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/payments"
+                            createHref="/payments/create"
+                            createLabel="Record payment"
+                            rowHref={(payment) => `/payments/${payment.id}`}
                             exportHref={exportUrl(
                                 '/exports/payments',
                                 props.filters,

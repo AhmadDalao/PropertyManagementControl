@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -86,6 +88,74 @@ class ExpenseEntryController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->expenseFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, ExpenseEntry $expense): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $expense->portfolio_id);
+        $expense->loadMissing(['portfolio', 'asset', 'lease', 'maintenanceRequest', 'createdBy']);
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Expense detail',
+                    'title' => $expense->title,
+                    'description' => trim($expense->category.' · '.$expense->status.' · '.$expense->vendor_name),
+                    'backHref' => route('expenses.index'),
+                    'backLabel' => 'All expenses',
+                    'actions' => [
+                        ['label' => 'Edit expense', 'href' => route('expenses.edit', $expense), 'variant' => 'primary'],
+                    ],
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Amount', 'value' => number_format((float) $expense->amount, 2).' '.$expense->currency, 'tone' => 'primary'],
+                    ['label' => 'Status', 'value' => $expense->status, 'tone' => $expense->status === 'void' ? 'danger' : 'teal'],
+                    ['label' => 'Category', 'value' => $expense->category],
+                    ['label' => 'Date', 'value' => $expense->incurred_on?->toDateString()],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Expense record',
+                        'description' => 'Cost context for revenue and net reporting.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Asset', 'value' => $expense->asset?->title_en, 'href' => $expense->asset ? route('assets.show', $expense->asset) : null],
+                            ['label' => 'Maintenance', 'value' => $expense->maintenanceRequest?->title, 'href' => $expense->maintenanceRequest ? route('maintenance-requests.show', $expense->maintenanceRequest) : null],
+                            ['label' => 'Lease', 'value' => $expense->lease?->code, 'href' => $expense->lease ? route('leases.show', $expense->lease) : null],
+                            ['label' => 'Portfolio', 'value' => $expense->portfolio?->name_en, 'href' => $expense->portfolio ? route('portfolios.show', $expense->portfolio) : null],
+                            ['label' => 'Created by', 'value' => $expense->createdBy?->name, 'href' => $expense->createdBy ? route('users.show', $expense->createdBy) : null],
+                            ['label' => 'Vendor', 'value' => $expense->vendor_name],
+                            ['label' => 'Description', 'value' => $expense->description],
+                        ]),
+                    ],
+                ],
+                'related' => [],
+                'documents' => [],
+                'timeline' => $this->activityTimeline($expense),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, ExpenseEntry $expense): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $expense->portfolio_id);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->expenseFormPage($actor, $expense),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -109,7 +179,7 @@ class ExpenseEntryController extends Controller
         $this->ensurePortfolioAccess($actor, $portfolioId);
         $data = $this->normalizeExpenseReferences($data, $portfolioId);
 
-        ExpenseEntry::query()->create([
+        $expense = ExpenseEntry::query()->create([
             'portfolio_id' => $portfolioId,
             'asset_id' => $data['asset_id'] ?? null,
             'maintenance_request_id' => $data['maintenance_request_id'] ?? null,
@@ -124,7 +194,7 @@ class ExpenseEntryController extends Controller
             'status' => $data['status'],
         ]);
 
-        return to_route('expenses.index')->with('success', 'Expense recorded successfully.');
+        return to_route('expenses.show', $expense)->with('success', 'Expense recorded successfully.');
     }
 
     public function update(Request $request, ExpenseEntry $expense): RedirectResponse
@@ -149,7 +219,7 @@ class ExpenseEntryController extends Controller
         $data = $this->normalizeExpenseReferences($data, $expense->portfolio_id);
         $expense->update($data);
 
-        return to_route('expenses.index')->with('success', 'Expense updated successfully.');
+        return to_route('expenses.show', $expense)->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(Request $request, ExpenseEntry $expense): RedirectResponse
@@ -163,8 +233,75 @@ class ExpenseEntryController extends Controller
         return to_route('expenses.index')->with('success', 'Expense voided successfully.');
     }
 
+    private function expenseFormPage(User $actor, ?ExpenseEntry $expense = null): array
+    {
+        $assetOptions = $this->scopeByPortfolio(Asset::query()->orderBy('title_en'), $actor)
+            ->get()
+            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->prepend(['value' => '', 'label' => 'No asset'])
+            ->values()
+            ->all();
+        $maintenanceOptions = $this->scopeByPortfolio(MaintenanceRequest::query()->with('asset')->latest(), $actor)
+            ->get()
+            ->map(fn (MaintenanceRequest $maintenanceRequest) => [
+                'value' => $maintenanceRequest->id,
+                'label' => '#'.$maintenanceRequest->id.' · '.$maintenanceRequest->title.' · '.($maintenanceRequest->asset?->title_en ?? 'asset'),
+            ])
+            ->prepend(['value' => '', 'label' => 'No maintenance request'])
+            ->values()
+            ->all();
+        $fields = [];
+
+        if ($actor->hasRole('superadmin') && $expense === null) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'asset_id', 'label' => 'Asset', 'type' => 'select', 'options' => $assetOptions],
+            ['name' => 'maintenance_request_id', 'label' => 'Maintenance request', 'type' => 'select', 'options' => $maintenanceOptions],
+            ['name' => 'category', 'label' => 'Category', 'type' => 'select', 'options' => $this->fieldOptions($this->categories)],
+            ['name' => 'title', 'label' => 'Title', 'required' => true],
+            ['name' => 'description', 'label' => 'Description', 'type' => 'textarea'],
+            ['name' => 'incurred_on', 'label' => 'Incurred on', 'type' => 'date', 'required' => true],
+            ['name' => 'amount', 'label' => 'Amount', 'type' => 'number', 'min' => 0, 'required' => true],
+            ['name' => 'currency', 'label' => 'Currency'],
+            ['name' => 'vendor_name', 'label' => 'Vendor'],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['posted', 'pending', 'void'])],
+        ];
+
+        return [
+            'title' => $expense ? 'Edit expense' : 'Record expense',
+            'description' => 'Attach costs to assets or maintenance so reports show net performance.',
+            'backHref' => $expense ? route('expenses.show', $expense) : route('expenses.index'),
+            'backLabel' => $expense ? 'Expense detail' : 'All expenses',
+            'action' => $expense ? route('expenses.update', $expense) : route('expenses.store'),
+            'method' => $expense ? 'put' : 'post',
+            'submitLabel' => $expense ? 'Update expense' : 'Record expense',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) ($expense?->portfolio_id ?? request('portfolio_id', $actor->portfolio_id ?? $this->portfolioOptions($actor)[0]['id'] ?? '')),
+                'asset_id' => (string) request('asset_id', $expense?->asset_id ?? ''),
+                'maintenance_request_id' => (string) request('maintenance_request_id', $expense?->maintenance_request_id ?? ''),
+                'category' => $expense?->category ?? 'maintenance',
+                'title' => $expense?->title ?? '',
+                'description' => $expense?->description ?? '',
+                'incurred_on' => $expense?->incurred_on?->toDateString() ?? now()->toDateString(),
+                'amount' => (float) ($expense?->amount ?? 0),
+                'currency' => $expense?->currency ?? 'SAR',
+                'vendor_name' => $expense?->vendor_name ?? '',
+                'status' => $expense?->status ?? 'posted',
+            ],
+        ];
+    }
+
     /**
-     * @param array<string, mixed> $data
+     * @param  array<string, mixed>  $data
      */
     private function normalizeExpenseReferences(array $data, int $portfolioId): array
     {
@@ -240,7 +377,7 @@ class ExpenseEntryController extends Controller
     /**
      * @return array<string, int|float>
      */
-    private function expenseInsights(\Illuminate\Database\Eloquent\Builder $baseQuery): array
+    private function expenseInsights(Builder $baseQuery): array
     {
         $expenses = (clone $baseQuery)->get();
         $posted = $expenses->where('status', 'posted');

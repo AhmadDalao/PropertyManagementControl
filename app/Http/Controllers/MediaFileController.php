@@ -76,6 +76,72 @@ class MediaFileController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->mediaFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, MediaFile $mediaFile): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensureMediaAccess($actor, $mediaFile);
+        $mediaFile->loadMissing(['portfolio', 'uploadedBy']);
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Media detail',
+                    'title' => $mediaFile->title_en ?: basename($mediaFile->path),
+                    'description' => trim($mediaFile->collection.' · '.$mediaFile->visibility.' · '.$mediaFile->mime_type),
+                    'backHref' => route('media-files.index'),
+                    'backLabel' => 'All media',
+                    'actions' => [
+                        ['label' => 'Edit media', 'href' => route('media-files.edit', $mediaFile), 'variant' => 'primary'],
+                    ],
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Collection', 'value' => $mediaFile->collection, 'tone' => 'primary'],
+                    ['label' => 'Visibility', 'value' => $mediaFile->visibility],
+                    ['label' => 'Size', 'value' => number_format((float) $mediaFile->size / 1024, 1).' KB'],
+                    ['label' => 'MIME', 'value' => $mediaFile->mime_type],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Media record',
+                        'description' => 'CMS and portal image metadata.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Arabic title', 'value' => $mediaFile->title_ar],
+                            ['label' => 'Alt text EN', 'value' => $mediaFile->alt_text_en],
+                            ['label' => 'Alt text AR', 'value' => $mediaFile->alt_text_ar],
+                            ['label' => 'Portfolio', 'value' => $mediaFile->portfolio?->name_en, 'href' => $mediaFile->portfolio ? route('portfolios.show', $mediaFile->portfolio) : null],
+                            ['label' => 'Uploaded by', 'value' => $mediaFile->uploadedBy?->name, 'href' => $mediaFile->uploadedBy ? route('users.show', $mediaFile->uploadedBy) : null],
+                            ['label' => 'Public URL', 'value' => $mediaFile->disk === 'public' ? Storage::disk('public')->url($mediaFile->path) : null],
+                            ['label' => 'Path', 'value' => $mediaFile->path],
+                        ]),
+                    ],
+                ],
+                'related' => [],
+                'documents' => [],
+                'timeline' => $this->activityTimeline($mediaFile),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, MediaFile $mediaFile): Response
+    {
+        $actor = $this->actor($request);
+        $this->ensureMediaAccess($actor, $mediaFile);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->mediaFormPage($actor, $mediaFile),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -98,7 +164,7 @@ class MediaFileController extends Controller
         $file = $data['file'];
         $path = $file->store('media', 'public');
 
-        MediaFile::query()->create([
+        $mediaFile = MediaFile::query()->create([
             'uploaded_by_user_id' => $actor->id,
             'portfolio_id' => $portfolioId,
             'collection' => $data['collection'] ?? 'default',
@@ -113,7 +179,7 @@ class MediaFileController extends Controller
             'visibility' => $data['visibility'],
         ]);
 
-        return to_route('media-files.index')->with('success', 'Media uploaded successfully.');
+        return to_route('media-files.show', $mediaFile)->with('success', 'Media uploaded successfully.');
     }
 
     public function update(Request $request, MediaFile $mediaFile): RedirectResponse
@@ -144,7 +210,7 @@ class MediaFileController extends Controller
             'visibility' => $data['visibility'],
         ]);
 
-        return to_route('media-files.index')->with('success', 'Media details updated successfully.');
+        return to_route('media-files.show', $mediaFile)->with('success', 'Media details updated successfully.');
     }
 
     public function destroy(MediaFile $mediaFile): RedirectResponse
@@ -156,6 +222,59 @@ class MediaFileController extends Controller
         $mediaFile->delete();
 
         return to_route('media-files.index')->with('success', 'Media deleted successfully.');
+    }
+
+    private function mediaFormPage(User $actor, ?MediaFile $mediaFile = null): array
+    {
+        $fields = [];
+
+        if ($actor->hasRole('superadmin')) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))
+                    ->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])
+                    ->prepend(['value' => '', 'label' => 'Global CMS media'])
+                    ->values()
+                    ->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'collection', 'label' => 'Collection'],
+            ['name' => 'title_en', 'label' => 'English title'],
+            ['name' => 'title_ar', 'label' => 'Arabic title'],
+            ['name' => 'alt_text_en', 'label' => 'English alt text'],
+            ['name' => 'alt_text_ar', 'label' => 'Arabic alt text'],
+            ['name' => 'visibility', 'label' => 'Visibility', 'type' => 'select', 'options' => $this->fieldOptions(['public', 'private'])],
+        ];
+
+        if ($mediaFile === null) {
+            $fields[] = ['name' => 'file', 'label' => 'File', 'type' => 'file', 'required' => true];
+        }
+
+        return [
+            'title' => $mediaFile ? 'Edit media' : 'Upload media',
+            'description' => 'Upload images and files for CMS pages, landing sections, and portfolio content.',
+            'backHref' => $mediaFile ? route('media-files.show', $mediaFile) : route('media-files.index'),
+            'backLabel' => $mediaFile ? 'Media detail' : 'All media',
+            'action' => $mediaFile ? route('media-files.update', $mediaFile) : route('media-files.store'),
+            'method' => $mediaFile ? 'put' : 'post',
+            'submitLabel' => $mediaFile ? 'Update media' : 'Upload media',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) ($mediaFile?->portfolio_id ?? request('portfolio_id', $actor->portfolio_id ?? '')),
+                'collection' => $mediaFile?->collection ?? 'default',
+                'title_en' => $mediaFile?->title_en ?? '',
+                'title_ar' => $mediaFile?->title_ar ?? '',
+                'alt_text_en' => $mediaFile?->alt_text_en ?? '',
+                'alt_text_ar' => $mediaFile?->alt_text_ar ?? '',
+                'visibility' => $mediaFile?->visibility ?? 'public',
+                'file' => null,
+            ],
+        ];
     }
 
     private function ensureMediaAccess(User $actor, MediaFile $mediaFile): void

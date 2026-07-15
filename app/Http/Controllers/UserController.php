@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AssetStakeholder;
 use App\Models\TenantProfile;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
@@ -57,6 +58,118 @@ class UserController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->userFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, User $user): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+        $this->ensureCanManageUser($actor, $user);
+
+        $user->loadMissing([
+            'portfolio',
+            'roles',
+            'tenantProfile.leases.leaseable',
+            'recordedPayments.lease',
+            'submittedMaintenanceRequests.asset',
+            'assignedMaintenanceRequests.asset',
+            'uploadedDocuments',
+        ]);
+
+        $stakeholders = AssetStakeholder::query()
+            ->with('asset')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->get();
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'User detail',
+                    'title' => $user->name,
+                    'description' => $user->email.' · '.$user->roles->pluck('name')->implode(' / '),
+                    'backHref' => route('users.index'),
+                    'backLabel' => 'All users',
+                    'actions' => array_values(array_filter([
+                        ['label' => 'Edit user', 'href' => route('users.edit', $user), 'variant' => 'primary'],
+                        $user->tenantProfile ? ['label' => 'Open tenant profile', 'href' => route('tenants.show', $user->tenantProfile), 'variant' => 'secondary'] : null,
+                    ])),
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Status', 'value' => $user->status, 'tone' => $user->status === 'active' ? 'teal' : 'muted'],
+                    ['label' => 'Assets assigned', 'value' => $stakeholders->count(), 'tone' => 'primary'],
+                    ['label' => 'Recorded payments', 'value' => $user->recordedPayments->count()],
+                    ['label' => 'Maintenance assigned', 'value' => $user->assignedMaintenanceRequests->whereIn('status', ['open', 'in_progress'])->count(), 'tone' => 'danger'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Account',
+                        'description' => 'Identity, role, and portfolio access.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Email', 'value' => $user->email],
+                            ['label' => 'Phone', 'value' => $user->phone],
+                            ['label' => 'Locale', 'value' => $user->preferred_locale],
+                            ['label' => 'Portfolio', 'value' => $user->portfolio?->name_en, 'href' => $user->portfolio ? route('portfolios.show', $user->portfolio) : null],
+                            ['label' => 'Roles', 'value' => $user->roles->pluck('name')->implode(', ')],
+                            ['label' => 'Temporary password', 'value' => $user->force_password_reset ? 'Yes' : 'No'],
+                            ['label' => 'Last login', 'value' => $user->last_login_at?->toDateTimeString()],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Owned / managed assets',
+                        'description' => 'Asset stakeholder records tied to this user.',
+                        'columns' => ['Asset', 'Relationship', 'Primary', 'Status'],
+                        'rows' => $stakeholders->map(fn (AssetStakeholder $stakeholder) => [
+                            'Asset' => $stakeholder->asset?->title_en ?? '-',
+                            'Relationship' => $stakeholder->relationship_type,
+                            'Primary' => $stakeholder->is_primary ? 'Yes' : 'No',
+                            'Status' => $stakeholder->ends_on ? 'Ended' : 'Active',
+                        ])->all(),
+                        'emptyText' => 'No asset ownership or management assignments yet.',
+                    ],
+                    [
+                        'title' => 'Maintenance workload',
+                        'description' => 'Requests currently assigned to this user.',
+                        'columns' => ['Request', 'Asset', 'Status', 'Priority'],
+                        'rows' => $user->assignedMaintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
+                            'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
+                            'Asset' => $maintenanceRequest->asset?->title_en ?? '-',
+                            'Status' => $maintenanceRequest->status,
+                            'Priority' => $maintenanceRequest->priority,
+                        ])->all(),
+                        'emptyText' => 'No assigned maintenance requests.',
+                    ],
+                ],
+                'documents' => $this->documentStrip($user->uploadedDocuments->take(8)),
+                'timeline' => $this->activityTimeline($user),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, User $user): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $user->portfolio_id);
+        $this->ensureCanManageUser($actor, $user);
+        $user->loadMissing('roles');
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->userFormPage($actor, $user),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -96,7 +209,7 @@ class UserController extends Controller
             return $user;
         });
 
-        return to_route('users.index')->with('success', "User {$user->name} created.");
+        return to_route('users.show', $user)->with('success', "User {$user->name} created.");
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -135,7 +248,7 @@ class UserController extends Controller
             $this->ensureTenantProfileForRole($user, $user->portfolio_id, $data['role'], $data['status']);
         });
 
-        return to_route('users.index')->with('success', "User {$user->name} updated.");
+        return to_route('users.show', $user)->with('success', "User {$user->name} updated.");
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -254,5 +367,62 @@ class UserController extends Controller
             'inactive' => 'inactive',
             default => 'active',
         };
+    }
+
+    private function userFormPage(User $actor, ?User $user = null): array
+    {
+        $fields = [];
+
+        if ($actor->hasRole('superadmin') && $user === null) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))
+                    ->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])
+                    ->prepend(['value' => '', 'label' => 'No portfolio / superadmin'])
+                    ->values()
+                    ->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'name', 'label' => 'Name', 'required' => true],
+        ];
+
+        if ($user === null) {
+            $fields[] = ['name' => 'email', 'label' => 'Email', 'type' => 'email', 'required' => true];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'phone', 'label' => 'Phone'],
+            ['name' => 'preferred_locale', 'label' => 'Preferred language', 'type' => 'select', 'options' => [['value' => 'en', 'label' => 'English'], ['value' => 'ar', 'label' => 'Arabic']]],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['active', 'inactive', 'suspended'])],
+            ['name' => 'role', 'label' => 'Role', 'type' => 'select', 'options' => collect($this->roleOptions($actor))->map(fn ($role) => ['value' => $role, 'label' => str($role)->replace('_', ' ')->headline()->toString()])->all()],
+            ['name' => 'password', 'label' => $user ? 'New password' : 'Password', 'type' => 'password', 'required' => $user === null, 'help' => $user ? 'Leave blank to keep the current password.' : 'User will be forced to reset after login.'],
+        ];
+
+        return [
+            'title' => $user ? 'Edit '.$user->name : 'Create user',
+            'description' => 'Create only the role this person needs. Permissions flow from role and portfolio.',
+            'backHref' => $user ? route('users.show', $user) : route('users.index'),
+            'backLabel' => $user ? 'User detail' : 'All users',
+            'action' => $user ? route('users.update', $user) : route('users.store'),
+            'method' => $user ? 'put' : 'post',
+            'submitLabel' => $user ? 'Update user' : 'Create user',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) ($user?->portfolio_id ?? request('portfolio_id', $actor->portfolio_id ?? '')),
+                'name' => $user?->name ?? '',
+                'email' => $user?->email ?? '',
+                'phone' => $user?->phone ?? '',
+                'preferred_locale' => $user?->preferred_locale ?? 'en',
+                'status' => $user?->status ?? 'active',
+                'role' => $user?->roles?->first()?->name ?? $this->roleOptions($actor)[0],
+                'password' => '',
+            ],
+        ];
     }
 }

@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
@@ -31,6 +31,9 @@ type DataTableProps<T> = {
     filterFields?: TableFilterField[];
     emptyText?: string;
     rowKey?: (row: T) => string | number;
+    rowHref?: (row: T) => string;
+    createHref?: string;
+    createLabel?: string;
 };
 
 const pageSizes = [10, 25, 50, 100];
@@ -47,6 +50,9 @@ export function DataTable<T extends { id?: number | string }>({
     filterFields = [],
     emptyText = 'No records match this search.',
     rowKey,
+    rowHref,
+    createHref,
+    createLabel = 'Create',
 }: DataTableProps<T>) {
     const [draftFilters, setDraftFilters] = useState<Record<string, string>>(
         stringifyFilters(filters),
@@ -91,15 +97,26 @@ export function DataTable<T extends { id?: number | string }>({
                         <p className="pmc-table-copy">{description}</p>
                     ) : null}
                 </div>
-                {exportHref ? (
-                    <a
-                        className="btn btn-outline-secondary btn-sm pmc-export-button"
-                        href={exportHref}
-                    >
-                        <i className="bi bi-download me-2" />
-                        Export CSV
-                    </a>
-                ) : null}
+                <div className="pmc-table-head-actions">
+                    {createHref ? (
+                        <Link
+                            className="btn btn-primary btn-sm"
+                            href={createHref}
+                        >
+                            <i className="bi bi-plus-lg me-2" />
+                            {createLabel}
+                        </Link>
+                    ) : null}
+                    {exportHref ? (
+                        <a
+                            className="btn btn-outline-secondary btn-sm pmc-export-button"
+                            href={exportHref}
+                        >
+                            <i className="bi bi-download me-2" />
+                            Export CSV
+                        </a>
+                    ) : null}
+                </div>
             </div>
 
             {counts.length > 0 ? (
@@ -244,14 +261,28 @@ export function DataTable<T extends { id?: number | string }>({
                                     key={
                                         rowKey ? rowKey(row) : (row.id ?? index)
                                     }
+                                    className={
+                                        rowHref
+                                            ? 'pmc-clickable-row'
+                                            : undefined
+                                    }
                                 >
-                                    {columns.map((column) => (
+                                    {columns.map((column, columnIndex) => (
                                         <td
                                             key={column.key}
                                             data-label={column.label}
                                             className={column.className}
                                         >
-                                            {column.render(row)}
+                                            {rowHref && columnIndex === 0 ? (
+                                                <Link
+                                                    href={rowHref(row)}
+                                                    className="pmc-table-row-link"
+                                                >
+                                                    {column.render(row)}
+                                                </Link>
+                                            ) : (
+                                                column.render(row)
+                                            )}
                                         </td>
                                     ))}
                                 </tr>

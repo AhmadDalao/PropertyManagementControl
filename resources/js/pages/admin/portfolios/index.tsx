@@ -534,6 +534,15 @@ export default function PortfoliosPage() {
                             filters={props.filters}
                             counts={props.counts}
                             basePath="/portfolios"
+                            createHref={
+                                props.canCreate
+                                    ? '/portfolios/create'
+                                    : undefined
+                            }
+                            createLabel="Create portfolio"
+                            rowHref={(portfolio) =>
+                                `/portfolios/${portfolio.id}`
+                            }
                             exportHref={exportUrl(
                                 '/exports/portfolios',
                                 props.filters,

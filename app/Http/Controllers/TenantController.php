@@ -64,6 +64,126 @@ class TenantController extends Controller
         ]);
     }
 
+    public function create(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->tenantFormPage($actor),
+        ]);
+    }
+
+    public function show(Request $request, TenantProfile $tenant): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $tenant->portfolio_id);
+
+        $tenant->loadMissing([
+            'portfolio',
+            'user',
+            'leases.leaseable',
+            'leases.installments',
+            'leases.documents',
+            'payments.lease',
+            'maintenanceRequests.asset',
+        ]);
+
+        $activeLease = $tenant->leases->firstWhere('status', 'active');
+
+        return Inertia::render('admin/resource-show', [
+            'detailPage' => [
+                'header' => [
+                    'eyebrow' => 'Tenant detail',
+                    'title' => $tenant->user?->name ?? $tenant->company_name ?? 'Tenant #'.$tenant->id,
+                    'description' => trim(($tenant->user?->email ?? '').' · '.$tenant->profile_type.' · '.$tenant->status),
+                    'backHref' => route('tenants.index'),
+                    'backLabel' => 'All tenants',
+                    'actions' => [
+                        ['label' => 'Edit tenant', 'href' => route('tenants.edit', $tenant), 'variant' => 'primary'],
+                        ['label' => 'Create lease', 'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]), 'variant' => 'secondary'],
+                        ['label' => 'Record payment', 'href' => route('payments.create', ['tenant_profile_id' => $tenant->id]), 'variant' => 'secondary'],
+                    ],
+                ],
+                'stats' => $this->detailItems([
+                    ['label' => 'Status', 'value' => $tenant->status, 'tone' => $tenant->status === 'active' ? 'teal' : 'muted'],
+                    ['label' => 'Active leases', 'value' => $tenant->leases->where('status', 'active')->count(), 'tone' => 'primary'],
+                    ['label' => 'Paid', 'value' => number_format((float) $tenant->payments->where('status', 'posted')->sum('amount'), 2)],
+                    ['label' => 'Open maintenance', 'value' => $tenant->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count(), 'tone' => 'danger'],
+                ]),
+                'sections' => [
+                    [
+                        'title' => 'Profile',
+                        'description' => 'Identity, contact, emergency, and account state.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Email', 'value' => $tenant->user?->email],
+                            ['label' => 'Phone', 'value' => $tenant->user?->phone],
+                            ['label' => 'Portfolio', 'value' => $tenant->portfolio?->name_en, 'href' => $tenant->portfolio ? route('portfolios.show', $tenant->portfolio) : null],
+                            ['label' => 'National ID', 'value' => $tenant->national_id],
+                            ['label' => 'Company', 'value' => $tenant->company_name],
+                            ['label' => 'Emergency contact', 'value' => trim(($tenant->emergency_contact_name ?? '').' '.$tenant->emergency_contact_phone)],
+                            ['label' => 'Address', 'value' => $tenant->address],
+                            ['label' => 'Notes', 'value' => $tenant->notes],
+                        ]),
+                    ],
+                    [
+                        'title' => 'Current rental',
+                        'description' => 'Active lease and remaining balance for this tenant.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Lease', 'value' => $activeLease?->code, 'href' => $activeLease ? route('leases.show', $activeLease) : null],
+                            ['label' => 'Asset', 'value' => $activeLease?->leaseable?->title_en, 'href' => $activeLease?->leaseable ? route('assets.show', $activeLease->leaseable) : null],
+                            ['label' => 'Contract ends', 'value' => $activeLease?->ends_at?->toDateString()],
+                            ['label' => 'Balance', 'value' => $activeLease ? number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency : null],
+                        ]),
+                    ],
+                ],
+                'related' => [
+                    [
+                        'title' => 'Leases',
+                        'description' => 'Current and historical rental contracts.',
+                        'columns' => ['Lease', 'Asset', 'Status', 'Balance'],
+                        'rows' => $tenant->leases->map(fn ($lease) => [
+                            'Lease' => $lease->code,
+                            'Asset' => $lease->leaseable?->title_en ?? '-',
+                            'Status' => $lease->status,
+                            'Balance' => number_format((float) $lease->balance_remaining, 2).' '.$lease->currency,
+                        ])->all(),
+                        'emptyText' => 'No leases yet.',
+                        'actionHref' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
+                        'actionLabel' => 'Create lease',
+                    ],
+                    [
+                        'title' => 'Maintenance',
+                        'description' => 'Requests submitted by this tenant.',
+                        'columns' => ['Request', 'Asset', 'Status', 'Priority'],
+                        'rows' => $tenant->maintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
+                            'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
+                            'Asset' => $maintenanceRequest->asset?->title_en ?? '-',
+                            'Status' => $maintenanceRequest->status,
+                            'Priority' => $maintenanceRequest->priority,
+                        ])->all(),
+                        'emptyText' => 'No maintenance requests yet.',
+                    ],
+                ],
+                'documents' => $activeLease ? $this->documentStrip($activeLease->documents) : [],
+                'timeline' => $this->activityTimeline($tenant),
+            ],
+        ]);
+    }
+
+    public function edit(Request $request, TenantProfile $tenant): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
+        $this->ensurePortfolioAccess($actor, $tenant->portfolio_id);
+        $tenant->loadMissing('user');
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->tenantFormPage($actor, $tenant),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
@@ -89,7 +209,7 @@ class TenantController extends Controller
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
 
-        DB::transaction(function () use ($data, $portfolioId) {
+        $tenant = DB::transaction(function () use ($data, $portfolioId) {
             $user = User::query()->create([
                 'portfolio_id' => $portfolioId,
                 'name' => $data['name'],
@@ -103,7 +223,7 @@ class TenantController extends Controller
 
             $user->syncRoles(['tenant']);
 
-            TenantProfile::query()->create([
+            return TenantProfile::query()->create([
                 'portfolio_id' => $portfolioId,
                 'user_id' => $user->id,
                 'profile_type' => $data['profile_type'],
@@ -117,7 +237,7 @@ class TenantController extends Controller
             ]);
         });
 
-        return to_route('tenants.index')->with('success', 'Tenant created successfully.');
+        return to_route('tenants.show', $tenant)->with('success', 'Tenant created successfully.');
     }
 
     public function update(Request $request, TenantProfile $tenant): RedirectResponse
@@ -158,7 +278,7 @@ class TenantController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        return to_route('tenants.index')->with('success', 'Tenant updated successfully.');
+        return to_route('tenants.show', $tenant)->with('success', 'Tenant updated successfully.');
     }
 
     public function destroy(Request $request, TenantProfile $tenant): RedirectResponse
@@ -216,5 +336,70 @@ class TenantController extends Controller
             'inactive' => 'inactive',
             default => 'active',
         };
+    }
+
+    private function tenantFormPage(User $actor, ?TenantProfile $tenant = null): array
+    {
+        $fields = [];
+
+        if ($actor->hasRole('superadmin') && $tenant === null) {
+            $fields[] = [
+                'name' => 'portfolio_id',
+                'label' => 'Portfolio',
+                'type' => 'select',
+                'options' => collect($this->portfolioOptions($actor))->map(fn ($portfolio) => ['value' => $portfolio['id'], 'label' => $portfolio['name']])->all(),
+            ];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'name', 'label' => 'Tenant name', 'required' => true],
+        ];
+
+        if ($tenant === null) {
+            $fields[] = ['name' => 'email', 'label' => 'Login email', 'type' => 'email', 'required' => true];
+            $fields[] = ['name' => 'password', 'label' => 'Temporary password', 'type' => 'password', 'required' => true];
+        }
+
+        $fields = [
+            ...$fields,
+            ['name' => 'phone', 'label' => 'Phone'],
+            ['name' => 'preferred_locale', 'label' => 'Portal language', 'type' => 'select', 'options' => [['value' => 'en', 'label' => 'English'], ['value' => 'ar', 'label' => 'Arabic']]],
+            ['name' => 'profile_type', 'label' => 'Profile type', 'type' => 'select', 'options' => $this->fieldOptions(['individual', 'company'])],
+            ['name' => 'national_id', 'label' => 'National ID / registration'],
+            ['name' => 'company_name', 'label' => 'Company name'],
+            ['name' => 'emergency_contact_name', 'label' => 'Emergency contact name'],
+            ['name' => 'emergency_contact_phone', 'label' => 'Emergency contact phone'],
+            ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
+            ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['active', 'inactive', 'blocked'])],
+        ];
+
+        return [
+            'title' => $tenant ? 'Edit tenant' : 'Create tenant',
+            'description' => 'Create the tenant profile and portal login before connecting a lease.',
+            'backHref' => $tenant ? route('tenants.show', $tenant) : route('tenants.index'),
+            'backLabel' => $tenant ? 'Tenant detail' : 'All tenants',
+            'action' => $tenant ? route('tenants.update', $tenant) : route('tenants.store'),
+            'method' => $tenant ? 'put' : 'post',
+            'submitLabel' => $tenant ? 'Update tenant' : 'Create tenant',
+            'fields' => $fields,
+            'initialValues' => [
+                'portfolio_id' => (string) ($tenant?->portfolio_id ?? request('portfolio_id', $actor->portfolio_id ?? '')),
+                'name' => $tenant?->user?->name ?? '',
+                'email' => $tenant?->user?->email ?? '',
+                'password' => '',
+                'phone' => $tenant?->user?->phone ?? '',
+                'preferred_locale' => $tenant?->user?->preferred_locale ?? 'en',
+                'profile_type' => $tenant?->profile_type ?? 'individual',
+                'national_id' => $tenant?->national_id ?? '',
+                'company_name' => $tenant?->company_name ?? '',
+                'emergency_contact_name' => $tenant?->emergency_contact_name ?? '',
+                'emergency_contact_phone' => $tenant?->emergency_contact_phone ?? '',
+                'address' => $tenant?->address ?? '',
+                'notes' => $tenant?->notes ?? '',
+                'status' => $tenant?->status ?? 'active',
+            ],
+        ];
     }
 }

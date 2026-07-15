@@ -73,6 +73,16 @@ type MaintenanceRow = {
     created_at?: string | null;
 };
 
+type ReportPreset = {
+    id: number;
+    title_en: string;
+    title_ar?: string | null;
+    visibility: string;
+    is_default: boolean;
+    filters: TableFilters;
+    url: string;
+};
+
 type PageProps = SharedProps & {
     mode: 'portfolio' | 'superadmin';
     filters: TableFilters;
@@ -99,6 +109,7 @@ type PageProps = SharedProps & {
     recentPayments: PaymentRow[];
     recentExpenses: ExpenseRow[];
     maintenanceBacklog: MaintenanceRow[];
+    savedPresets: ReportPreset[];
 };
 
 export default function ReportsPage() {
@@ -111,6 +122,7 @@ export default function ReportsPage() {
             ? String(props.filters.portfolio_id)
             : 'all',
     });
+    const [presetTitle, setPresetTitle] = useState('');
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -145,6 +157,27 @@ export default function ReportsPage() {
             ? (props.summary.expenses / props.summary.revenue) * 100
             : 0;
     const reportActions = buildReportActions(props.summary);
+    const savePreset = () => {
+        const title = presetTitle.trim();
+
+        if (!title) {
+            return;
+        }
+
+        router.post(
+            '/reports/presets',
+            {
+                resource: 'portfolio-report',
+                title_en: title,
+                title_ar: '',
+                visibility: 'private',
+                is_default: false,
+                filters_json: cleanFilters(filters),
+            },
+            { preserveScroll: true },
+        );
+        setPresetTitle('');
+    };
 
     return (
         <AdminLayout>
@@ -316,6 +349,76 @@ export default function ReportsPage() {
                     </div>
                 </div>
             </form>
+
+            <section className="pmc-report-presets mb-4">
+                <div className="pmc-report-presets-head">
+                    <div>
+                        <div className="pmc-kicker mb-2">Saved shortcuts</div>
+                        <h2>Report presets</h2>
+                        <p>
+                            Save the current filters for arrears, expiry,
+                            occupancy, maintenance, and net revenue reviews.
+                        </p>
+                    </div>
+                    <div className="pmc-report-preset-form">
+                        <input
+                            className="form-control"
+                            value={presetTitle}
+                            placeholder="Preset name"
+                            onChange={(event) =>
+                                setPresetTitle(event.currentTarget.value)
+                            }
+                        />
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={savePreset}
+                        >
+                            Save preset
+                        </button>
+                    </div>
+                </div>
+                <div className="pmc-report-preset-grid">
+                    {props.savedPresets.length > 0 ? (
+                        props.savedPresets.map((preset) => (
+                            <article
+                                key={preset.id}
+                                className="pmc-report-preset-card"
+                            >
+                                <div>
+                                    <strong>{preset.title_en}</strong>
+                                    <span>{preset.visibility}</span>
+                                </div>
+                                <div className="pmc-report-preset-actions">
+                                    <Link
+                                        href={preset.url}
+                                        className="btn btn-light btn-sm"
+                                    >
+                                        Open
+                                    </Link>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline-danger btn-sm"
+                                        onClick={() =>
+                                            router.delete(
+                                                `/reports/presets/${preset.id}`,
+                                                { preserveScroll: true },
+                                            )
+                                        }
+                                    >
+                                        Remove
+                                    </button>
+                                </div>
+                            </article>
+                        ))
+                    ) : (
+                        <p className="pmc-empty-inline">
+                            No saved presets yet. Choose filters and save the
+                            view.
+                        </p>
+                    )}
+                </div>
+            </section>
 
             <div className="pmc-report-decision-grid mb-4">
                 <DecisionCard
