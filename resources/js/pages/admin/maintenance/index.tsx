@@ -317,7 +317,9 @@ export default function MaintenancePage() {
             </section>
 
             <div className="row g-4 align-items-start">
-                <div className="col-xl-4">
+                <div
+                    className={`col-xl-4 pmc-index-form-column ${editing ? 'is-editing' : 'is-idle'}`}
+                >
                     <div className="pmc-card p-4 pmc-maintenance-form-card">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <div>

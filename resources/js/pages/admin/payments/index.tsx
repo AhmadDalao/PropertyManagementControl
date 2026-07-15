@@ -335,7 +335,9 @@ export default function PaymentsPage() {
             </section>
 
             <div className="row g-4 align-items-start">
-                <div className="col-xl-4">
+                <div
+                    className={`col-xl-4 pmc-index-form-column ${editing ? 'is-editing' : 'is-idle'}`}
+                >
                     <div className="pmc-card p-4 pmc-payment-form-card mb-4">
                         <div className="d-flex justify-content-between gap-3 align-items-start mb-3">
                             <div>

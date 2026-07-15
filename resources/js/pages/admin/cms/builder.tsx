@@ -60,6 +60,14 @@ export default function CmsBuilderPage() {
         (a, b) => a.sort_order - b.sort_order,
     );
 
+    const persistSectionOrder = (orderedIds: number[]) => {
+        router.put(
+            `/cms/pages/${props.page.id}/sections/reorder`,
+            { ordered_ids: orderedIds },
+            { preserveScroll: true },
+        );
+    };
+
     const attachSection = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         attachForm.post(`/cms/pages/${props.page.id}/sections`, {
@@ -86,12 +94,23 @@ export default function CmsBuilderPage() {
 
         ids.splice(toIndex, 0, ids.splice(fromIndex, 1)[0]);
         setDraggingId(null);
+        persistSectionOrder(ids);
+    };
 
-        router.put(
-            `/cms/pages/${props.page.id}/sections/reorder`,
-            { ordered_ids: ids },
-            { preserveScroll: true },
-        );
+    const moveSection = (sectionId: number, direction: -1 | 1) => {
+        const ids = orderedSections.map((item) => item.id);
+        const currentIndex = ids.indexOf(sectionId);
+        const nextIndex = currentIndex + direction;
+
+        if (currentIndex === -1 || nextIndex < 0 || nextIndex >= ids.length) {
+            return;
+        }
+
+        [ids[currentIndex], ids[nextIndex]] = [
+            ids[nextIndex],
+            ids[currentIndex],
+        ];
+        persistSectionOrder(ids);
     };
 
     return (
@@ -200,6 +219,30 @@ export default function CmsBuilderPage() {
                 </aside>
 
                 <main className="pmc-cms-builder-main">
+                    <div className="pmc-cms-canvas-toolbar">
+                        <div>
+                            <div className="pmc-kicker mb-2">Page canvas</div>
+                            <h2>Sections are the public page order.</h2>
+                            <p>
+                                Drag by the grip, use the move buttons on
+                                mobile, then preview the page. No mystery
+                                panels.
+                            </p>
+                        </div>
+                        <div className="pmc-cms-canvas-stats">
+                            <span>{orderedSections.length} sections</span>
+                            <span>
+                                {
+                                    orderedSections.filter(
+                                        (item) => item.is_visible,
+                                    ).length
+                                }{' '}
+                                visible
+                            </span>
+                            <span>{props.page.status}</span>
+                        </div>
+                    </div>
+
                     {orderedSections.length > 0 ? (
                         orderedSections.map((item, index) => (
                             <article
@@ -211,6 +254,7 @@ export default function CmsBuilderPage() {
                                 onDragStart={() => setDraggingId(item.id)}
                                 onDragOver={(event) => event.preventDefault()}
                                 onDrop={() => reorder(item.id)}
+                                onDragEnd={() => setDraggingId(null)}
                             >
                                 <div className="pmc-cms-builder-grip">
                                     <i className="bi bi-grip-vertical" />
@@ -242,6 +286,24 @@ export default function CmsBuilderPage() {
                                     </div>
                                 </div>
                                 <div className="pmc-cms-builder-actions">
+                                    <button
+                                        type="button"
+                                        className="btn btn-light btn-sm"
+                                        disabled={index === 0}
+                                        onClick={() => moveSection(item.id, -1)}
+                                    >
+                                        Move up
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="btn btn-light btn-sm"
+                                        disabled={
+                                            index === orderedSections.length - 1
+                                        }
+                                        onClick={() => moveSection(item.id, 1)}
+                                    >
+                                        Move down
+                                    </button>
                                     <button
                                         type="button"
                                         className="btn btn-light btn-sm"

@@ -885,51 +885,44 @@ function ReportTable({
         <div className="pmc-card p-4 h-100">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <div className="pmc-kicker mb-2">Report table</div>
+                    <div className="pmc-kicker mb-2">Report cards</div>
                     <h2 className="h5 mb-0">{title}</h2>
                 </div>
                 <span className="pmc-chip">{rows.length}</span>
             </div>
-            <div className="pmc-table-scroll">
-                <table className="pmc-data-table table">
-                    <thead>
-                        <tr>
-                            {headers.map((header) => (
-                                <th key={header}>{header}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.length > 0 ? (
-                            rows.map((row, rowIndex) => (
-                                <tr key={rowIndex}>
-                                    {row.map((cell, index) => (
-                                        <td
-                                            key={`${rowIndex}-${headers[index]}`}
-                                            data-label={headers[index]}
-                                        >
+            {rows.length > 0 ? (
+                <div className="pmc-report-card-list">
+                    {rows.map((row, rowIndex) => (
+                        <article
+                            className="pmc-report-record-card"
+                            key={rowIndex}
+                        >
+                            <div className="pmc-report-record-main">
+                                <span>{headers[0]}</span>
+                                <strong>{row[0]}</strong>
+                            </div>
+                            <div className="pmc-report-record-grid">
+                                {row.slice(1).map((cell, index) => (
+                                    <div
+                                        key={`${rowIndex}-${headers[index + 1]}`}
+                                    >
+                                        <small>{headers[index + 1]}</small>
+                                        <div className="pmc-report-record-value">
                                             {cell}
-                                        </td>
-                                    ))}
-                                </tr>
-                            ))
-                        ) : (
-                            <tr>
-                                <td
-                                    className="pmc-empty-cell"
-                                    colSpan={headers.length}
-                                >
-                                    <div className="pmc-empty-state">
-                                        <i className="bi bi-search" />
-                                        <strong>No report rows</strong>
-                                        <span>{emptyText}</span>
+                                        </div>
                                     </div>
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
+                                ))}
+                            </div>
+                        </article>
+                    ))}
+                </div>
+            ) : (
+                <div className="pmc-empty-state">
+                    <i className="bi bi-search" />
+                    <strong>No report cards</strong>
+                    <span>{emptyText}</span>
+                </div>
+            )}
         </div>
     );
 }

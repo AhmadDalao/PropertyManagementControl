@@ -17,12 +17,40 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     const { props, url } = usePage<SharedProps>();
     const user = props.auth.user;
     const roles = user?.roles ?? [];
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [navOpen, setNavOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(
+        () =>
+            typeof window !== 'undefined' &&
+            window.localStorage.getItem('property-sidebar-collapsed') === '1',
+    );
 
     useEffect(() => {
         document.documentElement.lang = props.app.locale;
         document.documentElement.dir = props.app.direction;
     }, [props.app.direction, props.app.locale]);
+
+    const isDrawerViewport = () =>
+        window.matchMedia('(max-width: 1199.98px)').matches;
+
+    const toggleNavigation = () => {
+        if (isDrawerViewport()) {
+            setNavOpen((open) => !open);
+
+            return;
+        }
+
+        setSidebarCollapsed((collapsed) => {
+            const next = !collapsed;
+            window.localStorage.setItem(
+                'property-sidebar-collapsed',
+                next ? '1' : '0',
+            );
+
+            return next;
+        });
+    };
+
+    const closeDrawer = () => setNavOpen(false);
 
     const hasRoleAccess = (item: ModuleNavItem) =>
         !item.roles || item.roles.some((role) => roles.includes(role));
@@ -46,17 +74,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     })).filter((group) => group.items.length > 0);
 
     return (
-        <div className="pmc-console-shell">
+        <div
+            className={`pmc-console-shell ${sidebarCollapsed ? 'is-collapsed' : ''} ${navOpen ? 'is-open' : ''}`}
+        >
             <button
                 type="button"
-                className={`pmc-sidebar-backdrop ${menuOpen ? 'is-open' : ''}`}
+                className={`pmc-sidebar-backdrop ${navOpen ? 'is-open' : ''}`}
                 aria-label="Close navigation"
-                onClick={() => setMenuOpen(false)}
+                onClick={closeDrawer}
             />
 
-            <aside
-                className={`pmc-console-sidebar ${menuOpen ? 'is-open' : ''}`}
-            >
+            <aside className="pmc-console-sidebar">
                 <div className="pmc-console-brand">
                     <Link href="/dashboard" className="pmc-brand-mark">
                         PC
@@ -69,7 +97,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         type="button"
                         className="pmc-mobile-close"
                         aria-label="Close navigation"
-                        onClick={() => setMenuOpen(false)}
+                        onClick={closeDrawer}
                     >
                         <i className="bi bi-x-lg" />
                     </button>
@@ -83,8 +111,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                 <Link
                                     key={item.href}
                                     href={item.href}
-                                    onClick={() => setMenuOpen(false)}
+                                    onClick={closeDrawer}
                                     className={`pmc-nav-link ${url.startsWith(item.href) ? 'active' : ''}`}
+                                    title={item.label}
                                 >
                                     <i className={`bi ${item.icon}`} />
                                     <span>{item.label}</span>
@@ -107,11 +136,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <button
                             type="button"
                             className="pmc-menu-trigger"
-                            aria-label="Open navigation"
-                            onClick={() => setMenuOpen(true)}
+                            aria-label="Toggle navigation"
+                            aria-expanded={navOpen || !sidebarCollapsed}
+                            onClick={toggleNavigation}
                         >
-                            <i className="bi bi-list" />
-                            <span>Menu</span>
+                            <i className="bi bi-layout-sidebar-inset" />
+                            <span>Navigation</span>
                         </button>
                     </div>
 
