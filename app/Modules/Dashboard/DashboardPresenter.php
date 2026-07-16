@@ -166,6 +166,7 @@ class DashboardPresenter
                     ->pluck('total', 'status'),
             ],
             'setupChecklist' => $setupChecklist,
+            'propertyMap' => $this->propertyMap($assetQuery),
             'expiringLeases' => $this->expiringLeases($leaseQuery),
             'arrearsLeases' => $this->arrearsLeases($leaseQuery),
             'cmsStatus' => [
@@ -176,6 +177,103 @@ class DashboardPresenter
             'recentPayments' => (clone $paymentQuery)->with('tenantProfile.user')->latest('received_on')->limit(8)->get(),
             'recentMaintenance' => (clone $maintenanceQuery)->with('asset')->latest()->limit(8)->get(),
         ];
+    }
+
+    /**
+     * @return array{assets:array<int, array<string, mixed>>,summary:array<string, mixed>}
+     */
+    private function propertyMap(Builder $assetQuery): array
+    {
+        $query = (clone $assetQuery)
+            ->with(['portfolio', 'stakeholders.user'])
+            ->withCount([
+                'children',
+                'children as rentable_children_count' => fn (Builder $query) => $query->where('rentable', true),
+                'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
+                'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
+            ])
+            ->whereIn('asset_type', ['property', 'building', 'space'])
+            ->orderByRaw("CASE asset_type WHEN 'property' THEN 0 WHEN 'building' THEN 1 WHEN 'space' THEN 2 ELSE 3 END")
+            ->orderBy('title_en');
+
+        $assets = $query->get();
+
+        if ($assets->isEmpty()) {
+            $assets = (clone $assetQuery)
+                ->with(['portfolio', 'stakeholders.user'])
+                ->withCount([
+                    'children',
+                    'children as rentable_children_count' => fn (Builder $query) => $query->where('rentable', true),
+                    'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
+                    'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
+                ])
+                ->orderBy('title_en')
+                ->limit(18)
+                ->get();
+        }
+
+        $mappedAssets = $assets
+            ->values()
+            ->map(fn (Asset $asset, int $index) => $this->propertyMapAsset($asset, $index))
+            ->all();
+
+        return [
+            'assets' => $mappedAssets,
+            'summary' => [
+                'mapped' => collect($mappedAssets)->filter(fn (array $asset) => $asset['has_coordinates'])->count(),
+                'total' => count($mappedAssets),
+                'zones' => collect($mappedAssets)->pluck('zone')->filter()->unique()->values()->all(),
+            ],
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function propertyMapAsset(Asset $asset, int $index): array
+    {
+        $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
+        $fallbackX = 14 + (($index * 23) % 72);
+        $fallbackY = 18 + (($index * 31) % 62);
+        $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
+        $manager = $asset->stakeholders->firstWhere('relationship_type', 'manager');
+
+        return [
+            'id' => $asset->id,
+            'title' => $asset->title_en,
+            'code' => $asset->code,
+            'portfolio' => $asset->portfolio?->name_en,
+            'asset_type' => $asset->asset_type,
+            'usage_type' => $asset->usage_type,
+            'status' => $asset->status,
+            'occupancy_status' => $asset->occupancy_status,
+            'valuation_amount' => (float) $asset->valuation_amount,
+            'currency' => $asset->currency,
+            'address' => $asset->address,
+            'zone' => $map['zone'] ?? 'Zone '.chr(65 + ($index % 6)),
+            'land_number' => $map['land_number'] ?? $asset->unit_label ?? $asset->code,
+            'latitude' => isset($map['latitude']) ? (float) $map['latitude'] : null,
+            'longitude' => isset($map['longitude']) ? (float) $map['longitude'] : null,
+            'x' => $this->mapPercent($map['x'] ?? null, $fallbackX),
+            'y' => $this->mapPercent($map['y'] ?? null, $fallbackY),
+            'has_coordinates' => isset($map['latitude'], $map['longitude']) || isset($map['x'], $map['y']),
+            'href' => route('assets.show', $asset),
+            'children_count' => (int) $asset->children_count,
+            'rentable_children_count' => (int) $asset->rentable_children_count,
+            'active_leases_count' => (int) $asset->active_leases_count,
+            'open_requests_count' => (int) $asset->open_requests_count,
+            'owner' => $owner?->user?->name,
+            'manager' => $manager?->user?->name,
+        ];
+    }
+
+    private function mapPercent(mixed $value, float $fallback): float
+    {
+        if (is_numeric($value)) {
+            return max(4, min(96, (float) $value));
+        }
+
+        return $fallback;
     }
 
     /**

@@ -160,6 +160,17 @@ class AssetController extends Controller
                         ]),
                     ],
                     [
+                        'title' => 'Map and land record',
+                        'description' => 'Zone, land number, and map position used by the owner dashboard property map.',
+                        'items' => $this->detailItems([
+                            ['label' => 'Zone', 'value' => $this->assetMapMeta($asset, 'zone')],
+                            ['label' => 'Land number', 'value' => $this->assetMapMeta($asset, 'land_number')],
+                            ['label' => 'Latitude', 'value' => $this->assetMapMeta($asset, 'latitude')],
+                            ['label' => 'Longitude', 'value' => $this->assetMapMeta($asset, 'longitude')],
+                            ['label' => 'Map position', 'value' => $this->mapPositionLabel($asset)],
+                        ]),
+                    ],
+                    [
                         'title' => 'Ownership and management',
                         'description' => 'People responsible for this property node.',
                         'items' => $asset->stakeholders->map(fn ($stakeholder) => [
@@ -249,6 +260,12 @@ class AssetController extends Controller
             'address' => ['nullable', 'string'],
             'description_en' => ['nullable', 'string'],
             'description_ar' => ['nullable', 'string'],
+            'map_zone' => ['nullable', 'string', 'max:80'],
+            'land_number' => ['nullable', 'string', 'max:80'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'map_x' => ['nullable', 'numeric', 'between:0,100'],
+            'map_y' => ['nullable', 'numeric', 'between:0,100'],
             'primary_owner_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'primary_manager_user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
@@ -277,6 +294,7 @@ class AssetController extends Controller
             'address' => $data['address'] ?? null,
             'description_en' => $data['description_en'] ?? null,
             'description_ar' => $data['description_ar'] ?? null,
+            'meta_json' => $this->assetMetaFromData($data),
         ]);
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
@@ -307,6 +325,12 @@ class AssetController extends Controller
             'address' => ['nullable', 'string'],
             'description_en' => ['nullable', 'string'],
             'description_ar' => ['nullable', 'string'],
+            'map_zone' => ['nullable', 'string', 'max:80'],
+            'land_number' => ['nullable', 'string', 'max:80'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'map_x' => ['nullable', 'numeric', 'between:0,100'],
+            'map_y' => ['nullable', 'numeric', 'between:0,100'],
             'primary_owner_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'primary_manager_user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
@@ -330,6 +354,7 @@ class AssetController extends Controller
             'address' => $data['address'] ?? null,
             'description_en' => $data['description_en'] ?? null,
             'description_ar' => $data['description_ar'] ?? null,
+            'meta_json' => $this->assetMetaFromData($data, $asset),
         ]);
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
@@ -486,6 +511,12 @@ class AssetController extends Controller
             ['name' => 'area', 'label' => 'Area', 'type' => 'number', 'min' => 0],
             ['name' => 'level_label', 'label' => 'Floor / level label'],
             ['name' => 'unit_label', 'label' => 'Unit / space label'],
+            ['name' => 'map_zone', 'label' => 'Map zone', 'placeholder' => 'Zone A', 'help' => 'Shown on the owner dashboard map.'],
+            ['name' => 'land_number', 'label' => 'Land number', 'placeholder' => 'Land 42', 'help' => 'Click target label for the property map.'],
+            ['name' => 'latitude', 'label' => 'Latitude', 'type' => 'number', 'step' => '0.000001', 'min' => -90, 'max' => 90],
+            ['name' => 'longitude', 'label' => 'Longitude', 'type' => 'number', 'step' => '0.000001', 'min' => -180, 'max' => 180],
+            ['name' => 'map_x', 'label' => 'Map X position', 'type' => 'number', 'min' => 0, 'max' => 100, 'help' => 'Optional 0-100 horizontal position for the dashboard map.'],
+            ['name' => 'map_y', 'label' => 'Map Y position', 'type' => 'number', 'min' => 0, 'max' => 100, 'help' => 'Optional 0-100 vertical position for the dashboard map.'],
             ['name' => 'primary_owner_user_id', 'label' => 'Primary owner', 'type' => 'select', 'options' => $userOptions],
             ['name' => 'primary_manager_user_id', 'label' => 'Primary manager', 'type' => 'select', 'options' => $userOptions],
             ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'rows' => 2],
@@ -518,6 +549,12 @@ class AssetController extends Controller
                 'area' => (float) ($asset?->area ?? 0),
                 'level_label' => $asset?->level_label ?? '',
                 'unit_label' => $asset?->unit_label ?? '',
+                'map_zone' => $this->assetMapMeta($asset, 'zone') ?? '',
+                'land_number' => $this->assetMapMeta($asset, 'land_number') ?? '',
+                'latitude' => $this->assetMapMeta($asset, 'latitude') ?? '',
+                'longitude' => $this->assetMapMeta($asset, 'longitude') ?? '',
+                'map_x' => $this->assetMapMeta($asset, 'x') ?? '',
+                'map_y' => $this->assetMapMeta($asset, 'y') ?? '',
                 'primary_owner_user_id' => (string) ($owner?->user_id ?? ''),
                 'primary_manager_user_id' => (string) ($manager?->user_id ?? ''),
                 'address' => $asset?->address ?? '',
@@ -533,6 +570,69 @@ class AssetController extends Controller
         return collect($values)
             ->map(fn (string $value) => ['value' => $value, 'label' => str($value)->replace('_', ' ')->headline()->toString()])
             ->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    private function assetMetaFromData(array $data, ?Asset $asset = null): ?array
+    {
+        $meta = $asset?->meta_json ?? [];
+        $map = is_array($meta['map'] ?? null) ? $meta['map'] : [];
+
+        $values = [
+            'zone' => $data['map_zone'] ?? null,
+            'land_number' => $data['land_number'] ?? null,
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
+            'x' => $data['map_x'] ?? null,
+            'y' => $data['map_y'] ?? null,
+        ];
+
+        foreach ($values as $key => $value) {
+            if ($value === null || $value === '') {
+                unset($map[$key]);
+
+                continue;
+            }
+
+            $map[$key] = in_array($key, ['latitude', 'longitude', 'x', 'y'], true)
+                ? (float) $value
+                : trim((string) $value);
+        }
+
+        if ($map === []) {
+            unset($meta['map']);
+        } else {
+            $meta['map'] = $map;
+        }
+
+        return $meta === [] ? null : $meta;
+    }
+
+    private function assetMapMeta(?Asset $asset, string $key): mixed
+    {
+        if (! $asset) {
+            return null;
+        }
+
+        $meta = $asset->meta_json ?? [];
+        $map = is_array($meta) ? ($meta['map'] ?? []) : [];
+
+        return is_array($map) ? ($map[$key] ?? null) : null;
+    }
+
+    private function mapPositionLabel(Asset $asset): ?string
+    {
+        $x = $this->assetMapMeta($asset, 'x');
+        $y = $this->assetMapMeta($asset, 'y');
+
+        if ($x === null || $y === null) {
+            return null;
+        }
+
+        return "{$x}, {$y}";
     }
 
     /**

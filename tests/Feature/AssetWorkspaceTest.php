@@ -108,4 +108,42 @@ class AssetWorkspaceTest extends TestCase
 
         $this->assertSame('active', $asset->fresh()->status);
     }
+
+    public function test_asset_create_stores_map_and_land_metadata(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->post(route('assets.store'), [
+                'asset_type' => 'building',
+                'usage_type' => 'mixed',
+                'title_en' => 'Map Ready Tower',
+                'title_ar' => 'برج جاهز للخريطة',
+                'code' => 'MAP-TOWER',
+                'status' => 'active',
+                'occupancy_status' => 'vacant',
+                'valuation_amount' => 1500000,
+                'currency' => 'SAR',
+                'area' => 800,
+                'address' => 'King Fahd Road, Riyadh',
+                'map_zone' => 'Zone Beta',
+                'land_number' => 'B-120',
+                'latitude' => 24.7136,
+                'longitude' => 46.6753,
+                'map_x' => 38,
+                'map_y' => 44,
+                'rentable' => false,
+            ])
+            ->assertRedirect();
+
+        $asset = Asset::query()->where('code', 'MAP-TOWER')->firstOrFail();
+
+        $this->assertSame('Zone Beta', $asset->meta_json['map']['zone']);
+        $this->assertSame('B-120', $asset->meta_json['map']['land_number']);
+        $this->assertSame(24.7136, $asset->meta_json['map']['latitude']);
+        $this->assertSame(46.6753, $asset->meta_json['map']['longitude']);
+        $this->assertEquals(38.0, $asset->meta_json['map']['x']);
+        $this->assertEquals(44.0, $asset->meta_json['map']['y']);
+    }
 }

@@ -138,6 +138,12 @@ class DemoDataSeeder extends Seeder
             'valuation_amount' => $buildingValue,
             'occupancy_status' => 'occupied',
             'rentable' => false,
+            'map_zone' => $prefix === 'ROSE' ? 'Riyadh North' : 'Jeddah Coast',
+            'land_number' => $prefix === 'ROSE' ? 'RN-742' : 'JC-318',
+            'latitude' => $prefix === 'ROSE' ? 24.7136 : 21.5433,
+            'longitude' => $prefix === 'ROSE' ? 46.6753 : 39.1728,
+            'map_x' => $prefix === 'ROSE' ? 34 : 66,
+            'map_y' => $prefix === 'ROSE' ? 38 : 54,
         ]);
 
         $floorOne = $this->asset($portfolio, $building, [
@@ -342,7 +348,28 @@ class DemoDataSeeder extends Seeder
             'address' => $attributes['address'] ?? $parent?->address,
             'description_en' => 'Local demo asset for understanding ownership, occupancy, rent, and maintenance.',
             'description_ar' => 'أصل تجريبي محلي لفهم الملكية والإشغال والإيجار والصيانة.',
+            'meta_json' => $this->assetMeta($attributes),
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>|null
+     */
+    private function assetMeta(array $attributes): ?array
+    {
+        $map = [
+            'zone' => $attributes['map_zone'] ?? null,
+            'land_number' => $attributes['land_number'] ?? null,
+            'latitude' => $attributes['latitude'] ?? null,
+            'longitude' => $attributes['longitude'] ?? null,
+            'x' => $attributes['map_x'] ?? null,
+            'y' => $attributes['map_y'] ?? null,
+        ];
+
+        $map = array_filter($map, fn ($value) => $value !== null && $value !== '');
+
+        return $map === [] ? null : ['map' => $map];
     }
 
     /**

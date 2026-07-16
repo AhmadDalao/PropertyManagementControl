@@ -2,7 +2,7 @@ import { Link } from '@inertiajs/react';
 
 import { currency } from '@/lib/utils';
 
-import type { LeaseBalance, NextAction } from './types';
+import type { LeaseBalance, NextAction, PropertyMapAsset } from './types';
 
 export const chartColors = [
     '#ef6c2f',
@@ -106,6 +106,111 @@ export function CycleMap({
                         <i className={`bi ${step.icon}`} />
                         <strong>{step.label}</strong>
                         <small>{step.description}</small>
+                    </Link>
+                ))}
+            </div>
+        </section>
+    );
+}
+
+export function PropertyMap({
+    assets,
+    locale,
+}: {
+    assets: PropertyMapAsset[];
+    locale: 'en' | 'ar';
+}) {
+    if (assets.length === 0) {
+        return (
+            <section className="pmc-property-map-card">
+                <SectionTitle
+                    eyebrow="Property map"
+                    title="No mapped properties yet"
+                    actionHref="/assets/create"
+                    actionLabel="Create asset"
+                />
+                <InlineEmptyState message="Create a property or building, then add zone and land number fields to activate the owner map." />
+            </section>
+        );
+    }
+
+    const featured = assets[0];
+
+    return (
+        <section className="pmc-property-map-card">
+            <SectionTitle
+                eyebrow="Owner property map"
+                title="Click a zone or land number to open details"
+                actionHref="/assets"
+                actionLabel="Manage assets"
+            />
+
+            <div className="pmc-property-map-layout">
+                <div
+                    className="pmc-property-map-canvas"
+                    aria-label="Property map"
+                >
+                    <div className="pmc-map-grid" />
+                    {assets.map((asset) => (
+                        <Link
+                            key={asset.id}
+                            href={asset.href}
+                            className={`pmc-map-parcel is-${asset.occupancy_status}`}
+                            style={{
+                                insetInlineStart: `${asset.x}%`,
+                                top: `${asset.y}%`,
+                            }}
+                            title={`${asset.zone ?? 'Zone'} · ${asset.land_number ?? asset.code}`}
+                        >
+                            <span>{asset.zone}</span>
+                            <strong>{asset.land_number ?? asset.code}</strong>
+                        </Link>
+                    ))}
+                </div>
+
+                <aside className="pmc-property-map-detail">
+                    <span>{featured.zone}</span>
+                    <h3>{featured.title}</h3>
+                    <p>
+                        {featured.land_number ?? featured.code} ·{' '}
+                        {featured.address ?? 'No address recorded'}
+                    </p>
+                    <dl>
+                        <div>
+                            <dt>Value</dt>
+                            <dd>
+                                {currency(
+                                    featured.valuation_amount,
+                                    locale,
+                                    featured.currency,
+                                )}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>Occupancy</dt>
+                            <dd>{featured.occupancy_status}</dd>
+                        </div>
+                        <div>
+                            <dt>Units</dt>
+                            <dd>{featured.rentable_children_count}</dd>
+                        </div>
+                        <div>
+                            <dt>Open issues</dt>
+                            <dd>{featured.open_requests_count}</dd>
+                        </div>
+                    </dl>
+                    <Link href={featured.href} className="btn btn-primary">
+                        Open property details
+                    </Link>
+                </aside>
+            </div>
+
+            <div className="pmc-property-map-list">
+                {assets.map((asset) => (
+                    <Link key={asset.id} href={asset.href}>
+                        <span>{asset.zone}</span>
+                        <strong>{asset.land_number ?? asset.code}</strong>
+                        <em>{asset.title}</em>
                     </Link>
                 ))}
             </div>

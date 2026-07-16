@@ -90,6 +90,7 @@ class ShowcaseDataSeeder
                 'city' => 'Riyadh',
                 'address' => 'King Fahd Road, Riyadh',
                 'building' => ['name_en' => 'Olaya Heights', 'name_ar' => 'مرتفعات العليا', 'code' => 'OLAYA', 'value' => 9200000],
+                'map' => ['zone' => 'Riyadh Prime', 'land_number' => 'RP-118', 'latitude' => 24.7136, 'longitude' => 46.6753, 'x' => 31, 'y' => 36],
                 'owner' => ['name' => 'Noura Showcase Owner', 'email' => 'showcase.owner.riyadh@property.ahmaddalao.com', 'phone' => '+966550100001', 'role' => 'owner'],
                 'manager' => ['name' => 'Faisal Showcase Manager', 'email' => 'showcase.manager.riyadh@property.ahmaddalao.com', 'phone' => '+966550100002', 'role' => 'property_manager'],
                 'tenant' => ['name' => 'Sara Showcase Tenant', 'email' => 'showcase.tenant.riyadh@property.ahmaddalao.com', 'phone' => '+966550100003', 'role' => 'tenant'],
@@ -106,6 +107,7 @@ class ShowcaseDataSeeder
                 'city' => 'Jeddah',
                 'address' => 'Al Shati District, Jeddah',
                 'building' => ['name_en' => 'Coral Gate Residence', 'name_ar' => 'بوابة كورال السكنية', 'code' => 'CORAL', 'value' => 7800000],
+                'map' => ['zone' => 'Jeddah Coast', 'land_number' => 'JC-404', 'latitude' => 21.5433, 'longitude' => 39.1728, 'x' => 68, 'y' => 52],
                 'owner' => ['name' => 'Omar Showcase Owner', 'email' => 'showcase.owner.jeddah@property.ahmaddalao.com', 'phone' => '+966550200001', 'role' => 'owner'],
                 'manager' => ['name' => 'Lina Showcase Manager', 'email' => 'showcase.manager.jeddah@property.ahmaddalao.com', 'phone' => '+966550200002', 'role' => 'property_manager'],
                 'tenant' => ['name' => 'Yousef Showcase Tenant', 'email' => 'showcase.tenant.jeddah@property.ahmaddalao.com', 'phone' => '+966550200003', 'role' => 'tenant'],
@@ -216,6 +218,12 @@ class ShowcaseDataSeeder
             'valuation_amount' => $data['building']['value'],
             'occupancy_status' => 'partially_occupied',
             'rentable' => false,
+            'map_zone' => $data['map']['zone'],
+            'land_number' => $data['map']['land_number'],
+            'latitude' => $data['map']['latitude'],
+            'longitude' => $data['map']['longitude'],
+            'map_x' => $data['map']['x'],
+            'map_y' => $data['map']['y'],
         ]);
         $created += (int) $building->wasRecentlyCreated;
 
@@ -350,8 +358,29 @@ class ShowcaseDataSeeder
                 'address' => $attributes['address'] ?? $parent?->address,
                 'description_en' => 'Showcase record for ownership, occupancy, valuation, reporting, and maintenance workflows.',
                 'description_ar' => 'سجل تجريبي لعرض الملكية والإشغال والتقييم والتقارير والصيانة.',
+                'meta_json' => $this->assetMeta($attributes),
             ],
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>|null
+     */
+    private function assetMeta(array $attributes): ?array
+    {
+        $map = [
+            'zone' => $attributes['map_zone'] ?? null,
+            'land_number' => $attributes['land_number'] ?? null,
+            'latitude' => $attributes['latitude'] ?? null,
+            'longitude' => $attributes['longitude'] ?? null,
+            'x' => $attributes['map_x'] ?? null,
+            'y' => $attributes['map_y'] ?? null,
+        ];
+
+        $map = array_filter($map, fn ($value) => $value !== null && $value !== '');
+
+        return $map === [] ? null : ['map' => $map];
     }
 
     /**

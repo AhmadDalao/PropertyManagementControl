@@ -24,6 +24,7 @@ import {
     LeaseList,
     MiniMetricList,
     NextActionDeck,
+    PropertyMap,
     SectionTitle,
     chartColors,
 } from './widgets';
@@ -58,6 +59,7 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
     const arrearsLeases = props.arrearsLeases ?? [];
     const setupChecklist = props.setupChecklist ?? [];
     const nextActions = props.nextActions ?? [];
+    const propertyMapAssets = props.propertyMap?.assets ?? [];
     const healthScore = operationsHealthScore(setupChecklist, props.stats);
     const cycleSteps = operationsCycleSteps(setupChecklist, props.stats);
 
@@ -137,6 +139,8 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
             </section>
 
             <NextActionDeck actions={nextActions} />
+
+            <PropertyMap assets={propertyMapAssets} locale={props.app.locale} />
 
             <CycleMap steps={cycleSteps} />
 
