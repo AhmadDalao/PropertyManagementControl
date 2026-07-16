@@ -166,6 +166,7 @@ if ($login['status'] !== 302 || ! str_contains((string) $login['location'], '/da
 
 $authChecks = [
     '/dashboard' => 'dashboard',
+    '/property-map' => 'admin/property-map/index',
     '/users' => 'admin/users/index',
     '/users/create' => 'admin/resource-form',
     '/assets' => 'admin/assets/index',

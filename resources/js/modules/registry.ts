@@ -18,7 +18,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
             { label: 'Dashboard', href: '/dashboard', icon: 'bi-grid-1x2' },
             {
                 label: 'Properties Map',
-                href: '/assets',
+                href: '/property-map',
                 icon: 'bi-map',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'assets',
@@ -45,6 +45,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 href: '/portfolios',
                 icon: 'bi-buildings',
                 roles: ['superadmin', 'owner', 'property_manager'],
+            },
+            {
+                label: 'Assets Workspace',
+                href: '/assets',
+                icon: 'bi-building-gear',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'assets',
             },
             {
                 label: 'Users & Roles',
