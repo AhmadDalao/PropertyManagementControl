@@ -140,7 +140,11 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
 
             <NextActionDeck actions={nextActions} />
 
-            <PropertyMap assets={propertyMapAssets} locale={props.app.locale} />
+            <PropertyMap
+                assets={propertyMapAssets}
+                locale={props.app.locale}
+                summary={props.propertyMap?.summary}
+            />
 
             <CycleMap steps={cycleSteps} />
 

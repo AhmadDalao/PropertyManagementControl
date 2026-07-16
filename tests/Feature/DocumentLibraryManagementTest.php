@@ -125,6 +125,18 @@ class DocumentLibraryManagementTest extends TestCase
             ->assertSessionHasErrors('file');
 
         $this->assertDatabaseMissing('documents', ['title_en' => 'Bad signed contract']);
+
+        $this->actingAs($owner)
+            ->post(route('documents.store'), [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'title_en' => 'Spoofed signed contract',
+                'file' => UploadedFile::fake()->create('signed-contract.pdf', 64, 'text/plain'),
+            ])
+            ->assertSessionHasErrors('file');
+
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Spoofed signed contract']);
     }
 
     public function test_document_index_and_export_do_not_leak_foreign_portfolio_documents(): void

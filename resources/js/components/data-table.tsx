@@ -116,7 +116,7 @@ export function DataTable<T extends { id?: number | string }>({
                             href={exportHref}
                         >
                             <i className="bi bi-download me-2" />
-                            Export Excel
+                            Export Excel (.xlsx)
                         </a>
                     ) : null}
                 </div>

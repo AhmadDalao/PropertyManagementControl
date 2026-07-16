@@ -37,7 +37,9 @@ export type PropertyMapAsset = {
     x: number;
     y: number;
     has_coordinates: boolean;
+    has_identity: boolean;
     href: string;
+    edit_href: string;
     children_count: number;
     rentable_children_count: number;
     active_leases_count: number;
@@ -77,6 +79,10 @@ export type DashboardPageProps = SharedProps & {
         summary: {
             mapped: number;
             total: number;
+            ready: number;
+            needs_position: number;
+            needs_identity: number;
+            coverage_percent: number;
             zones: string[];
         };
     };

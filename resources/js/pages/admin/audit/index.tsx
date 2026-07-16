@@ -107,7 +107,7 @@ export default function AuditLogsPage() {
                             className="btn btn-primary"
                         >
                             <i className="bi bi-download me-2" />
-                            Export Excel
+                            Export Excel (.xlsx)
                         </a>
                     </>
                 }

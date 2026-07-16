@@ -42,13 +42,21 @@ class PropertyMapPresenter
             ->values()
             ->map(fn (Asset $asset, int $index) => $this->propertyMapAsset($asset, $index, $bounds))
             ->all();
+        $mappedAssetCollection = collect($mappedAssets);
+        $readyCount = $mappedAssetCollection
+            ->filter(fn (array $asset) => $asset['has_coordinates'] && $asset['has_identity'])
+            ->count();
 
         return [
             'assets' => $mappedAssets,
             'summary' => [
-                'mapped' => collect($mappedAssets)->filter(fn (array $asset) => $asset['has_coordinates'])->count(),
+                'mapped' => $mappedAssetCollection->filter(fn (array $asset) => $asset['has_coordinates'])->count(),
                 'total' => count($mappedAssets),
-                'zones' => collect($mappedAssets)->pluck('zone')->filter()->unique()->values()->all(),
+                'ready' => $readyCount,
+                'needs_position' => $mappedAssetCollection->reject(fn (array $asset) => $asset['has_coordinates'])->count(),
+                'needs_identity' => $mappedAssetCollection->reject(fn (array $asset) => $asset['has_identity'])->count(),
+                'coverage_percent' => count($mappedAssets) > 0 ? round(($readyCount / count($mappedAssets)) * 100, 1) : 0,
+                'zones' => $mappedAssetCollection->pluck('zone')->filter()->unique()->values()->all(),
             ],
         ];
     }
@@ -106,6 +114,9 @@ class PropertyMapPresenter
     {
         $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
         $coordinates = $this->coordinates($map);
+        $hasIdentity = isset($map['zone'], $map['land_number'])
+            && trim((string) $map['zone']) !== ''
+            && trim((string) $map['land_number']) !== '';
         $fallbackX = 14 + (($index * 23) % 72);
         $fallbackY = 18 + (($index * 31) % 62);
         $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
@@ -130,6 +141,8 @@ class PropertyMapPresenter
             'x' => $this->mapPercent($map['x'] ?? null, $this->coordinateX($coordinates, $bounds) ?? $fallbackX),
             'y' => $this->mapPercent($map['y'] ?? null, $this->coordinateY($coordinates, $bounds) ?? $fallbackY),
             'has_coordinates' => $coordinates !== null || isset($map['x'], $map['y']),
+            'has_identity' => $hasIdentity,
+            'edit_href' => route('assets.edit', $asset),
             'href' => route('assets.show', $asset),
             'children_count' => (int) $asset->children_count,
             'rentable_children_count' => (int) $asset->rentable_children_count,

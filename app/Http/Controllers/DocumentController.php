@@ -155,7 +155,7 @@ class DocumentController extends Controller
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['nullable', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
-            'file' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
         ]);
 
         [$documentableAlias, $documentable] = $this->resolveDocumentable(
@@ -185,7 +185,7 @@ class DocumentController extends Controller
             'disk' => 'local',
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType() ?: 'application/pdf',
             'file_size' => $file->getSize(),
             'is_public' => (bool) ($data['is_public'] ?? false),
         ]);

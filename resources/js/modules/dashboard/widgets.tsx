@@ -3,7 +3,12 @@ import { useState } from 'react';
 
 import { currency } from '@/lib/utils';
 
-import type { LeaseBalance, NextAction, PropertyMapAsset } from './types';
+import type {
+    DashboardPageProps,
+    LeaseBalance,
+    NextAction,
+    PropertyMapAsset,
+} from './types';
 
 export const chartColors = [
     '#ef6c2f',
@@ -121,9 +126,11 @@ function isStringValue(value: unknown): value is string {
 export function PropertyMap({
     assets,
     locale,
+    summary,
 }: {
     assets: PropertyMapAsset[];
     locale: 'en' | 'ar';
+    summary?: NonNullable<DashboardPageProps['propertyMap']>['summary'];
 }) {
     const [selectedAssetId, setSelectedAssetId] = useState<number | null>(
         assets[0]?.id ?? null,
@@ -150,6 +157,23 @@ export function PropertyMap({
     const zones = Array.from(
         new Set(assets.map((asset) => asset.zone).filter(isStringValue)),
     ).sort();
+    const readyCount =
+        summary?.ready ??
+        assets.filter((asset) => asset.has_coordinates && asset.has_identity)
+            .length;
+    const needsPosition =
+        summary?.needs_position ??
+        assets.filter((asset) => !asset.has_coordinates).length;
+    const needsIdentity =
+        summary?.needs_identity ??
+        assets.filter((asset) => !asset.has_identity).length;
+    const coveragePercent =
+        summary?.coverage_percent ??
+        (assets.length > 0
+            ? Math.round((readyCount / assets.length) * 100)
+            : 0);
+    const firstNeedsPosition = assets.find((asset) => !asset.has_coordinates);
+    const firstNeedsIdentity = assets.find((asset) => !asset.has_identity);
     const occupancyStates = Array.from(
         new Set(
             assets.map((asset) => asset.occupancy_status).filter(isStringValue),
@@ -210,6 +234,34 @@ export function PropertyMap({
                 <span>
                     <strong>{zones.length}</strong> zones
                 </span>
+                <span>
+                    <strong>{readyCount}</strong> map ready
+                </span>
+            </div>
+
+            <div
+                className={`pmc-map-readiness ${coveragePercent >= 100 ? 'is-ready' : ''}`}
+            >
+                <div>
+                    <span>Map readiness</span>
+                    <strong>{coveragePercent}% ready</strong>
+                    <p>
+                        A ready property has both a real position and a clear
+                        zone/land number for owner review.
+                    </p>
+                </div>
+                <div className="pmc-map-readiness-actions">
+                    <MapReadinessAction
+                        count={needsPosition}
+                        label="Need position"
+                        href={firstNeedsPosition?.edit_href}
+                    />
+                    <MapReadinessAction
+                        count={needsIdentity}
+                        label="Need zone / land"
+                        href={firstNeedsIdentity?.edit_href}
+                    />
+                </div>
             </div>
 
             <div className="pmc-property-map-controls">
@@ -410,6 +462,36 @@ export function PropertyMap({
                 ))}
             </div>
         </section>
+    );
+}
+
+function MapReadinessAction({
+    count,
+    label,
+    href,
+}: {
+    count: number;
+    label: string;
+    href?: string;
+}) {
+    if (count <= 0) {
+        return (
+            <span className="pmc-map-readiness-chip is-complete">
+                <strong>0</strong>
+                {label}
+            </span>
+        );
+    }
+
+    return (
+        <Link
+            href={href ?? '/assets'}
+            className="pmc-map-readiness-chip is-needed"
+        >
+            <strong>{count}</strong>
+            {label}
+            <em>Fix</em>
+        </Link>
     );
 }
 

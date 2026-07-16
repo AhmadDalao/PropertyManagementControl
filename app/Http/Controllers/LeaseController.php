@@ -345,7 +345,7 @@ class LeaseController extends Controller
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
         $data = $request->validate([
-            'signed_contract' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+            'signed_contract' => ['required', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
         ]);
 
         $file = $data['signed_contract'];
@@ -362,7 +362,7 @@ class LeaseController extends Controller
             'disk' => 'local',
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getClientMimeType(),
+            'mime_type' => $file->getMimeType() ?: 'application/pdf',
             'file_size' => $file->getSize(),
             'is_public' => false,
         ]);

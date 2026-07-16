@@ -76,6 +76,10 @@ type PageProps = SharedProps & {
         summary: {
             mapped: number;
             total: number;
+            ready: number;
+            needs_position: number;
+            needs_identity: number;
+            coverage_percent: number;
             zones: string[];
         };
     };
@@ -323,6 +327,7 @@ export default function AssetsPage() {
             <PropertyMap
                 assets={props.propertyMap.assets}
                 locale={props.app.locale}
+                summary={props.propertyMap.summary}
             />
 
             <div className="row g-4">

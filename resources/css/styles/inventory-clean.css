@@ -1303,6 +1303,98 @@ body {
     font-weight: 950;
 }
 
+.pmc-map-readiness {
+    display: grid;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border: 1px solid #f2d5c5;
+    border-radius: 0.9rem;
+    background: linear-gradient(135deg, #fff4eb, #fffaf0);
+}
+
+.pmc-map-readiness.is-ready {
+    border-color: #b8eadf;
+    background: linear-gradient(135deg, #f0fffb, #f8fffb);
+}
+
+.pmc-map-readiness > div:first-child {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.pmc-map-readiness span,
+.pmc-map-readiness p {
+    margin: 0;
+    color: var(--pmc-clean-muted);
+    font-size: 0.82rem;
+    font-weight: 750;
+}
+
+.pmc-map-readiness > div:first-child > span {
+    color: #8a4a16;
+    font-size: 0.72rem;
+    font-weight: 950;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-map-readiness.is-ready > div:first-child > span {
+    color: #0c7569;
+}
+
+.pmc-map-readiness strong {
+    color: #111111;
+    font-size: 1.25rem;
+    font-weight: 950;
+}
+
+.pmc-map-readiness-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-map-readiness-chip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #eadfce;
+    border-radius: 0.75rem;
+    background: #ffffff;
+    color: #111111;
+    font-size: 0.82rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-map-readiness-chip strong {
+    font-size: 1.1rem;
+}
+
+.pmc-map-readiness-chip em {
+    padding: 0.18rem 0.45rem;
+    border-radius: 999px;
+    background: #ffca4b;
+    color: #111111;
+    font-size: 0.66rem;
+    font-style: normal;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-map-readiness-chip.is-complete {
+    border-color: #b8eadf;
+    background: #f3fffb;
+}
+
+.pmc-map-readiness-chip.is-needed:hover {
+    border-color: #111111;
+    box-shadow: 0 10px 24px rgba(17, 17, 17, 0.08);
+}
+
 .pmc-property-map-controls {
     display: grid;
     gap: 0.75rem;
@@ -1915,6 +2007,10 @@ body {
     .pmc-map-parcel {
         min-width: 5.6rem;
         padding: 0.6rem;
+    }
+
+    .pmc-map-readiness-actions {
+        grid-template-columns: 1fr;
     }
 
     .pmc-property-map-detail dl,

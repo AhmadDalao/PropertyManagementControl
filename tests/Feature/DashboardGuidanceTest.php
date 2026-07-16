@@ -106,6 +106,12 @@ class DashboardGuidanceTest extends TestCase
                 ->where('propertyMap.assets.0.zone', 'North Zone')
                 ->where('propertyMap.assets.0.land_number', 'NZ-44')
                 ->where('propertyMap.assets.0.href', route('assets.show', $mappedAsset))
+                ->where('propertyMap.assets.0.edit_href', route('assets.edit', $mappedAsset))
+                ->where('propertyMap.assets.0.has_identity', true)
+                ->where('propertyMap.summary.ready', 1)
+                ->where('propertyMap.summary.needs_position', 0)
+                ->where('propertyMap.summary.needs_identity', 0)
+                ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 100.0)
                 ->where('propertyMap.assets', fn ($assets) => collect($assets)->contains('code', 'NORTH-LAND')
                     && ! collect($assets)->contains('code', 'FOREIGN-LAND'))
             );
@@ -171,6 +177,10 @@ class DashboardGuidanceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('dashboard')
                 ->where('propertyMap.summary.total', 2)
+                ->where('propertyMap.summary.ready', 1)
+                ->where('propertyMap.summary.needs_position', 1)
+                ->where('propertyMap.summary.needs_identity', 1)
+                ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 50.0)
                 ->where('propertyMap.assets', fn ($assets) => collect($assets)->contains('code', 'MAIN-PARCEL')
                     && collect($assets)->contains('code', 'RETAIL-12')
                     && ! collect($assets)->contains('code', 'OFFICE-2'))
@@ -197,6 +207,10 @@ class DashboardGuidanceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('dashboard')
                 ->where('propertyMap.summary.total', 22)
+                ->where('propertyMap.summary.ready', 0)
+                ->where('propertyMap.summary.needs_position', 22)
+                ->where('propertyMap.summary.needs_identity', 22)
+                ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 0.0)
                 ->has('propertyMap.assets', 22)
             );
     }
