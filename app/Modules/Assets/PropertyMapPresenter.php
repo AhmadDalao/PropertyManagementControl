@@ -8,11 +8,16 @@ use Illuminate\Database\Eloquent\Builder;
 class PropertyMapPresenter
 {
     /**
+     * These are shown by default because they represent land/property-level records.
+     */
+    private const MAP_ASSET_TYPES = ['property', 'building', 'space'];
+
+    /**
      * @return array{assets:array<int, array<string, mixed>>,summary:array<string, mixed>}
      */
     public function forQuery(Builder $assetQuery): array
     {
-        $assets = (clone $assetQuery)
+        $allAssets = (clone $assetQuery)
             ->with(['portfolio', 'stakeholders.user'])
             ->withCount([
                 'children',
@@ -20,23 +25,16 @@ class PropertyMapPresenter
                 'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
                 'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
             ])
-            ->whereIn('asset_type', ['property', 'building', 'space'])
             ->orderByRaw("CASE asset_type WHEN 'property' THEN 0 WHEN 'building' THEN 1 WHEN 'space' THEN 2 ELSE 3 END")
             ->orderBy('title_en')
             ->get();
 
+        $assets = $allAssets
+            ->filter(fn (Asset $asset) => $this->isMapCandidate($asset))
+            ->values();
+
         if ($assets->isEmpty()) {
-            $assets = (clone $assetQuery)
-                ->with(['portfolio', 'stakeholders.user'])
-                ->withCount([
-                    'children',
-                    'children as rentable_children_count' => fn (Builder $query) => $query->where('rentable', true),
-                    'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
-                    'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
-                ])
-                ->orderBy('title_en')
-                ->limit(18)
-                ->get();
+            $assets = $allAssets->values();
         }
 
         $bounds = $this->coordinateBounds($assets);
@@ -53,6 +51,18 @@ class PropertyMapPresenter
                 'zones' => collect($mappedAssets)->pluck('zone')->filter()->unique()->values()->all(),
             ],
         ];
+    }
+
+    private function isMapCandidate(Asset $asset): bool
+    {
+        if (in_array($asset->asset_type, self::MAP_ASSET_TYPES, true)) {
+            return true;
+        }
+
+        $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
+
+        return collect(['zone', 'land_number', 'latitude', 'longitude', 'x', 'y'])
+            ->contains(fn (string $key) => isset($map[$key]) && $map[$key] !== '');
     }
 
     /**

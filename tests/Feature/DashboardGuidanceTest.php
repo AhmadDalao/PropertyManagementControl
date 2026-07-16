@@ -135,6 +135,72 @@ class DashboardGuidanceTest extends TestCase
             );
     }
 
+    public function test_owner_dashboard_map_includes_child_assets_with_explicit_land_metadata(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $building = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Main Parcel',
+            'code' => 'MAIN-PARCEL',
+        ]);
+        $mappedUnit = $this->createAsset($portfolio, [
+            'parent_id' => $building->id,
+            'asset_type' => 'unit',
+            'title_en' => 'Retail Parcel 12',
+            'code' => 'RETAIL-12',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Retail Strip',
+                    'land_number' => 'RS-12',
+                    'x' => 52,
+                    'y' => 44,
+                ],
+            ],
+        ]);
+        $this->createAsset($portfolio, [
+            'parent_id' => $building->id,
+            'asset_type' => 'unit',
+            'title_en' => 'Back Office 2',
+            'code' => 'OFFICE-2',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('propertyMap.summary.total', 2)
+                ->where('propertyMap.assets', fn ($assets) => collect($assets)->contains('code', 'MAIN-PARCEL')
+                    && collect($assets)->contains('code', 'RETAIL-12')
+                    && ! collect($assets)->contains('code', 'OFFICE-2'))
+                ->where('propertyMap.assets.1.href', route('assets.show', $mappedUnit))
+            );
+    }
+
+    public function test_owner_dashboard_map_fallback_has_no_artificial_cap(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        foreach (range(1, 22) as $index) {
+            $this->createAsset($portfolio, [
+                'asset_type' => 'unit',
+                'title_en' => sprintf('Fallback Unit %02d', $index),
+                'code' => sprintf('FALLBACK-UNIT-%02d', $index),
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('propertyMap.summary.total', 22)
+                ->has('propertyMap.assets', 22)
+            );
+    }
+
     public function test_module_registry_lists_core_operational_modules(): void
     {
         $modules = ModuleRegistry::operationalModules();
