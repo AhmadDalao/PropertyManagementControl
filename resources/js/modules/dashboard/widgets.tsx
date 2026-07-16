@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 import { currency } from '@/lib/utils';
 
@@ -120,6 +121,10 @@ export function PropertyMap({
     assets: PropertyMapAsset[];
     locale: 'en' | 'ar';
 }) {
+    const [selectedAssetId, setSelectedAssetId] = useState<number | null>(
+        assets[0]?.id ?? null,
+    );
+
     if (assets.length === 0) {
         return (
             <section className="pmc-property-map-card">
@@ -134,7 +139,8 @@ export function PropertyMap({
         );
     }
 
-    const featured = assets[0];
+    const selectedAsset =
+        assets.find((asset) => asset.id === selectedAssetId) ?? assets[0];
     const mappedCount = assets.filter((asset) => asset.has_coordinates).length;
     const zones = Array.from(
         new Set(assets.map((asset) => asset.zone).filter(Boolean)),
@@ -168,66 +174,97 @@ export function PropertyMap({
                 >
                     <div className="pmc-map-grid" />
                     {assets.map((asset) => (
-                        <Link
+                        <button
                             key={asset.id}
-                            href={asset.href}
-                            className={`pmc-map-parcel is-${asset.occupancy_status}`}
+                            type="button"
+                            className={`pmc-map-parcel is-${asset.occupancy_status} ${selectedAsset.id === asset.id ? 'is-selected' : ''}`}
                             style={{
                                 insetInlineStart: `${asset.x}%`,
                                 top: `${asset.y}%`,
                             }}
                             title={`${asset.zone ?? 'Zone'} · ${asset.land_number ?? asset.code}`}
+                            onClick={() => setSelectedAssetId(asset.id)}
                         >
-                            <span>{asset.zone}</span>
+                            <span>{asset.zone ?? 'No zone'}</span>
                             <strong>{asset.land_number ?? asset.code}</strong>
-                        </Link>
+                        </button>
                     ))}
                 </div>
 
                 <aside className="pmc-property-map-detail">
-                    <span>{featured.zone}</span>
-                    <h3>{featured.title}</h3>
+                    <span>{selectedAsset.zone ?? 'No zone recorded'}</span>
+                    <h3>{selectedAsset.title}</h3>
                     <p>
-                        {featured.land_number ?? featured.code} ·{' '}
-                        {featured.address ?? 'No address recorded'}
+                        {selectedAsset.land_number ?? selectedAsset.code} ·{' '}
+                        {selectedAsset.address ?? 'No address recorded'}
                     </p>
                     <dl>
                         <div>
                             <dt>Value</dt>
                             <dd>
                                 {currency(
-                                    featured.valuation_amount,
+                                    selectedAsset.valuation_amount,
                                     locale,
-                                    featured.currency,
+                                    selectedAsset.currency,
                                 )}
                             </dd>
                         </div>
                         <div>
                             <dt>Occupancy</dt>
-                            <dd>{featured.occupancy_status}</dd>
+                            <dd>{selectedAsset.occupancy_status}</dd>
                         </div>
                         <div>
                             <dt>Units</dt>
-                            <dd>{featured.rentable_children_count}</dd>
+                            <dd>{selectedAsset.rentable_children_count}</dd>
                         </div>
                         <div>
                             <dt>Open issues</dt>
-                            <dd>{featured.open_requests_count}</dd>
+                            <dd>{selectedAsset.open_requests_count}</dd>
+                        </div>
+                        <div>
+                            <dt>Owner</dt>
+                            <dd>{selectedAsset.owner ?? 'Not assigned'}</dd>
+                        </div>
+                        <div>
+                            <dt>Manager</dt>
+                            <dd>{selectedAsset.manager ?? 'Not assigned'}</dd>
+                        </div>
+                        <div>
+                            <dt>Active leases</dt>
+                            <dd>{selectedAsset.active_leases_count}</dd>
+                        </div>
+                        <div>
+                            <dt>Coordinates</dt>
+                            <dd>
+                                {selectedAsset.latitude !== null &&
+                                selectedAsset.latitude !== undefined &&
+                                selectedAsset.longitude !== null &&
+                                selectedAsset.longitude !== undefined
+                                    ? `${selectedAsset.latitude}, ${selectedAsset.longitude}`
+                                    : 'Not set'}
+                            </dd>
                         </div>
                     </dl>
-                    <Link href={featured.href} className="btn btn-primary">
-                        Open property details
+                    <Link href={selectedAsset.href} className="btn btn-primary">
+                        Open land details
                     </Link>
                 </aside>
             </div>
 
             <div className="pmc-property-map-list">
                 {assets.map((asset) => (
-                    <Link key={asset.id} href={asset.href}>
-                        <span>{asset.zone}</span>
+                    <button
+                        key={asset.id}
+                        type="button"
+                        className={
+                            selectedAsset.id === asset.id ? 'is-selected' : ''
+                        }
+                        onClick={() => setSelectedAssetId(asset.id)}
+                    >
+                        <span>{asset.zone ?? 'No zone'}</span>
                         <strong>{asset.land_number ?? asset.code}</strong>
                         <em>{asset.title}</em>
-                    </Link>
+                    </button>
                 ))}
             </div>
         </section>
