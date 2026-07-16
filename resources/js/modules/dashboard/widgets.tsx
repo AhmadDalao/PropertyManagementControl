@@ -279,20 +279,23 @@ export function PropertyMap({
                 >
                     <div className="pmc-map-grid" />
                     {visibleAssets.map((asset) => (
-                        <button
+                        <Link
                             key={asset.id}
-                            type="button"
+                            href={asset.href}
                             className={`pmc-map-parcel is-${asset.occupancy_status} ${selectedAsset.id === asset.id ? 'is-selected' : ''}`}
                             style={{
                                 insetInlineStart: `${asset.x}%`,
                                 top: `${asset.y}%`,
                             }}
                             title={`${asset.zone ?? 'Zone'} · ${asset.land_number ?? asset.code}`}
-                            onClick={() => setSelectedAssetId(asset.id)}
+                            aria-label={`Open ${asset.land_number ?? asset.code} details`}
+                            onFocus={() => setSelectedAssetId(asset.id)}
+                            onMouseEnter={() => setSelectedAssetId(asset.id)}
                         >
                             <span>{asset.zone ?? 'No zone'}</span>
                             <strong>{asset.land_number ?? asset.code}</strong>
-                        </button>
+                            <em>Open</em>
+                        </Link>
                     ))}
                     {!hasFilteredMap ? (
                         <div className="pmc-property-map-empty">
@@ -390,18 +393,20 @@ export function PropertyMap({
 
             <div className="pmc-property-map-list">
                 {visibleAssets.map((asset) => (
-                    <button
+                    <Link
                         key={asset.id}
-                        type="button"
+                        href={asset.href}
                         className={
                             selectedAsset.id === asset.id ? 'is-selected' : ''
                         }
-                        onClick={() => setSelectedAssetId(asset.id)}
+                        aria-label={`Open ${asset.land_number ?? asset.code} details`}
+                        onFocus={() => setSelectedAssetId(asset.id)}
+                        onMouseEnter={() => setSelectedAssetId(asset.id)}
                     >
                         <span>{asset.zone ?? 'No zone'}</span>
                         <strong>{asset.land_number ?? asset.code}</strong>
                         <em>{asset.title}</em>
-                    </button>
+                    </Link>
                 ))}
             </div>
         </section>

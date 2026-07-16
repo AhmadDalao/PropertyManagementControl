@@ -1437,6 +1437,20 @@ body {
     white-space: nowrap;
 }
 
+.pmc-map-parcel em {
+    width: max-content;
+    margin-top: 0.35rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 999px;
+    background: #ffca4b;
+    color: #111111;
+    font-size: 0.66rem;
+    font-style: normal;
+    font-weight: 950;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
 .pmc-map-parcel.is-occupied {
     border-color: #0c8a7c;
 }
@@ -1530,7 +1544,7 @@ body {
     gap: 0.55rem;
 }
 
-.pmc-property-map-list button {
+.pmc-property-map-list a {
     display: grid;
     grid-template-columns: minmax(4rem, 0.7fr) minmax(4rem, 0.8fr) minmax(
             0,
@@ -1549,8 +1563,8 @@ body {
     text-align: start;
 }
 
-.pmc-property-map-list button:hover,
-.pmc-property-map-list button.is-selected {
+.pmc-property-map-list a:hover,
+.pmc-property-map-list a.is-selected {
     border-color: #111111;
     background: #fffaf0;
 }
@@ -1904,7 +1918,7 @@ body {
     }
 
     .pmc-property-map-detail dl,
-    .pmc-property-map-list button,
+    .pmc-property-map-list a,
     .pmc-resource-spotlight dl {
         grid-template-columns: 1fr;
     }
