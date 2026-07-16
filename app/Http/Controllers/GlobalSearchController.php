@@ -13,6 +13,7 @@ use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Support\PortfolioModules;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -72,9 +73,15 @@ class GlobalSearchController extends Controller
 
         if ($this->moduleEnabled($actor, 'assets')) {
             $assetQuery = $this->scopeByPortfolio(Asset::query(), $actor);
-            $this->applySearch($assetQuery, $search, ['title_en', 'title_ar', 'code', 'address']);
+            $this->applySearch($assetQuery, $search, [
+                'title_en',
+                'title_ar',
+                'code',
+                'address',
+                fn (Builder $query, string $term, string $like) => $this->orWhereAssetMapMetadata($query, $like),
+            ]);
             foreach ($assetQuery->limit(6)->get() as $asset) {
-                $results[] = $this->result('Assets', $asset->title_en, $asset->code.' · '.$asset->asset_type, $asset->occupancy_status, route('assets.show', $asset));
+                $results[] = $this->result('Assets', $asset->title_en, $this->assetResultSubtitle($asset), $asset->occupancy_status, route('assets.show', $asset));
             }
         }
 
@@ -217,7 +224,13 @@ class GlobalSearchController extends Controller
         $actor = $this->actor($request);
 
         if ($this->moduleEnabled($actor, 'assets')) {
-            $asset = $this->scopeByPortfolio(Asset::query(), $actor)->where('code', $search)->first();
+            $asset = $this->scopeByPortfolio(Asset::query(), $actor)
+                ->where(function (Builder $query) use ($search): void {
+                    $query
+                        ->where('code', $search)
+                        ->orWhere('meta_json->map->land_number', $search);
+                })
+                ->first();
             if ($asset) {
                 return route('assets.show', $asset);
             }
@@ -295,5 +308,25 @@ class GlobalSearchController extends Controller
     private function moduleEnabled(User $actor, string $module): bool
     {
         return PortfolioModules::enabledForUser($actor, $module);
+    }
+
+    private function orWhereAssetMapMetadata(Builder $query, string $like): void
+    {
+        $query
+            ->orWhere('meta_json->map->zone', 'like', $like)
+            ->orWhere('meta_json->map->land_number', 'like', $like);
+    }
+
+    private function assetResultSubtitle(Asset $asset): string
+    {
+        $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
+        $parts = array_filter([
+            $asset->code,
+            $map['land_number'] ?? null,
+            $map['zone'] ?? null,
+            $asset->asset_type,
+        ]);
+
+        return implode(' · ', $parts);
     }
 }

@@ -34,7 +34,7 @@ class PortfolioModules
             ['key' => 'users', 'label' => 'Users', 'description' => 'Owner, manager, and tenant account management.'],
             ['key' => 'assets', 'label' => 'Assets', 'description' => 'Buildings, floors, units, spaces, valuations, and stakeholders.'],
             ['key' => 'tenants', 'label' => 'Tenants', 'description' => 'Tenant profiles, contacts, documents, and portal identities.'],
-            ['key' => 'leases', 'label' => 'Leases', 'description' => 'Contracts, lease status, statements, and signed files.'],
+            ['key' => 'leases', 'label' => 'Leases', 'description' => 'Contracts, lease status, statements, and signed PDFs.'],
             ['key' => 'payments', 'label' => 'Payments', 'description' => 'Manual rent posting, receipts, balances, and allocation history.'],
             ['key' => 'maintenance', 'label' => 'Maintenance', 'description' => 'Tenant requests, triage, updates, and service workflow.'],
             ['key' => 'expenses', 'label' => 'Expenses', 'description' => 'Maintenance costs, vendor expenses, and net revenue inputs.'],

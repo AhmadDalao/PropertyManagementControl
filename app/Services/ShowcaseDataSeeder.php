@@ -566,23 +566,25 @@ class ShowcaseDataSeeder
         ];
 
         foreach ($items as $item) {
-            $path = "showcase/documents/{$lease->code}-{$item['type']}.txt";
-            $content = "{$item['title_en']}\n\nShowcase document. Replace with PDF output or uploaded signed files.";
+            $path = "showcase/documents/{$lease->code}-{$item['type']}.pdf";
+            $content = $this->fakePdfContent($item['title_en']);
             Storage::disk('local')->put($path, $content);
 
             $document = Document::query()->updateOrCreate(
-                ['file_path' => $path],
                 [
                     'portfolio_id' => $portfolio->id,
-                    'uploaded_by_user_id' => $manager->id,
                     'documentable_type' => $lease->getMorphClass(),
                     'documentable_id' => $lease->id,
                     'type' => $item['type'],
+                ],
+                [
+                    'uploaded_by_user_id' => $manager->id,
                     'title_en' => $item['title_en'],
                     'title_ar' => $item['title_ar'],
                     'disk' => 'local',
+                    'file_path' => $path,
                     'original_name' => basename($path),
-                    'mime_type' => 'text/plain',
+                    'mime_type' => 'application/pdf',
                     'file_size' => strlen($content),
                     'is_public' => $item['type'] !== 'signed_contract',
                 ],
@@ -591,6 +593,11 @@ class ShowcaseDataSeeder
         }
 
         return $created;
+    }
+
+    private function fakePdfContent(string $title): string
+    {
+        return "%PDF-1.4\n1 0 obj<<>>endobj\n2 0 obj<</Length 72>>stream\nDemo PDF placeholder: {$title}\nGenerated for local showcase data only.\nendstream\nendobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
     }
 
     private function reportPresets(Portfolio $portfolio, User $owner): int

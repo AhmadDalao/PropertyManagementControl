@@ -172,7 +172,7 @@ const fallbackSections = [
                     },
                     {
                         title: 'Generate lease',
-                        body: 'Create contract, installments, deposit, and signed files.',
+                        body: 'Create contract, installments, deposit, and signed PDFs.',
                     },
                     {
                         title: 'Track operations',
@@ -273,7 +273,7 @@ const fallbackSections = [
                     {
                         icon: 'bi-file-earmark-text',
                         title: 'Lease lifecycle',
-                        body: 'Generate contracts, track periods, signed files, and days remaining.',
+                        body: 'Generate contracts, track periods, signed PDFs, and days remaining.',
                     },
                     {
                         icon: 'bi-person-badge',

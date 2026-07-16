@@ -70,6 +70,60 @@ class AdminTableSearchTest extends TestCase
             ->assertJsonMissing(['title' => 'Search Hidden']);
     }
 
+    public function test_asset_search_and_global_search_include_zone_and_land_number_metadata(): void
+    {
+        $ownerPortfolio = $this->createPortfolio(['code' => 'MAP-A', 'slug' => 'map-a']);
+        $foreignPortfolio = $this->createPortfolio(['code' => 'MAP-B', 'slug' => 'map-b']);
+        $owner = $this->createUserWithRole('owner', $ownerPortfolio);
+        $asset = $this->createAsset($ownerPortfolio, [
+            'title_en' => 'Mapped Owner Tower',
+            'code' => 'OWNER-MAP',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Owner North Gate',
+                    'land_number' => 'LAND-4488',
+                ],
+            ],
+        ]);
+        $this->createAsset($foreignPortfolio, [
+            'title_en' => 'Mapped Foreign Tower',
+            'code' => 'FOREIGN-MAP',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Foreign North Gate',
+                    'land_number' => 'FOREIGN-4488',
+                ],
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('assets.index', ['search' => 'LAND-4488', 'per_page' => 10]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/assets/index')
+                ->where('assets.total', 1)
+                ->where('assets.data.0.code', 'OWNER-MAP'));
+
+        $this->actingAs($owner)
+            ->getJson(route('global-search', ['q' => 'LAND-4488']))
+            ->assertOk()
+            ->assertJsonPath('direct_url', route('assets.show', $asset))
+            ->assertJsonFragment(['title' => 'Mapped Owner Tower'])
+            ->assertJsonMissing(['title' => 'Mapped Foreign Tower']);
+
+        $this->actingAs($owner)
+            ->getJson(route('global-search', ['q' => 'Owner North Gate']))
+            ->assertOk()
+            ->assertJsonFragment(['title' => 'Mapped Owner Tower'])
+            ->assertJsonMissing(['title' => 'Mapped Foreign Tower']);
+
+        $this->actingAs($owner)
+            ->getJson(route('global-search', ['q' => 'FOREIGN-4488']))
+            ->assertOk()
+            ->assertJsonPath('direct_url', '')
+            ->assertJsonMissing(['title' => 'Mapped Foreign Tower']);
+    }
+
     public function test_tenant_global_search_only_returns_tenant_owned_records(): void
     {
         $portfolio = $this->createPortfolio();

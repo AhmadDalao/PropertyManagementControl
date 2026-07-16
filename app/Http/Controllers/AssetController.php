@@ -56,6 +56,9 @@ class AssetController extends Controller
             'level_label',
             'unit_label',
             'address',
+            fn ($query, $search, $like) => $query
+                ->orWhere('meta_json->map->zone', 'like', $like)
+                ->orWhere('meta_json->map->land_number', 'like', $like),
             fn ($query, $search, $like) => $query->orWhereHas(
                 'parent',
                 fn ($parentQuery) => $parentQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)

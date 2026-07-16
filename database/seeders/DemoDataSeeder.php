@@ -459,8 +459,8 @@ class DemoDataSeeder extends Seeder
 
     private function document(Portfolio $portfolio, Lease $lease, User $uploader, string $type, string $titleEn, string $titleAr): void
     {
-        $path = "demo/documents/{$lease->code}-{$type}.txt";
-        $content = "{$titleEn}\n\nDemo document for {$lease->code}. Replace with generated PDF or uploaded signed contract in production.";
+        $path = "demo/documents/{$lease->code}-{$type}.pdf";
+        $content = $this->fakePdfContent($titleEn, $lease->code);
         Storage::disk('local')->put($path, $content);
 
         Document::query()->create([
@@ -474,10 +474,15 @@ class DemoDataSeeder extends Seeder
             'disk' => 'local',
             'file_path' => $path,
             'original_name' => basename($path),
-            'mime_type' => 'text/plain',
+            'mime_type' => 'application/pdf',
             'file_size' => strlen($content),
             'is_public' => false,
         ]);
+    }
+
+    private function fakePdfContent(string $title, string $leaseCode): string
+    {
+        return "%PDF-1.4\n1 0 obj<<>>endobj\n2 0 obj<</Length 84>>stream\nDemo PDF placeholder: {$title}\nLease: {$leaseCode}\nLocal demo data only.\nendstream\nendobj\ntrailer<</Root 1 0 R>>\n%%EOF\n";
     }
 
     private function seedCmsAndMedia(User $superadmin): void

@@ -241,7 +241,7 @@ export default function LeasesPage() {
                     <h1>Build the lease once. Let every balance follow it.</h1>
                     <p>
                         Create contracts against rentable assets, generate the
-                        billing schedule by frequency, upload signed files, and
+                        billing schedule by frequency, upload signed PDFs, and
                         keep payments tied to the exact due line.
                     </p>
                     <CreatePageShortcut

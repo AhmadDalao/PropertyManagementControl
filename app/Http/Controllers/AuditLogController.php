@@ -16,6 +16,7 @@ use App\Models\PaymentAllocation;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Services\XlsxWorkbook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\Activitylog\Models\Activity;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AuditLogController extends Controller
 {
@@ -54,7 +55,7 @@ class AuditLogController extends Controller
         ]);
     }
 
-    public function export(Request $request): StreamedResponse
+    public function export(Request $request, XlsxWorkbook $workbook): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -63,29 +64,28 @@ class AuditLogController extends Controller
         $query = $this->scopedActivityQuery($actor, $filters)->with(['causer', 'subject']);
         $this->applyAuditFilters($query, $filters);
 
-        return response()->streamDownload(function () use ($query): void {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['Date', 'Event', 'Subject Type', 'Subject', 'Causer', 'Description', 'Changed Fields']);
+        $rows = [['Date', 'Event', 'Subject Type', 'Subject', 'Causer', 'Description', 'Changed Fields']];
 
-            $query->orderByDesc('id')->chunk(500, function ($activities) use ($handle): void {
-                foreach ($activities as $activity) {
-                    $payload = $this->activityPayload($activity);
-                    fputcsv($handle, [
-                        $payload['created_at'],
-                        $payload['event'],
-                        $payload['subject_type_label'],
-                        $payload['subject_label'],
-                        $payload['causer_label'],
-                        $payload['description'],
-                        implode(', ', $payload['changed_keys']),
-                    ]);
-                }
-            });
+        $query->orderByDesc('id')->chunk(500, function ($activities) use (&$rows): void {
+            foreach ($activities as $activity) {
+                $payload = $this->activityPayload($activity);
+                $rows[] = [
+                    $payload['created_at'],
+                    $payload['event'],
+                    $payload['subject_type_label'],
+                    $payload['subject_label'],
+                    $payload['causer_label'],
+                    $payload['description'],
+                    implode(', ', $payload['changed_keys']),
+                ];
+            }
+        });
 
-            fclose($handle);
-        }, 'audit-log-'.now()->format('Ymd-His').'.csv', [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        $path = $workbook->create($rows, 'Audit History');
+
+        return response()->download($path, 'audit-log-'.now()->format('Ymd-His').'.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**

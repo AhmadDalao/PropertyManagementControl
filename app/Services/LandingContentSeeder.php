@@ -176,7 +176,7 @@ class LandingContentSeeder
                         ['title' => 'Add buildings, floors, units', 'body' => 'Build the asset tree with values, usage, and occupancy.'],
                         ['title' => 'Assign owner and manager', 'body' => 'Track who owns and who manages each asset.'],
                         ['title' => 'Create tenant', 'body' => 'Add tenant profile, contacts, documents, and portal account.'],
-                        ['title' => 'Generate lease', 'body' => 'Create the contract, installments, deposits, and signed files.'],
+                        ['title' => 'Generate lease', 'body' => 'Create the contract, installments, deposits, and signed PDFs.'],
                         ['title' => 'Track payments and maintenance', 'body' => 'Monitor due balances, receipts, expenses, and service requests.'],
                     ],
                 ],
@@ -229,7 +229,7 @@ class LandingContentSeeder
                     'headline' => 'Built around the actual property lifecycle.',
                     'items' => [
                         ['icon' => 'bi-diagram-3', 'title' => 'Asset control', 'body' => 'Model property, building, floor, unit, and space relationships.'],
-                        ['icon' => 'bi-file-earmark-text', 'title' => 'Lease lifecycle', 'body' => 'Generate contracts, track periods, signed files, and days remaining.'],
+                        ['icon' => 'bi-file-earmark-text', 'title' => 'Lease lifecycle', 'body' => 'Generate contracts, track periods, signed PDFs, and days remaining.'],
                         ['icon' => 'bi-person-badge', 'title' => 'Tenant portal', 'body' => 'Give tenants rent summaries, contract downloads, and maintenance intake.'],
                         ['icon' => 'bi-cash-stack', 'title' => 'Payment tracking', 'body' => 'Post manual payments, allocate installments, and monitor balances.'],
                         ['icon' => 'bi-tools', 'title' => 'Maintenance requests', 'body' => 'Route electrical, plumbing, and general issues to owners or managers.'],

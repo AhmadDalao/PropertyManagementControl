@@ -60,10 +60,10 @@ class AuditLogManagementTest extends TestCase
             ->get(route('audit-logs.export'))
             ->assertOk();
 
-        $csv = $export->streamedContent();
+        $sheetXml = $this->xlsxWorksheetXml($export);
 
-        $this->assertStringContainsString('Own Audit Unit', $csv);
-        $this->assertStringNotContainsString('Foreign Audit Unit', $csv);
+        $this->assertStringContainsString('Own Audit Unit', $sheetXml);
+        $this->assertStringNotContainsString('Foreign Audit Unit', $sheetXml);
     }
 
     public function test_superadmin_can_filter_audit_logs_by_portfolio(): void
