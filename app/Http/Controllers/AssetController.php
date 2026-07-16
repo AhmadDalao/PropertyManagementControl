@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Lease;
 use App\Models\User;
+use App\Modules\Assets\PropertyMapPresenter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ use Inertia\Response;
 
 class AssetController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, PropertyMapPresenter $propertyMap): Response
     {
         $actor = $this->actor($request);
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -44,6 +45,9 @@ class AssetController extends Controller
         if (($filters['rentable'] ?? 'all') !== 'all') {
             $assets->where('rentable', $filters['rentable'] === 'yes');
         }
+
+        $mapQuery = clone $baseQuery;
+        $this->applyExactFilter($mapQuery, $filters, 'portfolio_id');
 
         $this->applySearch($assets, $filters['search'], [
             'title_en',
@@ -81,6 +85,7 @@ class AssetController extends Controller
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
             'insights' => $this->assetInsights($baseQuery, $filters),
+            'propertyMap' => $propertyMap->forQuery($mapQuery),
             'portfolioOptions' => $this->portfolioOptions($actor),
             'parentOptions' => (clone $baseQuery)->orderBy('title_en')->get()->map(fn (Asset $asset) => [
                 'id' => $asset->id,

@@ -13,14 +13,17 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Services\XlsxWorkbook;
 use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminExportController extends Controller
 {
-    public function __invoke(Request $request, string $resource): StreamedResponse
+    public function __construct(private readonly XlsxWorkbook $workbook) {}
+
+    public function __invoke(Request $request, string $resource): BinaryFileResponse
     {
         $actor = $this->actor($request);
         abort_unless($this->isAllowedResource($resource), 404);
@@ -49,7 +52,7 @@ class AdminExportController extends Controller
         };
     }
 
-    private function exportPortfolios(Request $request): StreamedResponse
+    private function exportPortfolios(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all']);
@@ -57,7 +60,7 @@ class AdminExportController extends Controller
         $this->applyExactFilter($query, $filters, 'status');
         $this->applySearch($query, $filters['search'], ['name_en', 'name_ar', 'code', 'contact_email', 'city', 'country']);
 
-        return $this->csv('portfolios', ['Code', 'Name', 'Arabic Name', 'Status', 'City', 'Country', 'Users', 'Assets', 'Leases'], $query, fn (Portfolio $row) => [
+        return $this->xlsx('portfolios', ['Code', 'Name', 'Arabic Name', 'Status', 'City', 'Country', 'Users', 'Assets', 'Leases'], $query, fn (Portfolio $row) => [
             $row->code,
             $row->name_en,
             $row->name_ar,
@@ -70,7 +73,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportUsers(Request $request): StreamedResponse
+    private function exportUsers(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'role' => 'all']);
@@ -88,7 +91,7 @@ class AdminExportController extends Controller
             $query->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', $filters['role']));
         }
 
-        return $this->csv('users', ['Name', 'Email', 'Phone', 'Roles', 'Status', 'Portfolio'], $query, fn (User $row) => [
+        return $this->xlsx('users', ['Name', 'Email', 'Phone', 'Roles', 'Status', 'Portfolio'], $query, fn (User $row) => [
             $row->name,
             $row->email,
             $row->phone,
@@ -98,7 +101,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportAssets(Request $request): StreamedResponse
+    private function exportAssets(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'asset_type' => 'all', 'usage_type' => 'all', 'occupancy_status' => 'all', 'rentable' => 'all']);
@@ -115,7 +118,7 @@ class AdminExportController extends Controller
 
         $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'code', 'address', 'level_label', 'unit_label']);
 
-        return $this->csv('assets', ['Code', 'Title', 'Arabic Title', 'Type', 'Usage', 'Occupancy', 'Status', 'Rentable', 'Value', 'Currency', 'Parent', 'Portfolio'], $query, fn (Asset $row) => [
+        return $this->xlsx('assets', ['Code', 'Title', 'Arabic Title', 'Type', 'Usage', 'Occupancy', 'Status', 'Rentable', 'Value', 'Currency', 'Parent', 'Portfolio'], $query, fn (Asset $row) => [
             $row->code,
             $row->title_en,
             $row->title_ar,
@@ -131,7 +134,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportTenants(Request $request): StreamedResponse
+    private function exportTenants(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'profile_type' => 'all']);
@@ -145,7 +148,7 @@ class AdminExportController extends Controller
             fn ($query, $search, $like) => $query->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('phone', 'like', $like)),
         ]);
 
-        return $this->csv('tenants', ['Name', 'Email', 'Phone', 'Profile', 'National ID', 'Company', 'Status', 'Portfolio'], $query, fn (TenantProfile $row) => [
+        return $this->xlsx('tenants', ['Name', 'Email', 'Phone', 'Profile', 'National ID', 'Company', 'Status', 'Portfolio'], $query, fn (TenantProfile $row) => [
             $row->user?->name,
             $row->user?->email,
             $row->user?->phone,
@@ -157,7 +160,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportLeases(Request $request): StreamedResponse
+    private function exportLeases(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'payment_frequency' => 'all', 'date_from' => '', 'date_to' => '']);
@@ -168,7 +171,7 @@ class AdminExportController extends Controller
         $this->applyDateRange($query, $filters, 'started_at');
         $this->applySearch($query, $filters['search'], ['code']);
 
-        return $this->csv('leases', ['Code', 'Tenant', 'Asset', 'Status', 'Frequency', 'Start', 'End', 'Rent', 'Paid', 'Balance', 'Currency'], $query, fn (Lease $row) => [
+        return $this->xlsx('leases', ['Code', 'Tenant', 'Asset', 'Status', 'Frequency', 'Start', 'End', 'Rent', 'Paid', 'Balance', 'Currency'], $query, fn (Lease $row) => [
             $row->code,
             $row->tenantProfile?->user?->name,
             $row->leaseable?->title_en,
@@ -183,7 +186,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportPayments(Request $request): StreamedResponse
+    private function exportPayments(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'type' => 'all', 'method' => 'all', 'date_from' => '', 'date_to' => '']);
@@ -195,7 +198,7 @@ class AdminExportController extends Controller
         $this->applyDateRange($query, $filters, 'received_on');
         $this->applySearch($query, $filters['search'], ['reference', 'notes']);
 
-        return $this->csv('payments', ['Reference', 'Tenant', 'Lease', 'Date', 'Type', 'Method', 'Status', 'Amount', 'Currency'], $query, fn (Payment $row) => [
+        return $this->xlsx('payments', ['Reference', 'Tenant', 'Lease', 'Date', 'Type', 'Method', 'Status', 'Amount', 'Currency'], $query, fn (Payment $row) => [
             $row->reference ?: '#'.$row->id,
             $row->tenantProfile?->user?->name,
             $row->lease?->code,
@@ -208,7 +211,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportMaintenance(Request $request): StreamedResponse
+    private function exportMaintenance(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'category' => 'all', 'priority' => 'all', 'date_from' => '', 'date_to' => '']);
@@ -220,7 +223,7 @@ class AdminExportController extends Controller
         $this->applyDateRange($query, $filters, 'created_at');
         $this->applySearch($query, $filters['search'], ['title', 'description', 'category']);
 
-        return $this->csv('maintenance-requests', ['ID', 'Title', 'Tenant', 'Asset', 'Category', 'Priority', 'Status', 'Requested', 'Assigned To'], $query, fn (MaintenanceRequest $row) => [
+        return $this->xlsx('maintenance-requests', ['ID', 'Title', 'Tenant', 'Asset', 'Category', 'Priority', 'Status', 'Requested', 'Assigned To'], $query, fn (MaintenanceRequest $row) => [
             $row->id,
             $row->title,
             $row->tenantProfile?->user?->name,
@@ -233,7 +236,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportExpenses(Request $request): StreamedResponse
+    private function exportExpenses(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['status' => 'all', 'category' => 'all', 'date_from' => '', 'date_to' => '']);
@@ -244,7 +247,7 @@ class AdminExportController extends Controller
         $this->applyDateRange($query, $filters, 'incurred_on');
         $this->applySearch($query, $filters['search'], ['title', 'description', 'category', 'vendor_name']);
 
-        return $this->csv('expenses', ['Title', 'Asset', 'Category', 'Vendor', 'Date', 'Status', 'Amount', 'Currency'], $query, fn (ExpenseEntry $row) => [
+        return $this->xlsx('expenses', ['Title', 'Asset', 'Category', 'Vendor', 'Date', 'Status', 'Amount', 'Currency'], $query, fn (ExpenseEntry $row) => [
             $row->title,
             $row->asset?->title_en,
             $row->category,
@@ -256,7 +259,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportDocuments(Request $request): StreamedResponse
+    private function exportDocuments(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, [
@@ -285,7 +288,7 @@ class AdminExportController extends Controller
         $this->applyDateRange($query, $filters, 'created_at');
         $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
 
-        return $this->csv('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', 'Public', 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
+        return $this->xlsx('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', 'Public', 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
             $row->title_en,
             $row->title_ar,
             $row->type,
@@ -300,14 +303,14 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportCmsPages(Request $request): StreamedResponse
+    private function exportCmsPages(Request $request): BinaryFileResponse
     {
         $filters = $this->tableFilters($request, ['status' => 'all']);
         $query = CmsPage::query();
         $this->applyExactFilter($query, $filters, 'status');
         $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'slug', 'excerpt_en', 'excerpt_ar']);
 
-        return $this->csv('cms-pages', ['Title', 'Arabic Title', 'Slug', 'Status', 'Homepage', 'Visible', 'Published At'], $query, fn (CmsPage $row) => [
+        return $this->xlsx('cms-pages', ['Title', 'Arabic Title', 'Slug', 'Status', 'Homepage', 'Visible', 'Published At'], $query, fn (CmsPage $row) => [
             $row->title_en,
             $row->title_ar,
             $row->slug,
@@ -318,7 +321,7 @@ class AdminExportController extends Controller
         ]);
     }
 
-    private function exportMediaFiles(Request $request): StreamedResponse
+    private function exportMediaFiles(Request $request): BinaryFileResponse
     {
         $actor = $this->actor($request);
         $filters = $this->tableFilters($request, ['visibility' => 'all', 'collection' => 'all']);
@@ -328,7 +331,7 @@ class AdminExportController extends Controller
         $this->applyExactFilter($query, $filters, 'collection');
         $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'collection', 'path', 'mime_type']);
 
-        return $this->csv('media-files', ['Title', 'Collection', 'Visibility', 'Path', 'Mime Type', 'Size', 'Portfolio'], $query, fn (MediaFile $row) => [
+        return $this->xlsx('media-files', ['Title', 'Collection', 'Visibility', 'Path', 'Mime Type', 'Size', 'Portfolio'], $query, fn (MediaFile $row) => [
             $row->title_en ?: 'Media #'.$row->id,
             $row->collection,
             $row->visibility,
@@ -342,24 +345,22 @@ class AdminExportController extends Controller
     /**
      * @param  array<int, string>  $headers
      */
-    private function csv(string $resource, array $headers, Builder $query, callable $rowMapper): StreamedResponse
+    private function xlsx(string $resource, array $headers, Builder $query, callable $rowMapper): BinaryFileResponse
     {
-        $filename = $resource.'-export-'.now()->format('Ymd-His').'.csv';
+        $filename = $resource.'-export-'.now()->format('Ymd-His').'.xlsx';
+        $rows = [$headers];
 
-        return response()->streamDownload(function () use ($headers, $query, $rowMapper): void {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, $headers);
+        $query->orderByDesc('id')->chunk(500, function ($records) use (&$rows, $rowMapper): void {
+            foreach ($records as $record) {
+                $rows[] = array_values($rowMapper($record));
+            }
+        });
 
-            $query->orderByDesc('id')->chunk(500, function ($rows) use ($handle, $rowMapper): void {
-                foreach ($rows as $row) {
-                    fputcsv($handle, $rowMapper($row));
-                }
-            });
+        $path = $this->workbook->create($rows, str($resource)->headline()->toString());
 
-            fclose($handle);
-        }, $filename, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-        ]);
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     private function isAllowedResource(string $resource): bool

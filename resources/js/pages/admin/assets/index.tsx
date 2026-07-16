@@ -10,6 +10,8 @@ import { PageHeader } from '@/components/page-header';
 import { StatCard } from '@/components/stat-card';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { currency } from '@/lib/utils';
+import type { PropertyMapAsset } from '@/modules/dashboard/types';
+import { PropertyMap } from '@/modules/dashboard/widgets';
 import type {
     PaginatedData,
     SharedProps,
@@ -69,6 +71,14 @@ type PageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     insights: AssetInsights;
+    propertyMap: {
+        assets: PropertyMapAsset[];
+        summary: {
+            mapped: number;
+            total: number;
+            zones: string[];
+        };
+    };
     portfolioOptions: Array<{ id: number; name: string }>;
     parentOptions: Array<{
         id: number;
@@ -309,6 +319,11 @@ export default function AssetsPage() {
                     />
                 </div>
             </div>
+
+            <PropertyMap
+                assets={props.propertyMap.assets}
+                locale={props.app.locale}
+            />
 
             <div className="row g-4">
                 <div

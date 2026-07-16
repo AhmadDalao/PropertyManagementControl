@@ -111,6 +111,30 @@ class DashboardGuidanceTest extends TestCase
             );
     }
 
+    public function test_owner_dashboard_map_includes_every_scoped_property_without_capping(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        foreach (range(1, 24) as $index) {
+            $this->createAsset($portfolio, [
+                'asset_type' => 'building',
+                'title_en' => sprintf('Mapped Building %02d', $index),
+                'code' => sprintf('MAP-BLDG-%02d', $index),
+                'rentable' => false,
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('propertyMap.summary.total', 24)
+                ->has('propertyMap.assets', 24)
+            );
+    }
+
     public function test_module_registry_lists_core_operational_modules(): void
     {
         $modules = ModuleRegistry::operationalModules();

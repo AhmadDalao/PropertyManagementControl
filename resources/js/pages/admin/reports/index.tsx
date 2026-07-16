@@ -244,7 +244,7 @@ export default function ReportsPage() {
                     <div className="d-grid gap-2 mt-3">
                         <a href={exportHref} className="btn btn-primary">
                             <i className="bi bi-download me-2" />
-                            Export Excel report
+                            Export .xlsx report
                         </a>
                         <Link
                             href="/payments"

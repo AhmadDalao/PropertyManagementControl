@@ -1178,6 +1178,29 @@ body {
     gap: 1rem;
 }
 
+.pmc-property-map-summary {
+    display: flex;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+}
+
+.pmc-property-map-summary span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid #eadfce;
+    border-radius: 999px;
+    background: #fffaf0;
+    color: #111111;
+    font-size: 0.82rem;
+    font-weight: 850;
+}
+
+.pmc-property-map-summary strong {
+    font-weight: 950;
+}
+
 .pmc-property-map-canvas {
     position: relative;
     min-height: 21rem;

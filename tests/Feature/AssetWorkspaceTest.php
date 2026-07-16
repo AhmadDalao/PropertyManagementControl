@@ -146,4 +146,54 @@ class AssetWorkspaceTest extends TestCase
         $this->assertEquals(38.0, $asset->meta_json['map']['x']);
         $this->assertEquals(44.0, $asset->meta_json['map']['y']);
     }
+
+    public function test_asset_workspace_map_uses_latitude_and_longitude_for_positions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Alpha Tower',
+            'code' => 'ALPHA-MAP',
+            'rentable' => false,
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Alpha Zone',
+                    'land_number' => 'A-1',
+                    'latitude' => 24.0,
+                    'longitude' => 46.0,
+                ],
+            ],
+        ]);
+        $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Beta Tower',
+            'code' => 'BETA-MAP',
+            'rentable' => false,
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Beta Zone',
+                    'land_number' => 'B-2',
+                    'latitude' => 25.0,
+                    'longitude' => 47.0,
+                ],
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('assets.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/assets/index')
+                ->where('propertyMap.summary.total', 2)
+                ->where('propertyMap.summary.mapped', 2)
+                ->where('propertyMap.assets.0.code', 'ALPHA-MAP')
+                ->where('propertyMap.assets.0.x', fn (int|float $value) => (float) $value === 10.0)
+                ->where('propertyMap.assets.0.y', fn (int|float $value) => (float) $value === 90.0)
+                ->where('propertyMap.assets.1.code', 'BETA-MAP')
+                ->where('propertyMap.assets.1.x', fn (int|float $value) => (float) $value === 90.0)
+                ->where('propertyMap.assets.1.y', fn (int|float $value) => (float) $value === 10.0)
+            );
+    }
 }

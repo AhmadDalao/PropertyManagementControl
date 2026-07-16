@@ -9,7 +9,6 @@ use App\Models\ReportPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
-use ZipArchive;
 
 class ReportsManagementTest extends TestCase
 {
@@ -126,20 +125,7 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.export'))
             ->assertOk();
 
-        $this->assertStringContainsString(
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            (string) $export->headers->get('content-type'),
-        );
-        $this->assertStringContainsString('.xlsx', (string) $export->headers->get('content-disposition'));
-
-        $xlsxPath = $export->baseResponse->getFile()->getPathname();
-
-        $this->assertSame('PK', substr((string) file_get_contents($xlsxPath), 0, 2));
-
-        $zip = new ZipArchive();
-        $this->assertTrue($zip->open($xlsxPath));
-        $sheetXml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
-        $zip->close();
+        $sheetXml = $this->xlsxWorksheetXml($export);
 
         $this->assertStringContainsString('Own leak', $sheetXml);
         $this->assertStringNotContainsString('Foreign outage', $sheetXml);

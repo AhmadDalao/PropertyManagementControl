@@ -10,7 +10,9 @@ use App\Models\User;
 use App\Services\LeaseFinancialService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Testing\TestResponse;
 use Illuminate\Support\Str;
+use ZipArchive;
 
 abstract class TestCase extends BaseTestCase
 {
@@ -112,5 +114,24 @@ abstract class TestCase extends BaseTestCase
         }
 
         return $lease->fresh(['installments', 'tenantProfile.user', 'leaseable']);
+    }
+
+    protected function xlsxWorksheetXml(TestResponse $response): string
+    {
+        $this->assertStringContainsString(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            (string) $response->headers->get('content-type'),
+        );
+        $this->assertStringContainsString('.xlsx', (string) $response->headers->get('content-disposition'));
+
+        $path = $response->baseResponse->getFile()->getPathname();
+        $this->assertSame('PK', substr((string) file_get_contents($path), 0, 2));
+
+        $zip = new ZipArchive();
+        $this->assertTrue($zip->open($path));
+        $sheetXml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
+        $zip->close();
+
+        return $sheetXml;
     }
 }

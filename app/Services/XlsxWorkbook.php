@@ -10,7 +10,7 @@ class XlsxWorkbook
     /**
      * @param  array<int, array<int, mixed>>  $rows
      */
-    public function create(array $rows): string
+    public function create(array $rows, string $sheetName = 'Portfolio Report'): string
     {
         if (! class_exists(ZipArchive::class)) {
             throw new RuntimeException('The PHP zip extension is required to create XLSX files.');
@@ -30,7 +30,7 @@ class XlsxWorkbook
 
         $zip->addFromString('[Content_Types].xml', $this->contentTypes());
         $zip->addFromString('_rels/.rels', $this->rootRelationships());
-        $zip->addFromString('xl/workbook.xml', $this->workbook());
+        $zip->addFromString('xl/workbook.xml', $this->workbook($sheetName));
         $zip->addFromString('xl/_rels/workbook.xml.rels', $this->workbookRelationships());
         $zip->addFromString('xl/styles.xml', $this->styles());
         $zip->addFromString('xl/worksheets/sheet1.xml', $this->sheet($rows));
@@ -63,13 +63,15 @@ XML;
 XML;
     }
 
-    private function workbook(): string
+    private function workbook(string $sheetName): string
     {
-        return <<<'XML'
+        $sheetName = $this->sheetName($sheetName);
+
+        return <<<XML
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
     <sheets>
-        <sheet name="Portfolio Report" sheetId="1" r:id="rId1"/>
+        <sheet name="{$sheetName}" sheetId="1" r:id="rId1"/>
     </sheets>
 </workbook>
 XML;
@@ -158,5 +160,13 @@ XML;
         }
 
         return $letters.$row;
+    }
+
+    private function sheetName(string $sheetName): string
+    {
+        $sheetName = trim(preg_replace('/[:\\\\\\/\\?\\*\\[\\]]/', ' ', $sheetName) ?: 'Report');
+        $sheetName = mb_substr($sheetName, 0, 31) ?: 'Report';
+
+        return htmlspecialchars($sheetName, ENT_XML1 | ENT_COMPAT, 'UTF-8');
     }
 }

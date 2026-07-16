@@ -135,6 +135,10 @@ export function PropertyMap({
     }
 
     const featured = assets[0];
+    const mappedCount = assets.filter((asset) => asset.has_coordinates).length;
+    const zones = Array.from(
+        new Set(assets.map((asset) => asset.zone).filter(Boolean)),
+    );
 
     return (
         <section className="pmc-property-map-card">
@@ -144,6 +148,18 @@ export function PropertyMap({
                 actionHref="/assets"
                 actionLabel="Manage assets"
             />
+
+            <div className="pmc-property-map-summary">
+                <span>
+                    <strong>{assets.length}</strong> properties
+                </span>
+                <span>
+                    <strong>{mappedCount}</strong> positioned
+                </span>
+                <span>
+                    <strong>{zones.length}</strong> zones
+                </span>
+            </div>
 
             <div className="pmc-property-map-layout">
                 <div

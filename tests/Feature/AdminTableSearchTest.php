@@ -31,7 +31,7 @@ class AdminTableSearchTest extends TestCase
                 ->where('filters.search', 'Palm'));
     }
 
-    public function test_asset_csv_export_uses_the_same_portfolio_scope(): void
+    public function test_asset_excel_export_uses_the_same_portfolio_scope(): void
     {
         $ownerPortfolio = $this->createPortfolio(['code' => 'EXP-A', 'slug' => 'exp-a']);
         $foreignPortfolio = $this->createPortfolio(['code' => 'EXP-B', 'slug' => 'exp-b']);
@@ -43,7 +43,7 @@ class AdminTableSearchTest extends TestCase
         $response = $this->actingAs($owner)->get(route('exports.resource', ['resource' => 'assets', 'search' => 'Export']));
 
         $response->assertOk();
-        $content = $response->streamedContent();
+        $content = $this->xlsxWorksheetXml($response);
 
         $this->assertStringContainsString('EXPORT-YES', $content);
         $this->assertStringNotContainsString('EXPORT-NO', $content);

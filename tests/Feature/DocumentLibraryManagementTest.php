@@ -186,10 +186,10 @@ class DocumentLibraryManagementTest extends TestCase
             ->get(route('exports.resource', 'documents'))
             ->assertOk();
 
-        $csv = $export->streamedContent();
+        $sheetXml = $this->xlsxWorksheetXml($export);
 
-        $this->assertStringContainsString('Own lease contract', $csv);
-        $this->assertStringNotContainsString('Foreign lease contract', $csv);
+        $this->assertStringContainsString('Own lease contract', $sheetXml);
+        $this->assertStringNotContainsString('Foreign lease contract', $sheetXml);
     }
 
     public function test_tenant_cannot_open_the_admin_document_library(): void

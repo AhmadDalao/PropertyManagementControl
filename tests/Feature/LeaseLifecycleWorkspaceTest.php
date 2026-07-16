@@ -153,6 +153,36 @@ class LeaseLifecycleWorkspaceTest extends TestCase
         ]);
     }
 
+    public function test_signed_contract_upload_accepts_pdf_and_stores_document(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $tenantUser),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->actingAs($owner)
+            ->post(route('leases.signed-contract', $lease), [
+                'signed_contract' => UploadedFile::fake()->create('signed-contract.pdf', 64, 'application/pdf'),
+            ])
+            ->assertRedirect(route('leases.show', $lease));
+
+        $document = Document::query()
+            ->where('documentable_id', $lease->id)
+            ->where('type', 'signed_contract')
+            ->firstOrFail();
+
+        $this->assertSame('application/pdf', $document->mime_type);
+        $this->assertStringEndsWith('.pdf', $document->original_name);
+        Storage::disk('local')->assertExists($document->file_path);
+    }
+
     public function test_tenant_dashboard_exposes_secure_contract_document_and_receipt_links(): void
     {
         Storage::fake('local');

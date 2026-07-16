@@ -268,7 +268,7 @@ export default function DocumentsPage() {
                         </span>
                         <span>
                             <i className="bi bi-download" />
-                            CSV export ready
+                            Excel export ready
                         </span>
                     </div>
                 </div>
