@@ -122,15 +122,21 @@ class AssetController extends Controller
             'parent',
             'children',
             'stakeholders.user',
-            'leases.tenantProfile.user',
-            'leases.installments',
             'maintenanceRequests.tenantProfile.user',
             'maintenanceRequests.assignedTo',
             'expenses',
             'documents',
         ]);
 
-        $activeLease = $asset->leases->firstWhere('status', 'active');
+        $assetLeases = Lease::query()
+            ->with(['tenantProfile.user', 'installments'])
+            ->where('portfolio_id', $asset->portfolio_id)
+            ->where('leaseable_id', $asset->id)
+            ->whereIn('leaseable_type', $this->assetLeaseableTypes())
+            ->orderByDesc('started_at')
+            ->get();
+        $activeLease = $assetLeases->firstWhere('status', 'active');
+        $postedExpensesTotal = (float) $asset->expenses->where('status', 'posted')->sum('amount');
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
@@ -169,7 +175,9 @@ class AssetController extends Controller
                     ['label' => 'Valuation', 'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency, 'tone' => 'primary'],
                     ['label' => 'Occupancy', 'value' => $asset->occupancy_status, 'tone' => $asset->occupancy_status === 'occupied' ? 'teal' : 'muted'],
                     ['label' => 'Children', 'value' => $asset->children->count()],
+                    ['label' => 'Lease records', 'value' => $assetLeases->count(), 'tone' => $activeLease ? 'teal' : 'muted'],
                     ['label' => 'Open maintenance', 'value' => $asset->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count(), 'tone' => 'danger'],
+                    ['label' => 'Posted expenses', 'value' => number_format($postedExpensesTotal, 2).' '.$asset->currency, 'tone' => $postedExpensesTotal > 0 ? 'primary' : 'muted'],
                 ]),
                 'sections' => [
                     [
@@ -233,16 +241,49 @@ class AssetController extends Controller
                         'actionLabel' => 'Add child',
                     ],
                     [
+                        'title' => 'Leases',
+                        'description' => 'Active and historical contracts attached to this land or unit.',
+                        'columns' => ['Lease', 'Tenant', 'Status', 'Balance', 'Open'],
+                        'rows' => $assetLeases->map(fn (Lease $lease) => [
+                            'Lease' => $lease->code,
+                            'Tenant' => $lease->tenantProfile?->user?->name ?? '-',
+                            'Status' => $lease->status,
+                            'Balance' => number_format((float) $lease->balance_remaining, 2).' '.$lease->currency,
+                            'Open' => ['label' => 'Open', 'href' => route('leases.show', $lease)],
+                        ])->all(),
+                        'emptyText' => 'No leases attached to this asset yet.',
+                        'actionHref' => route('leases.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => 'Create lease',
+                    ],
+                    [
                         'title' => 'Maintenance',
                         'description' => 'Requests submitted for this asset.',
-                        'columns' => ['Request', 'Tenant', 'Status', 'Priority'],
+                        'columns' => ['Request', 'Tenant', 'Status', 'Priority', 'Open'],
                         'rows' => $asset->maintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
                             'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
                             'Tenant' => $maintenanceRequest->tenantProfile?->user?->name ?? '-',
                             'Status' => $maintenanceRequest->status,
                             'Priority' => $maintenanceRequest->priority,
+                            'Open' => ['label' => 'Open', 'href' => route('maintenance-requests.show', $maintenanceRequest)],
                         ])->all(),
                         'emptyText' => 'No maintenance requests for this asset.',
+                        'actionHref' => route('maintenance-requests.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => 'Create request',
+                    ],
+                    [
+                        'title' => 'Expenses',
+                        'description' => 'Costs attached to this property for net revenue reporting.',
+                        'columns' => ['Expense', 'Category', 'Status', 'Amount', 'Open'],
+                        'rows' => $asset->expenses->sortByDesc('incurred_on')->take(8)->map(fn ($expense) => [
+                            'Expense' => $expense->title,
+                            'Category' => $expense->category,
+                            'Status' => $expense->status,
+                            'Amount' => number_format((float) $expense->amount, 2).' '.$expense->currency,
+                            'Open' => ['label' => 'Open', 'href' => route('expenses.show', $expense)],
+                        ])->values()->all(),
+                        'emptyText' => 'No expenses recorded for this asset.',
+                        'actionHref' => route('expenses.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => 'Add expense',
                     ],
                 ],
                 'documents' => $this->documentStrip($asset->documents),

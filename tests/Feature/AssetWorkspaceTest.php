@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
+use App\Models\ExpenseEntry;
 use App\Models\Lease;
+use App\Models\MaintenanceRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -87,7 +89,7 @@ class AssetWorkspaceTest extends TestCase
             'portfolio_id' => $portfolio->id,
             'tenant_profile_id' => $tenant->id,
             'managed_by_user_id' => $owner->id,
-            'leaseable_type' => (new Asset())->getMorphClass(),
+            'leaseable_type' => (new Asset)->getMorphClass(),
             'leaseable_id' => $asset->id,
             'code' => 'ALIAS-LEASE',
             'status' => 'active',
@@ -250,6 +252,66 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.spotlight.items.5.value', '31, 36')
                 ->where('detailPage.spotlight.actions.0.href', route('assets.index'))
                 ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
+            );
+    }
+
+    public function test_asset_detail_links_operational_records_for_owner_decisions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Decision Tenant']);
+        $tenantProfile = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Decision Parcel',
+            'code' => 'DECISION-PARCEL',
+            'currency' => 'SAR',
+        ]);
+        $lease = $this->createLease($portfolio, $tenantProfile, $asset, $owner);
+        $request = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenantProfile->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'electrical',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => 'Panel issue',
+            'description' => 'Breaker panel needs inspection.',
+            'requested_at' => now(),
+        ]);
+        $expense = ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'created_by_user_id' => $owner->id,
+            'title' => 'Panel repair',
+            'category' => 'electrical',
+            'status' => 'posted',
+            'amount' => 350,
+            'currency' => 'SAR',
+            'incurred_on' => now()->toDateString(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('assets.show', $asset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.stats.3.value', 1)
+                ->where('detailPage.stats.4.value', 1)
+                ->where('detailPage.stats.5.value', '350.00 SAR')
+                ->where('detailPage.related.1.title', 'Leases')
+                ->where('detailPage.related.1.rows.0.Lease', $lease->code)
+                ->where('detailPage.related.1.rows.0.Open.href', route('leases.show', $lease))
+                ->where('detailPage.related.1.actionHref', route('leases.create', ['asset_id' => $asset->id]))
+                ->where('detailPage.related.2.title', 'Maintenance')
+                ->where('detailPage.related.2.rows.0.Request', '#'.$request->id.' Panel issue')
+                ->where('detailPage.related.2.rows.0.Open.href', route('maintenance-requests.show', $request))
+                ->where('detailPage.related.2.actionHref', route('maintenance-requests.create', ['asset_id' => $asset->id]))
+                ->where('detailPage.related.3.title', 'Expenses')
+                ->where('detailPage.related.3.rows.0.Expense', 'Panel repair')
+                ->where('detailPage.related.3.rows.0.Open.href', route('expenses.show', $expense))
+                ->where('detailPage.related.3.actionHref', route('expenses.create', ['asset_id' => $asset->id]))
             );
     }
 }
