@@ -196,4 +196,60 @@ class AssetWorkspaceTest extends TestCase
                 ->where('propertyMap.assets.1.y', fn (int|float $value) => (float) $value === 10.0)
             );
     }
+
+    public function test_asset_detail_exposes_clicked_land_spotlight(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Land Owner']);
+        $manager = $this->createUserWithRole('property_manager', $portfolio, ['name' => 'Land Manager']);
+        $asset = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Riyadh Parcel Tower',
+            'code' => 'RPT-77',
+            'address' => 'King Fahd Road',
+            'occupancy_status' => 'occupied',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Riyadh Prime',
+                    'land_number' => 'RP-77',
+                    'latitude' => 24.7136,
+                    'longitude' => 46.6753,
+                    'x' => 31,
+                    'y' => 36,
+                ],
+            ],
+        ]);
+        $asset->stakeholders()->createMany([
+            [
+                'portfolio_id' => $portfolio->id,
+                'user_id' => $owner->id,
+                'relationship_type' => 'owner',
+                'is_primary' => true,
+            ],
+            [
+                'portfolio_id' => $portfolio->id,
+                'user_id' => $manager->id,
+                'relationship_type' => 'manager',
+                'is_primary' => true,
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('assets.show', $asset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.spotlight.eyebrow', 'Clicked land record')
+                ->where('detailPage.spotlight.title', 'RP-77')
+                ->where('detailPage.spotlight.subtitle', 'Riyadh Prime')
+                ->where('detailPage.spotlight.description', 'King Fahd Road')
+                ->where('detailPage.spotlight.status', 'Occupied')
+                ->where('detailPage.spotlight.items.2.value', 'Land Owner')
+                ->where('detailPage.spotlight.items.3.value', 'Land Manager')
+                ->where('detailPage.spotlight.items.4.value', '24.7136, 46.6753')
+                ->where('detailPage.spotlight.items.5.value', '31, 36')
+                ->where('detailPage.spotlight.actions.0.href', route('assets.index'))
+                ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
+            );
+    }
 }

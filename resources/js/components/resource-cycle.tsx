@@ -56,6 +56,16 @@ export type DetailSection = {
     items: DetailItem[];
 };
 
+export type ResourceSpotlight = {
+    eyebrow?: string;
+    title: string;
+    subtitle?: string;
+    description?: string;
+    status?: string;
+    items?: DetailItem[];
+    actions?: ResourceAction[];
+};
+
 export type RelatedTable = {
     title: string;
     description?: string;
@@ -195,6 +205,7 @@ export function ResourceFormShell({
 
 export function ResourceDetailShell({
     header,
+    spotlight,
     stats = [],
     sections = [],
     related = [],
@@ -202,6 +213,7 @@ export function ResourceDetailShell({
     timeline = [],
 }: {
     header: ResourceHeaderProps;
+    spotlight?: ResourceSpotlight;
     stats?: DetailItem[];
     sections?: DetailSection[];
     related?: RelatedTable[];
@@ -223,6 +235,10 @@ export function ResourceDetailShell({
     return (
         <>
             <ResourceHeader {...header} />
+
+            {spotlight ? (
+                <ResourceSpotlightPanel spotlight={spotlight} />
+            ) : null}
 
             {stats.length > 0 ? (
                 <section className="pmc-resource-stat-grid">
@@ -255,6 +271,62 @@ export function ResourceDetailShell({
                 </aside>
             </section>
         </>
+    );
+}
+
+function ResourceSpotlightPanel({
+    spotlight,
+}: {
+    spotlight: ResourceSpotlight;
+}) {
+    return (
+        <section className="pmc-resource-spotlight">
+            <div className="pmc-resource-spotlight-main">
+                <div>
+                    <div className="pmc-kicker mb-2">
+                        {spotlight.eyebrow ?? 'Record focus'}
+                    </div>
+                    <h2>{spotlight.title}</h2>
+                    {spotlight.subtitle ? (
+                        <strong>{spotlight.subtitle}</strong>
+                    ) : null}
+                    {spotlight.description ? (
+                        <p>{spotlight.description}</p>
+                    ) : null}
+                </div>
+                {spotlight.status ? <em>{spotlight.status}</em> : null}
+            </div>
+
+            {spotlight.items && spotlight.items.length > 0 ? (
+                <dl>
+                    {spotlight.items.map((item) => (
+                        <div key={item.label}>
+                            <dt>{item.label}</dt>
+                            <dd>
+                                {item.href ? (
+                                    <Link href={item.href}>
+                                        {item.value ?? '-'}
+                                    </Link>
+                                ) : (
+                                    (item.value ?? '-')
+                                )}
+                            </dd>
+                        </div>
+                    ))}
+                </dl>
+            ) : null}
+
+            {spotlight.actions && spotlight.actions.length > 0 ? (
+                <div className="pmc-resource-spotlight-actions">
+                    {spotlight.actions.map((action) => (
+                        <ActionLink
+                            key={`${action.href}-${action.label}`}
+                            action={action}
+                        />
+                    ))}
+                </div>
+            ) : null}
+        </section>
     );
 }
 

@@ -597,6 +597,108 @@ body {
     background: #fffaf0 !important;
 }
 
+.pmc-resource-spotlight {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #111111;
+    border-radius: 1rem;
+    background:
+        radial-gradient(
+            circle at 12% 18%,
+            rgba(255, 202, 75, 0.22),
+            transparent 9rem
+        ),
+        linear-gradient(135deg, #111111, #20242d);
+    color: #ffffff;
+}
+
+.pmc-resource-spotlight-main {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-resource-spotlight .pmc-kicker,
+.pmc-resource-spotlight p,
+.pmc-resource-spotlight dt {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.pmc-resource-spotlight h2 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(2rem, 6vw, 4rem);
+    font-weight: 950;
+    letter-spacing: -0.07em;
+    line-height: 0.9;
+}
+
+.pmc-resource-spotlight strong {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.4rem 0.65rem;
+    border-radius: 999px;
+    background: #ffca4b;
+    color: #111111;
+    font-size: 0.88rem;
+    font-weight: 950;
+}
+
+.pmc-resource-spotlight p {
+    max-width: 54rem;
+    margin: 0.75rem 0 0;
+}
+
+.pmc-resource-spotlight em {
+    display: inline-flex;
+    width: fit-content;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    color: #ffffff;
+    font-style: normal;
+    font-weight: 950;
+}
+
+.pmc-resource-spotlight dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.pmc-resource-spotlight dl > div {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 0.75rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.pmc-resource-spotlight dt {
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.pmc-resource-spotlight dd {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 950;
+}
+
+.pmc-resource-spotlight dd a {
+    color: #ffca4b;
+}
+
+.pmc-resource-spotlight-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
 .pmc-create-page-button {
     display: inline-flex;
     align-items: center;
@@ -1479,6 +1581,16 @@ body {
 }
 
 @media (min-width: 992px) {
+    .pmc-resource-spotlight {
+        grid-template-columns: minmax(0, 1.1fr) minmax(22rem, 0.9fr);
+        align-items: end;
+        padding: 1.2rem;
+    }
+
+    .pmc-resource-spotlight-actions {
+        grid-column: 1 / -1;
+    }
+
     .pmc-property-map-card {
         padding: 1.15rem;
     }
@@ -1792,7 +1904,8 @@ body {
     }
 
     .pmc-property-map-detail dl,
-    .pmc-property-map-list button {
+    .pmc-property-map-list button,
+    .pmc-resource-spotlight dl {
         grid-template-columns: 1fr;
     }
 }

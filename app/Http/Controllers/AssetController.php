@@ -143,6 +143,25 @@ class AssetController extends Controller
                         ['label' => 'Create lease', 'href' => route('leases.create', ['asset_id' => $asset->id]), 'variant' => 'secondary'],
                     ],
                 ],
+                'spotlight' => [
+                    'eyebrow' => 'Clicked land record',
+                    'title' => $this->assetMapMeta($asset, 'land_number') ?: $asset->code,
+                    'subtitle' => $this->assetMapMeta($asset, 'zone') ?: 'No zone recorded',
+                    'description' => $asset->address ?: 'No address recorded yet. Add the address and coordinates from Edit asset.',
+                    'status' => str($asset->occupancy_status)->headline()->toString(),
+                    'items' => $this->detailItems([
+                        ['label' => 'Property', 'value' => $asset->title_en],
+                        ['label' => 'Portfolio', 'value' => $asset->portfolio?->name_en],
+                        ['label' => 'Owner', 'value' => $asset->stakeholders->firstWhere('relationship_type', 'owner')?->user?->name ?? 'Not assigned'],
+                        ['label' => 'Manager', 'value' => $asset->stakeholders->firstWhere('relationship_type', 'manager')?->user?->name ?? 'Not assigned'],
+                        ['label' => 'Coordinates', 'value' => $this->assetCoordinateLabel($asset)],
+                        ['label' => 'Map position', 'value' => $this->mapPositionLabel($asset)],
+                    ]),
+                    'actions' => [
+                        ['label' => 'Back to map', 'href' => route('assets.index'), 'variant' => 'light'],
+                        ['label' => 'Edit map data', 'href' => route('assets.edit', $asset), 'variant' => 'primary'],
+                    ],
+                ],
                 'stats' => $this->detailItems([
                     ['label' => 'Valuation', 'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency, 'tone' => 'primary'],
                     ['label' => 'Occupancy', 'value' => $asset->occupancy_status, 'tone' => $asset->occupancy_status === 'occupied' ? 'teal' : 'muted'],
@@ -638,6 +657,18 @@ class AssetController extends Controller
         }
 
         return "{$x}, {$y}";
+    }
+
+    private function assetCoordinateLabel(Asset $asset): ?string
+    {
+        $latitude = $this->assetMapMeta($asset, 'latitude');
+        $longitude = $this->assetMapMeta($asset, 'longitude');
+
+        if ($latitude === null || $longitude === null) {
+            return null;
+        }
+
+        return "{$latitude}, {$longitude}";
     }
 
     /**
