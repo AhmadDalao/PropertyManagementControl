@@ -114,6 +114,10 @@ export function CycleMap({
     );
 }
 
+function isStringValue(value: unknown): value is string {
+    return typeof value === 'string' && value.trim() !== '';
+}
+
 export function PropertyMap({
     assets,
     locale,
@@ -124,6 +128,9 @@ export function PropertyMap({
     const [selectedAssetId, setSelectedAssetId] = useState<number | null>(
         assets[0]?.id ?? null,
     );
+    const [mapSearch, setMapSearch] = useState('');
+    const [zoneFilter, setZoneFilter] = useState('all');
+    const [occupancyFilter, setOccupancyFilter] = useState('all');
 
     if (assets.length === 0) {
         return (
@@ -139,12 +146,50 @@ export function PropertyMap({
         );
     }
 
-    const selectedAsset =
-        assets.find((asset) => asset.id === selectedAssetId) ?? assets[0];
-    const mappedCount = assets.filter((asset) => asset.has_coordinates).length;
+    const searchNeedle = mapSearch.trim().toLowerCase();
     const zones = Array.from(
-        new Set(assets.map((asset) => asset.zone).filter(Boolean)),
-    );
+        new Set(assets.map((asset) => asset.zone).filter(isStringValue)),
+    ).sort();
+    const occupancyStates = Array.from(
+        new Set(
+            assets.map((asset) => asset.occupancy_status).filter(isStringValue),
+        ),
+    ).sort();
+    const visibleAssets = assets.filter((asset) => {
+        const zoneMatches =
+            zoneFilter === 'all' || (asset.zone ?? '') === zoneFilter;
+        const occupancyMatches =
+            occupancyFilter === 'all' ||
+            asset.occupancy_status === occupancyFilter;
+        const searchMatches =
+            searchNeedle === '' ||
+            [
+                asset.title,
+                asset.code,
+                asset.zone,
+                asset.land_number,
+                asset.address,
+                asset.owner,
+                asset.manager,
+            ]
+                .filter(Boolean)
+                .some((value) =>
+                    String(value).toLowerCase().includes(searchNeedle),
+                );
+
+        return zoneMatches && occupancyMatches && searchMatches;
+    });
+    const selectedAsset =
+        visibleAssets.find((asset) => asset.id === selectedAssetId) ??
+        visibleAssets[0] ??
+        assets[0];
+    const mappedCount = assets.filter((asset) => asset.has_coordinates).length;
+    const hasFilteredMap = visibleAssets.length > 0;
+    const resetMapFilters = () => {
+        setMapSearch('');
+        setZoneFilter('all');
+        setOccupancyFilter('all');
+    };
 
     return (
         <section className="pmc-property-map-card">
@@ -167,13 +212,73 @@ export function PropertyMap({
                 </span>
             </div>
 
+            <div className="pmc-property-map-controls">
+                <label>
+                    <span>Find land</span>
+                    <input
+                        type="search"
+                        className="form-control"
+                        value={mapSearch}
+                        placeholder="Zone, land number, owner, manager..."
+                        onChange={(event) =>
+                            setMapSearch(event.currentTarget.value)
+                        }
+                    />
+                </label>
+                <label>
+                    <span>Zone</span>
+                    <select
+                        className="form-select"
+                        value={zoneFilter}
+                        onChange={(event) =>
+                            setZoneFilter(event.currentTarget.value)
+                        }
+                    >
+                        <option value="all">All zones</option>
+                        {zones.map((zone) => (
+                            <option key={zone} value={zone}>
+                                {zone}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <label>
+                    <span>Occupancy</span>
+                    <select
+                        className="form-select"
+                        value={occupancyFilter}
+                        onChange={(event) =>
+                            setOccupancyFilter(event.currentTarget.value)
+                        }
+                    >
+                        <option value="all">All occupancy</option>
+                        {occupancyStates.map((state) => (
+                            <option key={state} value={state}>
+                                {state}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+                <div className="pmc-property-map-filter-status">
+                    <strong>{visibleAssets.length}</strong>
+                    <span>of {assets.length} shown</span>
+                    <button
+                        type="button"
+                        className="btn btn-outline-secondary btn-sm"
+                        onClick={resetMapFilters}
+                    >
+                        Reset
+                    </button>
+                </div>
+            </div>
+
             <div className="pmc-property-map-layout">
                 <div
                     className="pmc-property-map-canvas"
                     aria-label="Property map"
                 >
                     <div className="pmc-map-grid" />
-                    {assets.map((asset) => (
+                    {visibleAssets.map((asset) => (
                         <button
                             key={asset.id}
                             type="button"
@@ -189,70 +294,102 @@ export function PropertyMap({
                             <strong>{asset.land_number ?? asset.code}</strong>
                         </button>
                     ))}
+                    {!hasFilteredMap ? (
+                        <div className="pmc-property-map-empty">
+                            <strong>No matching land records</strong>
+                            <span>
+                                Clear filters or create map metadata on the
+                                asset.
+                            </span>
+                        </div>
+                    ) : null}
                 </div>
 
-                <aside className="pmc-property-map-detail">
-                    <span>{selectedAsset.zone ?? 'No zone recorded'}</span>
-                    <h3>{selectedAsset.title}</h3>
-                    <p>
-                        {selectedAsset.land_number ?? selectedAsset.code} ·{' '}
-                        {selectedAsset.address ?? 'No address recorded'}
-                    </p>
-                    <dl>
-                        <div>
-                            <dt>Value</dt>
-                            <dd>
-                                {currency(
-                                    selectedAsset.valuation_amount,
-                                    locale,
-                                    selectedAsset.currency,
-                                )}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>Occupancy</dt>
-                            <dd>{selectedAsset.occupancy_status}</dd>
-                        </div>
-                        <div>
-                            <dt>Units</dt>
-                            <dd>{selectedAsset.rentable_children_count}</dd>
-                        </div>
-                        <div>
-                            <dt>Open issues</dt>
-                            <dd>{selectedAsset.open_requests_count}</dd>
-                        </div>
-                        <div>
-                            <dt>Owner</dt>
-                            <dd>{selectedAsset.owner ?? 'Not assigned'}</dd>
-                        </div>
-                        <div>
-                            <dt>Manager</dt>
-                            <dd>{selectedAsset.manager ?? 'Not assigned'}</dd>
-                        </div>
-                        <div>
-                            <dt>Active leases</dt>
-                            <dd>{selectedAsset.active_leases_count}</dd>
-                        </div>
-                        <div>
-                            <dt>Coordinates</dt>
-                            <dd>
-                                {selectedAsset.latitude !== null &&
-                                selectedAsset.latitude !== undefined &&
-                                selectedAsset.longitude !== null &&
-                                selectedAsset.longitude !== undefined
-                                    ? `${selectedAsset.latitude}, ${selectedAsset.longitude}`
-                                    : 'Not set'}
-                            </dd>
-                        </div>
-                    </dl>
-                    <Link href={selectedAsset.href} className="btn btn-primary">
-                        Open land details
-                    </Link>
-                </aside>
+                {hasFilteredMap ? (
+                    <aside className="pmc-property-map-detail">
+                        <span>{selectedAsset.zone ?? 'No zone recorded'}</span>
+                        <h3>{selectedAsset.title}</h3>
+                        <p>
+                            {selectedAsset.land_number ?? selectedAsset.code} ·{' '}
+                            {selectedAsset.address ?? 'No address recorded'}
+                        </p>
+                        <dl>
+                            <div>
+                                <dt>Value</dt>
+                                <dd>
+                                    {currency(
+                                        selectedAsset.valuation_amount,
+                                        locale,
+                                        selectedAsset.currency,
+                                    )}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>Occupancy</dt>
+                                <dd>{selectedAsset.occupancy_status}</dd>
+                            </div>
+                            <div>
+                                <dt>Units</dt>
+                                <dd>{selectedAsset.rentable_children_count}</dd>
+                            </div>
+                            <div>
+                                <dt>Open issues</dt>
+                                <dd>{selectedAsset.open_requests_count}</dd>
+                            </div>
+                            <div>
+                                <dt>Owner</dt>
+                                <dd>{selectedAsset.owner ?? 'Not assigned'}</dd>
+                            </div>
+                            <div>
+                                <dt>Manager</dt>
+                                <dd>
+                                    {selectedAsset.manager ?? 'Not assigned'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt>Active leases</dt>
+                                <dd>{selectedAsset.active_leases_count}</dd>
+                            </div>
+                            <div>
+                                <dt>Coordinates</dt>
+                                <dd>
+                                    {selectedAsset.latitude !== null &&
+                                    selectedAsset.latitude !== undefined &&
+                                    selectedAsset.longitude !== null &&
+                                    selectedAsset.longitude !== undefined
+                                        ? `${selectedAsset.latitude}, ${selectedAsset.longitude}`
+                                        : 'Not set'}
+                                </dd>
+                            </div>
+                        </dl>
+                        <Link
+                            href={selectedAsset.href}
+                            className="btn btn-primary"
+                        >
+                            Open land details
+                        </Link>
+                    </aside>
+                ) : (
+                    <aside className="pmc-property-map-detail">
+                        <span>No result selected</span>
+                        <h3>Clear the map filters</h3>
+                        <p>
+                            No property matches the current zone, occupancy, or
+                            search filter.
+                        </p>
+                        <button
+                            type="button"
+                            className="btn btn-primary"
+                            onClick={resetMapFilters}
+                        >
+                            Show all properties
+                        </button>
+                    </aside>
+                )}
             </div>
 
             <div className="pmc-property-map-list">
-                {assets.map((asset) => (
+                {visibleAssets.map((asset) => (
                     <button
                         key={asset.id}
                         type="button"

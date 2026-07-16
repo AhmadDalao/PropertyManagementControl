@@ -16,6 +16,20 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
         label: 'Command',
         items: [
             { label: 'Dashboard', href: '/dashboard', icon: 'bi-grid-1x2' },
+            {
+                label: 'Assets & Map',
+                href: '/assets',
+                icon: 'bi-map',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'assets',
+            },
+            {
+                label: 'Reports',
+                href: '/reports',
+                icon: 'bi-graph-up-arrow',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'reports',
+            },
         ],
     },
     {
@@ -33,13 +47,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-people',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'users',
-            },
-            {
-                label: 'Assets & Map',
-                href: '/assets',
-                icon: 'bi-map',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'assets',
             },
             {
                 label: 'Tenants',
@@ -79,18 +86,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-folder2-open',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'documents',
-            },
-        ],
-    },
-    {
-        label: 'Reports',
-        items: [
-            {
-                label: 'Reports',
-                href: '/reports',
-                icon: 'bi-graph-up-arrow',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'reports',
             },
             {
                 label: 'Expenses',
