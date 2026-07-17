@@ -522,6 +522,116 @@ body {
     line-height: 1;
 }
 
+.pmc-owner-map-command {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(10rem, 0.45fr) minmax(
+            14rem,
+            0.65fr
+        );
+    gap: 1rem;
+    align-items: stretch;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #eadfce;
+    border-radius: 1rem;
+    background:
+        radial-gradient(
+            circle at 0% 0%,
+            rgba(255, 202, 75, 0.22),
+            transparent 11rem
+        ),
+        linear-gradient(135deg, #fffaf0, #ffffff 58%, #f4fffb);
+}
+
+.pmc-owner-map-command h2 {
+    margin: 0;
+    color: #111111;
+    font-size: clamp(1.6rem, 3vw, 2.25rem);
+    font-weight: 950;
+    letter-spacing: -0.055em;
+}
+
+.pmc-owner-map-command p {
+    max-width: 48rem;
+    margin: 0.5rem 0 0;
+    color: var(--pmc-clean-muted);
+    font-weight: 750;
+    line-height: 1.55;
+}
+
+.pmc-owner-map-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1rem;
+}
+
+.pmc-owner-map-scorecard,
+.pmc-owner-map-flags > div {
+    display: grid;
+    align-content: center;
+    gap: 0.25rem;
+    min-height: 8rem;
+    padding: 1rem;
+    border-radius: 0.85rem;
+}
+
+.pmc-owner-map-scorecard {
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+}
+
+.pmc-owner-map-scorecard span,
+.pmc-owner-map-scorecard small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.pmc-owner-map-scorecard strong {
+    color: #ffffff;
+    font-size: clamp(2rem, 4vw, 2.8rem);
+    font-weight: 950;
+    letter-spacing: -0.06em;
+    line-height: 1;
+}
+
+.pmc-owner-map-flags {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+}
+
+.pmc-owner-map-flags > div {
+    min-height: 0;
+    border: 1px solid #eadfce;
+    background: #ffffff;
+}
+
+.pmc-owner-map-flags > div.is-needed {
+    border-color: #f2d5c5;
+    background: #fff4eb;
+}
+
+.pmc-owner-map-flags > div.is-clear {
+    border-color: #b8eadf;
+    background: #f0fffb;
+}
+
+.pmc-owner-map-flags span {
+    color: var(--pmc-clean-muted);
+    font-size: 0.76rem;
+    font-weight: 900;
+}
+
+.pmc-owner-map-flags strong {
+    color: #111111;
+    font-size: 2rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
 .pmc-portfolio-command-card span,
 .pmc-portfolio-command-card small,
 .pmc-lease-command-card span,
@@ -2225,6 +2335,10 @@ body {
         grid-template-columns: auto minmax(0, 1fr) auto;
     }
 
+    .pmc-owner-map-command {
+        grid-template-columns: 1fr;
+    }
+
     .pmc-global-search {
         grid-column: 2;
         width: 100%;
@@ -2322,7 +2436,8 @@ body {
     .pmc-table-head-actions > *,
     .pmc-page-actions > *,
     .pmc-resource-actions > *,
-    .pmc-command-actions > * {
+    .pmc-command-actions > *,
+    .pmc-owner-map-actions > * {
         width: 100%;
     }
 
@@ -2452,6 +2567,10 @@ body {
 }
 
 @media (max-width: 575.98px) {
+    .pmc-owner-map-flags {
+        grid-template-columns: 1fr;
+    }
+
     .pmc-map-setup-head,
     .pmc-map-setup-empty,
     .pmc-zone-directory-head,

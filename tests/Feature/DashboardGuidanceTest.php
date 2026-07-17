@@ -146,7 +146,7 @@ class DashboardGuidanceTest extends TestCase
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
 
-        $this->createAsset($portfolio, [
+        $asset = $this->createAsset($portfolio, [
             'asset_type' => 'building',
             'title_en' => 'Unmapped Owner Building',
             'code' => 'UNMAPPED-OWNER',
@@ -162,6 +162,10 @@ class DashboardGuidanceTest extends TestCase
                     && $action['href'] === '/property-map'
                     && str_contains($action['description'], 'missing positions')
                     && str_contains($action['description'], 'missing zone/land labels')))
+                ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 0.0)
+                ->where('propertyMap.assets.0.code', 'UNMAPPED-OWNER')
+                ->where('propertyMap.assets.0.href', route('assets.show', $asset))
+                ->where('propertyMap.assets.0.edit_href', route('assets.edit', $asset))
             );
     }
 

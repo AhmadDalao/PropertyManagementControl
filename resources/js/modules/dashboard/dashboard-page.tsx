@@ -60,6 +60,7 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
     const setupChecklist = props.setupChecklist ?? [];
     const nextActions = props.nextActions ?? [];
     const propertyMapAssets = props.propertyMap?.assets ?? [];
+    const propertyMapSummary = props.propertyMap?.summary;
     const healthScore = operationsHealthScore(setupChecklist, props.stats);
     const cycleSteps = operationsCycleSteps(setupChecklist, props.stats);
 
@@ -140,10 +141,15 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
 
             <NextActionDeck actions={nextActions} />
 
+            <OwnerMapCommandPanel
+                assets={propertyMapAssets}
+                summary={propertyMapSummary}
+            />
+
             <PropertyMap
                 assets={propertyMapAssets}
                 locale={props.app.locale}
-                summary={props.propertyMap?.summary}
+                summary={propertyMapSummary}
             />
 
             <CycleMap steps={cycleSteps} />
@@ -401,6 +407,84 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                 </section>
             </div>
         </AdminLayout>
+    );
+}
+
+function OwnerMapCommandPanel({
+    assets,
+    summary,
+}: {
+    assets: NonNullable<DashboardPageProps['propertyMap']>['assets'];
+    summary?: NonNullable<DashboardPageProps['propertyMap']>['summary'];
+}) {
+    const total = summary?.total ?? assets.length;
+    const ready = summary?.ready ?? 0;
+    const needsPosition =
+        summary?.needs_position ??
+        assets.filter((asset) => !asset.has_coordinates).length;
+    const needsIdentity =
+        summary?.needs_identity ??
+        assets.filter((asset) => !asset.has_identity).length;
+    const coverage = summary?.coverage_percent ?? 0;
+    const firstIncomplete = assets.find(
+        (asset) => !asset.has_coordinates || !asset.has_identity,
+    );
+    const zoneCount = summary?.zones.length ?? 0;
+
+    return (
+        <section className="pmc-owner-map-command">
+            <div>
+                <div className="pmc-kicker mb-2">Owner map command</div>
+                <h2>{coverage}% map ready</h2>
+                <p>
+                    {total > 0
+                        ? 'Open every property by zone, land number, or map position. Fix missing map data before relying on field operations.'
+                        : 'Create property assets first, then add zone and land numbers to build the owner map.'}
+                </p>
+                <div className="pmc-owner-map-actions">
+                    <Link href="/property-map" className="btn btn-primary">
+                        <i className="bi bi-map me-2" />
+                        Open full map
+                    </Link>
+                    {firstIncomplete ? (
+                        <Link
+                            href={firstIncomplete.edit_href}
+                            className="btn btn-outline-secondary"
+                        >
+                            <i className="bi bi-pencil-square me-2" />
+                            Fix map data
+                        </Link>
+                    ) : (
+                        <Link
+                            href="/assets/create"
+                            className="btn btn-outline-secondary"
+                        >
+                            <i className="bi bi-plus-lg me-2" />
+                            Create asset
+                        </Link>
+                    )}
+                </div>
+            </div>
+
+            <div className="pmc-owner-map-scorecard">
+                <span>Map readiness</span>
+                <strong>
+                    {ready}/{total}
+                </strong>
+                <small>{zoneCount} zones tracked</small>
+            </div>
+
+            <div className="pmc-owner-map-flags">
+                <div className={needsPosition > 0 ? 'is-needed' : 'is-clear'}>
+                    <span>Need position</span>
+                    <strong>{needsPosition}</strong>
+                </div>
+                <div className={needsIdentity > 0 ? 'is-needed' : 'is-clear'}>
+                    <span>Need zone / land</span>
+                    <strong>{needsIdentity}</strong>
+                </div>
+            </div>
+        </section>
     );
 }
 
