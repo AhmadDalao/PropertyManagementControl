@@ -250,8 +250,27 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.spotlight.items.3.value', 'Land Manager')
                 ->where('detailPage.spotlight.items.4.value', '24.7136, 46.6753')
                 ->where('detailPage.spotlight.items.5.value', '31, 36')
-                ->where('detailPage.spotlight.actions.0.href', route('assets.index'))
+                ->where('detailPage.spotlight.actions.0.href', route('property-map.index'))
                 ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
+            );
+    }
+
+    public function test_superadmin_asset_detail_back_to_map_keeps_portfolio_filter(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+        $asset = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Filtered Map Parcel',
+            'code' => 'FILTERED-PARCEL',
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('assets.show', $asset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.spotlight.actions.0.href', route('property-map.index', ['portfolio_id' => $portfolio->id]))
             );
     }
 

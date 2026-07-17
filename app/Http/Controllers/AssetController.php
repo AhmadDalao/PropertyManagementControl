@@ -137,6 +137,10 @@ class AssetController extends Controller
             ->get();
         $activeLease = $assetLeases->firstWhere('status', 'active');
         $postedExpensesTotal = (float) $asset->expenses->where('status', 'posted')->sum('amount');
+        $propertyMapHref = route(
+            'property-map.index',
+            $actor->hasRole('superadmin') ? ['portfolio_id' => $asset->portfolio_id] : []
+        );
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
@@ -167,7 +171,7 @@ class AssetController extends Controller
                         ['label' => 'Map position', 'value' => $this->mapPositionLabel($asset)],
                     ]),
                     'actions' => [
-                        ['label' => 'Back to map', 'href' => route('assets.index'), 'variant' => 'light'],
+                        ['label' => 'Back to map', 'href' => $propertyMapHref, 'variant' => 'light'],
                         ['label' => 'Edit map data', 'href' => route('assets.edit', $asset), 'variant' => 'primary'],
                     ],
                 ],
