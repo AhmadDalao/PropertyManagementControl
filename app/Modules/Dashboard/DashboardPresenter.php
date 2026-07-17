@@ -141,11 +141,12 @@ class DashboardPresenter
         ];
 
         $setupChecklist = $this->setupChecklist($user, $stats);
+        $propertyMap = $this->propertyMap->forQuery($assetQuery);
 
         return [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
             'stats' => $stats,
-            'nextActions' => $this->operationsNextActions($setupChecklist, $stats),
+            'nextActions' => $this->operationsNextActions($setupChecklist, $stats, $propertyMap['summary']),
             'charts' => [
                 'occupancy' => (clone $assetQuery)
                     ->selectRaw('occupancy_status, COUNT(*) as total')
@@ -171,7 +172,7 @@ class DashboardPresenter
                     ->pluck('total', 'status'),
             ],
             'setupChecklist' => $setupChecklist,
-            'propertyMap' => $this->propertyMap->forQuery($assetQuery),
+            'propertyMap' => $propertyMap,
             'expiringLeases' => $this->expiringLeases($leaseQuery),
             'arrearsLeases' => $this->arrearsLeases($leaseQuery),
             'cmsStatus' => [
@@ -263,7 +264,7 @@ class DashboardPresenter
      * @param  array<string, mixed>  $stats
      * @return array<int, array{label:string, description:string, href:string, icon:string}>
      */
-    private function operationsNextActions(array $setupChecklist, array $stats): array
+    private function operationsNextActions(array $setupChecklist, array $stats, array $mapSummary = []): array
     {
         $actions = [];
 
@@ -282,6 +283,19 @@ class DashboardPresenter
                 'description' => 'Assign priority, publish tenant updates, and record service cost.',
                 'href' => '/maintenance-requests',
                 'icon' => 'bi-tools',
+            ];
+        }
+
+        if ((int) ($mapSummary['total'] ?? 0) > 0 && (float) ($mapSummary['coverage_percent'] ?? 100) < 100) {
+            $actions[] = [
+                'label' => 'Complete property map',
+                'description' => sprintf(
+                    'Fix %d missing positions and %d missing zone/land labels before relying on the owner map.',
+                    (int) ($mapSummary['needs_position'] ?? 0),
+                    (int) ($mapSummary['needs_identity'] ?? 0),
+                ),
+                'href' => '/property-map',
+                'icon' => 'bi-map',
             ];
         }
 

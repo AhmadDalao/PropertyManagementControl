@@ -141,6 +141,30 @@ class DashboardGuidanceTest extends TestCase
             );
     }
 
+    public function test_owner_dashboard_surfaces_incomplete_property_map_as_next_action(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Unmapped Owner Building',
+            'code' => 'UNMAPPED-OWNER',
+            'rentable' => false,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('nextActions', fn ($actions) => collect($actions)->contains(fn ($action) => $action['label'] === 'Complete property map'
+                    && $action['href'] === '/property-map'
+                    && str_contains($action['description'], 'missing positions')
+                    && str_contains($action['description'], 'missing zone/land labels')))
+            );
+    }
+
     public function test_owner_dashboard_map_includes_child_assets_with_explicit_land_metadata(): void
     {
         $portfolio = $this->createPortfolio();
