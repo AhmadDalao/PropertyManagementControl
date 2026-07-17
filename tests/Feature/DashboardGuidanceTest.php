@@ -235,6 +235,9 @@ class DashboardGuidanceTest extends TestCase
                 ->where('propertyMap.summary.needs_position', 22)
                 ->where('propertyMap.summary.needs_identity', 22)
                 ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 0.0)
+                ->where('propertyMap.summary.zones', [])
+                ->where('propertyMap.assets.0.zone', null)
+                ->where('propertyMap.assets.0.land_number', null)
                 ->has('propertyMap.assets', 22)
             );
     }

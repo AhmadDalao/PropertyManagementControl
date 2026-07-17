@@ -114,9 +114,9 @@ class PropertyMapPresenter
     {
         $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
         $coordinates = $this->coordinates($map);
-        $hasIdentity = isset($map['zone'], $map['land_number'])
-            && trim((string) $map['zone']) !== ''
-            && trim((string) $map['land_number']) !== '';
+        $zone = $this->nonEmptyMapValue($map, 'zone');
+        $landNumber = $this->nonEmptyMapValue($map, 'land_number');
+        $hasIdentity = $zone !== null && $landNumber !== null;
         $fallbackX = 14 + (($index * 23) % 72);
         $fallbackY = 18 + (($index * 31) % 62);
         $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
@@ -134,8 +134,8 @@ class PropertyMapPresenter
             'valuation_amount' => (float) $asset->valuation_amount,
             'currency' => $asset->currency,
             'address' => $asset->address,
-            'zone' => $map['zone'] ?? 'Zone '.chr(65 + ($index % 6)),
-            'land_number' => $map['land_number'] ?? $asset->unit_label ?? $asset->code,
+            'zone' => $zone,
+            'land_number' => $landNumber,
             'latitude' => $coordinates['latitude'] ?? null,
             'longitude' => $coordinates['longitude'] ?? null,
             'x' => $this->mapPercent($map['x'] ?? null, $this->coordinateX($coordinates, $bounds) ?? $fallbackX),
@@ -214,5 +214,19 @@ class PropertyMapPresenter
         }
 
         return max(4, min(96, $fallback));
+    }
+
+    /**
+     * @param  array<string, mixed>  $map
+     */
+    private function nonEmptyMapValue(array $map, string $key): ?string
+    {
+        if (! isset($map[$key])) {
+            return null;
+        }
+
+        $value = trim((string) $map[$key]);
+
+        return $value === '' ? null : $value;
     }
 }

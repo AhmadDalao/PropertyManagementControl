@@ -92,6 +92,31 @@ class PropertyMapWorkspaceTest extends TestCase
                     && ! collect($assets)->contains('code', 'FILTERED-OUT')));
     }
 
+    public function test_property_map_does_not_fake_missing_zone_or_land_number(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Needs Real Map Data',
+            'code' => 'NEEDS-MAP-DATA',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('property-map.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/property-map/index')
+                ->where('propertyMap.summary.total', 1)
+                ->where('propertyMap.summary.ready', 0)
+                ->where('propertyMap.summary.needs_identity', 1)
+                ->where('propertyMap.summary.zones', [])
+                ->where('propertyMap.assets.0.zone', null)
+                ->where('propertyMap.assets.0.land_number', null)
+                ->where('propertyMap.assets.0.has_identity', false));
+    }
+
     public function test_tenant_cannot_open_the_admin_property_map(): void
     {
         $portfolio = $this->createPortfolio();

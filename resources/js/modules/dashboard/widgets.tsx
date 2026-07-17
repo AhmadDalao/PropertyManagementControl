@@ -339,13 +339,15 @@ export function PropertyMap({
                                 insetInlineStart: `${asset.x}%`,
                                 top: `${asset.y}%`,
                             }}
-                            title={`${asset.zone ?? 'Zone'} · ${asset.land_number ?? asset.code}`}
+                            title={`${asset.zone ?? 'No zone'} · ${asset.land_number ?? 'No land number'}`}
                             aria-label={`Open ${asset.land_number ?? asset.code} details`}
                             onFocus={() => setSelectedAssetId(asset.id)}
                             onMouseEnter={() => setSelectedAssetId(asset.id)}
                         >
                             <span>{asset.zone ?? 'No zone'}</span>
-                            <strong>{asset.land_number ?? asset.code}</strong>
+                            <strong>
+                                {asset.land_number ?? 'No land number'}
+                            </strong>
                             <em>Open</em>
                         </Link>
                     ))}
@@ -365,8 +367,9 @@ export function PropertyMap({
                         <span>{selectedAsset.zone ?? 'No zone recorded'}</span>
                         <h3>{selectedAsset.title}</h3>
                         <p>
-                            {selectedAsset.land_number ?? selectedAsset.code} ·{' '}
-                            {selectedAsset.address ?? 'No address recorded'}
+                            {selectedAsset.land_number ??
+                                'No land number recorded'}{' '}
+                            · {selectedAsset.address ?? 'No address recorded'}
                         </p>
                         <dl>
                             <div>
@@ -456,7 +459,7 @@ export function PropertyMap({
                         onMouseEnter={() => setSelectedAssetId(asset.id)}
                     >
                         <span>{asset.zone ?? 'No zone'}</span>
-                        <strong>{asset.land_number ?? asset.code}</strong>
+                        <strong>{asset.land_number ?? 'No land number'}</strong>
                         <em>{asset.title}</em>
                     </Link>
                 ))}
