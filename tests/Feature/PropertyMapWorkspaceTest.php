@@ -92,6 +92,52 @@ class PropertyMapWorkspaceTest extends TestCase
                     && ! collect($assets)->contains('code', 'FILTERED-OUT')));
     }
 
+    public function test_property_map_exposes_zone_and_land_directory_records_with_detail_links(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $northAsset = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'North Land 12',
+            'code' => 'NORTH-12',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'North Zone',
+                    'land_number' => 'NZ-12',
+                    'x' => 42,
+                    'y' => 35,
+                ],
+            ],
+        ]);
+        $southAsset = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'South Land 3',
+            'code' => 'SOUTH-03',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'South Zone',
+                    'land_number' => 'SZ-03',
+                    'x' => 58,
+                    'y' => 51,
+                ],
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('property-map.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/property-map/index')
+                ->where('propertyMap.summary.total', 2)
+                ->where('propertyMap.summary.zones', ['North Zone', 'South Zone'])
+                ->where('propertyMap.assets', fn ($assets) => collect($assets)->contains(fn ($asset) => $asset['zone'] === 'North Zone'
+                    && $asset['land_number'] === 'NZ-12'
+                    && $asset['href'] === route('assets.show', $northAsset))
+                    && collect($assets)->contains(fn ($asset) => $asset['zone'] === 'South Zone'
+                        && $asset['land_number'] === 'SZ-03'
+                        && $asset['href'] === route('assets.show', $southAsset))));
+    }
+
     public function test_property_map_does_not_fake_missing_zone_or_land_number(): void
     {
         $portfolio = $this->createPortfolio();

@@ -41,6 +41,7 @@ export default function PropertyMapPage() {
     const setupQueue = props.propertyMap.assets.filter(
         (asset) => !asset.has_coordinates || !asset.has_identity,
     );
+    const zoneDirectory = buildZoneDirectory(props.propertyMap.assets);
 
     const changePortfolio = (event: ChangeEvent<HTMLSelectElement>) => {
         const portfolioId = event.currentTarget.value;
@@ -152,7 +153,124 @@ export default function PropertyMapPage() {
                 locale={props.app.locale}
                 summary={props.propertyMap.summary}
             />
+
+            <ZoneLandDirectory zones={zoneDirectory} />
         </AdminLayout>
+    );
+}
+
+type ZoneDirectoryGroup = {
+    zone: string;
+    assets: PropertyMapAsset[];
+};
+
+function buildZoneDirectory(assets: PropertyMapAsset[]): ZoneDirectoryGroup[] {
+    const groups = assets.reduce<Record<string, PropertyMapAsset[]>>(
+        (directory, asset) => {
+            const zone = asset.zone?.trim() || 'No zone recorded';
+            directory[zone] = [...(directory[zone] ?? []), asset];
+
+            return directory;
+        },
+        {},
+    );
+
+    return Object.entries(groups)
+        .map(([zone, zoneAssets]) => ({
+            zone,
+            assets: [...zoneAssets].sort((first, second) =>
+                (first.land_number ?? first.code).localeCompare(
+                    second.land_number ?? second.code,
+                    undefined,
+                    { numeric: true },
+                ),
+            ),
+        }))
+        .sort((first, second) => {
+            if (first.zone === 'No zone recorded') {
+                return 1;
+            }
+
+            if (second.zone === 'No zone recorded') {
+                return -1;
+            }
+
+            return first.zone.localeCompare(second.zone, undefined, {
+                numeric: true,
+            });
+        });
+}
+
+function ZoneLandDirectory({ zones }: { zones: ZoneDirectoryGroup[] }) {
+    const totalAssets = zones.reduce(
+        (sum, group) => sum + group.assets.length,
+        0,
+    );
+
+    return (
+        <section className="pmc-zone-directory">
+            <div className="pmc-zone-directory-head">
+                <div>
+                    <div className="pmc-kicker mb-2">Zone directory</div>
+                    <h2>Browse by zone and land number.</h2>
+                    <p>
+                        Use this when the map is busy. Every land number opens
+                        the exact property detail page.
+                    </p>
+                </div>
+                <span>
+                    {zones.length} zones · {totalAssets} records
+                </span>
+            </div>
+
+            {zones.length === 0 ? (
+                <div className="pmc-zone-directory-empty">
+                    Create property assets to build the zone directory.
+                </div>
+            ) : (
+                <div className="pmc-zone-directory-grid">
+                    {zones.map((group) => {
+                        const readyCount = group.assets.filter(
+                            (asset) =>
+                                asset.has_coordinates && asset.has_identity,
+                        ).length;
+
+                        return (
+                            <article
+                                key={group.zone}
+                                className="pmc-zone-directory-card"
+                            >
+                                <header>
+                                    <div>
+                                        <span>Zone</span>
+                                        <strong>{group.zone}</strong>
+                                    </div>
+                                    <em>
+                                        {readyCount}/{group.assets.length} ready
+                                    </em>
+                                </header>
+
+                                <div className="pmc-zone-land-list">
+                                    {group.assets.map((asset) => (
+                                        <Link key={asset.id} href={asset.href}>
+                                            <div>
+                                                <span>
+                                                    {asset.land_number ??
+                                                        'No land number'}
+                                                </span>
+                                                <strong>{asset.title}</strong>
+                                                <small>{asset.code}</small>
+                                            </div>
+                                            <i className="bi bi-arrow-right" />
+                                        </Link>
+                                    ))}
+                                </div>
+                            </article>
+                        );
+                    })}
+                </div>
+            )}
+        </section>
     );
 }
 
