@@ -122,9 +122,9 @@ function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                               : 'Not production-ready yet. Build the cycle before relying on reports.'}
                     </p>
                     <div className="pmc-command-actions">
-                        <Link href="/assets" className="btn btn-primary">
+                        <Link href="/assets/create" className="btn btn-primary">
                             <i className="bi bi-plus-lg me-2" />
-                            Add asset
+                            Create asset
                         </Link>
                         <Link href="/reports" className="btn btn-light">
                             <i className="bi bi-bar-chart-line me-2" />

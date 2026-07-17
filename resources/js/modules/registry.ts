@@ -11,6 +11,30 @@ export type ModuleNavGroup = {
     items: ModuleNavItem[];
 };
 
+export const SIDEBAR_SHORTCUTS: ModuleNavItem[] = [
+    {
+        label: 'Create Asset',
+        href: '/assets/create',
+        icon: 'bi-plus-square',
+        roles: ['superadmin', 'owner', 'property_manager'],
+        module: 'assets',
+    },
+    {
+        label: 'Create Tenant',
+        href: '/tenants/create',
+        icon: 'bi-person-plus',
+        roles: ['superadmin', 'owner', 'property_manager'],
+        module: 'tenants',
+    },
+    {
+        label: 'Create Lease',
+        href: '/leases/create',
+        icon: 'bi-file-earmark-plus',
+        roles: ['superadmin', 'owner', 'property_manager'],
+        module: 'leases',
+    },
+];
+
 export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     {
         label: 'Command',
@@ -30,22 +54,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'reports',
             },
-            {
-                label: 'Documentation',
-                href: '/documentation',
-                icon: 'bi-journal-richtext',
-            },
         ],
     },
     {
-        label: 'Portfolio',
+        label: 'Property Cycle',
         items: [
-            {
-                label: 'Portfolios',
-                href: '/portfolios',
-                icon: 'bi-buildings',
-                roles: ['superadmin', 'owner', 'property_manager'],
-            },
             {
                 label: 'Assets Workspace',
                 href: '/assets',
@@ -67,11 +80,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'tenants',
             },
-        ],
-    },
-    {
-        label: 'Leasing & Service',
-        items: [
             {
                 label: 'Leases',
                 href: '/leases',
@@ -92,13 +100,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-tools',
                 module: 'maintenance',
             },
-            {
-                label: 'Expenses',
-                href: '/expenses',
-                icon: 'bi-receipt',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'expenses',
-            },
+        ],
+    },
+    {
+        label: 'Back Office',
+        items: [
             {
                 label: 'Documents',
                 href: '/documents',
@@ -106,11 +112,31 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'documents',
             },
+            {
+                label: 'Expenses',
+                href: '/expenses',
+                icon: 'bi-receipt',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'expenses',
+            },
         ],
     },
     {
-        label: 'Admin',
+        label: 'Setup & Control',
         items: [
+            {
+                label: 'Portfolios',
+                href: '/portfolios',
+                icon: 'bi-buildings',
+                roles: ['superadmin', 'owner', 'property_manager'],
+            },
+            {
+                label: 'Users & Roles',
+                href: '/users',
+                icon: 'bi-people',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'users',
+            },
             {
                 label: 'Website Control',
                 href: '/cms',
@@ -129,6 +155,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 href: '/audit-logs',
                 icon: 'bi-clock-history',
                 roles: ['superadmin', 'owner', 'property_manager'],
+            },
+            {
+                label: 'Documentation',
+                href: '/documentation',
+                icon: 'bi-journal-richtext',
             },
         ],
     },

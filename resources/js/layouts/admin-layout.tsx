@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { FlashBanner } from '@/components/flash-banner';
 import { GlobalSearch } from '@/components/global-search';
 import { LanguageSwitcher } from '@/components/language-switcher';
-import { MODULE_NAV_GROUPS } from '@/modules/registry';
+import { MODULE_NAV_GROUPS, SIDEBAR_SHORTCUTS } from '@/modules/registry';
 import type { ModuleNavItem } from '@/modules/registry';
 import type { SharedProps } from '@/types';
 
@@ -72,6 +72,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ...group,
         items: group.items.filter((item) => canUse(item)),
     })).filter((group) => group.items.length > 0);
+    const visibleShortcuts = SIDEBAR_SHORTCUTS.filter((item) => canUse(item));
 
     return (
         <div
@@ -102,6 +103,28 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <i className="bi bi-x-lg" />
                     </button>
                 </div>
+
+                {visibleShortcuts.length > 0 ? (
+                    <div
+                        className="pmc-sidebar-shortcuts"
+                        aria-label="Quick create"
+                    >
+                        <span>Quick create</span>
+                        <div>
+                            {visibleShortcuts.map((item) => (
+                                <Link
+                                    key={item.href}
+                                    href={item.href}
+                                    onClick={closeDrawer}
+                                    title={item.label}
+                                >
+                                    <i className={`bi ${item.icon}`} />
+                                    <strong>{item.label}</strong>
+                                </Link>
+                            ))}
+                        </div>
+                    </div>
+                ) : null}
 
                 <nav className="pmc-console-nav" aria-label="Admin navigation">
                     {visibleGroups.map((group) => (
