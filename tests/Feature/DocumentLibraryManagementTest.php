@@ -61,6 +61,11 @@ class DocumentLibraryManagementTest extends TestCase
         $this->assertSame('tenant_statement', $document->type);
         $this->assertFalse($document->is_public);
 
+        $this->actingAs($owner)
+            ->get(route('documents.download', $document))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
         $path = $document->file_path;
 
         $this->actingAs($owner)
@@ -137,6 +142,18 @@ class DocumentLibraryManagementTest extends TestCase
             ->assertSessionHasErrors('file');
 
         $this->assertDatabaseMissing('documents', ['title_en' => 'Spoofed signed contract']);
+
+        $this->actingAs($owner)
+            ->post(route('documents.store'), [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'title_en' => 'Wrong extension signed contract',
+                'file' => UploadedFile::fake()->create('signed-contract.txt', 64, 'application/pdf'),
+            ])
+            ->assertSessionHasErrors('file');
+
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Wrong extension signed contract']);
     }
 
     public function test_document_index_and_export_do_not_leak_foreign_portfolio_documents(): void

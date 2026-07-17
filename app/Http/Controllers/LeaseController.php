@@ -345,7 +345,7 @@ class LeaseController extends Controller
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
         $data = $request->validate([
-            'signed_contract' => ['required', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
+            'signed_contract' => ['required', 'file', 'extensions:pdf', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
         ]);
 
         $file = $data['signed_contract'];
@@ -403,7 +403,9 @@ class LeaseController extends Controller
             ],
         );
 
-        return response()->streamDownload(fn () => print ($content), $fileName);
+        return response()->streamDownload(fn () => print ($content), $fileName, [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     public function statement(Request $request, Lease $lease): StreamedResponse
@@ -414,7 +416,9 @@ class LeaseController extends Controller
 
         $pdf = Pdf::loadView('pdf.tenant-statement', ['lease' => $lease]);
 
-        return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf");
+        return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf", [
+            'Content-Type' => 'application/pdf',
+        ]);
     }
 
     private function leaseFormPage(User $actor, ?Lease $lease = null): array

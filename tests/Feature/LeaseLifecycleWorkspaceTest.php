@@ -153,6 +153,12 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ])
             ->assertSessionHasErrors('signed_contract');
 
+        $this->actingAs($owner)
+            ->post(route('leases.signed-contract', $lease), [
+                'signed_contract' => UploadedFile::fake()->create('signed-contract.txt', 64, 'application/pdf'),
+            ])
+            ->assertSessionHasErrors('signed_contract');
+
         $this->assertDatabaseMissing('documents', [
             'documentable_id' => $lease->id,
             'type' => 'signed_contract',

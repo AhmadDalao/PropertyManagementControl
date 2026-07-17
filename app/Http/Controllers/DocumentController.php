@@ -155,7 +155,7 @@ class DocumentController extends Controller
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['nullable', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
-            'file' => ['required', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
+            'file' => ['required', 'file', 'extensions:pdf', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
         ]);
 
         [$documentableAlias, $documentable] = $this->resolveDocumentable(
@@ -252,7 +252,9 @@ class DocumentController extends Controller
 
         abort_unless($this->canDownload($actor, $document), 403);
 
-        return Storage::disk($document->disk)->download($document->file_path, $document->original_name);
+        return Storage::disk($document->disk)->download($document->file_path, $document->original_name, [
+            'Content-Type' => $document->mime_type ?: 'application/pdf',
+        ]);
     }
 
     private function documentFormPage(User $actor, ?Document $document = null): array
