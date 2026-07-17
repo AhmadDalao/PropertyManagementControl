@@ -97,7 +97,7 @@ class PropertyMapWorkspaceTest extends TestCase
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
 
-        $this->createAsset($portfolio, [
+        $asset = $this->createAsset($portfolio, [
             'asset_type' => 'building',
             'title_en' => 'Needs Real Map Data',
             'code' => 'NEEDS-MAP-DATA',
@@ -110,11 +110,16 @@ class PropertyMapWorkspaceTest extends TestCase
                 ->component('admin/property-map/index')
                 ->where('propertyMap.summary.total', 1)
                 ->where('propertyMap.summary.ready', 0)
+                ->where('propertyMap.summary.needs_position', 1)
                 ->where('propertyMap.summary.needs_identity', 1)
                 ->where('propertyMap.summary.zones', [])
+                ->where('propertyMap.assets.0.code', 'NEEDS-MAP-DATA')
                 ->where('propertyMap.assets.0.zone', null)
                 ->where('propertyMap.assets.0.land_number', null)
-                ->where('propertyMap.assets.0.has_identity', false));
+                ->where('propertyMap.assets.0.has_coordinates', false)
+                ->where('propertyMap.assets.0.has_identity', false)
+                ->where('propertyMap.assets.0.href', route('assets.show', $asset))
+                ->where('propertyMap.assets.0.edit_href', route('assets.edit', $asset)));
     }
 
     public function test_tenant_cannot_open_the_admin_property_map(): void

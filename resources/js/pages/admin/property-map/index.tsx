@@ -38,6 +38,9 @@ export default function PropertyMapPage() {
     const selectedPortfolio = props.filters.portfolio_id
         ? String(props.filters.portfolio_id)
         : 'all';
+    const setupQueue = props.propertyMap.assets.filter(
+        (asset) => !asset.has_coordinates || !asset.has_identity,
+    );
 
     const changePortfolio = (event: ChangeEvent<HTMLSelectElement>) => {
         const portfolioId = event.currentTarget.value;
@@ -142,11 +145,120 @@ export default function PropertyMapPage() {
                 </div>
             </div>
 
+            <MapSetupQueue assets={setupQueue} />
+
             <PropertyMap
                 assets={props.propertyMap.assets}
                 locale={props.app.locale}
                 summary={props.propertyMap.summary}
             />
         </AdminLayout>
+    );
+}
+
+function MapSetupQueue({ assets }: { assets: PropertyMapAsset[] }) {
+    return (
+        <section className="pmc-map-setup-queue mb-4">
+            <div className="pmc-map-setup-head">
+                <div>
+                    <div className="pmc-kicker mb-2">Map setup queue</div>
+                    <h2>Fix the records blocking the owner map.</h2>
+                    <p>
+                        Every card below needs either a real position or a clear
+                        zone/land label. Fix these first so the map stops
+                        guessing.
+                    </p>
+                </div>
+                <span
+                    className={`pmc-map-setup-count ${assets.length === 0 ? 'is-clear' : ''}`}
+                >
+                    {assets.length === 0
+                        ? 'All records ready'
+                        : `${assets.length} need setup`}
+                </span>
+            </div>
+
+            {assets.length === 0 ? (
+                <div className="pmc-map-setup-empty">
+                    <i className="bi bi-check2-circle" />
+                    <div>
+                        <strong>Map data is complete.</strong>
+                        <span>
+                            Every scoped property has position and zone/land
+                            identity.
+                        </span>
+                    </div>
+                </div>
+            ) : (
+                <div className="pmc-map-setup-grid">
+                    {assets.map((asset) => {
+                        const missingPosition = !asset.has_coordinates;
+                        const missingIdentity = !asset.has_identity;
+
+                        return (
+                            <article
+                                key={asset.id}
+                                className="pmc-map-setup-card"
+                            >
+                                <div className="pmc-map-setup-card-head">
+                                    <span>{asset.code}</span>
+                                    <strong>{asset.title}</strong>
+                                    <em>
+                                        {asset.zone ?? 'No zone'} ·{' '}
+                                        {asset.land_number ?? 'No land number'}
+                                    </em>
+                                </div>
+
+                                <div
+                                    className="pmc-map-setup-missing"
+                                    aria-label="Missing map data"
+                                >
+                                    {missingPosition ? (
+                                        <span>
+                                            <i className="bi bi-geo-alt" />
+                                            Missing position
+                                        </span>
+                                    ) : null}
+                                    {missingIdentity ? (
+                                        <span>
+                                            <i className="bi bi-signpost" />
+                                            Missing zone / land
+                                        </span>
+                                    ) : null}
+                                </div>
+
+                                <dl>
+                                    <div>
+                                        <dt>Owner</dt>
+                                        <dd>{asset.owner ?? 'Not assigned'}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Manager</dt>
+                                        <dd>
+                                            {asset.manager ?? 'Not assigned'}
+                                        </dd>
+                                    </div>
+                                </dl>
+
+                                <div className="pmc-map-setup-actions">
+                                    <Link
+                                        href={asset.edit_href}
+                                        className="btn btn-primary btn-sm"
+                                    >
+                                        Edit map data
+                                    </Link>
+                                    <Link
+                                        href={asset.href}
+                                        className="btn btn-outline-secondary btn-sm"
+                                    >
+                                        Open detail
+                                    </Link>
+                                </div>
+                            </article>
+                        );
+                    })}
+                </div>
+            )}
+        </section>
     );
 }
