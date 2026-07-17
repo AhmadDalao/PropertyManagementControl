@@ -88,6 +88,7 @@ function smoke_request(string $baseUrl, string $cookieFile, string $method, stri
     return [
         'status' => $status,
         'location' => $location,
+        'headers' => $headersText,
         'body' => $body,
     ];
 }
@@ -167,6 +168,7 @@ if ($login['status'] !== 302 || ! str_contains((string) $login['location'], '/da
 $authChecks = [
     '/dashboard' => 'dashboard',
     '/property-map' => 'admin/property-map/index',
+    '/portfolios' => 'admin/portfolios/index',
     '/users' => 'admin/users/index',
     '/users/create' => 'admin/resource-form',
     '/assets' => 'admin/assets/index',
@@ -175,7 +177,13 @@ $authChecks = [
     '/leases' => 'admin/leases/index',
     '/payments' => 'admin/payments/index',
     '/maintenance-requests' => 'admin/maintenance/index',
+    '/expenses' => 'admin/expenses/index',
+    '/documents' => 'admin/documents/index',
+    '/documents/create' => 'admin/resource-form',
+    '/media-files' => 'admin/media/index',
+    '/audit-logs' => 'admin/audit/index',
     '/cms' => 'admin/cms/index',
+    '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',
 ];
@@ -196,4 +204,20 @@ foreach ($authChecks as $path => $expectedComponent) {
     smoke_note("{$path} {$component}");
 }
 
+$reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
+$reportHeaders = strtolower((string) $reportExport['headers']);
+
+if ($reportExport['status'] !== 200) {
+    smoke_fail("Report export returned {$reportExport['status']}.");
+}
+
+if (! str_contains($reportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Report export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($reportHeaders, '.xlsx') || ! str_starts_with((string) $reportExport['body'], 'PK')) {
+    smoke_fail('Report export was not a valid .xlsx download.');
+}
+
+smoke_note('/reports/export Excel .xlsx');
 smoke_note('Live smoke passed.');
