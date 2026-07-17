@@ -56,6 +56,16 @@ export type DetailSection = {
     items: DetailItem[];
 };
 
+export type DecisionCard = {
+    title: string;
+    value: ReactNode;
+    detail?: ReactNode;
+    href?: string;
+    actionLabel?: string;
+    tone?: 'primary' | 'teal' | 'danger' | 'muted';
+    icon?: string;
+};
+
 export type ResourceSpotlight = {
     eyebrow?: string;
     title: string;
@@ -206,6 +216,7 @@ export function ResourceFormShell({
 export function ResourceDetailShell({
     header,
     spotlight,
+    decisionCards = [],
     stats = [],
     sections = [],
     related = [],
@@ -214,6 +225,7 @@ export function ResourceDetailShell({
 }: {
     header: ResourceHeaderProps;
     spotlight?: ResourceSpotlight;
+    decisionCards?: DecisionCard[];
     stats?: DetailItem[];
     sections?: DetailSection[];
     related?: RelatedTable[];
@@ -238,6 +250,10 @@ export function ResourceDetailShell({
 
             {spotlight ? (
                 <ResourceSpotlightPanel spotlight={spotlight} />
+            ) : null}
+
+            {decisionCards.length > 0 ? (
+                <DecisionCardGrid cards={decisionCards} />
             ) : null}
 
             {stats.length > 0 ? (
@@ -271,6 +287,32 @@ export function ResourceDetailShell({
                 </aside>
             </section>
         </>
+    );
+}
+
+function DecisionCardGrid({ cards }: { cards: DecisionCard[] }) {
+    return (
+        <section className="pmc-resource-decision-grid">
+            {cards.map((card) => (
+                <article
+                    key={card.title}
+                    className={`pmc-resource-decision-card pmc-resource-decision-${card.tone ?? 'muted'}`}
+                >
+                    <div>
+                        {card.icon ? <i className={`bi ${card.icon}`} /> : null}
+                        <span>{card.title}</span>
+                    </div>
+                    <strong>{card.value}</strong>
+                    {card.detail ? <p>{card.detail}</p> : null}
+                    {card.href ? (
+                        <Link href={card.href}>
+                            {card.actionLabel ?? 'Open'}
+                            <i className="bi bi-arrow-right" />
+                        </Link>
+                    ) : null}
+                </article>
+            ))}
+        </section>
     );
 }
 

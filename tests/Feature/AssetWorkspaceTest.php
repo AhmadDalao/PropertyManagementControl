@@ -252,6 +252,13 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.spotlight.items.5.value', '31, 36')
                 ->where('detailPage.spotlight.actions.0.href', route('property-map.index'))
                 ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
+                ->where('detailPage.decisionCards.0.title', 'Map readiness')
+                ->where('detailPage.decisionCards.0.value', 'Ready')
+                ->where('detailPage.decisionCards.0.detail', 'Riyadh Prime · RP-77 · 24.7136, 46.6753')
+                ->where('detailPage.decisionCards.0.href', route('property-map.index'))
+                ->where('detailPage.decisionCards.0.tone', 'teal')
+                ->where('detailPage.decisionCards.1.title', 'Rental state')
+                ->where('detailPage.decisionCards.1.actionLabel', 'Create lease')
             );
     }
 
@@ -319,6 +326,14 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.stats.3.value', 1)
                 ->where('detailPage.stats.4.value', 1)
                 ->where('detailPage.stats.5.value', '350.00 SAR')
+                ->where('detailPage.decisionCards.1.title', 'Rental state')
+                ->where('detailPage.decisionCards.1.value', 'Active')
+                ->where('detailPage.decisionCards.1.href', route('leases.show', $lease))
+                ->where('detailPage.decisionCards.2.title', 'Operations risk')
+                ->where('detailPage.decisionCards.2.value', 1)
+                ->where('detailPage.decisionCards.2.tone', 'danger')
+                ->where('detailPage.decisionCards.3.title', 'Financial position')
+                ->where('detailPage.decisionCards.3.actionLabel', 'Add expense')
                 ->where('detailPage.related.1.title', 'Leases')
                 ->where('detailPage.related.1.rows.0.Lease', $lease->code)
                 ->where('detailPage.related.1.rows.0.Open.href', route('leases.show', $lease))

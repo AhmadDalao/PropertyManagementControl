@@ -137,6 +137,10 @@ class AssetController extends Controller
             ->get();
         $activeLease = $assetLeases->firstWhere('status', 'active');
         $postedExpensesTotal = (float) $asset->expenses->where('status', 'posted')->sum('amount');
+        $openMaintenanceCount = $asset->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count();
+        $mapReady = $this->assetHasMapPosition($asset) && $this->assetHasMapIdentity($asset);
+        $mapIdentity = trim(($this->assetMapMeta($asset, 'zone') ?: 'No zone').' · '.($this->assetMapMeta($asset, 'land_number') ?: 'No land number'));
+        $mapPosition = $this->assetCoordinateLabel($asset) ?: $this->mapPositionLabel($asset);
         $propertyMapHref = route(
             'property-map.index',
             $actor->hasRole('superadmin') ? ['portfolio_id' => $asset->portfolio_id] : []
@@ -175,12 +179,56 @@ class AssetController extends Controller
                         ['label' => 'Edit map data', 'href' => route('assets.edit', $asset), 'variant' => 'primary'],
                     ],
                 ],
+                'decisionCards' => [
+                    [
+                        'title' => 'Map readiness',
+                        'value' => $mapReady ? 'Ready' : 'Needs setup',
+                        'detail' => $mapReady
+                            ? $mapIdentity.' · '.$mapPosition
+                            : 'Add zone, land number, and a map position before relying on this record in the owner map.',
+                        'href' => $mapReady ? $propertyMapHref : route('assets.edit', $asset),
+                        'actionLabel' => $mapReady ? 'Open map' : 'Fix map data',
+                        'tone' => $mapReady ? 'teal' : 'danger',
+                        'icon' => 'bi-map',
+                    ],
+                    [
+                        'title' => 'Rental state',
+                        'value' => $activeLease ? str($activeLease->status)->headline()->toString() : str($asset->occupancy_status)->headline()->toString(),
+                        'detail' => $activeLease
+                            ? 'Tenant: '.($activeLease->tenantProfile?->user?->name ?? 'Not assigned').' · Balance '.number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency
+                            : 'No active lease is attached to this property record.',
+                        'href' => $activeLease ? route('leases.show', $activeLease) : route('leases.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => $activeLease ? 'Open lease' : 'Create lease',
+                        'tone' => $activeLease ? 'teal' : 'muted',
+                        'icon' => 'bi-file-earmark-text',
+                    ],
+                    [
+                        'title' => 'Operations risk',
+                        'value' => $openMaintenanceCount,
+                        'detail' => $openMaintenanceCount > 0
+                            ? 'Open or in-progress maintenance needs owner or manager follow-up.'
+                            : 'No open maintenance pressure on this property.',
+                        'href' => route('maintenance-requests.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => $openMaintenanceCount > 0 ? 'Create follow-up' : 'Log request',
+                        'tone' => $openMaintenanceCount > 0 ? 'danger' : 'teal',
+                        'icon' => 'bi-tools',
+                    ],
+                    [
+                        'title' => 'Financial position',
+                        'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency,
+                        'detail' => 'Posted expenses: '.number_format($postedExpensesTotal, 2).' '.$asset->currency,
+                        'href' => route('expenses.create', ['asset_id' => $asset->id]),
+                        'actionLabel' => 'Add expense',
+                        'tone' => $postedExpensesTotal > 0 ? 'primary' : 'muted',
+                        'icon' => 'bi-cash-stack',
+                    ],
+                ],
                 'stats' => $this->detailItems([
                     ['label' => 'Valuation', 'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency, 'tone' => 'primary'],
                     ['label' => 'Occupancy', 'value' => $asset->occupancy_status, 'tone' => $asset->occupancy_status === 'occupied' ? 'teal' : 'muted'],
                     ['label' => 'Children', 'value' => $asset->children->count()],
                     ['label' => 'Lease records', 'value' => $assetLeases->count(), 'tone' => $activeLease ? 'teal' : 'muted'],
-                    ['label' => 'Open maintenance', 'value' => $asset->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count(), 'tone' => 'danger'],
+                    ['label' => 'Open maintenance', 'value' => $openMaintenanceCount, 'tone' => 'danger'],
                     ['label' => 'Posted expenses', 'value' => number_format($postedExpensesTotal, 2).' '.$asset->currency, 'tone' => $postedExpensesTotal > 0 ? 'primary' : 'muted'],
                 ]),
                 'sections' => [
@@ -717,6 +765,22 @@ class AssetController extends Controller
         }
 
         return "{$latitude}, {$longitude}";
+    }
+
+    private function assetHasMapIdentity(Asset $asset): bool
+    {
+        return filled($this->assetMapMeta($asset, 'zone'))
+            && filled($this->assetMapMeta($asset, 'land_number'));
+    }
+
+    private function assetHasMapPosition(Asset $asset): bool
+    {
+        $hasCoordinates = filled($this->assetMapMeta($asset, 'latitude'))
+            && filled($this->assetMapMeta($asset, 'longitude'));
+        $hasCanvasPosition = filled($this->assetMapMeta($asset, 'x'))
+            && filled($this->assetMapMeta($asset, 'y'));
+
+        return $hasCoordinates || $hasCanvasPosition;
     }
 
     /**

@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { ResourceDetailShell } from '@/components/resource-cycle';
 import type {
+    DecisionCard,
     DetailItem,
     DetailSection,
     RelatedTable,
@@ -15,6 +16,7 @@ type PageProps = SharedProps & {
     detailPage: {
         header: ResourceHeaderProps;
         spotlight?: ResourceSpotlight;
+        decisionCards?: DecisionCard[];
         stats?: DetailItem[];
         sections?: DetailSection[];
         related?: RelatedTable[];
