@@ -125,6 +125,17 @@ class LeaseController extends Controller
                     'actions' => array_values(array_filter([
                         $adminMode ? ['label' => 'Edit lease', 'href' => route('leases.edit', $lease), 'variant' => 'primary'] : null,
                         ['label' => 'Contract PDF', 'href' => route('leases.contract', $lease), 'variant' => 'secondary'],
+                        $adminMode ? [
+                            'label' => 'Upload signed PDF',
+                            'href' => route('documents.create', [
+                                'documentable_type' => 'lease',
+                                'documentable_id' => $lease->id,
+                                'type' => 'signed_contract',
+                                'title_en' => "Signed contract {$lease->code}",
+                                'title_ar' => "العقد الموقع {$lease->code}",
+                            ]),
+                            'variant' => 'secondary',
+                        ] : null,
                         ['label' => 'Tenant statement', 'href' => route('leases.statement', $lease), 'variant' => 'secondary'],
                         $adminMode ? ['label' => 'Record payment', 'href' => route('payments.create', ['lease_id' => $lease->id]), 'variant' => 'secondary'] : null,
                     ])),

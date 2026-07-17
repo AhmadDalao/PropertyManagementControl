@@ -6,11 +6,71 @@ use App\Models\CmsPage;
 use App\Models\CmsSection;
 use App\Models\NavigationItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class CmsManagementTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_cms_creation_and_editing_use_dedicated_pages(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $owner = $this->createUserWithRole('owner');
+        $section = CmsSection::query()->create([
+            'section_type' => 'hero',
+            'name_en' => 'Homepage hero',
+            'name_ar' => 'واجهة الصفحة الرئيسية',
+            'content_en' => ['headline' => 'Control every property.'],
+            'content_ar' => ['headline' => 'تحكم في كل عقار.'],
+            'status' => 'active',
+        ]);
+        $navigationItem = NavigationItem::query()->create([
+            'location' => 'header',
+            'title_en' => 'Home',
+            'title_ar' => 'الرئيسية',
+            'url' => '/',
+            'target' => '_self',
+            'sort_order' => 1,
+            'is_visible' => true,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('cms.sections.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/cms/section-form')
+                ->where('section', null)
+                ->has('sectionTypes'));
+
+        $this->actingAs($superadmin)
+            ->get(route('cms.sections.edit', $section))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/cms/section-form')
+                ->where('section.id', $section->id));
+
+        $this->actingAs($superadmin)
+            ->get(route('cms.navigation.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where('formPage.action', route('navigation-items.store')));
+
+        $this->actingAs($superadmin)
+            ->get(route('cms.navigation.edit', $navigationItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where(
+                    'formPage.action',
+                    route('navigation-items.update', $navigationItem),
+                ));
+
+        $this->actingAs($owner)
+            ->get(route('cms.sections.create'))
+            ->assertForbidden();
+    }
 
     public function test_superadmin_page_update_keeps_only_one_homepage(): void
     {

@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use App\Models\AssetStakeholder;
+use App\Models\CmsPage;
+use App\Models\CmsPageSection;
+use App\Models\CmsSection;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
@@ -11,6 +14,7 @@ use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
 use App\Models\MediaFile;
+use App\Models\NavigationItem;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Portfolio;
@@ -348,10 +352,10 @@ class AuditLogController extends Controller
             'expense_entry' => ExpenseEntry::class,
             'document' => Document::class,
             'media_file' => MediaFile::class,
-            'cms_page' => \App\Models\CmsPage::class,
-            'cms_section' => \App\Models\CmsSection::class,
-            'cms_page_section' => \App\Models\CmsPageSection::class,
-            'navigation_item' => \App\Models\NavigationItem::class,
+            'cms_page' => CmsPage::class,
+            'cms_section' => CmsSection::class,
+            'cms_page_section' => CmsPageSection::class,
+            'navigation_item' => NavigationItem::class,
         ];
     }
 

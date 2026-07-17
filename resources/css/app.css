@@ -5,5 +5,8 @@
 @import './styles/tables.css';
 @import './styles/forms.css';
 @import './styles/dashboard.css';
+@import './styles/reports.css';
 @import './styles/public.css';
 @import './styles/inventory-clean.css';
+@import './styles/workspaces.css';
+@import './styles/cms.css';

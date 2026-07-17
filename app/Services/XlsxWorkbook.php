@@ -22,7 +22,7 @@ class XlsxWorkbook
             throw new RuntimeException('Unable to create a temporary XLSX file.');
         }
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
 
         if ($zip->open($path, ZipArchive::OVERWRITE) !== true) {
             throw new RuntimeException('Unable to open the XLSX archive for writing.');

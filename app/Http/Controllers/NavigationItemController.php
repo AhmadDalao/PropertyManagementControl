@@ -2,12 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CmsPage;
 use App\Models\NavigationItem;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NavigationItemController extends Controller
 {
+    public function create(Request $request): Response
+    {
+        $this->requireRoles($this->actor($request), ['superadmin']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->navigationFormPage(),
+        ]);
+    }
+
+    public function edit(Request $request, NavigationItem $navigationItem): Response
+    {
+        $this->requireRoles($this->actor($request), ['superadmin']);
+
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->navigationFormPage($navigationItem),
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $this->requireRoles($this->actor($request), ['superadmin']);
@@ -81,5 +102,76 @@ class NavigationItemController extends Controller
 
         $childrenIds = $navigationItem->children()->pluck('id')->all();
         abort_if(in_array($parentId, $childrenIds, true), 422, 'A navigation item cannot be moved under its child.');
+    }
+
+    private function navigationFormPage(?NavigationItem $navigationItem = null): array
+    {
+        $excludedIds = $navigationItem
+            ? [$navigationItem->id, ...$navigationItem->children()->pluck('id')->all()]
+            : [];
+        $parentOptions = NavigationItem::query()
+            ->whereNull('parent_id')
+            ->whereNotIn('id', $excludedIds)
+            ->orderBy('location')
+            ->orderBy('sort_order')
+            ->get()
+            ->map(fn (NavigationItem $item) => [
+                'label' => $item->title_en.' · '.$item->location,
+                'value' => $item->id,
+            ])
+            ->prepend(['label' => 'No parent', 'value' => ''])
+            ->values()
+            ->all();
+        $pageOptions = CmsPage::query()
+            ->orderByDesc('is_homepage')
+            ->orderBy('title_en')
+            ->get()
+            ->map(fn (CmsPage $page) => [
+                'label' => $page->title_en.' · /pages/'.$page->slug,
+                'value' => $page->id,
+            ])
+            ->prepend(['label' => 'Custom URL', 'value' => ''])
+            ->values()
+            ->all();
+
+        return [
+            'title' => $navigationItem ? 'Edit '.$navigationItem->title_en : 'Create navigation item',
+            'description' => 'Add one clear bilingual link to the public header or footer.',
+            'backHref' => route('cms.index'),
+            'backLabel' => 'Website control',
+            'action' => $navigationItem
+                ? route('navigation-items.update', $navigationItem)
+                : route('navigation-items.store'),
+            'method' => $navigationItem ? 'put' : 'post',
+            'submitLabel' => $navigationItem ? 'Update navigation' : 'Create navigation',
+            'fields' => [
+                ['name' => 'location', 'label' => 'Location', 'type' => 'select', 'required' => true, 'options' => [
+                    ['label' => 'Header', 'value' => 'header'],
+                    ['label' => 'Footer', 'value' => 'footer'],
+                ]],
+                ['name' => 'parent_id', 'label' => 'Parent item', 'type' => 'select', 'options' => $parentOptions],
+                ['name' => 'cms_page_id', 'label' => 'Linked page', 'type' => 'select', 'options' => $pageOptions, 'help' => 'Choose a CMS page or leave this on Custom URL.'],
+                ['name' => 'title_en', 'label' => 'English label', 'required' => true],
+                ['name' => 'title_ar', 'label' => 'Arabic label', 'required' => true],
+                ['name' => 'url', 'label' => 'Custom URL', 'help' => 'Used when no CMS page is selected.'],
+                ['name' => 'target', 'label' => 'Open link', 'type' => 'select', 'options' => [
+                    ['label' => 'Same tab', 'value' => '_self'],
+                    ['label' => 'New tab', 'value' => '_blank'],
+                ]],
+                ['name' => 'sort_order', 'label' => 'Order', 'type' => 'number', 'min' => 0],
+                ['name' => 'is_visible', 'label' => 'Visible on public website', 'type' => 'checkbox'],
+            ],
+            'initialValues' => [
+                'location' => $navigationItem?->location ?? 'header',
+                'parent_id' => $navigationItem?->parent_id ?? '',
+                'cms_page_id' => $navigationItem?->cms_page_id ?? '',
+                'title_en' => $navigationItem?->title_en ?? '',
+                'title_ar' => $navigationItem?->title_ar ?? '',
+                'url' => $navigationItem?->url ?? '/',
+                'target' => $navigationItem?->target ?? '_self',
+                'sort_order' => $navigationItem?->sort_order ?? 1,
+                'is_visible' => (bool) ($navigationItem?->is_visible ?? true),
+            ],
+        ];
     }
 }

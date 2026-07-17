@@ -74,6 +74,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
+    Route::get('/cms/sections/create', [CmsPageController::class, 'createSection'])->name('cms.sections.create');
+    Route::get('/cms/sections/{cmsSection}/edit', [CmsPageController::class, 'editSection'])->name('cms.sections.edit');
+    Route::get('/cms/navigation/create', [NavigationItemController::class, 'create'])->name('cms.navigation.create');
+    Route::get('/cms/navigation/{navigationItem}/edit', [NavigationItemController::class, 'edit'])->name('cms.navigation.edit');
     Route::get('/cms/pages/{cmsPage}', [CmsPageController::class, 'builder'])->name('cms.pages.show');
     Route::get('/cms/pages/{cmsPage}/edit', [CmsPageController::class, 'edit'])->name('cms.pages.edit');
     Route::post('/cms/pages', [CmsPageController::class, 'store'])->name('cms.pages.store');

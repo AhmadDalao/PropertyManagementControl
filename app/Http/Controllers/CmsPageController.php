@@ -77,14 +77,17 @@ class CmsPageController extends Controller
             ]),
             'filters' => $filters,
             'counts' => $this->statusCounts($baseQuery, ['draft', 'published', 'archived'], $filters),
-            'pageOptions' => CmsPage::query()->orderBy('title_en')->get(['id', 'title_en']),
-            'builderPages' => CmsPage::query()
-                ->with(['pageSections' => fn ($query) => $query->with('section')->orderBy('sort_order')])
-                ->orderByDesc('is_homepage')
-                ->orderBy('title_en')
+            'sections' => CmsSection::query()
+                ->withCount('pageSections')
+                ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
+                ->orderBy('name_en')
                 ->get(),
-            'sections' => CmsSection::query()->latest()->get(),
-            'navigationItems' => NavigationItem::query()->with('children')->whereNull('parent_id')->orderBy('sort_order')->get(),
+            'navigationItems' => NavigationItem::query()
+                ->with(['children', 'page'])
+                ->whereNull('parent_id')
+                ->orderBy('location')
+                ->orderBy('sort_order')
+                ->get(),
         ]);
     }
 
@@ -119,6 +122,28 @@ class CmsPageController extends Controller
 
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->cmsPageFormPage($cmsPage),
+        ]);
+    }
+
+    public function createSection(Request $request): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        return Inertia::render('admin/cms/section-form', [
+            'section' => null,
+            'sectionTypes' => $this->sectionTypes(),
+        ]);
+    }
+
+    public function editSection(Request $request, CmsSection $cmsSection): Response
+    {
+        $actor = $this->actor($request);
+        $this->requireRoles($actor, ['superadmin']);
+
+        return Inertia::render('admin/cms/section-form', [
+            'section' => $cmsSection,
+            'sectionTypes' => $this->sectionTypes(),
         ]);
     }
 
@@ -381,5 +406,27 @@ class CmsPageController extends Controller
                 'is_visible' => (bool) ($cmsPage?->is_visible ?? true),
             ],
         ];
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function sectionTypes(): array
+    {
+        return collect([
+            'hero',
+            'role_cards',
+            'workflow',
+            'dashboard_preview',
+            'feature_grid',
+            'operations_strip',
+            'faq',
+            'final_cta',
+            'metrics',
+            'content',
+        ])->map(fn (string $type) => [
+            'label' => Str::of($type)->replace('_', ' ')->title()->toString(),
+            'value' => $type,
+        ])->all();
     }
 }

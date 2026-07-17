@@ -9,7 +9,6 @@ use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
-use App\Models\User;
 use Database\Seeders\DemoDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;

@@ -10,8 +10,8 @@ use App\Models\User;
 use App\Services\LeaseFinancialService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Testing\TestResponse;
 use Illuminate\Support\Str;
+use Illuminate\Testing\TestResponse;
 use ZipArchive;
 
 abstract class TestCase extends BaseTestCase
@@ -127,7 +127,7 @@ abstract class TestCase extends BaseTestCase
         $path = $response->baseResponse->getFile()->getPathname();
         $this->assertSame('PK', substr((string) file_get_contents($path), 0, 2));
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $this->assertTrue($zip->open($path));
         $sheetXml = (string) $zip->getFromName('xl/worksheets/sheet1.xml');
         $zip->close();

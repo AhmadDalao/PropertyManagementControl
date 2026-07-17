@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Document;
+use App\Models\Lease;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -28,7 +29,7 @@ class DocumentAuthorizationTest extends TestCase
         $document = Document::query()->create([
             'portfolio_id' => $portfolio->id,
             'uploaded_by_user_id' => $manager->id,
-            'documentable_type' => \App\Models\Lease::class,
+            'documentable_type' => Lease::class,
             'documentable_id' => $lease->id,
             'type' => 'lease_contract',
             'title_en' => 'Lease contract',
@@ -73,7 +74,7 @@ class DocumentAuthorizationTest extends TestCase
         $document = Document::query()->create([
             'portfolio_id' => $portfolio->id,
             'uploaded_by_user_id' => $manager->id,
-            'documentable_type' => \App\Models\Lease::class,
+            'documentable_type' => Lease::class,
             'documentable_id' => $otherLease->id,
             'type' => 'lease_contract',
             'title_en' => 'Lease contract',

@@ -127,6 +127,64 @@ class LeaseLifecycleWorkspaceTest extends TestCase
                 ->where('leases.data.0.installments.2.due_date', '2026-04-10'));
     }
 
+    public function test_lease_detail_opens_a_prefilled_pdf_only_signed_contract_upload(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $uploadUrl = route('documents.create', [
+            'documentable_type' => 'lease',
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => "Signed contract {$lease->code}",
+            'title_ar' => "العقد الموقع {$lease->code}",
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $lease))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where(
+                    'detailPage.header.actions.2.label',
+                    'Upload signed PDF',
+                )
+                ->where('detailPage.header.actions.2.href', $uploadUrl));
+
+        $this->actingAs($owner)
+            ->get($uploadUrl)
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where(
+                    'formPage.initialValues.documentable_type',
+                    'lease',
+                )
+                ->where(
+                    'formPage.initialValues.documentable_id',
+                    (string) $lease->id,
+                )
+                ->where(
+                    'formPage.initialValues.type',
+                    'signed_contract',
+                )
+                ->where(
+                    'formPage.fields',
+                    fn ($fields) => collect($fields)->contains(
+                        fn (array $field) => ($field['name'] ?? null) === 'file'
+                            && ($field['accept'] ?? null) === '.pdf,application/pdf',
+                    ),
+                ));
+    }
+
     public function test_signed_contract_upload_requires_pdf(): void
     {
         Storage::fake('local');
