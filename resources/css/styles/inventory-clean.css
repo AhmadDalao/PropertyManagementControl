@@ -632,6 +632,84 @@ body {
     line-height: 1;
 }
 
+.pmc-owner-map-land-list {
+    display: grid;
+    grid-column: 1 / -1;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid #eadfce;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.pmc-owner-map-land-list > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pmc-owner-map-land-list > div span {
+    color: var(--pmc-clean-muted);
+    font-size: 0.76rem;
+    font-weight: 950;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-owner-map-land-list > div a,
+.pmc-owner-map-land-list > a {
+    color: #111111;
+    text-decoration: none;
+}
+
+.pmc-owner-map-land-list > div a {
+    font-size: 0.82rem;
+    font-weight: 950;
+}
+
+.pmc-owner-map-land-list > a {
+    display: grid;
+    grid-template-columns: minmax(8rem, 0.5fr) minmax(0, 1fr) auto;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.65rem;
+    border: 1px solid #f0e4d2;
+    border-radius: 0.75rem;
+    background: #ffffff;
+}
+
+.pmc-owner-map-land-list > a:hover {
+    border-color: #d5bf96;
+    background: #fffaf0;
+}
+
+.pmc-owner-map-land-list > a span,
+.pmc-owner-map-land-list > a em {
+    color: var(--pmc-clean-muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+}
+
+.pmc-owner-map-land-list > a strong {
+    color: #111111;
+    font-weight: 950;
+}
+
+.pmc-owner-map-land-list > a em {
+    justify-self: end;
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    background: #f6f2ea;
+    font-style: normal;
+}
+
+.pmc-owner-map-land-list > p {
+    margin: 0;
+    color: var(--pmc-clean-muted);
+    font-weight: 800;
+}
+
 .pmc-portfolio-command-card span,
 .pmc-portfolio-command-card small,
 .pmc-lease-command-card span,
@@ -2657,6 +2735,16 @@ body {
 @media (max-width: 575.98px) {
     .pmc-owner-map-flags {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-owner-map-land-list > div,
+    .pmc-owner-map-land-list > a {
+        align-items: stretch;
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-owner-map-land-list > a em {
+        justify-self: start;
     }
 
     .pmc-map-setup-head,

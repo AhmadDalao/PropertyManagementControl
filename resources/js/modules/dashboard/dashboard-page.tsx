@@ -430,6 +430,27 @@ function OwnerMapCommandPanel({
         (asset) => !asset.has_coordinates || !asset.has_identity,
     );
     const zoneCount = summary?.zones.length ?? 0;
+    const landRecords = [...assets]
+        .sort((first, second) => {
+            const firstReady = Number(
+                first.has_coordinates && first.has_identity,
+            );
+            const secondReady = Number(
+                second.has_coordinates && second.has_identity,
+            );
+
+            if (firstReady !== secondReady) {
+                return secondReady - firstReady;
+            }
+
+            const firstLabel = `${first.zone ?? 'zz'} ${first.land_number ?? first.code}`;
+            const secondLabel = `${second.zone ?? 'zz'} ${second.land_number ?? second.code}`;
+
+            return firstLabel.localeCompare(secondLabel, undefined, {
+                numeric: true,
+            });
+        })
+        .slice(0, 5);
 
     return (
         <section className="pmc-owner-map-command">
@@ -483,6 +504,31 @@ function OwnerMapCommandPanel({
                     <span>Need zone / land</span>
                     <strong>{needsIdentity}</strong>
                 </div>
+            </div>
+
+            <div className="pmc-owner-map-land-list">
+                <div>
+                    <span>Quick land records</span>
+                    <Link href="/property-map">View all</Link>
+                </div>
+                {landRecords.length > 0 ? (
+                    landRecords.map((asset) => (
+                        <Link key={asset.id} href={asset.href}>
+                            <span>
+                                {asset.zone ?? 'No zone'} ·{' '}
+                                {asset.land_number ?? 'No land number'}
+                            </span>
+                            <strong>{asset.title}</strong>
+                            <em>
+                                {asset.has_coordinates && asset.has_identity
+                                    ? 'Map ready'
+                                    : 'Needs setup'}
+                            </em>
+                        </Link>
+                    ))
+                ) : (
+                    <p>Create property assets to build this list.</p>
+                )}
             </div>
         </section>
     );

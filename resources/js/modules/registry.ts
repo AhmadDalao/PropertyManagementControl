@@ -67,13 +67,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 module: 'assets',
             },
             {
-                label: 'Users & Roles',
-                href: '/users',
-                icon: 'bi-people',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'users',
-            },
-            {
                 label: 'Tenant Profiles',
                 href: '/tenants',
                 icon: 'bi-person-badge',
