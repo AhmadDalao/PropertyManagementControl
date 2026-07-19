@@ -23,6 +23,25 @@ const localAccounts = [
     { role: 'tenant', email: 'tenant@propertycontrol.test' },
 ] as const;
 
+const primaryAdminRoutes = [
+    '/dashboard',
+    '/property-map',
+    '/portfolios',
+    '/users',
+    '/assets',
+    '/tenants',
+    '/leases',
+    '/payments',
+    '/maintenance-requests',
+    '/expenses',
+    '/documents',
+    '/media-files',
+    '/audit-logs',
+    '/cms',
+    '/reports',
+    '/documentation',
+] as const;
+
 test.describe('public shell', () => {
     for (const viewport of breakpoints) {
         test(`${viewport.name} landing and login have no horizontal overflow`, async ({
@@ -122,6 +141,17 @@ test.describe('authenticated administration', () => {
                 page.locator('.pmc-mobile-record-card').first(),
             ).toBeVisible();
             await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        }
+    });
+
+    test('primary administration routes never overflow', async ({ page }) => {
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+
+            for (const path of primaryAdminRoutes) {
+                await page.goto(path);
+                await expectNoHorizontalOverflow(page);
+            }
         }
     });
 
