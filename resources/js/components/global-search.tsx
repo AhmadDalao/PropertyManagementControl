@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
+import { useTranslator } from '@/lib/i18n';
 import type { GlobalSearchResponse, GlobalSearchResult } from '@/types';
 
 export function GlobalSearch() {
@@ -7,6 +8,9 @@ export function GlobalSearch() {
     const [payload, setPayload] = useState<GlobalSearchResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const mobileTriggerRef = useRef<HTMLButtonElement>(null);
+    const { t } = useTranslator();
 
     useEffect(() => {
         const trimmed = query.trim();
@@ -57,11 +61,134 @@ export function GlobalSearch() {
         };
     }, [query]);
 
+    useEffect(() => {
+        if (!mobileOpen) {
+            return;
+        }
+
+        document.body.classList.add('pmc-search-open');
+
+        const close = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                setMobileOpen(false);
+                window.requestAnimationFrame(() =>
+                    mobileTriggerRef.current?.focus(),
+                );
+            }
+        };
+
+        document.addEventListener('keydown', close);
+
+        return () => {
+            document.removeEventListener('keydown', close);
+            document.body.classList.remove('pmc-search-open');
+        };
+    }, [mobileOpen]);
+
     const groupedResults = groupResults(payload?.results ?? []);
+    const placeholder = t(
+        'shell.search_placeholder',
+        'Search properties, tenants, leases...',
+    );
+
+    return (
+        <>
+            <SearchField
+                className="pmc-global-search pmc-global-search-desktop"
+                query={query}
+                placeholder={placeholder}
+                open={open}
+                loading={loading}
+                payload={payload}
+                groupedResults={groupedResults}
+                setQuery={setQuery}
+                setOpen={setOpen}
+                resultsId="pmc-global-search-results-desktop"
+            />
+
+            <button
+                ref={mobileTriggerRef}
+                type="button"
+                className="pmc-mobile-search-trigger"
+                aria-label={t('actions.search', 'Search')}
+                onClick={() => setMobileOpen(true)}
+            >
+                <i className="bi bi-search" />
+            </button>
+
+            {mobileOpen ? (
+                <div
+                    className="pmc-mobile-search-sheet"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={t('actions.search', 'Search')}
+                >
+                    <div className="pmc-mobile-search-head">
+                        <strong>
+                            {t('shell.global_search', 'Global search')}
+                        </strong>
+                        <button
+                            type="button"
+                            aria-label={t('common.close', 'Close')}
+                            onClick={() => {
+                                setMobileOpen(false);
+                                window.requestAnimationFrame(() =>
+                                    mobileTriggerRef.current?.focus(),
+                                );
+                            }}
+                        >
+                            <i className="bi bi-x-lg" />
+                        </button>
+                    </div>
+                    <SearchField
+                        className="pmc-global-search pmc-global-search-mobile"
+                        query={query}
+                        placeholder={placeholder}
+                        open
+                        loading={loading}
+                        payload={payload}
+                        groupedResults={groupedResults}
+                        setQuery={setQuery}
+                        setOpen={setOpen}
+                        resultsId="pmc-global-search-results-mobile"
+                        autoFocus
+                    />
+                </div>
+            ) : null}
+        </>
+    );
+}
+
+function SearchField({
+    className,
+    query,
+    placeholder,
+    open,
+    loading,
+    payload,
+    groupedResults,
+    setQuery,
+    setOpen,
+    resultsId,
+    autoFocus = false,
+}: {
+    className: string;
+    query: string;
+    placeholder: string;
+    open: boolean;
+    loading: boolean;
+    payload: GlobalSearchResponse | null;
+    groupedResults: Record<string, GlobalSearchResult[]>;
+    setQuery: (value: string) => void;
+    setOpen: (value: boolean) => void;
+    resultsId: string;
+    autoFocus?: boolean;
+}) {
+    const { t } = useTranslator();
 
     return (
         <div
-            className="pmc-global-search"
+            className={className}
             onBlur={(event) => {
                 if (!event.currentTarget.contains(event.relatedTarget)) {
                     setOpen(false);
@@ -69,25 +196,34 @@ export function GlobalSearch() {
             }}
         >
             <label>
+                <span className="visually-hidden">
+                    {t('actions.search', 'Search')}
+                </span>
                 <i className="bi bi-search" />
                 <input
                     type="search"
                     value={query}
-                    placeholder="Search properties, tenants, leases..."
+                    placeholder={placeholder}
                     onChange={(event) => setQuery(event.currentTarget.value)}
                     onFocus={() => setOpen(true)}
+                    autoFocus={autoFocus}
+                    aria-controls={resultsId}
                 />
             </label>
 
             {open && query.trim().length >= 2 ? (
-                <div className="pmc-global-search-panel">
+                <div
+                    id={resultsId}
+                    className="pmc-global-search-panel"
+                    aria-live="polite"
+                >
                     <p
                         className={`pmc-global-search-hint ${loading ? 'is-loading' : ''}`}
                     >
                         {loading
-                            ? 'Searching...'
+                            ? t('common.searching', 'Searching...')
                             : payload?.message ||
-                              `${payload?.results.length ?? 0} result${payload?.results.length === 1 ? '' : 's'} found.`}
+                              `${payload?.results.length ?? 0} results found.`}
                     </p>
                     {Object.entries(groupedResults).map(([group, results]) => (
                         <section

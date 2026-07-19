@@ -110,7 +110,10 @@ class CmsPageController extends Controller
 
         return Inertia::render('admin/cms/builder', [
             'page' => $cmsPage,
-            'sections' => CmsSection::query()->orderBy('name_en')->get(),
+            'sections' => CmsSection::query()
+                ->withCount('pageSections')
+                ->orderBy('name_en')
+                ->get(),
             'timeline' => $this->activityTimeline($cmsPage),
         ]);
     }

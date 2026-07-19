@@ -1,0 +1,328 @@
+/*
+ * Bootstrap Icons v1.13.1 subset.
+ * Copyright 2019-2024 The Bootstrap Authors, MIT licensed.
+ */
+@font-face {
+    font-family: 'bootstrap-icons';
+    font-style: normal;
+    font-weight: normal;
+    font-display: block;
+    src: url('../../../node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2?e34853135f9e39acf64315236852cd5a')
+        format('woff2');
+}
+
+.bi::before,
+[class^='bi-']::before,
+[class*=' bi-']::before {
+    display: inline-block;
+    font-family: 'bootstrap-icons' !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    line-height: 1;
+    text-transform: none;
+    vertical-align: -0.125em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.bi-activity::before {
+    content: '\f66b';
+}
+.bi-arrow-counterclockwise::before {
+    content: '\f117';
+}
+.bi-arrow-down::before {
+    content: '\f128';
+}
+.bi-arrow-left::before {
+    content: '\f12f';
+}
+.bi-arrow-right::before {
+    content: '\f138';
+}
+.bi-arrow-right-circle::before {
+    content: '\f134';
+}
+.bi-arrow-right-short::before {
+    content: '\f135';
+}
+.bi-arrow-up::before {
+    content: '\f148';
+}
+.bi-arrow-up-right::before {
+    content: '\f144';
+}
+.bi-bank::before {
+    content: '\f62e';
+}
+.bi-bar-chart::before {
+    content: '\f17e';
+}
+.bi-bar-chart-line::before {
+    content: '\f17c';
+}
+.bi-bookmark::before {
+    content: '\f1a2';
+}
+.bi-box-arrow-in-right::before {
+    content: '\f1be';
+}
+.bi-box-arrow-up-right::before {
+    content: '\f1c5';
+}
+.bi-braces::before {
+    content: '\f1c9';
+}
+.bi-building::before {
+    content: '\f1dd';
+}
+.bi-building-check::before {
+    content: '\f868';
+}
+.bi-buildings::before {
+    content: '\f87d';
+}
+.bi-calendar-check::before {
+    content: '\f1e2';
+}
+.bi-calendar3::before {
+    content: '\f214';
+}
+.bi-calculator::before {
+    content: '\f1e0';
+}
+.bi-cash-coin::before {
+    content: '\f632';
+}
+.bi-cash-stack::before {
+    content: '\f246';
+}
+.bi-check-circle::before {
+    content: '\f26b';
+}
+.bi-check2-circle::before {
+    content: '\f270';
+}
+.bi-chevron-double-left::before {
+    content: '\f27f';
+}
+.bi-chevron-double-right::before {
+    content: '\f280';
+}
+.bi-chevron-down::before {
+    content: '\f282';
+}
+.bi-clock-history::before {
+    content: '\f292';
+}
+.bi-collection::before {
+    content: '\f2cc';
+}
+.bi-compass::before {
+    content: '\f2d1';
+}
+.bi-diagram-3::before {
+    content: '\f2ee';
+}
+.bi-display::before {
+    content: '\f302';
+}
+.bi-download::before {
+    content: '\f30a';
+}
+.bi-exclamation-circle::before {
+    content: '\f333';
+}
+.bi-exclamation-triangle::before {
+    content: '\f33b';
+}
+.bi-eye::before {
+    content: '\f341';
+}
+.bi-file-earmark::before {
+    content: '\f392';
+}
+.bi-file-earmark-arrow-down::before {
+    content: '\f356';
+}
+.bi-file-earmark-excel::before {
+    content: '\f368';
+}
+.bi-file-earmark-lock::before {
+    content: '\f36f';
+}
+.bi-file-earmark-pdf::before {
+    content: '\f63e';
+}
+.bi-file-earmark-plus::before {
+    content: '\f37d';
+}
+.bi-file-earmark-text::before {
+    content: '\f38b';
+}
+.bi-file-earmark-x::before {
+    content: '\f38f';
+}
+.bi-folder2-open::before {
+    content: '\f3d8';
+}
+.bi-funnel::before {
+    content: '\f3e1';
+}
+.bi-geo-alt::before {
+    content: '\f3e8';
+}
+.bi-globe2::before {
+    content: '\f3ef';
+}
+.bi-graph-up-arrow::before {
+    content: '\f673';
+}
+.bi-grid::before {
+    content: '\f3fc';
+}
+.bi-grid-1x2::before {
+    content: '\f3f4';
+}
+.bi-grip-vertical::before {
+    content: '\f3fe';
+}
+.bi-hourglass-split::before {
+    content: '\f41f';
+}
+.bi-house-check::before {
+    content: '\f889';
+}
+.bi-images::before {
+    content: '\f42b';
+}
+.bi-journal-richtext::before {
+    content: '\f443';
+}
+.bi-journal-text::before {
+    content: '\f444';
+}
+.bi-key::before {
+    content: '\f44f';
+}
+.bi-layout-sidebar-inset::before {
+    content: '\f45d';
+}
+.bi-layout-text-window::before {
+    content: '\f464';
+}
+.bi-layout-wtf::before {
+    content: '\f466';
+}
+.bi-list::before {
+    content: '\f479';
+}
+.bi-lock::before {
+    content: '\f47b';
+}
+.bi-map::before {
+    content: '\f47f';
+}
+.bi-megaphone::before {
+    content: '\f484';
+}
+.bi-pencil::before {
+    content: '\f4cb';
+}
+.bi-pencil-square::before {
+    content: '\f4ca';
+}
+.bi-people::before {
+    content: '\f4d0';
+}
+.bi-person::before {
+    content: '\f4e1';
+}
+.bi-person-badge::before {
+    content: '\f4d3';
+}
+.bi-person-check::before {
+    content: '\f4d6';
+}
+.bi-person-exclamation::before {
+    content: '\f89c';
+}
+.bi-person-lock::before {
+    content: '\f8a8';
+}
+.bi-person-plus::before {
+    content: '\f4dd';
+}
+.bi-person-slash::before {
+    content: '\f8a9';
+}
+.bi-person-workspace::before {
+    content: '\f67a';
+}
+.bi-phone::before {
+    content: '\f4e7';
+}
+.bi-plus-lg::before {
+    content: '\f64d';
+}
+.bi-question-circle::before {
+    content: '\f505';
+}
+.bi-receipt::before {
+    content: '\f50f';
+}
+.bi-rocket-takeoff::before {
+    content: '\f845';
+}
+.bi-search::before {
+    content: '\f52a';
+}
+.bi-shield-check::before {
+    content: '\f52f';
+}
+.bi-shield-lock::before {
+    content: '\f538';
+}
+.bi-signpost::before {
+    content: '\f54a';
+}
+.bi-signpost-split::before {
+    content: '\f549';
+}
+.bi-sliders2::before {
+    content: '\f789';
+}
+.bi-speedometer2::before {
+    content: '\f580';
+}
+.bi-stars::before {
+    content: '\f589';
+}
+.bi-three-dots::before {
+    content: '\f5d4';
+}
+.bi-tools::before {
+    content: '\f5db';
+}
+.bi-translate::before {
+    content: '\f658';
+}
+.bi-view-list::before {
+    content: '\f605';
+}
+.bi-wallet2::before {
+    content: '\f615';
+}
+.bi-window-fullscreen::before {
+    content: '\f6cf';
+}
+.bi-window-stack::before {
+    content: '\f6d2';
+}
+.bi-x::before {
+    content: '\f62a';
+}
+.bi-x-lg::before {
+    content: '\f659';
+}

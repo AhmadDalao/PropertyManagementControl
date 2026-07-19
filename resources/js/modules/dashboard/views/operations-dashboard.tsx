@@ -7,12 +7,14 @@ import {
     WorkspacePanel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 
 import { operationsHealthScore } from '../metrics';
 import type { DashboardPageProps, NextAction } from '../types';
 
 export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
+    const isArabic = props.app.locale === 'ar';
     const setupChecklist = props.setupChecklist ?? [];
     const nextActions = props.nextActions ?? [];
     const recentPayments = props.recentPayments ?? [];
@@ -73,8 +75,12 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                         value: props.stats.totalAssets ?? 0,
                         detail:
                             props.mode === 'superadmin'
-                                ? `${props.stats.totalPortfolios ?? 0} portfolios · ${props.stats.totalUsers ?? 0} users`
-                                : `${props.stats.vacantUnits ?? 0} vacant rentable units`,
+                                ? isArabic
+                                    ? `${props.stats.totalPortfolios ?? 0} محافظ · ${props.stats.totalUsers ?? 0} مستخدمين`
+                                    : `${props.stats.totalPortfolios ?? 0} portfolios · ${props.stats.totalUsers ?? 0} users`
+                                : isArabic
+                                  ? `${props.stats.vacantUnits ?? 0} وحدات شاغرة قابلة للتأجير`
+                                  : `${props.stats.vacantUnits ?? 0} vacant rentable units`,
                         icon: 'bi-buildings',
                         tone: 'ink',
                         href: '/assets',
@@ -85,7 +91,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.totalValue ?? 0),
                             props.app.locale,
                         ),
-                        detail: `${props.stats.activeLeases ?? 0} active leases`,
+                        detail: isArabic
+                            ? `${props.stats.activeLeases ?? 0} عقود نشطة`
+                            : `${props.stats.activeLeases ?? 0} active leases`,
                         icon: 'bi-bank',
                         tone: 'blue',
                         href: '/assets',
@@ -96,7 +104,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.monthlyRevenue ?? 0),
                             props.app.locale,
                         ),
-                        detail: `${currency(Number(props.stats.monthlyExpenses ?? 0), props.app.locale)} expenses`,
+                        detail: isArabic
+                            ? `${currency(Number(props.stats.monthlyExpenses ?? 0), props.app.locale)} مصاريف`
+                            : `${currency(Number(props.stats.monthlyExpenses ?? 0), props.app.locale)} expenses`,
                         icon: 'bi-cash-stack',
                         tone: 'teal',
                         href: '/payments',
@@ -107,7 +117,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.arrears ?? 0),
                             props.app.locale,
                         ),
-                        detail: `${props.stats.openRequests ?? 0} open service requests`,
+                        detail: isArabic
+                            ? `${props.stats.openRequests ?? 0} طلبات خدمة مفتوحة`
+                            : `${props.stats.openRequests ?? 0} open service requests`,
                         icon: 'bi-exclamation-circle',
                         tone:
                             Number(props.stats.arrears ?? 0) > 0
@@ -171,7 +183,11 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
             <div className="pmc-command-grid is-three">
                 <WorkspacePanel
                     eyebrow="Health"
-                    title={`${healthScore}% operating readiness`}
+                    title={
+                        isArabic
+                            ? `جاهزية التشغيل ${healthScore}%`
+                            : `${healthScore}% operating readiness`
+                    }
                     description="Setup, occupancy, map, and contract signals."
                 >
                     <HealthSignals
@@ -255,15 +271,17 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
 }
 
 function ActionQueue({ actions }: { actions: NextAction[] }) {
+    const { locale, text } = useTranslator();
+
     if (actions.length === 0) {
         return null;
     }
 
     return (
-        <section className="pmc-action-queue" aria-label="Next actions">
+        <section className="pmc-action-queue" aria-label={text('Next actions')}>
             <div className="pmc-action-queue-label">
-                <span>Today</span>
-                <strong>Next actions</strong>
+                <span>{text('Today')}</span>
+                <strong>{text('Next actions')}</strong>
             </div>
             <div className="pmc-action-queue-grid">
                 {actions.map((action, index) => (
@@ -274,8 +292,10 @@ function ActionQueue({ actions }: { actions: NextAction[] }) {
                         <span>{String(index + 1).padStart(2, '0')}</span>
                         <i className={`bi ${action.icon}`} />
                         <div>
-                            <strong>{action.label}</strong>
-                            <small>{action.description}</small>
+                            <strong>{text(action.label)}</strong>
+                            <small>
+                                {actionDescription(action, locale, text)}
+                            </small>
                         </div>
                         <i className="bi bi-arrow-up-right" />
                     </Link>
@@ -283,6 +303,21 @@ function ActionQueue({ actions }: { actions: NextAction[] }) {
             </div>
         </section>
     );
+}
+
+function actionDescription(
+    action: NextAction,
+    locale: 'en' | 'ar',
+    translate: (value: string) => string,
+): string {
+    if (locale !== 'ar' || action.label !== 'Complete property map') {
+        return translate(action.description);
+    }
+
+    const [positions = '0', identities = '0'] =
+        action.description.match(/\d+/g) ?? [];
+
+    return `أصلح ${positions} مواقع مفقودة و${identities} بيانات منطقة أو أرض قبل الاعتماد على خريطة المالك.`;
 }
 
 function RecordList({
@@ -299,8 +334,10 @@ function RecordList({
     }>;
     empty: string;
 }) {
+    const { text } = useTranslator();
+
     if (rows.length === 0) {
-        return <div className="pmc-command-empty">{empty}</div>;
+        return <div className="pmc-command-empty">{text(empty)}</div>;
     }
 
     return (
@@ -329,12 +366,14 @@ function HealthSignals({
 }: {
     signals: Array<{ label: string; value: number; href: string }>;
 }) {
+    const { text } = useTranslator();
+
     return (
         <div className="pmc-health-signals">
             {signals.map((signal) => (
                 <Link key={signal.label} href={signal.href}>
                     <div>
-                        <span>{signal.label}</span>
+                        <span>{text(signal.label)}</span>
                         <strong>{signal.value}%</strong>
                     </div>
                     <div className="pmc-health-track">

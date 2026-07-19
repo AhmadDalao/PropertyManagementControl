@@ -1,0 +1,490 @@
+.pmc-doc-command {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.32fr) minmax(16rem, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #111;
+    color: #fff;
+}
+
+.pmc-doc-command > div {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.pmc-doc-command > div span,
+.pmc-doc-command > div small {
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.67rem;
+}
+
+.pmc-doc-command > div strong {
+    font-size: 1rem;
+}
+
+.pmc-doc-command > label {
+    position: relative;
+    display: grid;
+    gap: 0.35rem;
+}
+
+.pmc-doc-command > label > span {
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-doc-command > label > i {
+    position: absolute;
+    bottom: 0.78rem;
+    inset-inline-start: 0.85rem;
+    z-index: 1;
+    color: #777168;
+}
+
+.pmc-doc-command .form-control {
+    min-height: 2.7rem;
+    padding-inline-start: 2.35rem;
+    border: 0;
+    border-radius: 0.7rem;
+}
+
+.pmc-doc-workflow-grid,
+.pmc-doc-guide-grid,
+.pmc-doc-shortcut-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.pmc-doc-workflow-grid {
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.pmc-doc-workflow-card {
+    display: grid;
+    min-width: 0;
+    gap: 0.8rem;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.8rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-doc-workflow-card > header {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+}
+
+.pmc-doc-workflow-card > header > i {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #fff0a3;
+    color: #715900;
+}
+
+.pmc-doc-workflow-card header div {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.pmc-doc-workflow-card header span,
+.pmc-doc-workflow-card header small,
+.pmc-doc-workflow-card footer span {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+}
+
+.pmc-doc-workflow-card header strong {
+    font-size: 0.8rem;
+}
+
+.pmc-doc-workflow-card ol {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding-inline-start: 1.3rem;
+    color: #4c4842;
+    font-size: 0.68rem;
+}
+
+.pmc-doc-workflow-card footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--pmc-line);
+}
+
+.pmc-doc-index-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.pmc-doc-guide-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pmc-doc-guide-link,
+.pmc-doc-shortcut-list > a {
+    display: grid;
+    min-width: 0;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-doc-guide-link {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.pmc-doc-guide-link:hover,
+.pmc-doc-shortcut-list > a:hover {
+    border-color: #d0ad00;
+    background: #fffaf0;
+}
+
+.pmc-doc-guide-link > i:first-child,
+.pmc-doc-shortcut-list > a > i {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.6rem;
+    background: #fff0a3;
+    color: #715900;
+}
+
+.pmc-doc-guide-link > div,
+.pmc-doc-shortcut-list > a > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.pmc-doc-guide-link span,
+.pmc-doc-guide-link small,
+.pmc-doc-shortcut-list span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+    text-overflow: ellipsis;
+}
+
+.pmc-doc-guide-link strong,
+.pmc-doc-shortcut-list strong {
+    overflow: hidden;
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+}
+
+.pmc-doc-shortcut-list > a {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.pmc-doc-shortcut-list em {
+    color: var(--pmc-teal);
+    font-size: 0.63rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-doc-controls {
+    margin-top: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-controls > summary {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-doc-controls > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-doc-controls > summary > div {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.pmc-doc-controls > summary strong {
+    display: grid;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.6rem;
+}
+
+.pmc-doc-controls > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 0.65rem;
+    padding: 0 1rem 1rem;
+}
+
+.pmc-doc-controls article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 0.8rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-doc-controls article > .btn {
+    grid-column: 1 / -1;
+}
+
+.pmc-doc-controls article div {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.pmc-doc-controls article span,
+.pmc-doc-controls article li {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+}
+
+.pmc-doc-controls article ul {
+    margin: 0.35rem 0 0;
+    padding-inline-start: 1rem;
+}
+
+.pmc-doc-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.25fr) minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+}
+
+.pmc-doc-detail-layout > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 1rem);
+    display: grid;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-guide-icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: #fff0a3;
+    color: #715900;
+    font-size: 1.2rem;
+}
+
+.pmc-doc-detail-layout > aside > span {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-doc-detail-layout > aside > a {
+    padding: 0.55rem;
+    border-radius: 0.55rem;
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.pmc-doc-detail-layout > aside > a:hover {
+    background: #fff7d2;
+}
+
+.pmc-doc-detail-layout > main {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-doc-detail-layout > main > section {
+    scroll-margin-top: calc(var(--pmc-topbar-height) + 1rem);
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-detail-layout h2 {
+    margin: 0.25rem 0 0.9rem;
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.pmc-doc-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-doc-feature-grid article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-doc-feature-grid span {
+    color: #8b6e00;
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-doc-feature-grid p {
+    margin: 0;
+    color: #4e4a43;
+    font-size: 0.72rem;
+}
+
+.pmc-doc-step-list,
+.pmc-doc-rule-list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-doc-step-list {
+    padding-inline-start: 1.25rem;
+}
+
+.pmc-doc-step-list li,
+.pmc-doc-rule-list li {
+    padding: 0.7rem;
+    border-radius: 0.65rem;
+    background: var(--pmc-surface-soft);
+    color: #4e4a43;
+    font-size: 0.72rem;
+}
+
+.pmc-doc-rule-list {
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-doc-rule-list li {
+    display: flex;
+    gap: 0.55rem;
+}
+
+.pmc-doc-rule-list i {
+    color: var(--pmc-teal);
+}
+
+.pmc-doc-related {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #111;
+    color: #fff;
+}
+
+.pmc-doc-related h2 {
+    margin: 0.15rem 0 0;
+    font-size: 1rem;
+}
+
+.pmc-doc-related > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-doc-related a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+    font-size: 0.7rem;
+    text-decoration: none;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-doc-index-grid,
+    .pmc-doc-detail-layout,
+    .pmc-doc-related {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-doc-detail-layout > aside {
+        position: static;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-doc-detail-layout > aside .pmc-doc-guide-icon,
+    .pmc-doc-detail-layout > aside > span {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-doc-command,
+    .pmc-doc-guide-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-doc-workflow-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-doc-detail-layout > aside {
+        display: flex;
+        overflow-x: auto;
+    }
+
+    .pmc-doc-detail-layout > aside .pmc-doc-guide-icon,
+    .pmc-doc-detail-layout > aside > span {
+        display: none;
+    }
+
+    .pmc-doc-detail-layout > aside > a {
+        flex: 0 0 auto;
+    }
+}

@@ -114,13 +114,18 @@ export type DashboardPageProps = SharedProps & {
             currency?: string;
             started_at?: string;
             ends_at?: string;
-            leaseable?: { title_en?: string; code?: string } | null;
+            leaseable?: {
+                title_en?: string;
+                title_ar?: string;
+                code?: string;
+            } | null;
             contract_url?: string;
             statement_url?: string;
         } | null;
         documents?: Array<{
             id: number;
             title_en: string;
+            title_ar?: string;
             type: string;
             download_url: string;
         }>;

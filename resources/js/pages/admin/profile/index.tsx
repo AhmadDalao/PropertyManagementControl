@@ -143,10 +143,15 @@ export default function ProfilePage() {
                                     onSubmit={updateProfile}
                                 >
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="profile-name"
+                                        >
                                             Name
                                         </label>
                                         <input
+                                            id="profile-name"
+                                            name="name"
                                             className="form-control"
                                             value={profileForm.data.name}
                                             onChange={(event) =>
@@ -161,10 +166,16 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="profile-email"
+                                        >
                                             Email
                                         </label>
                                         <input
+                                            id="profile-email"
+                                            name="email"
+                                            type="email"
                                             className="form-control"
                                             value={profile.email}
                                             disabled
@@ -176,10 +187,16 @@ export default function ProfilePage() {
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="profile-phone"
+                                        >
                                             Phone
                                         </label>
                                         <input
+                                            id="profile-phone"
+                                            name="phone"
+                                            type="tel"
                                             className="form-control"
                                             value={profileForm.data.phone}
                                             onChange={(event) =>
@@ -194,10 +211,15 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="profile-locale"
+                                        >
                                             Portal language
                                         </label>
                                         <select
+                                            id="profile-locale"
+                                            name="preferred_locale"
                                             className="form-select"
                                             value={
                                                 profileForm.data
@@ -240,10 +262,15 @@ export default function ProfilePage() {
                                     onSubmit={updatePassword}
                                 >
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="current-password"
+                                        >
                                             Current password
                                         </label>
                                         <input
+                                            id="current-password"
+                                            name="current_password"
                                             type="password"
                                             className="form-control"
                                             value={
@@ -271,10 +298,15 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="new-password"
+                                        >
                                             New password
                                         </label>
                                         <input
+                                            id="new-password"
+                                            name="password"
                                             type="password"
                                             className="form-control"
                                             value={passwordForm.data.password}
@@ -292,10 +324,15 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="password-confirmation"
+                                        >
                                             Confirm password
                                         </label>
                                         <input
+                                            id="password-confirmation"
+                                            name="password_confirmation"
                                             type="password"
                                             className="form-control"
                                             value={

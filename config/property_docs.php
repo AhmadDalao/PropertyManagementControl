@@ -263,7 +263,7 @@ return [
             'roles' => ['superadmin'],
             'summary' => 'Only superadmin controls global public pages. The builder allows predefined sections, not arbitrary script injection.',
             'route' => '/cms',
-            'icon' => 'bi-window-check',
+            'icon' => 'bi-shield-check',
             'checks' => ['Draft pages stay private', 'Section reorder persists', 'Arabic/English content renders with correct direction'],
         ],
     ],

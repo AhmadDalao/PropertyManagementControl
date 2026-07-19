@@ -65,4 +65,41 @@ class DocumentationWorkspaceTest extends TestCase
                     && ! collect($workflows)->contains('key', 'portfolio_launch'))
             );
     }
+
+    public function test_role_scoped_guide_pages_render_individually(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio);
+
+        $this->actingAs($owner)
+            ->get(route('documentation.show', 'asset-control'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/documentation/show')
+                ->where('guide.slug', 'asset-control')
+                ->where('audience', 'owner')
+                ->has('relatedGuides'));
+
+        $this->actingAs($tenant)
+            ->get(route('documentation.show', 'website-control'))
+            ->assertNotFound();
+    }
+
+    public function test_arabic_documentation_contains_translated_workflows_and_guides(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, [
+            'preferred_locale' => 'ar',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('documentation.index', ['locale' => 'ar']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.direction', 'rtl')
+                ->where('app.translations.nav.dashboard', 'لوحة التحكم')
+                ->where('workflowTracks.0.title', 'إطلاق محفظة عقارية مُدارة')
+                ->where('guides.0.title', 'إدارة الأصول'));
+    }
 }

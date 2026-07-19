@@ -10,6 +10,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate, percent } from '@/lib/utils';
 import type { SharedProps, TableFilters } from '@/types';
 
@@ -105,6 +106,8 @@ export default function ReportsIndexPage() {
             : 'all',
     });
     const [presetTitle, setPresetTitle] = useState('');
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const { t } = useTranslator();
     const query = new URLSearchParams(cleanFilters(filters)).toString();
     const exportHref = query ? `/reports/export?${query}` : '/reports/export';
     const collectionBase = props.summary.revenue + props.summary.arrears;
@@ -171,7 +174,22 @@ export default function ReportsIndexPage() {
                 ]}
             />
 
-            <form className="pmc-report-toolbar" onSubmit={applyFilters}>
+            <button
+                type="button"
+                className="pmc-report-filter-trigger"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((open) => !open)}
+            >
+                <i className="bi bi-sliders2" />
+                {filtersOpen
+                    ? t('reports.hide_filters', 'Hide filters')
+                    : t('reports.show_filters', 'Show filters')}
+            </button>
+
+            <form
+                className={`pmc-report-toolbar ${filtersOpen ? 'is-open' : ''}`}
+                onSubmit={applyFilters}
+            >
                 <label>
                     <span>Date from</span>
                     <input
@@ -440,7 +458,14 @@ export default function ReportsIndexPage() {
                 </summary>
                 <div className="pmc-report-presets-body">
                     <div className="pmc-report-preset-create">
+                        <label
+                            className="visually-hidden"
+                            htmlFor="report-preset-title"
+                        >
+                            Preset name
+                        </label>
                         <input
+                            id="report-preset-title"
                             className="form-control"
                             value={presetTitle}
                             placeholder="Preset name"

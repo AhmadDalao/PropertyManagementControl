@@ -140,8 +140,8 @@ trait BuildsAdminTables
 
     private function tablePerPage(Request $request): int
     {
-        $perPage = (int) $request->query('per_page', 25);
+        $perPage = (int) $request->query('per_page', 10);
 
-        return in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 25;
+        return in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 10;
     }
 }

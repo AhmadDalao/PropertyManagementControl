@@ -8,12 +8,17 @@ export function LanguageSwitcher() {
     } = usePage<SharedProps>().props;
 
     return (
-        <div className="btn-group" role="group" aria-label="Language switcher">
+        <div
+            className="pmc-language-switcher"
+            role="group"
+            aria-label="Language switcher"
+        >
             {(['en', 'ar'] as const).map((item) => (
                 <button
                     key={item}
                     type="button"
-                    className={`btn btn-sm ${locale === item ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    className={locale === item ? 'active' : ''}
+                    aria-pressed={locale === item}
                     onClick={() => router.post(`/locale/${item}`)}
                 >
                     {item.toUpperCase()}

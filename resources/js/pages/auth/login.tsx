@@ -2,8 +2,10 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { useTranslator } from '@/lib/i18n';
 
 export default function LoginPage() {
+    const { locale } = useTranslator();
     const form = useForm({
         email: '',
         password: '',
@@ -34,10 +36,11 @@ export default function LoginPage() {
                                 <div className="pmc-kicker mb-3">
                                     Secure portal
                                 </div>
-                                <h1>
-                                    One login for owners, managers, tenants, and
-                                    system control.
-                                </h1>
+                                <h2>
+                                    {locale === 'ar'
+                                        ? 'دخول واحد للملاك والمديرين والمستأجرين وإدارة النظام.'
+                                        : 'One login for owners, managers, tenants, and system control.'}
+                                </h2>
                                 <p>
                                     Access portfolio dashboards, rent balances,
                                     contracts, payment receipts, maintenance
@@ -79,14 +82,27 @@ export default function LoginPage() {
                                     className="d-grid gap-3"
                                 >
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="login-email"
+                                        >
                                             Email
                                         </label>
                                         <input
+                                            id="login-email"
+                                            name="email"
                                             type="email"
                                             autoComplete="email"
                                             className="form-control form-control-lg"
                                             required
+                                            aria-invalid={Boolean(
+                                                form.errors.email,
+                                            )}
+                                            aria-describedby={
+                                                form.errors.email
+                                                    ? 'login-email-error'
+                                                    : undefined
+                                            }
                                             value={form.data.email}
                                             onChange={(event) =>
                                                 form.setData(
@@ -96,21 +112,37 @@ export default function LoginPage() {
                                             }
                                         />
                                         {form.errors.email ? (
-                                            <div className="text-danger small mt-1">
+                                            <div
+                                                id="login-email-error"
+                                                className="text-danger small mt-1"
+                                            >
                                                 {form.errors.email}
                                             </div>
                                         ) : null}
                                     </div>
 
                                     <div>
-                                        <label className="form-label pmc-form-label">
+                                        <label
+                                            className="form-label pmc-form-label"
+                                            htmlFor="login-password"
+                                        >
                                             Password
                                         </label>
                                         <input
+                                            id="login-password"
+                                            name="password"
                                             type="password"
                                             autoComplete="current-password"
                                             className="form-control form-control-lg"
                                             required
+                                            aria-invalid={Boolean(
+                                                form.errors.password,
+                                            )}
+                                            aria-describedby={
+                                                form.errors.password
+                                                    ? 'login-password-error'
+                                                    : undefined
+                                            }
                                             value={form.data.password}
                                             onChange={(event) =>
                                                 form.setData(
@@ -120,7 +152,10 @@ export default function LoginPage() {
                                             }
                                         />
                                         {form.errors.password ? (
-                                            <div className="text-danger small mt-1">
+                                            <div
+                                                id="login-password-error"
+                                                className="text-danger small mt-1"
+                                            >
                                                 {form.errors.password}
                                             </div>
                                         ) : null}

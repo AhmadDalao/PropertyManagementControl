@@ -23,6 +23,12 @@ export function PublicLayout({ children }: PublicLayoutProps) {
         document.documentElement.dir = props.app.direction;
     }, [props.app.direction, props.app.locale]);
 
+    useEffect(() => {
+        document.body.classList.toggle('pmc-site-menu-open', menuOpen);
+
+        return () => document.body.classList.remove('pmc-site-menu-open');
+    }, [menuOpen]);
+
     const navItems =
         props.publicNavigation.header.length > 0
             ? props.publicNavigation.header
@@ -49,6 +55,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                                 key={`${item.id}-${item.url}`}
                                 item={item}
                                 locale={locale}
+                                onNavigate={() => setMenuOpen(false)}
                             />
                         ))}
                     </nav>
@@ -62,6 +69,7 @@ export function PublicLayout({ children }: PublicLayoutProps) {
                             type="button"
                             className="pmc-site-menu"
                             aria-label="Toggle navigation"
+                            aria-expanded={menuOpen}
                             onClick={() => setMenuOpen((value) => !value)}
                         >
                             <i
@@ -80,18 +88,28 @@ export function PublicLayout({ children }: PublicLayoutProps) {
 function PublicNavItem({
     item,
     locale,
+    onNavigate,
 }: {
     item: NavigationItemRecord;
     locale: 'en' | 'ar';
+    onNavigate: () => void;
 }) {
     const href = item.url || '/';
     const label = itemLabel(item, locale);
 
     if (href.startsWith('#') || href.startsWith('http')) {
-        return <a href={href}>{label}</a>;
+        return (
+            <a href={href} onClick={onNavigate}>
+                {label}
+            </a>
+        );
     }
 
-    return <Link href={href}>{label}</Link>;
+    return (
+        <Link href={href} onClick={onNavigate}>
+            {label}
+        </Link>
+    );
 }
 
 function defaultNavigation(locale: 'en' | 'ar'): NavigationItemRecord[] {

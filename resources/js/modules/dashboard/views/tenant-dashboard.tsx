@@ -7,11 +7,14 @@ import {
     WorkspacePanel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 
 import type { DashboardPageProps } from '../types';
 
 export function TenantDashboard({ props }: { props: DashboardPageProps }) {
+    const { text } = useTranslator();
+    const isArabic = props.app.locale === 'ar';
     const lease = props.tenantPortal?.lease;
     const payments = props.tenantPortal?.payments ?? [];
     const requests = props.tenantPortal?.requests ?? [];
@@ -24,11 +27,17 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
 
             <WorkspaceHeader
                 eyebrow="Tenant portal"
-                title={lease?.leaseable?.title_en ?? 'Your rental portal'}
+                title={
+                    (isArabic
+                        ? lease?.leaseable?.title_ar
+                        : lease?.leaseable?.title_en) ?? 'Your rental portal'
+                }
                 description={
                     lease
                         ? `${lease.code} · ${lease.leaseable?.code ?? 'Rental asset'}`
-                        : 'Your owner or manager needs to activate a lease before payment and document information appears.'
+                        : text(
+                              'Your owner or manager needs to activate a lease before payment and document information appears.',
+                          )
                 }
                 actions={[
                     {
@@ -50,17 +59,23 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                 metrics={[
                     {
                         label: 'Lease',
-                        value: props.stats.leaseCode ?? 'Not active',
+                        value:
+                            props.stats.leaseCode ??
+                            (isArabic ? 'غير نشط' : 'Not active'),
                         detail: lease?.ends_at
-                            ? `Ends ${humanDate(lease.ends_at, props.app.locale)}`
-                            : 'No end date',
+                            ? isArabic
+                                ? `ينتهي ${humanDate(lease.ends_at, props.app.locale)}`
+                                : `Ends ${humanDate(lease.ends_at, props.app.locale)}`
+                            : isArabic
+                              ? 'لا يوجد تاريخ انتهاء'
+                              : 'No end date',
                         icon: 'bi-file-earmark-text',
                         tone: 'ink',
                     },
                     {
                         label: 'Days remaining',
                         value: props.stats.daysLeft ?? 0,
-                        detail: 'In the current contract',
+                        detail: text('In the current contract'),
                         icon: 'bi-calendar3',
                         tone: 'blue',
                     },
@@ -71,7 +86,9 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             props.app.locale,
                             currencyCode,
                         ),
-                        detail: `${payments.length} posted payments`,
+                        detail: isArabic
+                            ? `${payments.length} دفعات مسجلة`
+                            : `${payments.length} posted payments`,
                         icon: 'bi-check-circle',
                         tone: 'teal',
                     },
@@ -82,7 +99,9 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             props.app.locale,
                             currencyCode,
                         ),
-                        detail: `${requests.length} maintenance requests`,
+                        detail: isArabic
+                            ? `${requests.length} طلبات صيانة`
+                            : `${requests.length} maintenance requests`,
                         icon: 'bi-hourglass-split',
                         tone:
                             Number(props.stats.amountLeft ?? 0) > 0
@@ -100,19 +119,19 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                 >
                     <div className="pmc-tenant-lease-summary">
                         <div>
-                            <span>Starts</span>
+                            <span>{text('Starts')}</span>
                             <strong>
                                 {humanDate(lease?.started_at, props.app.locale)}
                             </strong>
                         </div>
                         <div>
-                            <span>Ends</span>
+                            <span>{text('Ends')}</span>
                             <strong>
                                 {humanDate(lease?.ends_at, props.app.locale)}
                             </strong>
                         </div>
                         <div>
-                            <span>Contract rent</span>
+                            <span>{text('Contract rent')}</span>
                             <strong>
                                 {currency(
                                     Number(lease?.rent_amount ?? 0),
@@ -127,11 +146,11 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                         <div className="pmc-tenant-document-actions">
                             <a href={lease.contract_url}>
                                 <i className="bi bi-file-earmark-pdf" />
-                                Contract PDF
+                                {text('Contract PDF')}
                             </a>
                             <a href={lease.statement_url}>
                                 <i className="bi bi-receipt" />
-                                Tenant statement
+                                {text('Tenant statement')}
                             </a>
                         </div>
                     ) : null}
@@ -145,7 +164,12 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                                 >
                                     <i className="bi bi-file-earmark-pdf" />
                                     <div>
-                                        <strong>{document.title_en}</strong>
+                                        <strong>
+                                            {(isArabic
+                                                ? document.title_ar
+                                                : document.title_en) ??
+                                                document.title_en}
+                                        </strong>
                                         <span>{document.type}</span>
                                     </div>
                                     <i className="bi bi-download" />
@@ -153,7 +177,7 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             ))
                         ) : (
                             <div className="pmc-command-empty">
-                                No contract documents are available.
+                                {text('No contract documents are available.')}
                             </div>
                         )}
                     </div>
@@ -171,7 +195,9 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                                     <div>
                                         <strong>
                                             {payment.reference ??
-                                                `Receipt #${payment.id}`}
+                                                (isArabic
+                                                    ? `إيصال #${payment.id}`
+                                                    : `Receipt #${payment.id}`)}
                                         </strong>
                                         <span>
                                             {humanDate(
@@ -191,7 +217,7 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             ))
                         ) : (
                             <div className="pmc-command-empty">
-                                No posted payments yet.
+                                {text('No posted payments yet.')}
                             </div>
                         )}
                     </div>
@@ -228,7 +254,7 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                         ))
                     ) : (
                         <div className="pmc-command-empty">
-                            No maintenance requests submitted.
+                            {text('No maintenance requests submitted.')}
                         </div>
                     )}
                 </div>

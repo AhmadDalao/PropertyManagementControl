@@ -94,6 +94,15 @@ export default [
         },
     },
     {
+        files: ['playwright.config.ts', 'tests/e2e/**/*.ts'],
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+            },
+        },
+    },
+    {
         plugins: {
             '@stylistic': stylistic,
         },

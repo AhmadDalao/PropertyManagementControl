@@ -1,5 +1,8 @@
 import { Link, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
+
+import { useTranslator } from '@/lib/i18n';
 
 export type ResourceAction = {
     label: string;
@@ -86,6 +89,9 @@ export type RelatedTable = {
     actionLabel?: string;
 };
 
+export type ResourceDetailTab =
+    'overview' | 'financial' | 'documents' | 'history' | 'related';
+
 type RelatedCell = ReactNode | { label: string; href: string };
 type ResourceFormValue = string | number | boolean | File | null | undefined;
 export type ResourceFormValues = Record<string, ResourceFormValue>;
@@ -98,26 +104,48 @@ export function ResourceHeader({
     backLabel = 'Back',
     actions = [],
 }: ResourceHeaderProps) {
+    const { t, text } = useTranslator();
+    const primaryActions = actions.slice(0, 2);
+    const overflowActions = actions.slice(2);
+
     return (
         <section className="pmc-resource-header">
             <div>
-                <div className="pmc-kicker mb-2">{eyebrow}</div>
-                <h1>{title}</h1>
-                {description ? <p>{description}</p> : null}
+                <div className="pmc-kicker mb-2">{text(eyebrow)}</div>
+                <h1>{text(title)}</h1>
+                {description ? <p>{text(description)}</p> : null}
             </div>
             <div className="pmc-resource-actions">
                 {backHref ? (
                     <Link href={backHref} className="btn btn-light">
                         <i className="bi bi-arrow-left me-2" />
-                        {backLabel}
+                        {text(backLabel)}
                     </Link>
                 ) : null}
-                {actions.map((action) => (
+                {primaryActions.map((action) => (
                     <ActionLink
                         key={`${action.href}-${action.label}`}
                         action={action}
                     />
                 ))}
+                {overflowActions.length > 0 ? (
+                    <details className="pmc-resource-action-menu">
+                        <summary>
+                            <i className="bi bi-three-dots" />
+                            <span>
+                                {t('common.more_actions', 'More actions')}
+                            </span>
+                        </summary>
+                        <div>
+                            {overflowActions.map((action) => (
+                                <ActionLink
+                                    key={`${action.href}-${action.label}`}
+                                    action={action}
+                                />
+                            ))}
+                        </div>
+                    </details>
+                ) : null}
             </div>
         </section>
     );
@@ -146,6 +174,8 @@ export function ResourceFormShell({
 }) {
     const form = useForm<ResourceFormValues>(initialValues);
     const hasFile = fields.some((field) => field.type === 'file');
+    const { text } = useTranslator();
+    const errors = Object.values(form.errors).filter(Boolean);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -176,7 +206,7 @@ export function ResourceFormShell({
                     <span className="pmc-table-icon">
                         <i className="bi bi-pencil-square" />
                     </span>
-                    <strong>One job on this page</strong>
+                    <strong>{text('One job on this page')}</strong>
                     <p>
                         Fill the record cleanly, save it, then review the detail
                         page for documents, history, and next actions.
@@ -184,6 +214,25 @@ export function ResourceFormShell({
                 </div>
 
                 <form className="pmc-resource-form" onSubmit={submit}>
+                    {errors.length > 0 ? (
+                        <div
+                            className="pmc-form-error-summary"
+                            role="alert"
+                            aria-live="assertive"
+                        >
+                            <i className="bi bi-exclamation-circle" />
+                            <div>
+                                <strong>Check the highlighted fields</strong>
+                                <ul>
+                                    {errors.map((error) => (
+                                        <li key={String(error)}>
+                                            {String(error)}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    ) : null}
                     {fields.map((field) => (
                         <ResourceInput
                             key={field.name}
@@ -198,7 +247,7 @@ export function ResourceFormShell({
 
                     <div className="pmc-resource-form-actions">
                         <Link href={backHref} className="btn btn-light">
-                            Cancel
+                            {text('Cancel')}
                         </Link>
                         <button
                             className="btn btn-primary"
@@ -244,47 +293,162 @@ export function ResourceDetailShell({
         created_at?: string;
     }>;
 }) {
+    const financialSections = sections.filter((section) =>
+        financialSectionPattern.test(section.title),
+    );
+    const overviewSections = sections.filter(
+        (section) => !financialSectionPattern.test(section.title),
+    );
+    const availableTabs: Array<{
+        key: ResourceDetailTab;
+        label: string;
+        icon: string;
+    }> = [
+        { key: 'overview', label: 'Overview', icon: 'bi-grid' },
+        ...(financialSections.length > 0
+            ? ([
+                  {
+                      key: 'financial',
+                      label: 'Financial',
+                      icon: 'bi-cash-stack',
+                  },
+              ] as const)
+            : []),
+        ...(documents.length > 0
+            ? ([
+                  {
+                      key: 'documents',
+                      label: 'Documents',
+                      icon: 'bi-folder2-open',
+                  },
+              ] as const)
+            : []),
+        ...(related.length > 0
+            ? ([
+                  {
+                      key: 'related',
+                      label: 'Related',
+                      icon: 'bi-diagram-3',
+                  },
+              ] as const)
+            : []),
+        ...(timeline.length > 0
+            ? ([
+                  {
+                      key: 'history',
+                      label: 'History',
+                      icon: 'bi-clock-history',
+                  },
+              ] as const)
+            : []),
+    ];
+    const [activeTab, setActiveTab] = useState<ResourceDetailTab>(() => {
+        if (typeof window === 'undefined') {
+            return 'overview';
+        }
+
+        const requested = new URLSearchParams(window.location.search).get(
+            'tab',
+        ) as ResourceDetailTab | null;
+
+        return availableTabs.some((tab) => tab.key === requested)
+            ? (requested ?? 'overview')
+            : 'overview';
+    });
+    const { text } = useTranslator();
+
+    const selectTab = (tab: ResourceDetailTab) => {
+        setActiveTab(tab);
+
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.replaceState({}, '', url);
+    };
+
     return (
         <>
             <ResourceHeader {...header} />
 
-            {spotlight ? (
-                <ResourceSpotlightPanel spotlight={spotlight} />
-            ) : null}
+            <nav className="pmc-resource-tabs" aria-label="Record sections">
+                {availableTabs.map((tab) => (
+                    <button
+                        key={tab.key}
+                        type="button"
+                        className={activeTab === tab.key ? 'active' : ''}
+                        aria-current={
+                            activeTab === tab.key ? 'page' : undefined
+                        }
+                        onClick={() => selectTab(tab.key)}
+                    >
+                        <i className={`bi ${tab.icon}`} />
+                        {text(tab.label)}
+                    </button>
+                ))}
+            </nav>
 
-            {decisionCards.length > 0 ? (
-                <DecisionCardGrid cards={decisionCards} />
-            ) : null}
+            <section className="pmc-resource-tab-panel">
+                {activeTab === 'overview' ? (
+                    <>
+                        {spotlight ? (
+                            <ResourceSpotlightPanel spotlight={spotlight} />
+                        ) : null}
+                        {decisionCards.length > 0 ? (
+                            <DecisionCardGrid cards={decisionCards} />
+                        ) : null}
+                        {stats.length > 0 ? (
+                            <section className="pmc-resource-stat-grid">
+                                {stats.map((item) => (
+                                    <article
+                                        key={item.label}
+                                        className={`pmc-resource-stat pmc-resource-stat-${item.tone ?? 'muted'}`}
+                                    >
+                                        <span>{text(item.label)}</span>
+                                        <strong>{item.value ?? '-'}</strong>
+                                    </article>
+                                ))}
+                            </section>
+                        ) : null}
+                        <div className="pmc-resource-detail-stack">
+                            {overviewSections.map((section) => (
+                                <DetailCard
+                                    key={section.title}
+                                    section={section}
+                                />
+                            ))}
+                        </div>
+                    </>
+                ) : null}
 
-            {stats.length > 0 ? (
-                <section className="pmc-resource-stat-grid">
-                    {stats.map((item) => (
-                        <article
-                            key={item.label}
-                            className={`pmc-resource-stat pmc-resource-stat-${item.tone ?? 'muted'}`}
-                        >
-                            <span>{item.label}</span>
-                            <strong>{item.value ?? '-'}</strong>
-                        </article>
-                    ))}
-                </section>
-            ) : null}
+                {activeTab === 'financial' ? (
+                    <div className="pmc-resource-detail-stack">
+                        {financialSections.map((section) => (
+                            <DetailCard key={section.title} section={section} />
+                        ))}
+                    </div>
+                ) : null}
 
-            <section className="pmc-resource-detail-layout">
-                <div className="pmc-resource-detail-stack">
-                    {sections.map((section) => (
-                        <DetailCard key={section.title} section={section} />
-                    ))}
-
-                    {related.map((table) => (
-                        <RelatedRecordsTable key={table.title} table={table} />
-                    ))}
-                </div>
-
-                <aside className="pmc-resource-side-stack">
+                {activeTab === 'documents' ? (
                     <DocumentStrip documents={documents} />
+                ) : null}
+
+                {activeTab === 'related' ? (
+                    <div className="pmc-resource-detail-stack">
+                        {related.map((table) => (
+                            <RelatedRecordsTable
+                                key={table.title}
+                                table={table}
+                            />
+                        ))}
+                    </div>
+                ) : null}
+
+                {activeTab === 'history' ? (
                     <HistoryTimeline timeline={timeline} />
-                </aside>
+                ) : null}
             </section>
         </>
     );
@@ -383,6 +547,13 @@ function ResourceInput({
     error?: string;
     onChange: (value: ResourceFormValue) => void;
 }) {
+    const id = `pmc-field-${field.name.replaceAll(/[^a-zA-Z0-9_-]/g, '-')}`;
+    const helpId = field.help ? `${id}-help` : undefined;
+    const errorId = error ? `${id}-error` : undefined;
+    const describedBy =
+        [helpId, errorId].filter(Boolean).join(' ') || undefined;
+    const { text } = useTranslator();
+
     if (field.type === 'hidden') {
         return (
             <input
@@ -395,40 +566,51 @@ function ResourceInput({
 
     if (field.type === 'checkbox') {
         return (
-            <label className="pmc-resource-check">
+            <label className="pmc-resource-check" htmlFor={id}>
                 <input
+                    id={id}
                     type="checkbox"
                     checked={Boolean(value)}
                     onChange={(event) => onChange(event.currentTarget.checked)}
                 />
                 <span>
-                    <strong>{field.label}</strong>
-                    {field.help ? <small>{field.help}</small> : null}
+                    <strong>{text(field.label)}</strong>
+                    {field.help ? (
+                        <small id={helpId}>{text(field.help)}</small>
+                    ) : null}
                 </span>
-                {error ? <em>{error}</em> : null}
+                {error ? <em id={errorId}>{error}</em> : null}
             </label>
         );
     }
 
     return (
-        <label className="pmc-resource-field">
+        <label className="pmc-resource-field" htmlFor={id}>
             <span>
-                {field.label}
+                {text(field.label)}
                 {field.required ? <strong>*</strong> : null}
             </span>
             {field.type === 'textarea' ? (
                 <textarea
+                    id={id}
+                    name={field.name}
                     className="form-control"
                     rows={field.rows ?? 4}
                     value={String(value ?? '')}
                     placeholder={field.placeholder}
                     onChange={(event) => onChange(event.currentTarget.value)}
+                    aria-describedby={describedBy}
+                    aria-invalid={Boolean(error)}
                 />
             ) : field.type === 'select' ? (
                 <select
+                    id={id}
+                    name={field.name}
                     className="form-select"
                     value={String(value ?? '')}
                     onChange={(event) => onChange(event.currentTarget.value)}
+                    aria-describedby={describedBy}
+                    aria-invalid={Boolean(error)}
                 >
                     {(field.options ?? []).map((option) => (
                         <option
@@ -441,15 +623,21 @@ function ResourceInput({
                 </select>
             ) : field.type === 'file' ? (
                 <input
+                    id={id}
+                    name={field.name}
                     className="form-control"
                     type="file"
                     accept={field.accept}
                     onChange={(event) =>
                         onChange(event.currentTarget.files?.[0] ?? null)
                     }
+                    aria-describedby={describedBy}
+                    aria-invalid={Boolean(error)}
                 />
             ) : (
                 <input
+                    id={id}
+                    name={field.name}
                     className="form-control"
                     type={field.type ?? 'text'}
                     value={String(value ?? '')}
@@ -466,27 +654,33 @@ function ResourceInput({
                                 : event.currentTarget.value,
                         )
                     }
+                    aria-describedby={describedBy}
+                    aria-invalid={Boolean(error)}
                 />
             )}
-            {field.help ? <small>{field.help}</small> : null}
-            {error ? <em>{error}</em> : null}
+            {field.help ? <small id={helpId}>{text(field.help)}</small> : null}
+            {error ? <em id={errorId}>{error}</em> : null}
         </label>
     );
 }
 
 function DetailCard({ section }: { section: DetailSection }) {
+    const { text } = useTranslator();
+
     return (
         <article className="pmc-card p-4 pmc-resource-detail-card">
             <header>
                 <div>
-                    <div className="pmc-kicker mb-2">{section.title}</div>
-                    {section.description ? <p>{section.description}</p> : null}
+                    <div className="pmc-kicker mb-2">{text(section.title)}</div>
+                    {section.description ? (
+                        <p>{text(section.description)}</p>
+                    ) : null}
                 </div>
             </header>
             <dl>
                 {section.items.map((item) => (
                     <div key={item.label}>
-                        <dt>{item.label}</dt>
+                        <dt>{text(item.label)}</dt>
                         <dd>
                             {item.href ? (
                                 <Link href={item.href}>
@@ -653,12 +847,13 @@ function HistoryTimeline({
 }
 
 function ActionLink({ action }: { action: ResourceAction }) {
+    const { text } = useTranslator();
     const className = `btn btn-${action.variant === 'danger' ? 'outline-danger' : action.variant === 'primary' ? 'primary' : action.variant === 'light' ? 'light' : 'outline-secondary'}`;
 
     if (!action.method || action.method === 'get') {
         return (
             <Link href={action.href} className={className}>
-                {action.label}
+                {text(action.label)}
             </Link>
         );
     }
@@ -687,7 +882,10 @@ function ActionLink({ action }: { action: ResourceAction }) {
                 router.post(action.href, {}, { preserveScroll: true });
             }}
         >
-            {action.label}
+            {text(action.label)}
         </button>
     );
 }
+
+const financialSectionPattern =
+    /finance|financial|payment|rent|balance|contract|lease|expense|valuation|allocation|installment|deposit/i;

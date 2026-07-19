@@ -1,6 +1,8 @@
 import { Link } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
+import { useTranslator } from '@/lib/i18n';
+
 export type WorkspaceAction = {
     label: string;
     href: string;
@@ -29,12 +31,14 @@ export function WorkspaceHeader({
     description: string;
     actions?: WorkspaceAction[];
 }) {
+    const { text } = useTranslator();
+
     return (
         <header className="pmc-workspace-header">
             <div className="pmc-workspace-heading">
-                <span>{eyebrow}</span>
-                <h1>{title}</h1>
-                <p>{description}</p>
+                <span>{text(eyebrow)}</span>
+                <h1>{text(title)}</h1>
+                <p>{text(description)}</p>
             </div>
 
             {actions.length > 0 ? (
@@ -45,7 +49,7 @@ export function WorkspaceHeader({
                                 {action.icon ? (
                                     <i className={`bi ${action.icon}`} />
                                 ) : null}
-                                <span>{action.label}</span>
+                                <span>{text(action.label)}</span>
                             </>
                         );
                         const className = `pmc-workspace-action is-${action.tone ?? 'secondary'}`;
@@ -75,6 +79,8 @@ export function WorkspaceHeader({
 }
 
 export function MetricGrid({ metrics }: { metrics: WorkspaceMetric[] }) {
+    const { text } = useTranslator();
+
     return (
         <section className="pmc-metric-grid" aria-label="Workspace summary">
             {metrics.map((metric) => {
@@ -83,7 +89,7 @@ export function MetricGrid({ metrics }: { metrics: WorkspaceMetric[] }) {
                         <div className="pmc-metric-icon">
                             <i className={`bi ${metric.icon}`} />
                         </div>
-                        <span>{metric.label}</span>
+                        <span>{text(metric.label)}</span>
                         <strong>{metric.value}</strong>
                         {metric.detail ? <small>{metric.detail}</small> : null}
                     </>
@@ -123,17 +129,19 @@ export function WorkspacePanel({
     children: ReactNode;
     className?: string;
 }) {
+    const { text } = useTranslator();
+
     return (
         <section className={`pmc-workspace-panel ${className}`}>
             <div className="pmc-workspace-panel-head">
                 <div>
-                    {eyebrow ? <span>{eyebrow}</span> : null}
-                    <h2>{title}</h2>
-                    {description ? <p>{description}</p> : null}
+                    {eyebrow ? <span>{text(eyebrow)}</span> : null}
+                    <h2>{text(title)}</h2>
+                    {description ? <p>{text(description)}</p> : null}
                 </div>
                 {action ? (
                     <Link href={action.href}>
-                        {action.label}
+                        {text(action.label)}
                         <i className="bi bi-arrow-up-right" />
                     </Link>
                 ) : null}
@@ -150,9 +158,15 @@ export function StatusBadge({
     value: string;
     tone?: 'success' | 'warning' | 'danger' | 'neutral' | 'blue';
 }) {
+    const { t } = useTranslator();
+    const translated = t(
+        `status.${value}` as `status.${string}`,
+        humanLabel(value),
+    );
+
     return (
         <span className={`pmc-status-badge is-${tone ?? statusTone(value)}`}>
-            {humanLabel(value)}
+            {translated}
         </span>
     );
 }

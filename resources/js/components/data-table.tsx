@@ -2,6 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
+import { useTranslator } from '@/lib/i18n';
 import type { PaginatedData, TableCount, TableFilters } from '@/types';
 
 export type TableColumn<T> = {
@@ -19,6 +20,17 @@ export type TableFilterField = {
     options?: Array<{ label: string; value: string | number }>;
 };
 
+export type MobileTableConfig<T> = {
+    title: (row: T) => ReactNode;
+    subtitle?: (row: T) => ReactNode;
+    status?: (row: T) => ReactNode;
+    meta?: Array<{
+        label: string;
+        value: (row: T) => ReactNode;
+    }>;
+    actions?: (row: T) => ReactNode;
+};
+
 type DataTableProps<T> = {
     title: string;
     description?: string;
@@ -34,9 +46,17 @@ type DataTableProps<T> = {
     rowHref?: (row: T) => string;
     createHref?: string;
     createLabel?: string;
+    mobileCard?: MobileTableConfig<T>;
 };
 
 const pageSizes = [10, 25, 50, 100];
+const ignoredActiveFilters = new Set([
+    'page',
+    'per_page',
+    'sort',
+    'direction',
+    'search',
+]);
 
 export function DataTable<T extends { id?: number | string }>({
     title,
@@ -53,9 +73,16 @@ export function DataTable<T extends { id?: number | string }>({
     rowHref,
     createHref,
     createLabel = 'Create',
+    mobileCard,
 }: DataTableProps<T>) {
+    const { t, text } = useTranslator();
     const [draftFilters, setDraftFilters] = useState<Record<string, string>>(
         stringifyFilters(filters),
+    );
+    const [filtersOpen, setFiltersOpen] = useState(false);
+    const activeFilters = Object.entries(draftFilters).filter(
+        ([key, value]) =>
+            !ignoredActiveFilters.has(key) && value !== '' && value !== 'all',
     );
 
     const visit = (overrides: Record<string, string | number | null> = {}) => {
@@ -69,7 +96,6 @@ export function DataTable<T extends { id?: number | string }>({
         }
 
         setDraftFilters(nextFilters);
-
         router.get(basePath, cleanFilters(nextFilters), {
             preserveScroll: true,
             preserveState: true,
@@ -82,44 +108,66 @@ export function DataTable<T extends { id?: number | string }>({
         visit();
     };
 
+    const reset = () => {
+        const resetFilters = { per_page: '10' };
+        setDraftFilters(resetFilters);
+        router.get(basePath, {}, { preserveScroll: true, replace: true });
+    };
+
+    const removeFilter = (name: string) => {
+        visit({ [name]: 'all' });
+    };
+
+    const statusColumn = columns.find((column) =>
+        /status|occupancy|account/i.test(column.key),
+    );
+    const actionColumn = columns.find((column) => column.key === 'actions');
+    const mobileMetaColumns = columns
+        .slice(2)
+        .filter(
+            (column) =>
+                column.key !== statusColumn?.key &&
+                column.key !== actionColumn?.key,
+        )
+        .slice(0, 3);
+    const fallbackMobileCard: MobileTableConfig<T> = {
+        title: (row) => columns[0]?.render(row),
+        subtitle: columns[1] ? (row) => columns[1].render(row) : undefined,
+        status: statusColumn ? (row) => statusColumn.render(row) : undefined,
+        meta: mobileMetaColumns.map((column) => ({
+            label: column.label,
+            value: (row) => column.render(row),
+        })),
+        actions: actionColumn ? (row) => actionColumn.render(row) : undefined,
+    };
+    const mobile = mobileCard ?? fallbackMobileCard;
+
     return (
         <section className="pmc-operations-table">
             <div className="pmc-operations-head">
                 <div>
                     <div className="pmc-table-heading">
                         <span className="pmc-table-icon">
-                            <i className="bi bi-box-seam" />
+                            <i className="bi bi-view-list" />
                         </span>
-                        <strong>{title}</strong>
+                        <strong>{text(title)}</strong>
                         <span className="pmc-table-count">{data.total}</span>
                     </div>
                     {description ? (
-                        <p className="pmc-table-copy">{description}</p>
+                        <p className="pmc-table-copy">{text(description)}</p>
                     ) : null}
                 </div>
-                <div className="pmc-table-head-actions">
-                    {createHref ? (
-                        <Link
-                            className="pmc-create-page-button"
-                            href={createHref}
-                            title={`${createLabel} on a dedicated page`}
-                        >
-                            <span>
-                                <i className="bi bi-plus-lg" />
-                                {createLabel}
-                            </span>
-                        </Link>
-                    ) : null}
-                    {exportHref ? (
-                        <a
-                            className="btn btn-outline-secondary btn-sm pmc-export-button"
-                            href={exportHref}
-                        >
-                            <i className="bi bi-download me-2" />
-                            Export Excel (.xlsx)
-                        </a>
-                    ) : null}
-                </div>
+                {exportHref ? (
+                    <a
+                        className="btn btn-outline-secondary pmc-export-button"
+                        href={exportHref}
+                    >
+                        <i className="bi bi-file-earmark-excel" />
+                        <span>
+                            {t('actions.export_xlsx', 'Export Excel (.xlsx)')}
+                        </span>
+                    </a>
+                ) : null}
             </div>
 
             {counts.length > 0 ? (
@@ -131,7 +179,7 @@ export function DataTable<T extends { id?: number | string }>({
                             className={`pmc-filter-chip ${count.active ? 'active' : ''}`}
                             onClick={() => visit(count.filter ?? {})}
                         >
-                            <span>{count.label}</span>
+                            <span>{text(count.label)}</span>
                             <strong>{count.value}</strong>
                         </button>
                     ))}
@@ -139,110 +187,138 @@ export function DataTable<T extends { id?: number | string }>({
             ) : null}
 
             <form className="pmc-table-toolbar" onSubmit={submit}>
-                <label className="pmc-table-page-size">
-                    <span>Show</span>
-                    <select
-                        className="form-select"
-                        value={draftFilters.per_page ?? '25'}
-                        onChange={(event) => {
-                            setDraftFilters((current) => ({
-                                ...current,
-                                per_page: event.currentTarget.value,
-                            }));
-                            visit({ per_page: event.currentTarget.value });
-                        }}
-                    >
-                        {pageSizes.map((size) => (
-                            <option key={size} value={size}>
-                                {size}
-                            </option>
-                        ))}
-                    </select>
-                    <span>entries</span>
-                </label>
-
-                <label className="pmc-table-search">
-                    <span className="visually-hidden">Search</span>
-                    <i className="bi bi-search" />
-                    <input
-                        type="search"
-                        className="form-control"
-                        value={draftFilters.search ?? ''}
-                        placeholder="Search table..."
-                        onChange={(event) =>
-                            setDraftFilters((current) => ({
-                                ...current,
-                                search: event.currentTarget.value,
-                            }))
-                        }
-                    />
-                </label>
-
-                {filterFields.map((field) => (
-                    <label key={field.name} className="pmc-table-filter">
-                        <span>{field.label}</span>
-                        {field.type === 'date' || field.type === 'text' ? (
-                            <input
-                                type={field.type}
-                                className="form-control"
-                                value={draftFilters[field.name] ?? ''}
-                                onChange={(event) =>
-                                    setDraftFilters((current) => ({
-                                        ...current,
-                                        [field.name]: event.currentTarget.value,
-                                    }))
-                                }
-                                onBlur={() => visit()}
-                            />
-                        ) : (
-                            <select
-                                className="form-select"
-                                value={draftFilters[field.name] ?? 'all'}
-                                onChange={(event) => {
-                                    setDraftFilters((current) => ({
-                                        ...current,
-                                        [field.name]: event.currentTarget.value,
-                                    }));
-                                    visit({
-                                        [field.name]: event.currentTarget.value,
-                                    });
-                                }}
-                            >
-                                {(field.options ?? []).map((option) => (
-                                    <option
-                                        key={option.value}
-                                        value={option.value}
-                                    >
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
+                <div className="pmc-table-primary-tools">
+                    <label className="pmc-table-search">
+                        <span className="visually-hidden">
+                            {t('actions.search', 'Search')}
+                        </span>
+                        <i className="bi bi-search" />
+                        <input
+                            type="search"
+                            className="form-control"
+                            value={draftFilters.search ?? ''}
+                            placeholder={t('table.search', 'Search records...')}
+                            onChange={(event) =>
+                                setDraftFilters((current) => ({
+                                    ...current,
+                                    search: event.currentTarget.value,
+                                }))
+                            }
+                        />
                     </label>
-                ))}
-
-                <div className="pmc-table-actions">
-                    <button className="btn btn-primary btn-sm" type="submit">
-                        <i className="bi bi-funnel me-2" />
-                        Filter
-                    </button>
                     <button
-                        className="btn btn-outline-secondary btn-sm"
                         type="button"
-                        onClick={() => {
-                            setDraftFilters({ per_page: '25' });
-                            router.get(
-                                basePath,
-                                {},
-                                { preserveScroll: true, replace: true },
-                            );
-                        }}
+                        className="pmc-mobile-filter-trigger"
+                        aria-expanded={filtersOpen}
+                        onClick={() => setFiltersOpen((open) => !open)}
                     >
-                        <i className="bi bi-arrow-counterclockwise me-2" />
-                        Reset
+                        <i className="bi bi-sliders2" />
+                        {t('table.filters', 'Filters')}
+                        {activeFilters.length > 0 ? (
+                            <strong>{activeFilters.length}</strong>
+                        ) : null}
                     </button>
                 </div>
+
+                <div
+                    className={`pmc-table-filter-panel ${filtersOpen ? 'is-open' : ''}`}
+                >
+                    <label className="pmc-table-page-size">
+                        <span>{t('table.show', 'Show')}</span>
+                        <select
+                            className="form-select"
+                            value={draftFilters.per_page ?? '10'}
+                            onChange={(event) =>
+                                visit({
+                                    per_page: event.currentTarget.value,
+                                })
+                            }
+                        >
+                            {pageSizes.map((size) => (
+                                <option key={size} value={size}>
+                                    {size}
+                                </option>
+                            ))}
+                        </select>
+                        <span>{t('table.entries', 'entries')}</span>
+                    </label>
+
+                    {filterFields.map((field) => (
+                        <label key={field.name} className="pmc-table-filter">
+                            <span>{text(field.label)}</span>
+                            {field.type === 'date' || field.type === 'text' ? (
+                                <input
+                                    type={field.type}
+                                    className="form-control"
+                                    value={draftFilters[field.name] ?? ''}
+                                    onChange={(event) =>
+                                        setDraftFilters((current) => ({
+                                            ...current,
+                                            [field.name]:
+                                                event.currentTarget.value,
+                                        }))
+                                    }
+                                />
+                            ) : (
+                                <select
+                                    className="form-select"
+                                    value={draftFilters[field.name] ?? 'all'}
+                                    onChange={(event) =>
+                                        visit({
+                                            [field.name]:
+                                                event.currentTarget.value,
+                                        })
+                                    }
+                                >
+                                    {(field.options ?? []).map((option) => (
+                                        <option
+                                            key={option.value}
+                                            value={option.value}
+                                        >
+                                            {text(option.label)}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                        </label>
+                    ))}
+
+                    <div className="pmc-table-actions">
+                        <button className="btn btn-primary" type="submit">
+                            <i className="bi bi-funnel" />
+                            {t('table.filter', 'Filter')}
+                        </button>
+                        <button
+                            className="btn btn-outline-secondary"
+                            type="button"
+                            onClick={reset}
+                        >
+                            <i className="bi bi-arrow-counterclockwise" />
+                            {t('table.reset', 'Reset')}
+                        </button>
+                    </div>
+                </div>
             </form>
+
+            {activeFilters.length > 0 ? (
+                <div className="pmc-active-filters">
+                    <span>{t('table.active_filters', 'Active filters')}</span>
+                    {activeFilters.map(([name, value]) => (
+                        <button
+                            key={name}
+                            type="button"
+                            onClick={() => removeFilter(name)}
+                        >
+                            {text(filterLabel(name, filterFields))}:{' '}
+                            {text(value)}
+                            <i className="bi bi-x" />
+                        </button>
+                    ))}
+                    <button type="button" onClick={reset}>
+                        {t('table.clear_filters', 'Clear filters')}
+                    </button>
+                </div>
+            ) : null}
 
             <div className="pmc-table-scroll">
                 <table className="pmc-data-table table">
@@ -253,7 +329,7 @@ export function DataTable<T extends { id?: number | string }>({
                                     key={column.key}
                                     className={column.headerClassName}
                                 >
-                                    {column.label}
+                                    {text(column.label)}
                                 </th>
                             ))}
                         </tr>
@@ -274,7 +350,6 @@ export function DataTable<T extends { id?: number | string }>({
                                     {columns.map((column, columnIndex) => (
                                         <td
                                             key={column.key}
-                                            data-label={column.label}
                                             className={column.className}
                                         >
                                             {rowHref && columnIndex === 0 ? (
@@ -297,11 +372,15 @@ export function DataTable<T extends { id?: number | string }>({
                                     className="pmc-empty-cell"
                                     colSpan={columns.length}
                                 >
-                                    <div className="pmc-empty-state">
-                                        <i className="bi bi-search" />
-                                        <strong>No matching records</strong>
-                                        <span>{emptyText}</span>
-                                    </div>
+                                    <TableEmpty
+                                        title={t(
+                                            'table.no_matches',
+                                            'No matching records',
+                                        )}
+                                        message={text(emptyText)}
+                                        createHref={createHref}
+                                        createLabel={text(createLabel)}
+                                    />
                                 </td>
                             </tr>
                         )}
@@ -309,18 +388,98 @@ export function DataTable<T extends { id?: number | string }>({
                 </table>
             </div>
 
+            <div className="pmc-mobile-record-list">
+                {data.data.length > 0 ? (
+                    data.data.map((row, index) => (
+                        <article
+                            className="pmc-mobile-record-card"
+                            key={rowKey ? rowKey(row) : (row.id ?? index)}
+                        >
+                            <div className="pmc-mobile-record-head">
+                                <div>
+                                    {rowHref ? (
+                                        <Link href={rowHref(row)}>
+                                            {mobile.title(row)}
+                                        </Link>
+                                    ) : (
+                                        mobile.title(row)
+                                    )}
+                                    {mobile.subtitle ? (
+                                        <small>{mobile.subtitle(row)}</small>
+                                    ) : null}
+                                </div>
+                                {mobile.status ? mobile.status(row) : null}
+                            </div>
+                            {mobile.meta && mobile.meta.length > 0 ? (
+                                <dl>
+                                    {mobile.meta.slice(0, 3).map((item) => (
+                                        <div key={item.label}>
+                                            <dt>{text(item.label)}</dt>
+                                            <dd>{item.value(row)}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            ) : null}
+                            <div className="pmc-mobile-record-footer">
+                                {rowHref ? (
+                                    <Link
+                                        href={rowHref(row)}
+                                        className="pmc-record-open"
+                                    >
+                                        {t('actions.open', 'Open')}
+                                        <i className="bi bi-arrow-up-right" />
+                                    </Link>
+                                ) : (
+                                    <span />
+                                )}
+                                {mobile.actions ? (
+                                    <details className="pmc-mobile-action-menu">
+                                        <summary
+                                            aria-label={t(
+                                                'common.more_actions',
+                                                'More actions',
+                                            )}
+                                        >
+                                            <i className="bi bi-three-dots" />
+                                        </summary>
+                                        <div>{mobile.actions(row)}</div>
+                                    </details>
+                                ) : null}
+                            </div>
+                        </article>
+                    ))
+                ) : (
+                    <TableEmpty
+                        title={t('table.no_matches', 'No matching records')}
+                        message={text(emptyText)}
+                        createHref={createHref}
+                        createLabel={text(createLabel)}
+                    />
+                )}
+            </div>
+
             <div className="pmc-table-footer">
-                <p className="pmc-table-results">
-                    Showing {data.from ?? 0} to {data.to ?? 0} of {data.total}{' '}
-                    entries
+                <p className="pmc-table-results" aria-live="polite">
+                    {interpolate(
+                        t(
+                            'table.showing',
+                            'Showing :from to :to of :total entries',
+                        ),
+                        {
+                            from: data.from ?? 0,
+                            to: data.to ?? 0,
+                            total: data.total,
+                        },
+                    )}
                 </p>
-                <div className="pmc-table-pagination">
+                <div className="pmc-table-pagination" aria-label="Pagination">
                     {data.links.map((link, index) => (
                         <button
                             key={`${link.label}-${index}`}
                             type="button"
                             className={`pmc-page-button ${link.active ? 'active' : ''}`}
                             disabled={!link.url}
+                            aria-current={link.active ? 'page' : undefined}
                             onClick={() =>
                                 link.url &&
                                 router.visit(link.url, {
@@ -346,6 +505,50 @@ export function exportUrl(path: string, filters: TableFilters): string {
     ).toString();
 
     return query ? `${path}?${query}` : path;
+}
+
+function TableEmpty({
+    title,
+    message,
+    createHref,
+    createLabel,
+}: {
+    title: string;
+    message: string;
+    createHref?: string;
+    createLabel: string;
+}) {
+    return (
+        <div className="pmc-empty-state">
+            <i className="bi bi-search" />
+            <strong>{title}</strong>
+            <span>{message}</span>
+            {createHref ? (
+                <Link href={createHref} className="btn btn-primary btn-sm">
+                    <i className="bi bi-plus-lg" />
+                    {createLabel}
+                </Link>
+            ) : null}
+        </div>
+    );
+}
+
+function filterLabel(name: string, fields: TableFilterField[]): string {
+    return (
+        fields.find((field) => field.name === name)?.label ??
+        name.replaceAll('_', ' ')
+    );
+}
+
+function interpolate(
+    value: string,
+    replacements: Record<string, string | number>,
+): string {
+    return Object.entries(replacements).reduce(
+        (result, [key, replacement]) =>
+            result.replace(`:${key}`, String(replacement)),
+        value,
+    );
 }
 
 function stringifyFilters(filters: TableFilters): Record<string, string> {

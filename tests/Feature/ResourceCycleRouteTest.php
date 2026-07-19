@@ -207,7 +207,10 @@ class ResourceCycleRouteTest extends TestCase
         $this->actingAs($superadmin)
             ->get(route('cms.pages.show', $page))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('admin/cms/builder'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/cms/builder')
+                ->where('sections.0.page_sections_count', 1)
+                ->where('sections.1.page_sections_count', 1));
 
         $this->actingAs($superadmin)
             ->get(route('cms.pages.edit', $page))
