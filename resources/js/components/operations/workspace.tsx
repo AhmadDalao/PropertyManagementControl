@@ -91,7 +91,13 @@ export function MetricGrid({ metrics }: { metrics: WorkspaceMetric[] }) {
                         </div>
                         <span>{text(metric.label)}</span>
                         <strong>{metric.value}</strong>
-                        {metric.detail ? <small>{metric.detail}</small> : null}
+                        {metric.detail ? (
+                            <small>
+                                {typeof metric.detail === 'string'
+                                    ? text(metric.detail)
+                                    : metric.detail}
+                            </small>
+                        ) : null}
                     </>
                 );
                 const className = `pmc-metric-card is-${metric.tone ?? 'ink'}`;
@@ -180,20 +186,22 @@ export function RecordActions({
     editHref?: string;
     children?: ReactNode;
 }) {
+    const { t } = useTranslator();
+
     return (
         <div className="pmc-record-actions">
             <Link href={showHref} className="pmc-record-open">
-                Open
+                {t('actions.open', 'Open')}
                 <i className="bi bi-arrow-up-right" />
             </Link>
             {editHref ? (
                 <Link
                     href={editHref}
                     className="btn btn-outline-secondary btn-sm"
-                    aria-label="Edit record"
+                    aria-label={t('actions.edit_record', 'Edit record')}
                 >
                     <i className="bi bi-pencil" />
-                    <span>Edit</span>
+                    <span>{t('actions.edit', 'Edit')}</span>
                 </Link>
             ) : null}
             {children}

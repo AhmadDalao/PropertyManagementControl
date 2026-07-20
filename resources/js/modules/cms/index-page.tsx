@@ -59,6 +59,12 @@ export default function CmsIndexPage() {
                         native: true,
                     },
                     {
+                        label: 'Page wording',
+                        href: '/wording',
+                        icon: 'bi-translate',
+                        tone: 'secondary',
+                    },
+                    {
                         label: 'Create page',
                         href: '/cms/pages/create',
                         icon: 'bi-plus-lg',

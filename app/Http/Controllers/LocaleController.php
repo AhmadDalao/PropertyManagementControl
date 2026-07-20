@@ -17,6 +17,22 @@ class LocaleController extends Controller
             $request->user()->update(['preferred_locale' => $locale]);
         }
 
-        return back();
+        return redirect()->to($this->redirectTarget());
+    }
+
+    private function redirectTarget(): string
+    {
+        $previous = url()->previous();
+        $path = parse_url($previous, PHP_URL_PATH) ?: '/';
+        $queryString = parse_url($previous, PHP_URL_QUERY);
+        $query = [];
+
+        if (is_string($queryString)) {
+            parse_str($queryString, $query);
+        }
+
+        unset($query['locale']);
+
+        return $path.($query === [] ? '' : '?'.http_build_query($query));
     }
 }

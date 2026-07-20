@@ -183,6 +183,7 @@ $authChecks = [
     '/media-files' => 'admin/media/index',
     '/audit-logs' => 'admin/audit/index',
     '/cms' => 'admin/cms/index',
+    '/wording' => 'admin/wording/index',
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',

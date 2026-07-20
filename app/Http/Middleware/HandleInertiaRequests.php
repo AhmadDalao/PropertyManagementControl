@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\NavigationItem;
+use App\Modules\Wording\UiTranslationCatalog;
 use App\Support\PortfolioModules;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -46,7 +47,7 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name'),
                 'locale' => $locale,
                 'direction' => $locale === 'ar' ? 'rtl' : 'ltr',
-                'translations' => trans('app'),
+                'translations' => app(UiTranslationCatalog::class)->forLocale($locale),
             ],
             'auth' => [
                 'user' => $request->user()

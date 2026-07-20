@@ -117,6 +117,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin'],
             },
             {
+                labelKey: 'nav.wording',
+                href: '/wording',
+                icon: 'bi-translate',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.media',
                 href: '/media-files',
                 icon: 'bi-images',

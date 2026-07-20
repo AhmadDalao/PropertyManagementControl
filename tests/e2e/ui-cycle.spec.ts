@@ -38,6 +38,7 @@ const primaryAdminRoutes = [
     '/media-files',
     '/audit-logs',
     '/cms',
+    '/wording',
     '/reports',
     '/documentation',
 ] as const;
@@ -226,6 +227,29 @@ test.describe('authenticated administration', () => {
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
+    });
+
+    test('language buttons persist Arabic and English after reload', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard?locale=en');
+
+        await page.getByRole('button', { name: 'Switch to Arabic' }).click();
+        await expect(page.locator('html')).toHaveAttribute('lang', 'ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
+        ).toBeVisible();
+
+        await page.reload();
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+
+        await page
+            .getByRole('button', { name: 'التبديل إلى الإنجليزية' })
+            .click();
+        await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     });
 
     test('documentation uses focused guide pages', async ({ page }) => {

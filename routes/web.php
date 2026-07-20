@@ -22,6 +22,7 @@ use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\WordingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CmsPageController::class, 'home'])->name('home');
@@ -74,6 +75,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download')->middleware('portfolio.module:documents');
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');
+    Route::get('/wording', [WordingController::class, 'index'])->name('wording.index');
+    Route::put('/wording', [WordingController::class, 'update'])->name('wording.update');
+    Route::delete('/wording', [WordingController::class, 'destroy'])->name('wording.destroy');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
     Route::get('/cms/sections/create', [CmsPageController::class, 'createSection'])->name('cms.sections.create');
     Route::get('/cms/sections/{cmsSection}/edit', [CmsPageController::class, 'editSection'])->name('cms.sections.edit');

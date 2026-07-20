@@ -13,7 +13,8 @@ export type UiTranslationKey =
     | `roles.${string}`
     | `shell.${string}`
     | `status.${string}`
-    | `table.${string}`;
+    | `table.${string}`
+    | `wording.${string}`;
 
 export function useTranslator() {
     const { app } = usePage<SharedProps>().props;
@@ -37,10 +38,18 @@ export function useTranslator() {
     const text = (value: string): string => {
         const textTranslations = app.translations.text as
             TranslationMap | undefined;
-        const translated =
+        const directTranslation =
             textTranslations !== undefined && value in textTranslations
                 ? textTranslations[value]
                 : undefined;
+        const normalizedValue = value.trim().toLocaleLowerCase(app.locale);
+        const translated =
+            directTranslation ??
+            Object.entries(textTranslations ?? {}).find(
+                ([source]) =>
+                    source.trim().toLocaleLowerCase(app.locale) ===
+                    normalizedValue,
+            )?.[1];
 
         return typeof translated === 'string' ? translated : value;
     };
