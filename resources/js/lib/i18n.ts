@@ -7,6 +7,7 @@ export type UiTranslationKey =
     | `common.${string}`
     | `dashboard.${string}`
     | `docs.${string}`
+    | `map.${string}`
     | `nav.${string}`
     | `reports.${string}`
     | `roles.${string}`

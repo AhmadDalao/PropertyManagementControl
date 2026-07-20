@@ -155,6 +155,68 @@ test.describe('authenticated administration', () => {
         }
     });
 
+    test('property map uses one focused responsive workspace', async ({
+        page,
+    }) => {
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/property-map');
+
+            await expect(
+                page.getByTestId('property-map-workspace'),
+            ).toBeVisible();
+            await expect(page.getByTestId('property-map-canvas')).toBeVisible();
+            await expect(
+                page.getByTestId('property-map-directory'),
+            ).toBeVisible();
+            await expect(page.getByTestId('property-map-detail')).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        const canvas = page.getByTestId('property-map-canvas');
+        const positionedCount = Number(
+            (await canvas.getAttribute('data-positioned-count')) ?? 0,
+        );
+
+        await expect(page.getByTestId('property-map-marker')).toHaveCount(
+            positionedCount,
+        );
+        await expect(page.locator('.pmc-map-command-strip')).toHaveCount(0);
+        await expect(page.locator('.pmc-map-setup-queue')).toHaveCount(0);
+        await expect(page.locator('.pmc-zone-directory')).toHaveCount(0);
+
+        const records = page.getByTestId('property-map-record');
+        const recordCount = await records.count();
+
+        if (recordCount > 1) {
+            const secondRecord = records.nth(1);
+            const title = await secondRecord
+                .locator('button strong')
+                .innerText();
+
+            await secondRecord.locator('button').click();
+            await expect(secondRecord).toHaveClass(/is-selected/);
+            await expect(
+                page.getByTestId('property-map-detail').getByRole('heading', {
+                    name: title,
+                }),
+            ).toBeVisible();
+        }
+    });
+
+    test('Arabic property map is translated and RTL', async ({ page }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/property-map?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByTestId('property-map-workspace').getByRole('heading', {
+                name: 'العقارات ضمن النطاق',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('Arabic administration is translated and RTL', async ({ page }) => {
         await page.setViewportSize(viewports.desktop);
         await page.goto('/dashboard?locale=ar');
