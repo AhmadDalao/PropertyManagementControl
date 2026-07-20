@@ -26,7 +26,6 @@ class PropertyMapPresenter
     public function forQuery(Builder $assetQuery): array
     {
         $locale = app()->getLocale();
-        $titleColumn = $locale === 'ar' ? 'title_ar' : 'title_en';
         $candidates = (clone $assetQuery)
             ->where(function (Builder $query): void {
                 $query
@@ -48,7 +47,7 @@ class PropertyMapPresenter
             })
             ->with(['portfolio', 'stakeholders.user'])
             ->orderByRaw("CASE asset_type WHEN 'property' THEN 0 WHEN 'building' THEN 1 WHEN 'space' THEN 2 ELSE 3 END")
-            ->orderBy($titleColumn)
+            ->orderBy('id')
             ->limit(self::MAX_MARKERS)
             ->get();
 

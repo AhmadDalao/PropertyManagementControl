@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
+use App\Modules\Assets\PropertyMapPresenter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -218,5 +220,31 @@ class PropertyMapWorkspaceTest extends TestCase
                 ->where('propertyMap.assets.0.address', 'طريق الملك فهد')
                 ->where('propertyMap.assets.0.zone', 'الحي الشمالي')
                 ->where('propertyMap.assets.0.land_number', 'AR-101'));
+    }
+
+    public function test_map_payload_limit_selects_the_same_records_in_english_and_arabic(): void
+    {
+        $portfolio = $this->createPortfolio();
+
+        foreach (range(1, 42) as $index) {
+            $this->createAsset($portfolio, [
+                'asset_type' => 'building',
+                'title_en' => sprintf('English %02d', $index),
+                'title_ar' => sprintf('عربي %02d', 43 - $index),
+                'code' => sprintf('LOCALE-STABLE-%02d', $index),
+            ]);
+        }
+
+        $presenter = app(PropertyMapPresenter::class);
+        $query = Asset::query()->where('portfolio_id', $portfolio->id);
+
+        app()->setLocale('en');
+        $englishIds = array_column($presenter->forQuery($query)['assets'], 'id');
+
+        app()->setLocale('ar');
+        $arabicIds = array_column($presenter->forQuery($query)['assets'], 'id');
+
+        $this->assertCount(40, $englishIds);
+        $this->assertSame($englishIds, $arabicIds);
     }
 }
