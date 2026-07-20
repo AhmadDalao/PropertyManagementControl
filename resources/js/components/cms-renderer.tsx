@@ -104,6 +104,7 @@ export function CmsRenderer({ sections, locale }: CmsRendererProps) {
 }
 
 function HeroSection({ content }: { content: CmsContent }) {
+    const { t } = useTranslator();
     const stats = items(content, 'stats');
     const preview = items(content, 'preview');
 
@@ -111,21 +112,25 @@ function HeroSection({ content }: { content: CmsContent }) {
         <section className="pmc-landing-hero" id="top">
             <div className="pmc-hero-copy">
                 <div className="pmc-kicker mb-3">
-                    {text(content, 'eyebrow', 'Property operations')}
+                    {text(content, 'eyebrow', t('public.operations'))}
                 </div>
                 <h1>{text(content, 'headline')}</h1>
                 <p>{text(content, 'subheadline')}</p>
                 <div className="pmc-hero-actions">
                     <a href="/login" className="btn btn-primary btn-lg">
                         <i className="bi bi-box-arrow-in-right me-2" />
-                        {text(content, 'ctaPrimary', 'Open Portal')}
+                        {text(content, 'ctaPrimary', t('public.open_portal'))}
                     </a>
                     <a
                         href="#features"
                         className="btn btn-outline-secondary btn-lg"
                     >
                         <i className="bi bi-compass me-2" />
-                        {text(content, 'ctaSecondary', 'Explore Features')}
+                        {text(
+                            content,
+                            'ctaSecondary',
+                            t('public.explore_features'),
+                        )}
                     </a>
                 </div>
                 <div className="pmc-hero-stat-row">
@@ -140,13 +145,13 @@ function HeroSection({ content }: { content: CmsContent }) {
 
             <div
                 className="pmc-dashboard-preview"
-                aria-label="Dashboard preview"
+                aria-label={t('public.dashboard_preview')}
             >
                 <div className="pmc-preview-topbar">
                     <span />
                     <span />
                     <span />
-                    <strong>Portfolio Control</strong>
+                    <strong>{t('public.portfolio_control')}</strong>
                 </div>
                 <div className="pmc-preview-grid">
                     {preview.map((item) => (
@@ -161,16 +166,16 @@ function HeroSection({ content }: { content: CmsContent }) {
                 </div>
                 <div className="pmc-preview-table">
                     <div>
-                        <span>Rose Tower</span>
-                        <strong>Occupied</strong>
+                        <span>{t('public.preview_property')}</span>
+                        <strong>{t('status.occupied')}</strong>
                     </div>
                     <div>
-                        <span>Lease balance</span>
-                        <strong>Tracked</strong>
+                        <span>{t('public.lease_balance')}</span>
+                        <strong>{t('public.tracked')}</strong>
                     </div>
                     <div>
-                        <span>Maintenance</span>
-                        <strong>Open</strong>
+                        <span>{t('nav.maintenance')}</span>
+                        <strong>{t('status.open')}</strong>
                     </div>
                 </div>
             </div>
@@ -311,13 +316,15 @@ function FaqSection({ content }: { content: CmsContent }) {
 }
 
 function FinalCtaSection({ content }: { content: CmsContent }) {
+    const { t } = useTranslator();
+
     return (
         <section className="pmc-final-cta">
             <h2>{text(content, 'headline')}</h2>
             <p>{text(content, 'body')}</p>
             <a href="/login" className="btn btn-primary btn-lg">
                 <i className="bi bi-box-arrow-in-right me-2" />
-                {text(content, 'ctaPrimary', 'Open Portal')}
+                {text(content, 'ctaPrimary', t('public.open_portal'))}
             </a>
         </section>
     );
@@ -344,3 +351,4 @@ function SectionHeading({ content }: { content: CmsContent }) {
         </div>
     );
 }
+import { useTranslator } from '@/lib/i18n';

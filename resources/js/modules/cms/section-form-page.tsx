@@ -4,6 +4,7 @@ import type { FormEvent } from 'react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type { SharedProps } from '@/types';
 
 import { SectionContentEditor } from './section-content-editor';
@@ -21,7 +22,16 @@ type PageProps = SharedProps & {
 
 export default function CmsSectionFormPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t } = useTranslator();
     const section = props.section;
+    const sectionTitle = section
+        ? locale === 'ar'
+            ? section.name_ar || section.name_en || ''
+            : section.name_en || section.name_ar || ''
+        : '';
+    const pageTitle = section
+        ? t('cms.edit_section', undefined, { title: sectionTitle })
+        : t('cms.create_section');
     const initialType = section?.section_type ?? 'hero';
     const [contentError, setContentError] = useState('');
     const form = useForm({
@@ -43,9 +53,7 @@ export default function CmsSectionFormPage() {
         const contentAr = parseJsonObject(form.data.content_ar_json);
 
         if (!contentEn || !contentAr) {
-            setContentError(
-                'The advanced JSON is invalid. Fix it or reload starter content.',
-            );
+            setContentError(t('cms.invalid_json'));
 
             return;
         }
@@ -72,17 +80,15 @@ export default function CmsSectionFormPage() {
 
     return (
         <AdminLayout>
-            <Head
-                title={section ? `Edit ${section.name_en}` : 'Create section'}
-            />
+            <Head title={pageTitle} />
 
             <WorkspaceHeader
-                eyebrow="Website control"
-                title={section ? `Edit ${section.name_en}` : 'Create section'}
-                description="Define the reusable block once, then attach and order it from any page builder."
+                eyebrow={t('cms.section_form_eyebrow')}
+                title={pageTitle}
+                description={t('cms.section_form_description')}
                 actions={[
                     {
-                        label: 'Back to website control',
+                        label: t('cms.back_to_control'),
                         href: '/cms',
                         icon: 'bi-arrow-left',
                         tone: 'secondary',
@@ -94,18 +100,15 @@ export default function CmsSectionFormPage() {
                 <section className="pmc-workspace-panel">
                     <div className="pmc-workspace-panel-head">
                         <div>
-                            <span>Section identity</span>
-                            <h2>Name and type</h2>
-                            <p>
-                                Internal names help editors find the block. The
-                                type controls its public layout.
-                            </p>
+                            <span>{t('cms.section_identity')}</span>
+                            <h2>{t('cms.name_and_type')}</h2>
+                            <p>{t('cms.identity_help')}</p>
                         </div>
                     </div>
 
                     <div className="pmc-cms-section-basics">
                         <label className="pmc-resource-field">
-                            <span>Section type</span>
+                            <span>{t('cms.section_type')}</span>
                             <select
                                 className="form-select"
                                 value={form.data.section_type}
@@ -118,7 +121,10 @@ export default function CmsSectionFormPage() {
                             >
                                 {props.sectionTypes.map((type) => (
                                     <option key={type.value} value={type.value}>
-                                        {type.label}
+                                        {t(
+                                            `cms.section_types.${type.value}`,
+                                            type.label,
+                                        )}
                                     </option>
                                 ))}
                             </select>
@@ -127,7 +133,7 @@ export default function CmsSectionFormPage() {
                             ) : null}
                         </label>
                         <label className="pmc-resource-field">
-                            <span>English internal name</span>
+                            <span>{t('cms.name_en')}</span>
                             <input
                                 className="form-control"
                                 value={form.data.name_en}
@@ -144,7 +150,7 @@ export default function CmsSectionFormPage() {
                             ) : null}
                         </label>
                         <label className="pmc-resource-field" dir="rtl">
-                            <span>Arabic internal name</span>
+                            <span>{t('cms.name_ar')}</span>
                             <input
                                 className="form-control"
                                 value={form.data.name_ar}
@@ -161,7 +167,7 @@ export default function CmsSectionFormPage() {
                             ) : null}
                         </label>
                         <label className="pmc-resource-field">
-                            <span>Status</span>
+                            <span>{t('cms.status')}</span>
                             <select
                                 className="form-select"
                                 value={form.data.status}
@@ -172,9 +178,15 @@ export default function CmsSectionFormPage() {
                                     )
                                 }
                             >
-                                <option value="active">Active</option>
-                                <option value="inactive">Inactive</option>
-                                <option value="archived">Archived</option>
+                                <option value="active">
+                                    {t('status.active')}
+                                </option>
+                                <option value="inactive">
+                                    {t('status.inactive')}
+                                </option>
+                                <option value="archived">
+                                    {t('status.archived')}
+                                </option>
                             </select>
                         </label>
                     </div>
@@ -198,14 +210,16 @@ export default function CmsSectionFormPage() {
 
                 <div className="pmc-cms-form-actions">
                     <Link href="/cms" className="btn btn-light">
-                        Cancel
+                        {t('actions.cancel')}
                     </Link>
                     <button
                         type="submit"
                         className="btn btn-primary"
                         disabled={form.processing}
                     >
-                        {section ? 'Update section' : 'Create section'}
+                        {section
+                            ? t('cms.update_section')
+                            : t('cms.create_section')}
                     </button>
                 </div>
             </form>

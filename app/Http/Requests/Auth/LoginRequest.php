@@ -50,7 +50,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => 'This account is not active. Contact the property owner or system administrator.',
+                'email' => __('auth.inactive'),
             ]);
         }
 

@@ -33,7 +33,7 @@ class AuthenticatedSessionController extends Controller
             'last_login_at' => now(),
         ])->save();
 
-        return to_route('dashboard')->with('success', 'Welcome back.');
+        return to_route('dashboard')->with('success', trans('app.messages.welcome_back'));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -42,6 +42,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return to_route('home')->with('success', 'You have been logged out.');
+        return to_route('home')->with('success', trans('app.messages.logged_out'));
     }
 }

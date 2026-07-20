@@ -7,6 +7,7 @@ import { CmsRenderer } from '@/components/cms-renderer';
 import { ResourceHeader } from '@/components/resource-cycle';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
+import { dateTime } from '@/lib/utils';
 import type { SharedProps } from '@/types';
 
 type CmsContent = Record<string, unknown>;
@@ -60,7 +61,7 @@ type SaveState = 'saved' | 'saving' | 'error';
 
 export default function CmsBuilderPage() {
     const { props } = usePage<PageProps>();
-    const { text } = useTranslator();
+    const { locale, t, text } = useTranslator();
     const sortedFromServer = [...props.page.page_sections].sort(
         (a, b) => a.sort_order - b.sort_order,
     );
@@ -92,6 +93,22 @@ export default function CmsBuilderPage() {
     const visibleSections = orderedSections.filter(
         (item) => item.is_visible && item.section,
     );
+    const localizedPageTitle =
+        locale === 'ar'
+            ? props.page.title_ar || props.page.title_en
+            : props.page.title_en || props.page.title_ar;
+    const localizedSectionName = (
+        section: CmsSection | null | undefined,
+        targetLocale: 'en' | 'ar' = locale === 'ar' ? 'ar' : 'en',
+    ) => {
+        if (!section) {
+            return t('cms.missing_section');
+        }
+
+        return targetLocale === 'ar'
+            ? section.name_ar || section.name_en
+            : section.name_en || section.name_ar;
+    };
 
     const persistSectionOrder = (
         nextSections: CmsPageSection[],
@@ -199,21 +216,24 @@ export default function CmsBuilderPage() {
 
     return (
         <AdminLayout>
-            <Head title={`Builder · ${props.page.title_en}`} />
+            <Head title={`${t('cms.builder')} · ${localizedPageTitle}`} />
             <ResourceHeader
-                eyebrow="CMS builder"
-                title={props.page.title_en}
-                description={`${props.page.title_ar} · ${props.page.status} · ${orderedSections.length} sections`}
+                eyebrow={t('cms.builder')}
+                title={localizedPageTitle}
+                description={t('cms.page_summary', undefined, {
+                    status: t(`status.${props.page.status}`, props.page.status),
+                    count: orderedSections.length,
+                })}
                 backHref="/cms"
-                backLabel="Website control"
+                backLabel={t('cms.website_control')}
                 actions={[
                     {
-                        label: 'Edit page settings',
+                        label: t('cms.edit_page_settings'),
                         href: `/cms/pages/${props.page.id}/edit`,
                         variant: 'primary',
                     },
                     {
-                        label: 'Open public preview',
+                        label: t('cms.open_public_preview'),
                         href: props.page.is_homepage
                             ? '/'
                             : `/pages/${props.page.slug}`,
@@ -227,10 +247,10 @@ export default function CmsBuilderPage() {
                     <span className={`is-${saveState}`} aria-live="polite" />
                     <strong>
                         {saveState === 'saving'
-                            ? text('Saving changes...')
+                            ? t('cms.saving')
                             : saveState === 'error'
-                              ? text('Could not save')
-                              : text('All changes saved')}
+                              ? t('cms.save_failed')
+                              : t('cms.saved')}
                     </strong>
                 </div>
                 <div className="pmc-cms-mobile-tabs">
@@ -244,20 +264,25 @@ export default function CmsBuilderPage() {
                                 }
                                 onClick={() => setMobilePanel(panel)}
                             >
-                                {text(
-                                    panel.charAt(0).toUpperCase() +
-                                        panel.slice(1),
-                                )}
+                                {t(`cms.panel_${panel}`)}
                             </button>
                         ),
                     )}
                 </div>
                 <div className="pmc-cms-builder-pills">
-                    <span>{props.page.status}</span>
                     <span>
-                        {props.page.is_homepage ? 'Homepage' : 'Standard page'}
+                        {t(`status.${props.page.status}`, props.page.status)}
                     </span>
-                    <span>{visibleSections.length} visible</span>
+                    <span>
+                        {props.page.is_homepage
+                            ? t('cms.homepage')
+                            : t('cms.standard_page')}
+                    </span>
+                    <span>
+                        {t('cms.visible_count', undefined, {
+                            count: visibleSections.length,
+                        })}
+                    </span>
                 </div>
             </div>
 
@@ -267,16 +292,16 @@ export default function CmsBuilderPage() {
             >
                 <aside className="pmc-cms-library-pane">
                     <header>
-                        <span>{text('Section library')}</span>
-                        <h2>{text('Add content')}</h2>
-                        <p>Attach a reusable bilingual section to this page.</p>
+                        <span>{t('cms.section_library')}</span>
+                        <h2>{t('cms.add_content')}</h2>
+                        <p>{t('cms.attach_help')}</p>
                     </header>
                     <form onSubmit={attachSection}>
                         <label
                             className="pmc-resource-field"
                             htmlFor="cms-section-library"
                         >
-                            <span>{text('Sections')}</span>
+                            <span>{t('cms.sections')}</span>
                             <select
                                 id="cms-section-library"
                                 className="form-select"
@@ -290,8 +315,11 @@ export default function CmsBuilderPage() {
                             >
                                 {props.sections.map((section) => (
                                     <option key={section.id} value={section.id}>
-                                        {section.name_en} ·{' '}
-                                        {section.section_type}
+                                        {localizedSectionName(section)} ·{' '}
+                                        {t(
+                                            `cms.section_types.${section.section_type}`,
+                                            section.section_type,
+                                        )}
                                     </option>
                                 ))}
                             </select>
@@ -308,7 +336,9 @@ export default function CmsBuilderPage() {
                                 }
                             />
                             <span>
-                                <strong>Visible after attaching</strong>
+                                <strong>
+                                    {t('cms.visible_after_attaching')}
+                                </strong>
                             </span>
                         </label>
                         <button
@@ -316,13 +346,13 @@ export default function CmsBuilderPage() {
                             disabled={attachForm.processing}
                         >
                             <i className="bi bi-plus-lg" />
-                            {text('Attach section')}
+                            {t('cms.attach_section')}
                         </button>
                         <Link
                             href="/cms/sections/create"
                             className="btn btn-outline-secondary"
                         >
-                            {text('Create new section')}
+                            {t('cms.create_new_section')}
                         </Link>
                     </form>
 
@@ -331,11 +361,26 @@ export default function CmsBuilderPage() {
                             <article key={section.id}>
                                 <i className="bi bi-layout-text-window" />
                                 <div>
-                                    <span>{section.section_type}</span>
-                                    <strong>{section.name_en}</strong>
-                                    <small>{section.name_ar}</small>
+                                    <span>
+                                        {t(
+                                            `cms.section_types.${section.section_type}`,
+                                            section.section_type,
+                                        )}
+                                    </span>
+                                    <strong>
+                                        {localizedSectionName(section)}
+                                    </strong>
+                                    <small>
+                                        {locale === 'ar'
+                                            ? section.name_en
+                                            : section.name_ar}
+                                    </small>
                                 </div>
-                                <em>{section.page_sections_count ?? 0} uses</em>
+                                <em>
+                                    {t('cms.uses', undefined, {
+                                        count: section.page_sections_count ?? 0,
+                                    })}
+                                </em>
                             </article>
                         ))}
                     </div>
@@ -344,7 +389,7 @@ export default function CmsBuilderPage() {
                 <main className="pmc-cms-preview-pane">
                     <header className="pmc-cms-preview-toolbar">
                         <div>
-                            <span>{text('Live canvas')}</span>
+                            <span>{t('cms.live_canvas')}</span>
                             <strong>
                                 {previewLocale === 'ar'
                                     ? props.page.title_ar
@@ -352,7 +397,10 @@ export default function CmsBuilderPage() {
                             </strong>
                         </div>
                         <div>
-                            <div role="group" aria-label="Preview language">
+                            <div
+                                role="group"
+                                aria-label={t('cms.preview_language')}
+                            >
                                 {(['en', 'ar'] as const).map((locale) => (
                                     <button
                                         key={locale}
@@ -368,7 +416,10 @@ export default function CmsBuilderPage() {
                                     </button>
                                 ))}
                             </div>
-                            <div role="group" aria-label="Preview width">
+                            <div
+                                role="group"
+                                aria-label={t('cms.preview_width')}
+                            >
                                 <button
                                     type="button"
                                     className={
@@ -376,7 +427,7 @@ export default function CmsBuilderPage() {
                                             ? 'active'
                                             : ''
                                     }
-                                    aria-label="Desktop preview"
+                                    aria-label={t('cms.desktop_preview')}
                                     onClick={() => setPreviewWidth('desktop')}
                                 >
                                     <i className="bi bi-display" />
@@ -388,7 +439,7 @@ export default function CmsBuilderPage() {
                                             ? 'active'
                                             : ''
                                     }
-                                    aria-label="Mobile preview"
+                                    aria-label={t('cms.mobile_preview')}
                                     onClick={() => setPreviewWidth('mobile')}
                                 >
                                     <i className="bi bi-phone" />
@@ -410,10 +461,11 @@ export default function CmsBuilderPage() {
                             ) : (
                                 <div className="pmc-empty-state">
                                     <i className="bi bi-layout-text-window" />
-                                    <strong>No visible sections</strong>
+                                    <strong>
+                                        {t('cms.no_visible_sections')}
+                                    </strong>
                                     <span>
-                                        Attach or show a section to preview the
-                                        page.
+                                        {t('cms.no_visible_sections_help')}
                                     </span>
                                 </div>
                             )}
@@ -423,9 +475,9 @@ export default function CmsBuilderPage() {
 
                 <aside className="pmc-cms-inspector-pane">
                     <header>
-                        <span>{text('Page outline')}</span>
-                        <h2>{text('Sections')}</h2>
-                        <p>Drag to reorder. Select one to edit its settings.</p>
+                        <span>{t('cms.page_outline')}</span>
+                        <h2>{t('cms.sections')}</h2>
+                        <p>{t('cms.reorder_help')}</p>
                     </header>
 
                     <div className="pmc-cms-outline">
@@ -445,19 +497,30 @@ export default function CmsBuilderPage() {
                                 <button
                                     type="button"
                                     className="pmc-cms-drag-handle"
-                                    aria-label={`Drag ${item.section?.name_en ?? 'section'}`}
+                                    aria-label={t(
+                                        'cms.drag_section',
+                                        undefined,
+                                        {
+                                            title: localizedSectionName(
+                                                item.section,
+                                            ),
+                                        },
+                                    )}
                                 >
                                     <i className="bi bi-grip-vertical" />
                                 </button>
                                 <div>
                                     <span>
                                         {index + 1}.{' '}
-                                        {item.section?.section_type ??
-                                            'Section'}
+                                        {item.section
+                                            ? t(
+                                                  `cms.section_types.${item.section.section_type}`,
+                                                  item.section.section_type,
+                                              )
+                                            : t('cms.section')}
                                     </span>
                                     <strong>
-                                        {item.section?.name_en ??
-                                            'Missing section'}
+                                        {localizedSectionName(item.section)}
                                     </strong>
                                 </div>
                                 <span
@@ -467,7 +530,9 @@ export default function CmsBuilderPage() {
                                             : 'is-hidden'
                                     }
                                 >
-                                    {item.is_visible ? 'Visible' : 'Hidden'}
+                                    {item.is_visible
+                                        ? t('cms.visible')
+                                        : t('cms.hidden')}
                                 </span>
                             </article>
                         ))}
@@ -476,10 +541,9 @@ export default function CmsBuilderPage() {
                     {selected ? (
                         <section className="pmc-cms-selection">
                             <div>
-                                <span>{text('Selected section')}</span>
+                                <span>{t('cms.selected_section')}</span>
                                 <h3>
-                                    {selected.section?.name_en ??
-                                        'Missing section'}
+                                    {localizedSectionName(selected.section)}
                                 </h3>
                                 <p>{selected.section?.name_ar}</p>
                             </div>
@@ -487,11 +551,11 @@ export default function CmsBuilderPage() {
                             1 ? (
                                 <div className="pmc-cms-shared-warning">
                                     <i className="bi bi-diagram-3" />
-                                    Editing this reusable section changes it on{' '}
-                                    {
-                                        selectedLibraryRecord?.page_sections_count
-                                    }{' '}
-                                    pages.
+                                    {t('cms.shared_warning', undefined, {
+                                        count:
+                                            selectedLibraryRecord?.page_sections_count ??
+                                            0,
+                                    })}
                                 </div>
                             ) : null}
                             <div className="pmc-cms-selection-actions">
@@ -500,7 +564,7 @@ export default function CmsBuilderPage() {
                                         href={`/cms/sections/${selected.section.id}/edit`}
                                         className="btn btn-primary"
                                     >
-                                        {text('Edit EN / AR content')}
+                                        {t('cms.edit_bilingual_content')}
                                     </Link>
                                 ) : null}
                                 <button
@@ -509,8 +573,8 @@ export default function CmsBuilderPage() {
                                     onClick={() => toggleVisibility(selected)}
                                 >
                                     {selected.is_visible
-                                        ? text('Hide section')
-                                        : text('Show section')}
+                                        ? t('cms.hide_section')
+                                        : t('cms.show_section')}
                                 </button>
                                 <div>
                                     <button
@@ -520,7 +584,7 @@ export default function CmsBuilderPage() {
                                             orderedSections[0]?.id ===
                                             selected.id
                                         }
-                                        aria-label="Move section up"
+                                        aria-label={t('cms.move_up')}
                                         onClick={() =>
                                             moveSection(selected.id, -1)
                                         }
@@ -535,7 +599,7 @@ export default function CmsBuilderPage() {
                                                 orderedSections.length - 1
                                             ]?.id === selected.id
                                         }
-                                        aria-label="Move section down"
+                                        aria-label={t('cms.move_down')}
                                         onClick={() =>
                                             moveSection(selected.id, 1)
                                         }
@@ -549,7 +613,7 @@ export default function CmsBuilderPage() {
                                     onClick={() => {
                                         if (
                                             window.confirm(
-                                                'Remove this section from the page?',
+                                                t('cms.remove_confirm'),
                                             )
                                         ) {
                                             router.delete(
@@ -562,29 +626,29 @@ export default function CmsBuilderPage() {
                                         }
                                     }}
                                 >
-                                    {text('Remove from page')}
+                                    {t('cms.remove_from_page')}
                                 </button>
                             </div>
                         </section>
                     ) : (
                         <div className="pmc-empty-state">
-                            Select a section to edit it.
+                            {t('cms.select_section_help')}
                         </div>
                     )}
 
                     <details className="pmc-cms-history">
                         <summary>
-                            <span>{text('Recent activity')}</span>
+                            <span>{t('cms.recent_activity')}</span>
                             <strong>{props.timeline.length}</strong>
                         </summary>
                         <div className="pmc-history-timeline">
                             {props.timeline.map((event) => (
                                 <div key={event.id}>
                                     <span />
-                                    <strong>{event.event}</strong>
+                                    <strong>{text(event.event)}</strong>
                                     <small>
-                                        {event.causer ?? 'System'} ·{' '}
-                                        {event.created_at ?? ''}
+                                        {event.causer ?? t('cms.system_actor')}{' '}
+                                        · {dateTime(event.created_at, locale)}
                                     </small>
                                 </div>
                             ))}

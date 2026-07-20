@@ -35,6 +35,15 @@ trait BuildsResourcePages
             ->all();
     }
 
+    protected function localized(?string $english, ?string $arabic): ?string
+    {
+        $primary = app()->isLocale('ar') ? $arabic : $english;
+        $fallback = app()->isLocale('ar') ? $english : $arabic;
+        $value = trim((string) ($primary ?: $fallback));
+
+        return $value === '' ? null : $value;
+    }
+
     /**
      * @return array<int, array{label:string,value:string}>
      */
@@ -56,7 +65,7 @@ trait BuildsResourcePages
         return collect($documents)
             ->map(fn (Document $document) => [
                 'id' => $document->id,
-                'title' => $document->title_en ?: $document->original_name,
+                'title' => $this->localized($document->title_en, $document->title_ar) ?: $document->original_name,
                 'subtitle' => trim(($document->type ?: 'document').' · '.($document->original_name ?: 'file')),
                 'badge' => $document->is_public ? 'Public' : 'Private',
                 'href' => route('documents.download', $document),

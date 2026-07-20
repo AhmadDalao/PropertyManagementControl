@@ -69,7 +69,7 @@ class ExpenseEntryController extends Controller
             'categoryOptions' => $this->categories,
             'assetOptions' => $this->scopeByPortfolio(Asset::query(), $actor)
                 ->orderBy('title_en')
-                ->get(['id', 'title_en', 'code', 'portfolio_id']),
+                ->get(['id', 'title_en', 'title_ar', 'code', 'portfolio_id']),
             'maintenanceOptions' => $this->scopeByPortfolio(MaintenanceRequest::query(), $actor)
                 ->with('asset')
                 ->latest()
@@ -82,6 +82,7 @@ class ExpenseEntryController extends Controller
                     'priority' => $maintenanceRequest->priority,
                     'asset' => [
                         'title_en' => $maintenanceRequest->asset?->title_en,
+                        'title_ar' => $maintenanceRequest->asset?->title_ar,
                         'code' => $maintenanceRequest->asset?->code,
                     ],
                 ]),
@@ -128,10 +129,10 @@ class ExpenseEntryController extends Controller
                         'title' => 'Expense record',
                         'description' => 'Cost context for revenue and net reporting.',
                         'items' => $this->detailItems([
-                            ['label' => 'Asset', 'value' => $expense->asset?->title_en, 'href' => $expense->asset ? route('assets.show', $expense->asset) : null],
+                            ['label' => 'Asset', 'value' => $this->localized($expense->asset?->title_en, $expense->asset?->title_ar), 'href' => $expense->asset ? route('assets.show', $expense->asset) : null],
                             ['label' => 'Maintenance', 'value' => $expense->maintenanceRequest?->title, 'href' => $expense->maintenanceRequest ? route('maintenance-requests.show', $expense->maintenanceRequest) : null],
                             ['label' => 'Lease', 'value' => $expense->lease?->code, 'href' => $expense->lease ? route('leases.show', $expense->lease) : null],
-                            ['label' => 'Portfolio', 'value' => $expense->portfolio?->name_en, 'href' => $expense->portfolio ? route('portfolios.show', $expense->portfolio) : null],
+                            ['label' => 'Portfolio', 'value' => $this->localized($expense->portfolio?->name_en, $expense->portfolio?->name_ar), 'href' => $expense->portfolio ? route('portfolios.show', $expense->portfolio) : null],
                             ['label' => 'Created by', 'value' => $expense->createdBy?->name, 'href' => $expense->createdBy ? route('users.show', $expense->createdBy) : null],
                             ['label' => 'Vendor', 'value' => $expense->vendor_name],
                             ['label' => 'Description', 'value' => $expense->description],
@@ -194,7 +195,7 @@ class ExpenseEntryController extends Controller
             'status' => $data['status'],
         ]);
 
-        return to_route('expenses.show', $expense)->with('success', 'Expense recorded successfully.');
+        return to_route('expenses.show', $expense)->with('success', trans('app.messages.expense_created'));
     }
 
     public function update(Request $request, ExpenseEntry $expense): RedirectResponse
@@ -219,7 +220,7 @@ class ExpenseEntryController extends Controller
         $data = $this->normalizeExpenseReferences($data, $expense->portfolio_id);
         $expense->update($data);
 
-        return to_route('expenses.show', $expense)->with('success', 'Expense updated successfully.');
+        return to_route('expenses.show', $expense)->with('success', trans('app.messages.expense_updated'));
     }
 
     public function destroy(Request $request, ExpenseEntry $expense): RedirectResponse
@@ -230,14 +231,17 @@ class ExpenseEntryController extends Controller
 
         $expense->update(['status' => 'void']);
 
-        return to_route('expenses.index')->with('success', 'Expense voided successfully.');
+        return to_route('expenses.index')->with('success', trans('app.messages.expense_voided'));
     }
 
     private function expenseFormPage(User $actor, ?ExpenseEntry $expense = null): array
     {
         $assetOptions = $this->scopeByPortfolio(Asset::query()->orderBy('title_en'), $actor)
             ->get()
-            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->map(fn (Asset $asset) => [
+                'value' => $asset->id,
+                'label' => $this->localized($asset->title_en, $asset->title_ar).' · '.$asset->code,
+            ])
             ->prepend(['value' => '', 'label' => 'No asset'])
             ->values()
             ->all();
@@ -245,7 +249,7 @@ class ExpenseEntryController extends Controller
             ->get()
             ->map(fn (MaintenanceRequest $maintenanceRequest) => [
                 'value' => $maintenanceRequest->id,
-                'label' => '#'.$maintenanceRequest->id.' · '.$maintenanceRequest->title.' · '.($maintenanceRequest->asset?->title_en ?? 'asset'),
+                'label' => '#'.$maintenanceRequest->id.' · '.$maintenanceRequest->title.' · '.($this->localized($maintenanceRequest->asset?->title_en, $maintenanceRequest->asset?->title_ar) ?? 'asset'),
             ])
             ->prepend(['value' => '', 'label' => 'No maintenance request'])
             ->values()
@@ -312,7 +316,7 @@ class ExpenseEntryController extends Controller
             abort_unless(
                 Asset::query()->whereKey($data['asset_id'])->where('portfolio_id', $portfolioId)->exists(),
                 422,
-                'Selected asset does not belong to this portfolio.'
+                trans('app.errors.asset_portfolio_mismatch')
             );
         }
 
@@ -325,7 +329,7 @@ class ExpenseEntryController extends Controller
             abort_unless(
                 $maintenanceRequest,
                 422,
-                'Selected maintenance request does not belong to this portfolio.'
+                trans('app.errors.maintenance_portfolio_mismatch')
             );
 
             if (empty($assetId) && $maintenanceRequest->asset_id) {
@@ -333,7 +337,7 @@ class ExpenseEntryController extends Controller
             }
 
             if (! empty($assetId) && $maintenanceRequest->asset_id && (int) $assetId !== (int) $maintenanceRequest->asset_id) {
-                abort(422, 'Selected asset does not match the maintenance request asset.');
+                abort(422, trans('app.errors.expense_asset_mismatch'));
             }
         }
 
@@ -363,6 +367,7 @@ class ExpenseEntryController extends Controller
             'asset' => [
                 'id' => $expense->asset?->id,
                 'title_en' => $expense->asset?->title_en,
+                'title_ar' => $expense->asset?->title_ar,
                 'code' => $expense->asset?->code,
             ],
             'maintenance_request' => [

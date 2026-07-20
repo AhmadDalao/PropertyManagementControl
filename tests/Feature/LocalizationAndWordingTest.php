@@ -2,7 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Modules\Wording\UiTranslationCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -140,5 +143,133 @@ class LocalizationAndWordingTest extends TestCase
             ->assertUnprocessable();
 
         $this->assertDatabaseCount('label_overrides', 0);
+    }
+
+    public function test_english_and_arabic_translation_catalogs_have_matching_keys_and_placeholders(): void
+    {
+        $this->assertTranslationParity(
+            array_filter(
+                Arr::dot(require lang_path('en/app.php')),
+                fn (string $key): bool => $key !== 'text' && ! str_starts_with($key, 'text.'),
+                ARRAY_FILTER_USE_KEY,
+            ),
+            array_filter(
+                Arr::dot(require lang_path('ar/app.php')),
+                fn (string $key): bool => $key !== 'text' && ! str_starts_with($key, 'text.'),
+                ARRAY_FILTER_USE_KEY,
+            ),
+        );
+
+        foreach (['auth', 'pagination', 'passwords', 'validation'] as $group) {
+            $this->assertTranslationParity(
+                Arr::dot(require lang_path("en/{$group}.php")),
+                Arr::dot(require lang_path("ar/{$group}.php")),
+            );
+        }
+    }
+
+    public function test_database_overrides_apply_to_framework_validation_and_sentence_copy(): void
+    {
+        $catalog = app(UiTranslationCatalog::class);
+        $sentence = 'Property operations, at a glance.';
+
+        $catalog->save(
+            'validation',
+            'required',
+            'The :attribute field is required for this record.',
+            'حقل :attribute مطلوب لهذا السجل.',
+        );
+        $catalog->save(
+            'text',
+            $sentence,
+            'Property work, clearly organized.',
+            'عمليات العقار مرتبة بوضوح.',
+        );
+
+        app()->setLocale('ar');
+        $catalog->applyLaravelOverrides('ar');
+
+        $message = Validator::make([], ['name' => ['required']])
+            ->errors()
+            ->first('name');
+
+        $this->assertSame('حقل الاسم مطلوب لهذا السجل.', $message);
+        $this->assertSame(
+            'عمليات العقار مرتبة بوضوح.',
+            $catalog->forLocale('ar')['text'][$sentence],
+        );
+    }
+
+    public function test_wording_workspace_supports_pagination_filters_and_content_translation_queue(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Missing Arabic Portfolio',
+            'name_ar' => '',
+            'address' => 'English address only',
+            'address_ar' => null,
+        ]);
+        $asset = $this->createAsset($portfolio, [
+            'title_en' => 'Missing Arabic Asset',
+            'title_ar' => '',
+        ]);
+        $catalog = app(UiTranslationCatalog::class);
+        $catalog->save('nav', 'dashboard', 'Operations Center', 'مركز العمليات');
+        $catalog->save('nav', 'assets', 'Property Records', 'السجلات العقارية');
+
+        $this->actingAs($superadmin)
+            ->get(route('wording.index', [
+                'state' => 'customized',
+                'search' => 'Operations Center',
+                'per_page' => 10,
+                'content_module' => 'assets',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('entries.total', 1)
+                ->where('entries.per_page', 10)
+                ->where('entries.data.0.group', 'nav')
+                ->where('entries.data.0.key', 'dashboard')
+                ->where('filters.state', 'customized')
+                ->where('filters.contentModule', 'assets')
+                ->where('contentTranslations.total', 1)
+                ->where('contentTranslations.items.0.module', 'assets')
+                ->where('contentTranslations.items.0.missing', 'title_ar')
+                ->where('contentTranslations.items.0.href', route('assets.edit', $asset)));
+    }
+
+    /**
+     * @param  array<string, mixed>  $english
+     * @param  array<string, mixed>  $arabic
+     */
+    private function assertTranslationParity(array $english, array $arabic): void
+    {
+        $this->assertSame(array_keys($english), array_keys($arabic));
+
+        foreach ($english as $key => $englishValue) {
+            $arabicValue = $arabic[$key] ?? null;
+
+            $this->assertIsString($englishValue, "English translation [{$key}] must be a string.");
+            $this->assertIsString($arabicValue, "Arabic translation [{$key}] must be a string.");
+            $this->assertNotSame('', trim($englishValue), "English translation [{$key}] is empty.");
+            $this->assertNotSame('', trim($arabicValue), "Arabic translation [{$key}] is empty.");
+            $this->assertSame(
+                $this->placeholders($englishValue),
+                $this->placeholders($arabicValue),
+                "Translation placeholders differ for [{$key}].",
+            );
+        }
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private function placeholders(string $value): array
+    {
+        preg_match_all('/:[A-Za-z_]+/', $value, $matches);
+        $placeholders = array_values(array_unique($matches[0]));
+        sort($placeholders);
+
+        return $placeholders;
     }
 }

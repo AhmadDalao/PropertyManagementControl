@@ -46,6 +46,8 @@ class PortfolioController extends Controller
             'contact_phone',
             'city',
             'country',
+            'address',
+            'address_ar',
         ]);
         $this->applyExactFilter($portfolios, $filters, 'status');
 
@@ -92,12 +94,15 @@ class PortfolioController extends Controller
             'maintenanceRequests.asset',
             'expenseEntries',
         ]);
+        $localizedPortfolioName = $this->localized($portfolio->name_en, $portfolio->name_ar);
+        $localizedAddress = $this->localized($portfolio->address, $portfolio->address_ar);
+        $moduleLabels = collect(PortfolioModules::definitions())->keyBy('key');
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
                 'header' => [
                     'eyebrow' => 'Portfolio detail',
-                    'title' => $portfolio->name_en,
+                    'title' => $localizedPortfolioName,
                     'description' => trim($portfolio->code.' · '.$portfolio->city.' · '.$portfolio->country),
                     'backHref' => route('portfolios.index'),
                     'backLabel' => 'All portfolios',
@@ -124,7 +129,7 @@ class PortfolioController extends Controller
                             ['label' => 'Default currency', 'value' => $portfolio->default_currency],
                             ['label' => 'Contact email', 'value' => $portfolio->contact_email],
                             ['label' => 'Contact phone', 'value' => $portfolio->contact_phone],
-                            ['label' => 'Address', 'value' => $portfolio->address],
+                            ['label' => 'Address', 'value' => $localizedAddress],
                         ]),
                     ],
                     [
@@ -132,7 +137,14 @@ class PortfolioController extends Controller
                         'description' => 'Portfolio owner and module posture.',
                         'items' => $this->detailItems([
                             ['label' => 'Owner', 'value' => $portfolio->owner?->name, 'href' => $portfolio->owner ? route('users.show', $portfolio->owner) : null],
-                            ['label' => 'Enabled modules', 'value' => collect($portfolio->module_settings ?? [])->filter()->keys()->implode(', ')],
+                            [
+                                'label' => 'Enabled modules',
+                                'value' => collect($portfolio->module_settings ?? [])
+                                    ->filter()
+                                    ->keys()
+                                    ->map(fn (string $key) => $moduleLabels->get($key)['label'] ?? $key)
+                                    ->implode(', '),
+                            ],
                         ]),
                     ],
                 ],
@@ -142,7 +154,7 @@ class PortfolioController extends Controller
                         'description' => 'Property nodes in this portfolio.',
                         'columns' => ['Asset', 'Code', 'Type', 'Occupancy'],
                         'rows' => $portfolio->assets->take(8)->map(fn ($asset) => [
-                            'Asset' => $asset->title_en,
+                            'Asset' => $this->localized($asset->title_en, $asset->title_ar),
                             'Code' => $asset->code,
                             'Type' => $asset->asset_type,
                             'Occupancy' => $asset->occupancy_status,
@@ -158,7 +170,10 @@ class PortfolioController extends Controller
                         'rows' => $portfolio->users->take(8)->map(fn ($portfolioUser) => [
                             'User' => $portfolioUser->name,
                             'Email' => $portfolioUser->email,
-                            'Role' => $portfolioUser->roles->pluck('name')->implode(', '),
+                            'Role' => $portfolioUser->roles
+                                ->pluck('name')
+                                ->map(fn (string $role) => trans("app.roles.{$role}"))
+                                ->implode(', '),
                             'Status' => $portfolioUser->status,
                         ])->all(),
                         'emptyText' => 'No users yet.',
@@ -197,6 +212,7 @@ class PortfolioController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'address_ar' => ['nullable', 'string'],
             'default_currency' => ['nullable', 'string', 'size:3'],
             'status' => ['required', Rule::in($this->statuses)],
             'module_settings' => ['nullable', 'array'],
@@ -210,7 +226,10 @@ class PortfolioController extends Controller
             'module_settings' => PortfolioModules::normalize($data['module_settings'] ?? null),
         ]);
 
-        return to_route('portfolios.show', $portfolio)->with('success', "Portfolio {$portfolio->name_en} created.");
+        return to_route('portfolios.show', $portfolio)->with('success', trans('app.messages.record_created', [
+            'resource' => trans('app.nav.portfolios'),
+            'name' => app()->isLocale('ar') ? $portfolio->name_ar : $portfolio->name_en,
+        ]));
     }
 
     public function update(Request $request, Portfolio $portfolio): RedirectResponse
@@ -227,6 +246,7 @@ class PortfolioController extends Controller
             'city' => ['nullable', 'string', 'max:255'],
             'country' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'address_ar' => ['nullable', 'string'],
             'default_currency' => ['nullable', 'string', 'size:3'],
             'status' => ['required', Rule::in($this->statuses)],
             'module_settings' => ['nullable', 'array'],
@@ -237,7 +257,10 @@ class PortfolioController extends Controller
 
         $portfolio->update($data);
 
-        return to_route('portfolios.show', $portfolio)->with('success', "Portfolio {$portfolio->name_en} updated.");
+        return to_route('portfolios.show', $portfolio)->with('success', trans('app.messages.record_updated', [
+            'resource' => trans('app.nav.portfolios'),
+            'name' => app()->isLocale('ar') ? $portfolio->name_ar : $portfolio->name_en,
+        ]));
     }
 
     public function destroy(Request $request, Portfolio $portfolio): RedirectResponse
@@ -247,7 +270,9 @@ class PortfolioController extends Controller
 
         $portfolio->update(['status' => 'archived']);
 
-        return to_route('portfolios.index')->with('success', "Portfolio {$portfolio->name_en} archived.");
+        return to_route('portfolios.index')->with('success', trans('app.messages.portfolio_archived', [
+            'name' => app()->isLocale('ar') ? $portfolio->name_ar : $portfolio->name_en,
+        ]));
     }
 
     /**
@@ -299,13 +324,16 @@ class PortfolioController extends Controller
             ['name' => 'contact_phone', 'label' => 'Contact phone'],
             ['name' => 'city', 'label' => 'City'],
             ['name' => 'country', 'label' => 'Country'],
-            ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'address', 'label' => trans('app.fields.address_en'), 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'address_ar', 'label' => trans('app.fields.address_ar'), 'type' => 'textarea', 'rows' => 2],
             ['name' => 'default_currency', 'label' => 'Default currency', 'placeholder' => 'SAR'],
             ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions($this->statuses), 'required' => true],
         ];
 
         return [
-            'title' => $portfolio ? 'Edit '.$portfolio->name_en : 'Create portfolio',
+            'title' => $portfolio
+                ? trans('app.actions.edit').' '.$this->localized($portfolio->name_en, $portfolio->name_ar)
+                : 'Create portfolio',
             'description' => 'Portfolios are the client boundary. Users, assets, leases, payments, and reports hang from here.',
             'backHref' => $portfolio ? route('portfolios.show', $portfolio) : route('portfolios.index'),
             'backLabel' => $portfolio ? 'Portfolio detail' : 'All portfolios',
@@ -322,6 +350,7 @@ class PortfolioController extends Controller
                 'city' => $portfolio?->city ?? '',
                 'country' => $portfolio?->country ?? 'Saudi Arabia',
                 'address' => $portfolio?->address ?? '',
+                'address_ar' => $portfolio?->address_ar ?? '',
                 'default_currency' => $portfolio?->default_currency ?? 'SAR',
                 'status' => $portfolio?->status ?? 'active',
             ],

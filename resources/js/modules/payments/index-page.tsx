@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -37,7 +38,11 @@ type PaymentRecord = {
     };
     lease?: {
         code?: string | null;
-        leaseable?: { title_en?: string | null; code?: string | null };
+        leaseable?: {
+            title_en?: string | null;
+            title_ar?: string | null;
+            code?: string | null;
+        };
     };
 };
 
@@ -74,6 +79,7 @@ const paymentMethods = [
 
 export default function PaymentsIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const filterFields: TableFilterField[] = [
         {
             name: 'status',
@@ -115,7 +121,7 @@ export default function PaymentsIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Payments" />
+            <Head title={text('Payments')} />
 
             <WorkspaceHeader
                 eyebrow="Money & service"
@@ -144,7 +150,9 @@ export default function PaymentsIndexPage() {
                             props.paymentInsights.posted_amount,
                             props.app.locale,
                         ),
-                        detail: `${props.paymentInsights.posted_count} payment records`,
+                        detail: t('payments.records', undefined, {
+                            count: props.paymentInsights.posted_count,
+                        }),
                         icon: 'bi-cash-stack',
                         tone: 'ink',
                     },
@@ -164,7 +172,9 @@ export default function PaymentsIndexPage() {
                             props.paymentInsights.pending_amount,
                             props.app.locale,
                         ),
-                        detail: `${props.paymentInsights.pending_count} waiting for posting`,
+                        detail: t('payments.waiting', undefined, {
+                            count: props.paymentInsights.pending_count,
+                        }),
                         icon: 'bi-hourglass-split',
                         tone:
                             props.paymentInsights.pending_count > 0
@@ -177,7 +187,12 @@ export default function PaymentsIndexPage() {
                             props.paymentInsights.unallocated_amount,
                             props.app.locale,
                         ),
-                        detail: `${currency(props.paymentInsights.allocated_amount, props.app.locale)} allocated`,
+                        detail: t('payments.allocated_amount', undefined, {
+                            amount: currency(
+                                props.paymentInsights.allocated_amount,
+                                locale,
+                            ),
+                        }),
                         icon: 'bi-diagram-3',
                         tone:
                             props.paymentInsights.unallocated_amount > 0
@@ -206,11 +221,17 @@ export default function PaymentsIndexPage() {
                             <div className="pmc-primary-cell">
                                 <strong>
                                     {payment.reference ??
-                                        `Payment #${payment.id}`}
+                                        t(
+                                            'payments.payment_number',
+                                            undefined,
+                                            {
+                                                id: payment.id,
+                                            },
+                                        )}
                                 </strong>
                                 <span>
-                                    {humanLabel(payment.method)} ·{' '}
-                                    {humanLabel(payment.type)}
+                                    {text(humanLabel(payment.method))} ·{' '}
+                                    {text(humanLabel(payment.type))}
                                 </span>
                                 <StatusBadge value={payment.status} />
                             </div>
@@ -223,12 +244,16 @@ export default function PaymentsIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <strong>
                                     {payment.tenant_profile?.user?.name ??
-                                        'No tenant'}
+                                        text('No tenant')}
                                 </strong>
                                 <span>
-                                    {payment.lease?.code ?? 'No lease'} ·{' '}
-                                    {payment.lease?.leaseable?.title_en ??
-                                        'No asset'}
+                                    {payment.lease?.code ?? text('No lease')} ·{' '}
+                                    {(locale === 'ar'
+                                        ? payment.lease?.leaseable?.title_ar ||
+                                          payment.lease?.leaseable?.title_en
+                                        : payment.lease?.leaseable?.title_en ||
+                                          payment.lease?.leaseable?.title_ar) ??
+                                        text('No asset')}
                                 </span>
                             </div>
                         ),
@@ -244,7 +269,7 @@ export default function PaymentsIndexPage() {
                                         props.app.locale,
                                     )}
                                 </strong>
-                                <span>{humanLabel(payment.method)}</span>
+                                <span>{text(humanLabel(payment.method))}</span>
                             </div>
                         ),
                     },
@@ -266,7 +291,7 @@ export default function PaymentsIndexPage() {
                                         props.app.locale,
                                         payment.currency,
                                     )}{' '}
-                                    allocated
+                                    {text('allocated')}
                                 </span>
                             </div>
                         ),
@@ -277,13 +302,24 @@ export default function PaymentsIndexPage() {
                         render: (payment) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {payment.allocation_count} installment
-                                    {payment.allocation_count === 1 ? '' : 's'}
+                                    {t('payments.installments', undefined, {
+                                        count: payment.allocation_count,
+                                    })}
                                 </strong>
                                 <span>
                                     {payment.unallocated_amount > 0
-                                        ? `${currency(payment.unallocated_amount, props.app.locale, payment.currency)} unallocated`
-                                        : 'Fully allocated'}
+                                        ? t(
+                                              'payments.unallocated_amount',
+                                              undefined,
+                                              {
+                                                  amount: currency(
+                                                      payment.unallocated_amount,
+                                                      locale,
+                                                      payment.currency,
+                                                  ),
+                                              },
+                                          )
+                                        : text('Fully allocated')}
                                 </span>
                             </div>
                         ),
@@ -303,14 +339,22 @@ export default function PaymentsIndexPage() {
                                         className="btn btn-outline-secondary btn-sm"
                                     >
                                         <i className="bi bi-receipt" />
-                                        <span>Receipt</span>
+                                        <span>{text('Receipt')}</span>
                                     </a>
                                 ) : null}
                                 {payment.status !== 'void' ? (
                                     <ArchiveAction
                                         href={`/payments/${payment.id}`}
                                         label="Void"
-                                        confirmMessage={`Void payment ${payment.reference ?? `#${payment.id}`}? This reverses installment allocations.`}
+                                        confirmMessage={t(
+                                            'payments.void_confirm',
+                                            undefined,
+                                            {
+                                                reference:
+                                                    payment.reference ??
+                                                    `#${payment.id}`,
+                                            },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

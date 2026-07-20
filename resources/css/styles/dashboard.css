@@ -225,7 +225,7 @@
 }
 
 .pmc-action-queue-grid > a > span {
-    color: #9a9a9f;
+    color: #696970;
     font-size: 0.65rem;
     font-weight: 900;
 }
@@ -235,7 +235,7 @@
 }
 
 .pmc-action-queue-grid > a > i:last-of-type {
-    color: #9a9a9f;
+    color: #696970;
     font-size: 0.72rem;
 }
 
@@ -253,7 +253,7 @@
 .pmc-action-queue-grid small {
     display: -webkit-box;
     overflow: hidden;
-    color: #77777e;
+    color: #6f6f76;
     font-size: 0.7rem;
     line-height: 1.4;
     -webkit-box-orient: vertical;
@@ -316,7 +316,7 @@
 
 .pmc-command-list span {
     overflow: hidden;
-    color: #77777e;
+    color: #6f6f76;
     font-size: 0.72rem;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -349,7 +349,7 @@
     border: 1px dashed #d9d5ce;
     border-radius: 0.78rem;
     background: #fbfaf7;
-    color: #77777e;
+    color: #6f6f76;
     font-size: 0.8rem;
     text-align: center;
 }
@@ -409,7 +409,7 @@
 
 .pmc-tenant-lease-summary span,
 .pmc-tenant-document-list span {
-    color: #77777e;
+    color: #6f6f76;
     font-size: 0.68rem;
 }
 

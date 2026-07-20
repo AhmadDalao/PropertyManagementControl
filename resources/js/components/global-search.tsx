@@ -11,6 +11,7 @@ export function GlobalSearch() {
     const [mobileOpen, setMobileOpen] = useState(false);
     const mobileTriggerRef = useRef<HTMLButtonElement>(null);
     const { t } = useTranslator();
+    const failedMessage = t('search.failed');
 
     useEffect(() => {
         const trimmed = query.trim();
@@ -47,7 +48,7 @@ export function GlobalSearch() {
                             ok: false,
                             query: trimmed,
                             results: [],
-                            message: 'Search failed. Try again.',
+                            message: failedMessage,
                             direct_url: '',
                         });
                     }
@@ -59,7 +60,7 @@ export function GlobalSearch() {
             controller.abort();
             window.clearTimeout(timer);
         };
-    }, [query]);
+    }, [failedMessage, query]);
 
     useEffect(() => {
         if (!mobileOpen) {
@@ -207,7 +208,9 @@ function SearchField({
                     onChange={(event) => setQuery(event.currentTarget.value)}
                     onFocus={() => setOpen(true)}
                     autoFocus={autoFocus}
-                    aria-controls={resultsId}
+                    aria-controls={
+                        open && query.trim().length >= 2 ? resultsId : undefined
+                    }
                 />
             </label>
 
@@ -223,7 +226,9 @@ function SearchField({
                         {loading
                             ? t('common.searching', 'Searching...')
                             : payload?.message ||
-                              `${payload?.results.length ?? 0} results found.`}
+                              t('search.results_found', undefined, {
+                                  count: payload?.results.length ?? 0,
+                              })}
                     </p>
                     {Object.entries(groupedResults).map(([group, results]) => (
                         <section

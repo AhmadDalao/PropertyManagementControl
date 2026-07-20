@@ -8,8 +8,10 @@ import {
     RecordActions,
     StatusBadge,
     WorkspaceHeader,
+    humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -30,7 +32,7 @@ type DocumentRecord = {
     file_size: number;
     is_public: boolean;
     created_at: string;
-    portfolio?: { name_en: string } | null;
+    portfolio?: { name_en: string; name_ar?: string | null } | null;
     uploaded_by?: { name: string } | null;
     documentable?: Record<string, unknown> | null;
 };
@@ -54,6 +56,7 @@ const documentTypeOptions = [
 
 export default function DocumentsIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const insights = insightFromCounts(props.counts);
     const filterFields: TableFilterField[] = [
         {
@@ -100,7 +103,7 @@ export default function DocumentsIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Documents" />
+            <Head title={text('Documents')} />
 
             <WorkspaceHeader
                 eyebrow="Money & service"
@@ -128,7 +131,9 @@ export default function DocumentsIndexPage() {
                     {
                         label: 'Contracts',
                         value: insights.contracts,
-                        detail: `${insights.signed} signed contracts`,
+                        detail: t('documents.signed_contracts', undefined, {
+                            count: insights.signed,
+                        }),
                         icon: 'bi-file-earmark-text',
                         tone: 'blue',
                     },
@@ -165,13 +170,19 @@ export default function DocumentsIndexPage() {
                         label: 'Document',
                         render: (document) => (
                             <div className="pmc-primary-cell">
-                                <strong>{document.title_en}</strong>
+                                <strong>
+                                    {locale === 'ar'
+                                        ? document.title_ar || document.title_en
+                                        : document.title_en ||
+                                          document.title_ar}
+                                </strong>
                                 <span>
                                     {document.title_ar ??
                                         document.original_name}
                                 </span>
                                 <StatusBadge
                                     value={document.type}
+                                    label={text(humanLabel(document.type))}
                                     tone="blue"
                                 />
                             </div>
@@ -182,9 +193,16 @@ export default function DocumentsIndexPage() {
                         label: 'Attached to',
                         render: (document) => (
                             <div className="pmc-stacked-cell">
-                                <strong>{attachmentLabel(document)}</strong>
+                                <strong>
+                                    {attachmentLabel(document, locale, t)}
+                                </strong>
                                 <span>
-                                    {document.portfolio?.name_en ?? 'Portfolio'}
+                                    {(locale === 'ar'
+                                        ? document.portfolio?.name_ar ||
+                                          document.portfolio?.name_en
+                                        : document.portfolio?.name_en ||
+                                          document.portfolio?.name_ar) ??
+                                        text('Portfolio')}
                                 </span>
                             </div>
                         ),
@@ -209,9 +227,14 @@ export default function DocumentsIndexPage() {
                                 <StatusBadge
                                     value={
                                         document.is_public
-                                            ? 'Portal visible'
-                                            : 'Private'
+                                            ? 'public'
+                                            : 'private'
                                     }
+                                    label={text(
+                                        document.is_public
+                                            ? 'Portal visible'
+                                            : 'Private',
+                                    )}
                                     tone={
                                         document.is_public
                                             ? 'success'
@@ -219,8 +242,12 @@ export default function DocumentsIndexPage() {
                                     }
                                 />
                                 <span>
-                                    Uploaded by{' '}
-                                    {document.uploaded_by?.name ?? 'System'} ·{' '}
+                                    {t('documents.uploaded_by', undefined, {
+                                        name:
+                                            document.uploaded_by?.name ??
+                                            t('resource.system'),
+                                    })}{' '}
+                                    ·{' '}
                                     {humanDate(
                                         document.created_at,
                                         props.app.locale,
@@ -248,7 +275,20 @@ export default function DocumentsIndexPage() {
                                 <ArchiveAction
                                     href={`/documents/${document.id}`}
                                     label="Delete"
-                                    confirmMessage={`Delete ${document.title_en}? This removes the stored file.`}
+                                    confirmMessage={t(
+                                        'documents.delete_confirm',
+                                        undefined,
+                                        {
+                                            title:
+                                                locale === 'ar'
+                                                    ? document.title_ar ||
+                                                      document.title_en ||
+                                                      ''
+                                                    : document.title_en ||
+                                                      document.title_ar ||
+                                                      '',
+                                        },
+                                    )}
                                 />
                             </RecordActions>
                         ),
@@ -272,25 +312,41 @@ function insightFromCounts(counts: TableCount[]) {
     };
 }
 
-function attachmentLabel(document: DocumentRecord): string {
+function attachmentLabel(
+    document: DocumentRecord,
+    locale: string,
+    t: ReturnType<typeof useTranslator>['t'],
+): string {
     const record = document.documentable ?? {};
     const type = document.documentable_type;
 
     if (type === 'asset' || type.endsWith('\\Asset')) {
         return String(
-            record.title_en ??
+            (locale === 'ar'
+                ? (record.title_ar ?? record.title_en)
+                : (record.title_en ?? record.title_ar)) ??
                 record.code ??
-                `Asset #${document.documentable_id}`,
+                t('documents.asset_number', undefined, {
+                    id: document.documentable_id,
+                }),
         );
     }
 
     if (type === 'payment' || type.endsWith('\\Payment')) {
         return String(
-            record.reference ?? `Payment #${document.documentable_id}`,
+            record.reference ??
+                t('documents.payment_number', undefined, {
+                    id: document.documentable_id,
+                }),
         );
     }
 
-    return String(record.code ?? `Lease #${document.documentable_id}`);
+    return String(
+        record.code ??
+            t('documents.lease_number', undefined, {
+                id: document.documentable_id,
+            }),
+    );
 }
 
 function formatBytes(value: number): string {

@@ -56,7 +56,7 @@ class DocumentController extends Controller
             'assetOptions' => $this->scopeByPortfolio(
                 Asset::query()->orderBy('title_en'),
                 $actor
-            )->get(['id', 'portfolio_id', 'title_en', 'code']),
+            )->get(['id', 'portfolio_id', 'title_en', 'title_ar', 'code']),
             'leaseOptions' => $this->scopeByPortfolio(
                 Lease::query()->with('tenantProfile.user')->orderByDesc('created_at'),
                 $actor
@@ -83,12 +83,13 @@ class DocumentController extends Controller
         $actor = $this->actor($request);
         $this->ensureDocumentManagementAccess($actor, $document);
         $document->loadMissing(['portfolio', 'uploadedBy', 'documentable']);
+        $localizedTitle = $this->localized($document->title_en, $document->title_ar) ?: $document->original_name;
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
                 'header' => [
                     'eyebrow' => 'Document detail',
-                    'title' => $document->title_en ?: $document->original_name,
+                    'title' => $localizedTitle,
                     'description' => trim($document->type.' · '.$document->original_name),
                     'backHref' => route('documents.index'),
                     'backLabel' => 'All documents',
@@ -110,7 +111,7 @@ class DocumentController extends Controller
                         'items' => $this->detailItems([
                             ['label' => 'Arabic title', 'value' => $document->title_ar],
                             ['label' => 'Original name', 'value' => $document->original_name],
-                            ['label' => 'Portfolio', 'value' => $document->portfolio?->name_en, 'href' => $document->portfolio ? route('portfolios.show', $document->portfolio) : null],
+                            ['label' => 'Portfolio', 'value' => $this->localized($document->portfolio?->name_en, $document->portfolio?->name_ar), 'href' => $document->portfolio ? route('portfolios.show', $document->portfolio) : null],
                             ['label' => 'Uploaded by', 'value' => $document->uploadedBy?->name, 'href' => $document->uploadedBy ? route('users.show', $document->uploadedBy) : null],
                             ['label' => 'Attachment type', 'value' => $document->documentable_type],
                             ['label' => 'Attachment ID', 'value' => $document->documentable_id],
@@ -122,7 +123,7 @@ class DocumentController extends Controller
                 'related' => [],
                 'documents' => [[
                     'id' => $document->id,
-                    'title' => $document->title_en ?: $document->original_name,
+                    'title' => $localizedTitle,
                     'subtitle' => $document->original_name,
                     'badge' => $document->is_public ? 'Public' : 'Private',
                     'href' => route('documents.download', $document),
@@ -153,7 +154,7 @@ class DocumentController extends Controller
             'documentable_id' => ['required', 'integer'],
             'type' => ['required', 'string', 'max:80'],
             'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['nullable', 'string', 'max:255'],
+            'title_ar' => ['required', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
             'file' => ['required', 'file', 'extensions:pdf', 'mimes:pdf', 'mimetypes:application/pdf', 'max:10240'],
         ]);
@@ -168,7 +169,7 @@ class DocumentController extends Controller
         abort_if(
             (int) $documentable->getAttribute('portfolio_id') !== (int) $portfolioId,
             422,
-            'Selected record does not belong to the selected portfolio.'
+            trans('app.errors.record_portfolio_mismatch')
         );
 
         $file = $data['file'];
@@ -181,7 +182,7 @@ class DocumentController extends Controller
             'documentable_id' => $documentable->getKey(),
             'type' => $data['type'],
             'title_en' => $data['title_en'],
-            'title_ar' => $data['title_ar'] ?? null,
+            'title_ar' => $data['title_ar'],
             'disk' => 'local',
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
@@ -190,7 +191,7 @@ class DocumentController extends Controller
             'is_public' => (bool) ($data['is_public'] ?? false),
         ]);
 
-        return to_route('documents.show', $document)->with('success', 'Document uploaded successfully.');
+        return to_route('documents.show', $document)->with('success', trans('app.messages.document_uploaded'));
     }
 
     public function update(Request $request, Document $document): RedirectResponse
@@ -204,7 +205,7 @@ class DocumentController extends Controller
             'documentable_id' => ['required', 'integer'],
             'type' => ['required', 'string', 'max:80'],
             'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['nullable', 'string', 'max:255'],
+            'title_ar' => ['required', 'string', 'max:255'],
             'is_public' => ['nullable', 'boolean'],
         ]);
 
@@ -218,7 +219,7 @@ class DocumentController extends Controller
         abort_if(
             (int) $documentable->getAttribute('portfolio_id') !== (int) $portfolioId,
             422,
-            'Selected record does not belong to the selected portfolio.'
+            trans('app.errors.record_portfolio_mismatch')
         );
 
         $document->update([
@@ -227,11 +228,11 @@ class DocumentController extends Controller
             'documentable_id' => $documentable->getKey(),
             'type' => $data['type'],
             'title_en' => $data['title_en'],
-            'title_ar' => $data['title_ar'] ?? null,
+            'title_ar' => $data['title_ar'],
             'is_public' => (bool) ($data['is_public'] ?? false),
         ]);
 
-        return to_route('documents.show', $document)->with('success', 'Document details updated successfully.');
+        return to_route('documents.show', $document)->with('success', trans('app.messages.document_updated'));
     }
 
     public function destroy(Document $document): RedirectResponse
@@ -242,7 +243,7 @@ class DocumentController extends Controller
         Storage::disk($document->disk)->delete($document->file_path);
         $document->delete();
 
-        return to_route('documents.index')->with('success', 'Document deleted successfully.');
+        return to_route('documents.index')->with('success', trans('app.messages.document_deleted'));
     }
 
     public function download(Document $document): StreamedResponse
@@ -288,7 +289,7 @@ class DocumentController extends Controller
                 'other',
             ])],
             ['name' => 'title_en', 'label' => 'English title', 'required' => true],
-            ['name' => 'title_ar', 'label' => 'Arabic title'],
+            ['name' => 'title_ar', 'label' => 'Arabic title', 'required' => true],
             ['name' => 'is_public', 'label' => 'Visible to tenant when allowed', 'type' => 'checkbox'],
         ];
 
@@ -371,7 +372,7 @@ class DocumentController extends Controller
     private function resolveDocumentable(string $type, int $id): array
     {
         $class = $this->documentableTypes()[$type] ?? null;
-        abort_if($class === null, 422, 'Unsupported document attachment type.');
+        abort_if($class === null, 422, trans('app.errors.unsupported_document_attachment'));
 
         $documentable = $class::query()->findOrFail($id);
 

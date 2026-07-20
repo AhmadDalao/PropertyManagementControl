@@ -18,6 +18,7 @@ export type PropertyMapAsset = {
     y: number;
     has_coordinates: boolean;
     has_identity: boolean;
+    map_ready: boolean;
     href: string;
     edit_href: string;
     children_count: number;
@@ -26,6 +27,7 @@ export type PropertyMapAsset = {
     open_requests_count: number;
     owner?: string | null;
     manager?: string | null;
+    is_showcase: boolean;
 };
 
 export type PropertyMapSummary = {
@@ -36,9 +38,19 @@ export type PropertyMapSummary = {
     needs_identity: number;
     coverage_percent: number;
     zones: string[];
+    payload_limit: number;
+};
+
+export type PropertyMapConfig = {
+    tile_url: string;
+    attribution: string;
+    default_center: [number, number];
+    default_zoom: number;
+    directory_page_size: number;
 };
 
 export type PropertyMapPayload = {
     assets: PropertyMapAsset[];
     summary: PropertyMapSummary;
+    config: PropertyMapConfig;
 };

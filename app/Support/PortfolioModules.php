@@ -30,18 +30,14 @@ class PortfolioModules
      */
     public static function definitions(): array
     {
-        return [
-            ['key' => 'users', 'label' => 'Users', 'description' => 'Owner, manager, and tenant account management.'],
-            ['key' => 'assets', 'label' => 'Assets', 'description' => 'Buildings, floors, units, spaces, valuations, and stakeholders.'],
-            ['key' => 'tenants', 'label' => 'Tenants', 'description' => 'Tenant profiles, contacts, documents, and portal identities.'],
-            ['key' => 'leases', 'label' => 'Leases', 'description' => 'Contracts, lease status, statements, and signed PDFs.'],
-            ['key' => 'payments', 'label' => 'Payments', 'description' => 'Manual rent posting, receipts, balances, and allocation history.'],
-            ['key' => 'maintenance', 'label' => 'Maintenance', 'description' => 'Tenant requests, triage, updates, and service workflow.'],
-            ['key' => 'expenses', 'label' => 'Expenses', 'description' => 'Maintenance costs, vendor expenses, and net revenue inputs.'],
-            ['key' => 'reports', 'label' => 'Reports', 'description' => 'Revenue, arrears, occupancy, lease expiry, and export views.'],
-            ['key' => 'documents', 'label' => 'Documents', 'description' => 'Contracts, receipts, statements, uploads, and secure downloads.'],
-            ['key' => 'media', 'label' => 'Media', 'description' => 'Images and files used by portfolio content and records.'],
-        ];
+        return collect(array_keys(self::defaults()))
+            ->map(fn (string $key): array => [
+                'key' => $key,
+                'label' => trans("app.modules.{$key}.label"),
+                'description' => trans("app.modules.{$key}.description"),
+            ])
+            ->values()
+            ->all();
     }
 
     /**

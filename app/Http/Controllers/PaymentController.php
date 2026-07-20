@@ -128,6 +128,11 @@ class PaymentController extends Controller
             'documents',
         ]);
         $adminMode = $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+        $localizedAssetTitle = $this->localized(
+            $payment->lease?->leaseable?->title_en,
+            $payment->lease?->leaseable?->title_ar,
+        );
+        $localizedPortfolioName = $this->localized($payment->portfolio?->name_en, $payment->portfolio?->name_ar);
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
@@ -156,8 +161,8 @@ class PaymentController extends Controller
                         'items' => $this->detailItems([
                             ['label' => 'Tenant', 'value' => $payment->tenantProfile?->user?->name, 'href' => $payment->tenantProfile ? route('tenants.show', $payment->tenantProfile) : null],
                             ['label' => 'Lease', 'value' => $payment->lease?->code, 'href' => $payment->lease ? route('leases.show', $payment->lease) : null],
-                            ['label' => 'Asset', 'value' => $payment->lease?->leaseable?->title_en, 'href' => $payment->lease?->leaseable ? route('assets.show', $payment->lease->leaseable) : null],
-                            ['label' => 'Portfolio', 'value' => $payment->portfolio?->name_en, 'href' => $payment->portfolio ? route('portfolios.show', $payment->portfolio) : null],
+                            ['label' => 'Asset', 'value' => $localizedAssetTitle, 'href' => $payment->lease?->leaseable ? route('assets.show', $payment->lease->leaseable) : null],
+                            ['label' => 'Portfolio', 'value' => $localizedPortfolioName, 'href' => $payment->portfolio ? route('portfolios.show', $payment->portfolio) : null],
                             ['label' => 'Recorded by', 'value' => $payment->recordedBy?->name, 'href' => $payment->recordedBy ? route('users.show', $payment->recordedBy) : null],
                             ['label' => 'Received on', 'value' => $payment->received_on?->toDateString()],
                             ['label' => 'Notes', 'value' => $payment->notes],
@@ -216,7 +221,7 @@ class PaymentController extends Controller
         $lease = Lease::query()->findOrFail($data['lease_id']);
         $portfolioId = $data['portfolio_id'] ?? $lease->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
-        abort_if($lease->portfolio_id !== $portfolioId, 422, 'Lease does not belong to the selected portfolio.');
+        abort_if($lease->portfolio_id !== $portfolioId, 422, trans('app.errors.lease_portfolio_mismatch'));
 
         $tenantProfileId = $data['tenant_profile_id'] ?? $lease->tenant_profile_id;
         abort_unless(
@@ -225,12 +230,12 @@ class PaymentController extends Controller
                 ->where('portfolio_id', $portfolioId)
                 ->exists(),
             422,
-            'Tenant does not belong to the selected portfolio.'
+            trans('app.errors.tenant_portfolio_mismatch')
         );
         abort_if(
             (int) $tenantProfileId !== (int) $lease->tenant_profile_id,
             422,
-            'Payment tenant must match the selected lease tenant.'
+            trans('app.errors.payment_tenant_mismatch')
         );
 
         $payment = Payment::query()->create([
@@ -252,7 +257,7 @@ class PaymentController extends Controller
             $this->leaseFinancials->allocatePayment($payment);
         }
 
-        return to_route('payments.show', $payment)->with('success', 'Payment recorded successfully.');
+        return to_route('payments.show', $payment)->with('success', trans('app.messages.payment_created'));
     }
 
     public function update(Request $request, Payment $payment): RedirectResponse
@@ -267,7 +272,7 @@ class PaymentController extends Controller
         ]);
 
         if ($payment->status === 'void' && $data['status'] !== 'void') {
-            return back()->with('error', 'Voided payments cannot be reopened. Record a new payment instead.');
+            return back()->with('error', trans('app.errors.payment_voided_locked'));
         }
 
         DB::transaction(function () use ($payment, $data) {
@@ -291,7 +296,7 @@ class PaymentController extends Controller
             }
         });
 
-        return to_route('payments.show', $payment)->with('success', 'Payment updated successfully.');
+        return to_route('payments.show', $payment)->with('success', trans('app.messages.payment_updated'));
     }
 
     public function destroy(Request $request, Payment $payment): RedirectResponse
@@ -302,7 +307,7 @@ class PaymentController extends Controller
 
         DB::transaction(fn () => $this->leaseFinancials->voidPayment($payment));
 
-        return to_route('payments.index')->with('success', 'Payment voided and allocations reversed.');
+        return to_route('payments.index')->with('success', trans('app.messages.payment_voided'));
     }
 
     public function receipt(Request $request, Payment $payment): StreamedResponse
@@ -324,7 +329,7 @@ class PaymentController extends Controller
     {
         if ($payment) {
             return [
-                'title' => 'Review payment '.($payment->reference ?: '#'.$payment->id),
+                'title' => trans('app.actions.edit').' '.($payment->reference ?: '#'.$payment->id),
                 'description' => 'Change payment state carefully. Voiding reverses allocations and keeps the audit trail.',
                 'backHref' => route('payments.show', $payment),
                 'backLabel' => 'Payment detail',
@@ -347,7 +352,7 @@ class PaymentController extends Controller
             $actor
         )->get()->map(fn (Lease $lease) => [
             'value' => $lease->id,
-            'label' => $lease->code.' · '.($lease->tenantProfile?->user?->name ?? 'tenant').' · '.($lease->leaseable?->title_en ?? 'asset'),
+            'label' => $lease->code.' · '.($lease->tenantProfile?->user?->name ?? 'tenant').' · '.($this->localized($lease->leaseable?->title_en, $lease->leaseable?->title_ar) ?? 'asset'),
         ])->all();
         $tenantOptions = $this->scopeByPortfolio(TenantProfile::query()->with('user'), $actor)
             ->get()
@@ -452,6 +457,7 @@ class PaymentController extends Controller
                 'total_paid' => $payment->lease ? (float) $payment->lease->total_paid : null,
                 'leaseable' => [
                     'title_en' => $payment->lease?->leaseable?->title_en,
+                    'title_ar' => $payment->lease?->leaseable?->title_ar,
                     'code' => $payment->lease?->leaseable?->code,
                 ],
             ],
@@ -508,7 +514,7 @@ class PaymentController extends Controller
         abort_unless(
             $actor->hasRole('tenant') && $payment->tenantProfile?->user_id === $actor->id,
             403,
-            'You are not allowed to access this receipt.'
+            trans('app.errors.receipt_access_denied')
         );
     }
 }

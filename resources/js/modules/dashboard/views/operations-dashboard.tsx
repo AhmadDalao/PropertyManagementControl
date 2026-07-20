@@ -14,7 +14,7 @@ import { operationsHealthScore } from '../metrics';
 import type { DashboardPageProps, NextAction } from '../types';
 
 export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
-    const isArabic = props.app.locale === 'ar';
+    const { locale, t, text } = useTranslator();
     const setupChecklist = props.setupChecklist ?? [];
     const nextActions = props.nextActions ?? [];
     const recentPayments = props.recentPayments ?? [];
@@ -37,7 +37,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
 
     return (
         <AdminLayout>
-            <Head title="Dashboard" />
+            <Head title={text('Dashboard')} />
 
             <WorkspaceHeader
                 eyebrow={
@@ -75,12 +75,14 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                         value: props.stats.totalAssets ?? 0,
                         detail:
                             props.mode === 'superadmin'
-                                ? isArabic
-                                    ? `${props.stats.totalPortfolios ?? 0} محافظ · ${props.stats.totalUsers ?? 0} مستخدمين`
-                                    : `${props.stats.totalPortfolios ?? 0} portfolios · ${props.stats.totalUsers ?? 0} users`
-                                : isArabic
-                                  ? `${props.stats.vacantUnits ?? 0} وحدات شاغرة قابلة للتأجير`
-                                  : `${props.stats.vacantUnits ?? 0} vacant rentable units`,
+                                ? t('dashboard.portfolios_users', undefined, {
+                                      portfolios:
+                                          props.stats.totalPortfolios ?? 0,
+                                      users: props.stats.totalUsers ?? 0,
+                                  })
+                                : t('dashboard.vacant_units', undefined, {
+                                      count: props.stats.vacantUnits ?? 0,
+                                  }),
                         icon: 'bi-buildings',
                         tone: 'ink',
                         href: '/assets',
@@ -91,9 +93,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.totalValue ?? 0),
                             props.app.locale,
                         ),
-                        detail: isArabic
-                            ? `${props.stats.activeLeases ?? 0} عقود نشطة`
-                            : `${props.stats.activeLeases ?? 0} active leases`,
+                        detail: t('dashboard.active_leases_count', undefined, {
+                            count: props.stats.activeLeases ?? 0,
+                        }),
                         icon: 'bi-bank',
                         tone: 'blue',
                         href: '/assets',
@@ -104,9 +106,12 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.monthlyRevenue ?? 0),
                             props.app.locale,
                         ),
-                        detail: isArabic
-                            ? `${currency(Number(props.stats.monthlyExpenses ?? 0), props.app.locale)} مصاريف`
-                            : `${currency(Number(props.stats.monthlyExpenses ?? 0), props.app.locale)} expenses`,
+                        detail: t('dashboard.expenses_amount', undefined, {
+                            amount: currency(
+                                Number(props.stats.monthlyExpenses ?? 0),
+                                locale,
+                            ),
+                        }),
                         icon: 'bi-cash-stack',
                         tone: 'teal',
                         href: '/payments',
@@ -117,9 +122,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             Number(props.stats.arrears ?? 0),
                             props.app.locale,
                         ),
-                        detail: isArabic
-                            ? `${props.stats.openRequests ?? 0} طلبات خدمة مفتوحة`
-                            : `${props.stats.openRequests ?? 0} open service requests`,
+                        detail: t('dashboard.open_service_count', undefined, {
+                            count: props.stats.openRequests ?? 0,
+                        }),
                         icon: 'bi-exclamation-circle',
                         tone:
                             Number(props.stats.arrears ?? 0) > 0
@@ -147,7 +152,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                         rows={arrearsLeases.slice(0, 5).map((lease) => ({
                             href: `/leases/${lease.id}`,
                             title: lease.code,
-                            meta: `${lease.tenant ?? 'No tenant'} · ${lease.asset ?? 'No asset'}`,
+                            meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
                             value: currency(
                                 lease.balance_remaining,
                                 props.app.locale,
@@ -172,7 +177,13 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                         rows={recentMaintenance.slice(0, 5).map((request) => ({
                             href: `/maintenance-requests/${request.id}`,
                             title: request.title,
-                            meta: request.asset?.title_en ?? 'No asset',
+                            meta:
+                                (locale === 'ar'
+                                    ? request.asset?.title_ar ||
+                                      request.asset?.title_en
+                                    : request.asset?.title_en ||
+                                      request.asset?.title_ar) ??
+                                text('No asset'),
                             value: request.status,
                             status: request.status,
                         }))}
@@ -183,11 +194,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
             <div className="pmc-command-grid is-three">
                 <WorkspacePanel
                     eyebrow="Health"
-                    title={
-                        isArabic
-                            ? `جاهزية التشغيل ${healthScore}%`
-                            : `${healthScore}% operating readiness`
-                    }
+                    title={t('dashboard.operating_readiness', undefined, {
+                        score: healthScore,
+                    })}
                     description="Setup, occupancy, map, and contract signals."
                 >
                     <HealthSignals
@@ -229,8 +238,10 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                         rows={expiringLeases.slice(0, 4).map((lease) => ({
                             href: `/leases/${lease.id}`,
                             title: lease.code,
-                            meta: `${lease.tenant ?? 'No tenant'} · ${lease.asset ?? 'No asset'}`,
-                            value: `${lease.days_remaining ?? 0} days`,
+                            meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
+                            value: t('dashboard.days_count', undefined, {
+                                count: lease.days_remaining ?? 0,
+                            }),
                             tone:
                                 Number(lease.days_remaining ?? 0) <= 30
                                     ? 'danger'
@@ -251,7 +262,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             href: `/payments/${payment.id}`,
                             title:
                                 payment.tenant_profile?.user?.name ??
-                                `Payment #${payment.id}`,
+                                t('payments.payment_number', undefined, {
+                                    id: payment.id,
+                                }),
                             meta: humanDate(
                                 payment.received_on,
                                 props.app.locale,
@@ -271,7 +284,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
 }
 
 function ActionQueue({ actions }: { actions: NextAction[] }) {
-    const { locale, text } = useTranslator();
+    const { t, text } = useTranslator();
 
     if (actions.length === 0) {
         return null;
@@ -293,9 +306,7 @@ function ActionQueue({ actions }: { actions: NextAction[] }) {
                         <i className={`bi ${action.icon}`} />
                         <div>
                             <strong>{text(action.label)}</strong>
-                            <small>
-                                {actionDescription(action, locale, text)}
-                            </small>
+                            <small>{actionDescription(action, t, text)}</small>
                         </div>
                         <i className="bi bi-arrow-up-right" />
                     </Link>
@@ -307,17 +318,20 @@ function ActionQueue({ actions }: { actions: NextAction[] }) {
 
 function actionDescription(
     action: NextAction,
-    locale: 'en' | 'ar',
+    t: ReturnType<typeof useTranslator>['t'],
     translate: (value: string) => string,
 ): string {
-    if (locale !== 'ar' || action.label !== 'Complete property map') {
+    if (action.href !== '/property-map') {
         return translate(action.description);
     }
 
     const [positions = '0', identities = '0'] =
         action.description.match(/\d+/g) ?? [];
 
-    return `أصلح ${positions} مواقع مفقودة و${identities} بيانات منطقة أو أرض قبل الاعتماد على خريطة المالك.`;
+    return t('dashboard.map_action_description', undefined, {
+        positions,
+        identities,
+    });
 }
 
 function RecordList({

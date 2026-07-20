@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -186,5 +187,78 @@ class AdminTableSearchTest extends TestCase
             ->assertJsonFragment(['title' => 'PAY-VISIBLE'])
             ->assertJsonMissing(['title' => 'LEASE-HIDDEN'])
             ->assertJsonMissing(['title' => 'PAY-HIDDEN']);
+    }
+
+    public function test_asset_table_handles_every_supported_page_size_sorting_arabic_search_and_xlsx(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $now = now();
+        $rows = collect(range(1, 105))
+            ->map(fn (int $number): array => [
+                'portfolio_id' => $portfolio->id,
+                'parent_id' => null,
+                'asset_type' => 'unit',
+                'usage_type' => 'residential',
+                'title_en' => sprintf('Scale Unit %03d', $number),
+                'title_ar' => sprintf('وحدة اختبار %03d', $number),
+                'code' => sprintf('SCALE-%03d', $number),
+                'status' => $number % 9 === 0 ? 'inactive' : 'active',
+                'occupancy_status' => $number % 3 === 0 ? 'occupied' : 'vacant',
+                'rentable' => true,
+                'valuation_amount' => 250000 + $number,
+                'currency' => 'SAR',
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])
+            ->all();
+        Asset::query()->insert($rows);
+
+        foreach ([10, 25, 50, 100] as $perPage) {
+            $expectedPageCount = min($perPage, 105);
+
+            $this->actingAs($owner)
+                ->get(route('assets.index', [
+                    'per_page' => $perPage,
+                    'sort' => 'code',
+                    'direction' => 'asc',
+                ]))
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('assets.total', 105)
+                    ->where('assets.per_page', $perPage)
+                    ->has('assets.data', $expectedPageCount)
+                    ->where('assets.data.0.code', 'SCALE-001')
+                    ->where('filters.per_page', $perPage)
+                    ->where('filters.sort', 'code')
+                    ->where('filters.direction', 'asc'));
+        }
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('assets.index', [
+                'search' => 'وحدة اختبار 105',
+                'per_page' => 10,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.locale', 'ar')
+                ->where('filters.search', 'وحدة اختبار 105')
+                ->where('assets.total', 1)
+                ->where('assets.data.0.code', 'SCALE-105')
+                ->where('assets.data.0.title_ar', 'وحدة اختبار 105'));
+
+        $export = $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('exports.resource', [
+                'resource' => 'assets',
+                'search' => 'SCALE-105',
+            ]));
+
+        $export->assertOk();
+        $sheet = $this->xlsxWorksheetXml($export);
+        $this->assertStringContainsString('SCALE-105', $sheet);
+        $this->assertStringContainsString('العنوان', $sheet);
+        $this->assertStringNotContainsString('SCALE-104', $sheet);
     }
 }

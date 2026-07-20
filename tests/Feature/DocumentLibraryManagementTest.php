@@ -98,6 +98,7 @@ class DocumentLibraryManagementTest extends TestCase
                 'documentable_id' => $foreignLease->id,
                 'type' => 'signed_contract',
                 'title_en' => 'Foreign contract',
+                'title_ar' => 'عقد خارجي',
                 'file' => UploadedFile::fake()->create('foreign.pdf', 32, 'application/pdf'),
             ])
             ->assertForbidden();

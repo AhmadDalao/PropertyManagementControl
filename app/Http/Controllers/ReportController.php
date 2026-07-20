@@ -8,6 +8,7 @@ use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\ReportPreset;
+use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -18,6 +19,10 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportController extends Controller
 {
+    public function __construct(
+        private readonly UiTranslationCatalog $translations,
+    ) {}
+
     public function index(Request $request): Response
     {
         $actor = $this->actor($request);
@@ -42,7 +47,7 @@ class ReportController extends Controller
         $data = $request->validate([
             'resource' => ['required', 'string', 'max:80'],
             'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['nullable', 'string', 'max:255'],
+            'title_ar' => ['required', 'string', 'max:255'],
             'visibility' => ['required', 'in:private,portfolio,global'],
             'is_default' => ['nullable', 'boolean'],
             'filters_json' => ['nullable', 'array'],
@@ -59,13 +64,13 @@ class ReportController extends Controller
             'user_id' => $actor->id,
             'resource' => $data['resource'],
             'title_en' => $data['title_en'],
-            'title_ar' => $data['title_ar'] ?? null,
+            'title_ar' => $data['title_ar'],
             'filters_json' => $data['filters_json'] ?? $this->reportFilters($request),
             'visibility' => $data['visibility'],
             'is_default' => (bool) ($data['is_default'] ?? false),
         ]);
 
-        return to_route('reports.index', $this->reportFilters($request))->with('success', 'Report preset saved.');
+        return to_route('reports.index', $this->reportFilters($request))->with('success', trans('app.messages.preset_saved'));
     }
 
     public function destroyPreset(Request $request, ReportPreset $reportPreset): RedirectResponse
@@ -82,7 +87,7 @@ class ReportController extends Controller
 
         $reportPreset->delete();
 
-        return to_route('reports.index', $this->reportFilters($request))->with('success', 'Report preset removed.');
+        return to_route('reports.index', $this->reportFilters($request))->with('success', trans('app.messages.preset_removed'));
     }
 
     public function export(Request $request, XlsxWorkbook $workbook): BinaryFileResponse
@@ -180,7 +185,7 @@ class ReportController extends Controller
                     'id' => $lease->id,
                     'code' => $lease->code,
                     'tenant' => $lease->tenantProfile?->user?->name,
-                    'asset' => $lease->leaseable?->title_en,
+                    'asset' => $this->localized($lease->leaseable?->title_en, $lease->leaseable?->title_ar),
                     'ends_at' => $lease->ends_at?->toDateString(),
                     'balance_remaining' => $lease->balance_remaining,
                     'currency' => $lease->currency,
@@ -208,7 +213,7 @@ class ReportController extends Controller
                     'id' => $expense->id,
                     'title' => $expense->title,
                     'category' => $expense->category,
-                    'asset' => $expense->asset?->title_en,
+                    'asset' => $this->localized($expense->asset?->title_en, $expense->asset?->title_ar),
                     'amount' => (float) $expense->amount,
                     'currency' => $expense->currency,
                     'incurred_on' => $expense->incurred_on?->toDateString(),
@@ -220,7 +225,7 @@ class ReportController extends Controller
                 ->map(fn (MaintenanceRequest $maintenanceRequest) => [
                     'id' => $maintenanceRequest->id,
                     'title' => $maintenanceRequest->title,
-                    'asset' => $maintenanceRequest->asset?->title_en,
+                    'asset' => $this->localized($maintenanceRequest->asset?->title_en, $maintenanceRequest->asset?->title_ar),
                     'tenant' => $maintenanceRequest->tenantProfile?->user?->name,
                     'status' => $maintenanceRequest->status,
                     'priority' => $maintenanceRequest->priority,
@@ -239,34 +244,42 @@ class ReportController extends Controller
     private function reportRows(array $report, array $filters): array
     {
         $rows = [
-            ['Property Management Control Report'],
-            ['Date From', $filters['date_from'] ?: 'All'],
-            ['Date To', $filters['date_to'] ?: 'All'],
+            [$this->exportCopy('Property Management Control Report')],
+            [$this->exportCopy('Date From'), $filters['date_from'] ?: $this->exportCopy('All')],
+            [$this->exportCopy('Date To'), $filters['date_to'] ?: $this->exportCopy('All')],
             [],
-            ['Section', 'Metric', 'Value'],
+            $this->exportLabels(['Section', 'Metric', 'Value']),
         ];
 
         foreach ($report['summary'] as $metric => $value) {
-            $rows[] = ['Summary', str($metric)->snake(' ')->title()->toString(), $value];
+            $rows[] = [
+                $this->exportCopy('Summary'),
+                $this->exportCopy(str($metric)->snake(' ')->title()->toString()),
+                $value,
+            ];
         }
 
         $rows[] = [];
-        $rows[] = ['Revenue by Month', 'Month', 'Amount'];
+        $rows[] = $this->exportLabels(['Revenue by Month', 'Month', 'Amount']);
         foreach ($report['charts']['revenueByMonth'] as $month => $amount) {
-            $rows[] = ['Revenue by Month', $month, $amount];
+            $rows[] = [$this->exportCopy('Revenue by Month'), $month, $amount];
         }
 
         $rows[] = [];
-        $rows[] = ['Expense by Category', 'Category', 'Amount'];
+        $rows[] = $this->exportLabels(['Expense by Category', 'Category', 'Amount']);
         foreach ($report['charts']['expenseByCategory'] as $category => $amount) {
-            $rows[] = ['Expense by Category', $category, $amount];
+            $rows[] = [
+                $this->exportCopy('Expense by Category'),
+                $this->option((string) $category),
+                $amount,
+            ];
         }
 
         $rows[] = [];
-        $rows[] = ['Arrears', 'Lease', 'Tenant', 'Asset', 'Balance', 'Currency'];
+        $rows[] = $this->exportLabels(['Arrears', 'Lease', 'Tenant', 'Asset', 'Balance', 'Currency']);
         foreach ($report['arrearsLeases'] as $lease) {
             $rows[] = [
-                'Arrears',
+                $this->exportCopy('Arrears'),
                 $lease['code'],
                 $lease['tenant'],
                 $lease['asset'],
@@ -276,15 +289,15 @@ class ReportController extends Controller
         }
 
         $rows[] = [];
-        $rows[] = ['Maintenance Backlog', 'ID', 'Title', 'Asset', 'Status', 'Priority'];
+        $rows[] = $this->exportLabels(['Maintenance Backlog', 'ID', 'Title', 'Asset', 'Status', 'Priority']);
         foreach ($report['maintenanceBacklog'] as $request) {
             $rows[] = [
-                'Maintenance Backlog',
+                $this->exportCopy('Maintenance Backlog'),
                 $request['id'],
                 $request['title'],
                 $request['asset'],
-                $request['status'],
-                $request['priority'],
+                $this->option($request['status']),
+                $this->option($request['priority']),
             ];
         }
 
@@ -375,7 +388,10 @@ class ReportController extends Controller
                 $first = $group->first();
 
                 return [
-                    'asset' => $first->lease?->leaseable?->title_en ?? 'Unknown asset',
+                    'asset' => $this->localized(
+                        $first->lease?->leaseable?->title_en,
+                        $first->lease?->leaseable?->title_ar,
+                    ) ?? $this->exportCopy('Unknown asset'),
                     'revenue' => (float) $group->sum('amount'),
                     'currency' => $first->currency,
                     'lease_count' => $group->pluck('lease_id')->unique()->count(),
@@ -385,5 +401,28 @@ class ReportController extends Controller
             ->take(8)
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  array<int, string>  $labels
+     * @return array<int, string>
+     */
+    private function exportLabels(array $labels): array
+    {
+        return array_map(fn (string $label): string => $this->exportCopy($label), $labels);
+    }
+
+    private function exportCopy(string $value): string
+    {
+        return $this->translations->text($value);
+    }
+
+    private function option(string $value): string
+    {
+        $statusKey = "app.status.{$value}";
+
+        return trans()->has($statusKey)
+            ? trans($statusKey)
+            : $this->exportCopy(str($value)->replace('_', ' ')->title()->toString());
     }
 }

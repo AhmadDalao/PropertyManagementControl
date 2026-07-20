@@ -4,6 +4,7 @@ import { DataTable, exportUrl } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type {
     PaginatedData,
     SharedProps,
@@ -41,6 +42,7 @@ const eventOptions = [
 
 export default function AuditLogsPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const isSuperadmin = Boolean(props.auth.user?.roles.includes('superadmin'));
     const filterFields: TableFilterField[] = [
         {
@@ -87,7 +89,7 @@ export default function AuditLogsPage() {
 
     return (
         <AdminLayout>
-            <Head title="Audit History" />
+            <Head title={text('Audit History')} />
             <PageHeader
                 title="Audit History"
                 description="Trace who changed operational records, when it happened, and which fields were touched."
@@ -97,7 +99,7 @@ export default function AuditLogsPage() {
                             href="/documentation"
                             className="btn btn-outline-secondary"
                         >
-                            Audit guide
+                            {t('audit.guide')}
                         </Link>
                         <a
                             href={exportUrl(
@@ -107,7 +109,7 @@ export default function AuditLogsPage() {
                             className="btn btn-primary"
                         >
                             <i className="bi bi-download me-2" />
-                            Export Excel (.xlsx)
+                            {t('actions.export_xlsx')}
                         </a>
                     </>
                 }
@@ -116,21 +118,20 @@ export default function AuditLogsPage() {
             <div className="pmc-card p-4 mb-4 pmc-card--teal">
                 <div className="row g-3 align-items-center">
                     <div className="col-lg-8">
-                        <div className="pmc-kicker mb-2">Traceability</div>
+                        <div className="pmc-kicker mb-2">
+                            {t('audit.traceability')}
+                        </div>
                         <h2 className="h4 mb-2">
-                            History should answer “who touched this?” without
-                            digging through the database.
+                            {t('audit.traceability_title')}
                         </h2>
                         <p className="mb-0 text-secondary">
-                            This screen shows field names only, not raw old/new
-                            values, so sensitive changes stay traceable without
-                            dumping secrets into the UI.
+                            {t('audit.traceability_description')}
                         </p>
                     </div>
                     <div className="col-lg-4">
                         <div className="pmc-audit-summary">
                             <span>{props.activities.total}</span>
-                            <strong>tracked events in this view</strong>
+                            <strong>{t('audit.tracked_events')}</strong>
                         </div>
                     </div>
                 </div>
@@ -155,10 +156,13 @@ export default function AuditLogsPage() {
                                 <span
                                     className={`pmc-chip ${eventTone(activity.event)}`}
                                 >
-                                    {prettyLabel(activity.event)}
+                                    {text(prettyLabel(activity.event))}
                                 </span>
                                 <div className="small text-secondary mt-2">
-                                    {formatDateTime(activity.created_at)}
+                                    {formatDateTime(
+                                        activity.created_at,
+                                        locale,
+                                    )}
                                 </div>
                             </div>
                         ),
@@ -204,7 +208,7 @@ export default function AuditLogsPage() {
                                                 className="pmc-chip"
                                                 key={`${activity.id}-${key}`}
                                             >
-                                                {prettyLabel(key)}
+                                                {text(prettyLabel(key))}
                                             </span>
                                         ))}
                                     {activity.changed_keys.length > 5 ? (
@@ -215,7 +219,7 @@ export default function AuditLogsPage() {
                                 </div>
                             ) : (
                                 <span className="text-secondary">
-                                    No field diff
+                                    {t('audit.no_field_diff')}
                                 </span>
                             ),
                     },
@@ -252,12 +256,12 @@ function eventTone(event: string): string {
     return '';
 }
 
-function formatDateTime(value?: string | null): string {
+function formatDateTime(value?: string | null, locale: string = 'en'): string {
     if (!value) {
         return '-';
     }
 
-    return new Intl.DateTimeFormat('en', {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en', {
         year: 'numeric',
         month: 'short',
         day: 'numeric',

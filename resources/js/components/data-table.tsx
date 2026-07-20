@@ -2,7 +2,7 @@ import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import type { FormEvent, ReactNode } from 'react';
 
-import { useTranslator } from '@/lib/i18n';
+import { replaceTokens, useTranslator } from '@/lib/i18n';
 import type { PaginatedData, TableCount, TableFilters } from '@/types';
 
 export type TableColumn<T> = {
@@ -171,7 +171,10 @@ export function DataTable<T extends { id?: number | string }>({
             </div>
 
             {counts.length > 0 ? (
-                <div className="pmc-filter-chips" aria-label="Quick filters">
+                <div
+                    className="pmc-filter-chips"
+                    aria-label={t('table.quick_filters', 'Quick filters')}
+                >
                     {counts.map((count) => (
                         <button
                             key={`${count.label}-${count.value}`}
@@ -352,13 +355,26 @@ export function DataTable<T extends { id?: number | string }>({
                                             key={column.key}
                                             className={column.className}
                                         >
-                                            {rowHref && columnIndex === 0 ? (
-                                                <Link
-                                                    href={rowHref(row)}
-                                                    className="pmc-table-row-link"
-                                                >
-                                                    {column.render(row)}
-                                                </Link>
+                                            {columnIndex === 0 ? (
+                                                <div className="pmc-table-primary-record">
+                                                    {rowHref ? (
+                                                        <Link
+                                                            href={rowHref(row)}
+                                                            className="pmc-table-row-link"
+                                                        >
+                                                            {column.render(row)}
+                                                        </Link>
+                                                    ) : (
+                                                        column.render(row)
+                                                    )}
+                                                    {isShowcaseRow(row) ? (
+                                                        <ShowcaseBadge
+                                                            label={t(
+                                                                'showcase.badge',
+                                                            )}
+                                                        />
+                                                    ) : null}
+                                                </div>
                                             ) : (
                                                 column.render(row)
                                             )}
@@ -406,6 +422,11 @@ export function DataTable<T extends { id?: number | string }>({
                                     )}
                                     {mobile.subtitle ? (
                                         <small>{mobile.subtitle(row)}</small>
+                                    ) : null}
+                                    {isShowcaseRow(row) ? (
+                                        <ShowcaseBadge
+                                            label={t('showcase.badge')}
+                                        />
                                     ) : null}
                                 </div>
                                 {mobile.status ? mobile.status(row) : null}
@@ -472,7 +493,10 @@ export function DataTable<T extends { id?: number | string }>({
                         },
                     )}
                 </p>
-                <div className="pmc-table-pagination" aria-label="Pagination">
+                <div
+                    className="pmc-table-pagination"
+                    aria-label={t('pagination.navigation', 'Pagination')}
+                >
                     {data.links.map((link, index) => (
                         <button
                             key={`${link.label}-${index}`}
@@ -498,6 +522,24 @@ export function DataTable<T extends { id?: number | string }>({
 }
 
 export const OperationsTable = DataTable;
+
+function ShowcaseBadge({ label }: { label: string }) {
+    return (
+        <span className="pmc-table-showcase-badge">
+            <i className="bi bi-stars" />
+            {label}
+        </span>
+    );
+}
+
+function isShowcaseRow(row: unknown): boolean {
+    return Boolean(
+        typeof row === 'object' &&
+        row !== null &&
+        'is_showcase' in row &&
+        row.is_showcase,
+    );
+}
 
 export function exportUrl(path: string, filters: TableFilters): string {
     const query = new URLSearchParams(
@@ -544,11 +586,7 @@ function interpolate(
     value: string,
     replacements: Record<string, string | number>,
 ): string {
-    return Object.entries(replacements).reduce(
-        (result, [key, replacement]) =>
-            result.replace(`:${key}`, String(replacement)),
-        value,
-    );
+    return replaceTokens(value, replacements);
 }
 
 function stringifyFilters(filters: TableFilters): Record<string, string> {

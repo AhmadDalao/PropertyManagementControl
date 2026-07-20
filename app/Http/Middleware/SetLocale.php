@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Wording\UiTranslationCatalog;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,6 +33,7 @@ class SetLocale
         }
 
         app()->setLocale($locale);
+        app(UiTranslationCatalog::class)->applyLaravelOverrides($locale);
 
         if ($request->hasSession()) {
             $request->session()->put('locale', $locale);

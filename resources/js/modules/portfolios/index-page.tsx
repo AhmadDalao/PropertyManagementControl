@@ -10,6 +10,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -69,10 +70,11 @@ type PageProps = SharedProps & {
 
 export default function PortfoliosIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
 
     return (
         <AdminLayout>
-            <Head title="Portfolios" />
+            <Head title={text('Portfolios')} />
 
             <WorkspaceHeader
                 eyebrow="Portfolio"
@@ -97,7 +99,10 @@ export default function PortfoliosIndexPage() {
                     {
                         label: 'Portfolios',
                         value: props.portfolioInsights.total,
-                        detail: `${props.portfolioInsights.active} active · ${props.portfolioInsights.archived} archived`,
+                        detail: t('portfolios.status_mix', undefined, {
+                            active: props.portfolioInsights.active,
+                            archived: props.portfolioInsights.archived,
+                        }),
                         icon: 'bi-buildings',
                         tone: 'ink',
                     },
@@ -107,7 +112,9 @@ export default function PortfoliosIndexPage() {
                             props.portfolioInsights.valuation_total,
                             props.app.locale,
                         ),
-                        detail: `${props.portfolioInsights.assets} property records`,
+                        detail: t('portfolios.property_records', undefined, {
+                            count: props.portfolioInsights.assets,
+                        }),
                         icon: 'bi-bank',
                         tone: 'blue',
                     },
@@ -117,14 +124,18 @@ export default function PortfoliosIndexPage() {
                             props.portfolioInsights.posted_revenue_total,
                             props.app.locale,
                         ),
-                        detail: `${props.portfolioInsights.active_leases} active leases`,
+                        detail: t('portfolios.active_leases', undefined, {
+                            count: props.portfolioInsights.active_leases,
+                        }),
                         icon: 'bi-cash-stack',
                         tone: 'teal',
                     },
                     {
                         label: 'Open service',
                         value: props.portfolioInsights.open_maintenance,
-                        detail: `${props.portfolioInsights.users} users in scope`,
+                        detail: t('portfolios.users_in_scope', undefined, {
+                            count: props.portfolioInsights.users,
+                        }),
                         icon: 'bi-tools',
                         tone:
                             props.portfolioInsights.open_maintenance > 0
@@ -162,7 +173,12 @@ export default function PortfoliosIndexPage() {
                         label: 'Portfolio',
                         render: (portfolio) => (
                             <div className="pmc-primary-cell">
-                                <strong>{portfolio.name_en}</strong>
+                                <strong>
+                                    {locale === 'ar'
+                                        ? portfolio.name_ar || portfolio.name_en
+                                        : portfolio.name_en ||
+                                          portfolio.name_ar}
+                                </strong>
                                 <span>
                                     {portfolio.code} · {portfolio.name_ar}
                                 </span>
@@ -174,8 +190,12 @@ export default function PortfoliosIndexPage() {
                         label: 'Location',
                         render: (portfolio) => (
                             <div className="pmc-stacked-cell">
-                                <strong>{portfolio.city ?? 'Not set'}</strong>
-                                <span>{portfolio.country ?? 'Not set'}</span>
+                                <strong>
+                                    {portfolio.city ?? text('Not set')}
+                                </strong>
+                                <span>
+                                    {portfolio.country ?? text('Not set')}
+                                </span>
                             </div>
                         ),
                     },
@@ -185,14 +205,19 @@ export default function PortfoliosIndexPage() {
                         render: (portfolio) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {portfolio.assets_count ?? 0} assets ·{' '}
-                                    {portfolio.users_count ?? 0} users
+                                    {t('portfolios.assets_users', undefined, {
+                                        assets: portfolio.assets_count ?? 0,
+                                        users: portfolio.users_count ?? 0,
+                                    })}
                                 </strong>
                                 <span>
-                                    {portfolio.active_leases_count ?? 0} active
-                                    leases ·{' '}
-                                    {portfolio.open_maintenance_count ?? 0}{' '}
-                                    service
+                                    {t('portfolios.leases_service', undefined, {
+                                        leases:
+                                            portfolio.active_leases_count ?? 0,
+                                        service:
+                                            portfolio.open_maintenance_count ??
+                                            0,
+                                    })}
                                 </span>
                             </div>
                         ),
@@ -203,15 +228,26 @@ export default function PortfoliosIndexPage() {
                         render: (portfolio) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {enabledModuleCount(
-                                        props.moduleDefinitions,
-                                        portfolio.module_settings,
-                                    )}{' '}
-                                    enabled
+                                    {t(
+                                        'portfolios.modules_enabled',
+                                        undefined,
+                                        {
+                                            count: enabledModuleCount(
+                                                props.moduleDefinitions,
+                                                portfolio.module_settings,
+                                            ),
+                                        },
+                                    )}
                                 </strong>
                                 <span>
-                                    of {props.moduleDefinitions.length}{' '}
-                                    available
+                                    {t(
+                                        'portfolios.modules_available',
+                                        undefined,
+                                        {
+                                            count: props.moduleDefinitions
+                                                .length,
+                                        },
+                                    )}
                                 </span>
                             </div>
                         ),
@@ -234,7 +270,7 @@ export default function PortfoliosIndexPage() {
                                         props.app.locale,
                                         portfolio.default_currency ?? 'SAR',
                                     )}{' '}
-                                    revenue
+                                    {text('Revenue')}
                                 </span>
                             </div>
                         ),
@@ -263,7 +299,18 @@ export default function PortfoliosIndexPage() {
                                 portfolio.status !== 'archived' ? (
                                     <ArchiveAction
                                         href={`/portfolios/${portfolio.id}`}
-                                        confirmMessage={`Archive portfolio ${portfolio.name_en}? Users and records stay available for reporting.`}
+                                        confirmMessage={t(
+                                            'portfolios.archive_confirm',
+                                            undefined,
+                                            {
+                                                name:
+                                                    locale === 'ar'
+                                                        ? portfolio.name_ar ||
+                                                          portfolio.name_en
+                                                        : portfolio.name_en ||
+                                                          portfolio.name_ar,
+                                            },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

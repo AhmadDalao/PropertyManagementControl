@@ -20,6 +20,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WordingController;
@@ -78,6 +79,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/wording', [WordingController::class, 'index'])->name('wording.index');
     Route::put('/wording', [WordingController::class, 'update'])->name('wording.update');
     Route::delete('/wording', [WordingController::class, 'destroy'])->name('wording.destroy');
+    Route::get('/system/showcase-data', [ShowcaseDataController::class, 'index'])->name('showcase-data.index');
+    Route::post('/system/showcase-data', [ShowcaseDataController::class, 'store'])->name('showcase-data.store');
+    Route::post('/system/showcase-data/{showcaseDataset}/retry', [ShowcaseDataController::class, 'retry'])->name('showcase-data.retry');
+    Route::delete('/system/showcase-data/{showcaseDataset}', [ShowcaseDataController::class, 'destroy'])->name('showcase-data.destroy');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
     Route::get('/cms/sections/create', [CmsPageController::class, 'createSection'])->name('cms.sections.create');
     Route::get('/cms/sections/{cmsSection}/edit', [CmsPageController::class, 'editSection'])->name('cms.sections.edit');

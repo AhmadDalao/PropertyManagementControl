@@ -79,6 +79,9 @@ class MediaManagementTest extends TestCase
                 'portfolio_id' => null,
                 'collection' => 'bad',
                 'title_en' => 'Bad',
+                'title_ar' => 'غير صالح',
+                'alt_text_en' => 'Invalid media',
+                'alt_text_ar' => 'وسائط غير صالحة',
                 'visibility' => 'public',
                 'file' => UploadedFile::fake()->image('bad.jpg'),
             ])
@@ -89,6 +92,7 @@ class MediaManagementTest extends TestCase
                 'portfolio_id' => null,
                 'collection' => 'bad',
                 'title_en' => 'Bad',
+                'title_ar' => 'غير صالح',
                 'visibility' => 'private',
             ])
             ->assertForbidden();
@@ -130,6 +134,9 @@ class MediaManagementTest extends TestCase
                 'portfolio_id' => null,
                 'collection' => 'global',
                 'title_en' => 'Global now',
+                'title_ar' => 'عام الآن',
+                'alt_text_en' => 'Global media',
+                'alt_text_ar' => 'وسائط عامة',
                 'visibility' => 'public',
             ])
             ->assertForbidden();

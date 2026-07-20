@@ -67,7 +67,7 @@ export type DashboardPageProps = SharedProps & {
         status: string;
         priority?: string;
         created_at: string;
-        asset?: { title_en: string };
+        asset?: { title_en: string; title_ar?: string | null };
     }>;
     tenantPortal?: {
         lease?: {

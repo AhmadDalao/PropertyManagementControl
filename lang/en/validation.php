@@ -120,6 +120,7 @@ return [
     'multiple_of' => 'The :attribute field must be a multiple of :value.',
     'not_in' => 'The selected :attribute is invalid.',
     'not_regex' => 'The :attribute field format is invalid.',
+    'nullable' => 'The :attribute field may be empty.',
     'numeric' => 'The :attribute field must be a number.',
     'password' => [
         'letters' => 'The :attribute field must contain at least one letter.',
@@ -195,6 +196,21 @@ return [
     |
     */
 
-    'attributes' => [],
+    'attributes' => [
+        'email' => 'email address',
+        'password' => 'password',
+        'name' => 'name',
+        'phone' => 'phone number',
+        'title_en' => 'English title',
+        'title_ar' => 'Arabic title',
+        'name_en' => 'English name',
+        'name_ar' => 'Arabic name',
+        'address' => 'English address',
+        'address_ar' => 'Arabic address',
+        'status' => 'status',
+        'portfolio_id' => 'portfolio',
+        'asset_id' => 'property',
+        'tenant_profile_id' => 'tenant',
+    ],
 
 ];

@@ -4,17 +4,52 @@ import type { SharedProps, TranslationMap } from '@/types';
 
 export type UiTranslationKey =
     | `actions.${string}`
+    | `assets.${string}`
+    | `audit.${string}`
+    | `auth.${string}`
+    | `cms.${string}`
     | `common.${string}`
     | `dashboard.${string}`
+    | `documents.${string}`
     | `docs.${string}`
+    | `errors.${string}`
+    | `expenses.${string}`
+    | `fields.${string}`
+    | `filters.${string}`
+    | `leases.${string}`
     | `map.${string}`
+    | `login.${string}`
+    | `messages.${string}`
+    | `maintenance.${string}`
+    | `media.${string}`
+    | `modules.${string}`
     | `nav.${string}`
+    | `pagination.${string}`
+    | `passwords.${string}`
+    | `payments.${string}`
+    | `portfolios.${string}`
+    | `profile.${string}`
+    | `public.${string}`
     | `reports.${string}`
+    | `resource.${string}`
     | `roles.${string}`
+    | `search.${string}`
+    | `showcase.${string}`
     | `shell.${string}`
     | `status.${string}`
     | `table.${string}`
+    | `tenants.${string}`
+    | `users.${string}`
+    | `validation.${string}`
     | `wording.${string}`;
+
+export type LocalizedCopy = {
+    key: UiTranslationKey | string;
+    fallback?: string;
+    replacements?: Record<string, string | number>;
+};
+
+export type CopyValue = LocalizedCopy | string;
 
 export function useTranslator() {
     const { app } = usePage<SharedProps>().props;
@@ -28,11 +63,7 @@ export function useTranslator() {
         const translated =
             typeof value === 'string' ? value : (fallback ?? key);
 
-        return Object.entries(replacements).reduce(
-            (copy, [name, replacement]) =>
-                copy.replaceAll(`:${name}`, String(replacement)),
-            translated,
-        );
+        return replaceTokens(translated, replacements);
     };
 
     const text = (value: string): string => {
@@ -42,24 +73,44 @@ export function useTranslator() {
             textTranslations !== undefined && value in textTranslations
                 ? textTranslations[value]
                 : undefined;
-        const normalizedValue = value.trim().toLocaleLowerCase(app.locale);
-        const translated =
-            directTranslation ??
-            Object.entries(textTranslations ?? {}).find(
-                ([source]) =>
-                    source.trim().toLocaleLowerCase(app.locale) ===
-                    normalizedValue,
-            )?.[1];
 
-        return typeof translated === 'string' ? translated : value;
+        return typeof directTranslation === 'string'
+            ? directTranslation
+            : value;
+    };
+
+    const copy = (value: CopyValue): string => {
+        if (typeof value === 'string') {
+            return text(value);
+        }
+
+        return t(
+            value.key as UiTranslationKey,
+            value.fallback,
+            value.replacements,
+        );
     };
 
     return {
+        copy,
         direction: app.direction,
         locale: app.locale,
         t,
         text,
     };
+}
+
+export function replaceTokens(
+    value: string,
+    replacements: Record<string, string | number>,
+): string {
+    return Object.entries(replacements)
+        .sort(([left], [right]) => right.length - left.length)
+        .reduce(
+            (copy, [name, replacement]) =>
+                copy.replaceAll(`:${name}`, String(replacement)),
+            value,
+        );
 }
 
 function lookup(source: TranslationMap, path: string): unknown {

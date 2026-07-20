@@ -13,15 +13,22 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
 use App\Support\PortfolioModules;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AdminExportController extends Controller
 {
-    public function __construct(private readonly XlsxWorkbook $workbook) {}
+    public function __construct(
+        private readonly XlsxWorkbook $workbook,
+        private readonly UiTranslationCatalog $translations,
+    ) {}
 
     public function __invoke(Request $request, string $resource): BinaryFileResponse
     {
@@ -35,7 +42,7 @@ class AdminExportController extends Controller
         }
 
         $module = PortfolioModules::exportResourceModule($resource);
-        abort_unless(! $module || PortfolioModules::enabledForUser($actor, $module), 403, 'This module is disabled for this portfolio.');
+        abort_unless(! $module || PortfolioModules::enabledForUser($actor, $module), 403, trans('app.errors.module_disabled'));
 
         return match ($resource) {
             'portfolios' => $this->exportPortfolios($request),
@@ -49,6 +56,7 @@ class AdminExportController extends Controller
             'documents' => $this->exportDocuments($request),
             'cms-pages' => $this->exportCmsPages($request),
             'media-files' => $this->exportMediaFiles($request),
+            default => abort(404),
         };
     }
 
@@ -58,13 +66,13 @@ class AdminExportController extends Controller
         $filters = $this->tableFilters($request, ['status' => 'all']);
         $query = $this->scopeByPortfolio(Portfolio::query(), $actor, 'id')->withCount(['assets', 'users', 'leases']);
         $this->applyExactFilter($query, $filters, 'status');
-        $this->applySearch($query, $filters['search'], ['name_en', 'name_ar', 'code', 'contact_email', 'city', 'country']);
+        $this->applySearch($query, $filters['search'], ['name_en', 'name_ar', 'code', 'contact_email', 'city', 'country', 'address', 'address_ar']);
 
         return $this->xlsx('portfolios', ['Code', 'Name', 'Arabic Name', 'Status', 'City', 'Country', 'Users', 'Assets', 'Leases'], $query, fn (Portfolio $row) => [
             $row->code,
             $row->name_en,
             $row->name_ar,
-            $row->status,
+            $this->option($row->status),
             $row->city,
             $row->country,
             $row->users_count,
@@ -95,9 +103,9 @@ class AdminExportController extends Controller
             $row->name,
             $row->email,
             $row->phone,
-            $row->roles->pluck('name')->join(', '),
-            $row->status,
-            $row->portfolio?->name_en,
+            $row->roles->pluck('name')->map(fn (string $role): string => $this->option($role))->join(', '),
+            $this->option($row->status),
+            $this->localizedModel($row->portfolio, 'name_en', 'name_ar'),
         ]);
     }
 
@@ -116,21 +124,34 @@ class AdminExportController extends Controller
             $query->where('rentable', $filters['rentable'] === 'yes');
         }
 
-        $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'code', 'address', 'level_label', 'unit_label']);
+        $this->applySearch($query, $filters['search'], [
+            'title_en',
+            'title_ar',
+            'code',
+            'address',
+            'address_ar',
+            'level_label',
+            'unit_label',
+            fn (Builder $query, string $search, string $like) => $query
+                ->orWhere('meta_json->map->zone', 'like', $like)
+                ->orWhere('meta_json->map->zone_en', 'like', $like)
+                ->orWhere('meta_json->map->zone_ar', 'like', $like)
+                ->orWhere('meta_json->map->land_number', 'like', $like),
+        ]);
 
         return $this->xlsx('assets', ['Code', 'Title', 'Arabic Title', 'Type', 'Usage', 'Occupancy', 'Status', 'Rentable', 'Value', 'Currency', 'Parent', 'Portfolio'], $query, fn (Asset $row) => [
             $row->code,
             $row->title_en,
             $row->title_ar,
-            $row->asset_type,
-            $row->usage_type,
-            $row->occupancy_status,
-            $row->status,
-            $row->rentable ? 'Yes' : 'No',
+            $this->option($row->asset_type),
+            $this->option($row->usage_type),
+            $this->option($row->occupancy_status),
+            $this->option($row->status),
+            $this->copy($row->rentable ? 'Yes' : 'No'),
             $row->valuation_amount,
             $row->currency,
-            $row->parent?->title_en,
-            $row->portfolio?->name_en,
+            $this->localizedModel($row->parent, 'title_en', 'title_ar'),
+            $this->localizedModel($row->portfolio, 'name_en', 'name_ar'),
         ]);
     }
 
@@ -152,11 +173,11 @@ class AdminExportController extends Controller
             $row->user?->name,
             $row->user?->email,
             $row->user?->phone,
-            $row->profile_type,
+            $this->option($row->profile_type),
             $row->national_id,
             $row->company_name,
-            $row->status,
-            $row->portfolio?->name_en,
+            $this->option($row->status),
+            $this->localizedModel($row->portfolio, 'name_en', 'name_ar'),
         ]);
     }
 
@@ -174,11 +195,11 @@ class AdminExportController extends Controller
         return $this->xlsx('leases', ['Code', 'Tenant', 'Asset', 'Status', 'Frequency', 'Start', 'End', 'Rent', 'Paid', 'Balance', 'Currency'], $query, fn (Lease $row) => [
             $row->code,
             $row->tenantProfile?->user?->name,
-            $row->leaseable?->title_en,
-            $row->status,
-            $row->payment_frequency,
-            $row->started_at?->toDateString(),
-            $row->ends_at?->toDateString(),
+            $this->localizedModel($row->leaseable, 'title_en', 'title_ar'),
+            $this->option($row->status),
+            $this->option($row->payment_frequency),
+            $this->date($row->started_at),
+            $this->date($row->ends_at),
             $row->rent_amount,
             $row->total_paid,
             $row->balance_remaining,
@@ -202,10 +223,10 @@ class AdminExportController extends Controller
             $row->reference ?: '#'.$row->id,
             $row->tenantProfile?->user?->name,
             $row->lease?->code,
-            $row->received_on?->toDateString(),
-            $row->type,
-            $row->method,
-            $row->status,
+            $this->date($row->received_on),
+            $this->option($row->type),
+            $this->option($row->method),
+            $this->option($row->status),
             $row->amount,
             $row->currency,
         ]);
@@ -227,11 +248,11 @@ class AdminExportController extends Controller
             $row->id,
             $row->title,
             $row->tenantProfile?->user?->name,
-            $row->asset?->title_en,
-            $row->category,
-            $row->priority,
-            $row->status,
-            $row->requested_at?->toDateTimeString(),
+            $this->localizedModel($row->asset, 'title_en', 'title_ar'),
+            $this->option($row->category),
+            $this->option($row->priority),
+            $this->option($row->status),
+            $this->date($row->requested_at, true),
             $row->assignedTo?->name,
         ]);
     }
@@ -249,11 +270,11 @@ class AdminExportController extends Controller
 
         return $this->xlsx('expenses', ['Title', 'Asset', 'Category', 'Vendor', 'Date', 'Status', 'Amount', 'Currency'], $query, fn (ExpenseEntry $row) => [
             $row->title,
-            $row->asset?->title_en,
-            $row->category,
+            $this->localizedModel($row->asset, 'title_en', 'title_ar'),
+            $this->option($row->category),
             $row->vendor_name,
-            $row->incurred_on?->toDateString(),
-            $row->status,
+            $this->date($row->incurred_on),
+            $this->option($row->status),
             $row->amount,
             $row->currency,
         ]);
@@ -291,15 +312,15 @@ class AdminExportController extends Controller
         return $this->xlsx('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', 'Public', 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
             $row->title_en,
             $row->title_ar,
-            $row->type,
-            class_basename($row->documentable_type).' #'.$row->documentable_id,
+            $this->option($row->type),
+            $this->copy(class_basename($row->documentable_type)).' #'.$row->documentable_id,
             $row->original_name,
             $row->mime_type,
             $row->file_size,
-            $row->is_public ? 'Yes' : 'No',
-            $row->portfolio?->name_en,
+            $this->copy($row->is_public ? 'Yes' : 'No'),
+            $this->localizedModel($row->portfolio, 'name_en', 'name_ar'),
             $row->uploadedBy?->name,
-            $row->created_at?->toDateTimeString(),
+            $this->date($row->created_at, true),
         ]);
     }
 
@@ -314,10 +335,10 @@ class AdminExportController extends Controller
             $row->title_en,
             $row->title_ar,
             $row->slug,
-            $row->status,
-            $row->is_homepage ? 'Yes' : 'No',
-            $row->is_visible ? 'Yes' : 'No',
-            $row->published_at,
+            $this->option($row->status),
+            $this->copy($row->is_homepage ? 'Yes' : 'No'),
+            $this->copy($row->is_visible ? 'Yes' : 'No'),
+            $this->date($row->published_at, true),
         ]);
     }
 
@@ -332,23 +353,24 @@ class AdminExportController extends Controller
         $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'collection', 'path', 'mime_type']);
 
         return $this->xlsx('media-files', ['Title', 'Collection', 'Visibility', 'Path', 'Mime Type', 'Size', 'Portfolio'], $query, fn (MediaFile $row) => [
-            $row->title_en ?: 'Media #'.$row->id,
-            $row->collection,
-            $row->visibility,
+            $row->title_en ?: $this->copy('Media').' #'.$row->id,
+            $this->option($row->collection),
+            $this->option($row->visibility),
             $row->path,
             $row->mime_type,
             $row->size,
-            $row->portfolio?->name_en,
+            $this->localizedModel($row->portfolio, 'name_en', 'name_ar'),
         ]);
     }
 
     /**
      * @param  array<int, string>  $headers
+     * @param  Builder<Model>  $query
      */
     private function xlsx(string $resource, array $headers, Builder $query, callable $rowMapper): BinaryFileResponse
     {
         $filename = $resource.'-export-'.now()->format('Ymd-His').'.xlsx';
-        $rows = [$headers];
+        $rows = [array_map(fn (string $header): string => $this->copy($header), $headers)];
 
         $query->orderByDesc('id')->chunk(500, function ($records) use (&$rows, $rowMapper): void {
             foreach ($records as $record) {
@@ -356,7 +378,10 @@ class AdminExportController extends Controller
             }
         });
 
-        $path = $this->workbook->create($rows, str($resource)->headline()->toString());
+        $path = $this->workbook->create(
+            $rows,
+            $this->copy(str($resource)->headline()->toString()),
+        );
 
         return response()->download($path, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -391,5 +416,62 @@ class AdminExportController extends Controller
             'payment' => ['payment', Payment::class],
             default => [$alias],
         };
+    }
+
+    private function copy(string $value): string
+    {
+        return $this->translations->text($value);
+    }
+
+    private function option(?string $value): string
+    {
+        if (blank($value)) {
+            return '';
+        }
+
+        $statusKey = "app.status.{$value}";
+
+        if (trans()->has($statusKey)) {
+            return trans($statusKey);
+        }
+
+        $roleKey = "app.roles.{$value}";
+
+        if (trans()->has($roleKey)) {
+            return trans($roleKey);
+        }
+
+        return $this->copy(Str::of($value)->replace('_', ' ')->title()->toString());
+    }
+
+    private function date(mixed $value, bool $withTime = false): string
+    {
+        if (! $value instanceof CarbonInterface) {
+            return '';
+        }
+
+        if (app()->isLocale('ar')) {
+            return $value->format($withTime ? 'Y/m/d H:i' : 'Y/m/d');
+        }
+
+        return $value->format($withTime ? 'M j, Y H:i' : 'M j, Y');
+    }
+
+    private function localizedModel(
+        ?Model $model,
+        string $englishAttribute,
+        string $arabicAttribute,
+    ): ?string {
+        if ($model === null) {
+            return null;
+        }
+
+        $english = $model->getAttribute($englishAttribute);
+        $arabic = $model->getAttribute($arabicAttribute);
+
+        return $this->localized(
+            is_string($english) ? $english : null,
+            is_string($arabic) ? $arabic : null,
+        );
     }
 }

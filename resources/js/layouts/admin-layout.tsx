@@ -156,7 +156,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <button
                 type="button"
                 className={`pmc-sidebar-backdrop ${navOpen ? 'is-open' : ''}`}
-                aria-label="Close navigation"
+                aria-label={t('shell.close_navigation')}
                 onClick={closeDrawer}
             />
 

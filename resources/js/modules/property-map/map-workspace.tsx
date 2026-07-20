@@ -1,36 +1,50 @@
 import { Link } from '@inertiajs/react';
-import { useState } from 'react';
+import L from 'leaflet';
+import 'leaflet.markercluster';
+import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
 
 import { useTranslator } from '@/lib/i18n';
 import { currency } from '@/lib/utils';
 
-import type { PropertyMapAsset, PropertyMapSummary } from './types';
+import type {
+    PropertyMapAsset,
+    PropertyMapConfig,
+    PropertyMapSummary,
+} from './types';
 
 type PropertyMapWorkspaceProps = {
     assets: PropertyMapAsset[];
     summary: PropertyMapSummary;
+    config: PropertyMapConfig;
     toolbar?: ReactNode;
 };
 
 export function PropertyMapWorkspace({
     assets,
     summary,
+    config,
     toolbar,
 }: PropertyMapWorkspaceProps) {
-    const { locale, t } = useTranslator();
-    const [selectedAssetId, setSelectedAssetId] = useState<number | null>(
-        assets.find((asset) => asset.has_coordinates)?.id ??
-            assets[0]?.id ??
-            null,
-    );
+    const { direction, locale, t } = useTranslator();
+    const [selectedAssetId, setSelectedAssetId] = useState<number | null>(null);
     const [search, setSearch] = useState('');
     const [zone, setZone] = useState('all');
     const [occupancy, setOccupancy] = useState('all');
+    const [page, setPage] = useState(1);
+    const [fitRequest, setFitRequest] = useState(0);
     const normalizedSearch = search.trim().toLocaleLowerCase(locale);
-    const zones = uniqueValues(assets.map((asset) => asset.zone));
+    const zones = uniqueValues(
+        assets.map((asset) => asset.zone),
+        locale,
+    );
     const occupancyStates = uniqueValues(
         assets.map((asset) => asset.occupancy_status),
+        locale,
     );
     const visibleAssets = assets.filter((asset) => {
         const matchesZone = zone === 'all' || asset.zone === zone;
@@ -41,6 +55,7 @@ export function PropertyMapWorkspace({
             [
                 asset.title,
                 asset.code,
+                asset.portfolio,
                 asset.zone,
                 asset.land_number,
                 asset.address,
@@ -55,11 +70,19 @@ export function PropertyMapWorkspace({
         return matchesZone && matchesOccupancy && matchesSearch;
     });
     const positionedAssets = visibleAssets.filter(
-        (asset) => asset.has_coordinates,
+        (asset) =>
+            asset.has_coordinates &&
+            asset.latitude !== null &&
+            asset.longitude !== null,
     );
-    const setupAssets = assets.filter(
-        (asset) => !asset.has_coordinates || !asset.has_identity,
+    const pageSize = config.directory_page_size || 12;
+    const lastPage = Math.max(1, Math.ceil(visibleAssets.length / pageSize));
+    const safePage = Math.min(page, lastPage);
+    const pageAssets = visibleAssets.slice(
+        (safePage - 1) * pageSize,
+        safePage * pageSize,
     );
+    const setupAssets = assets.filter((asset) => !asset.map_ready);
     const selectedAsset =
         visibleAssets.find((asset) => asset.id === selectedAssetId) ??
         positionedAssets[0] ??
@@ -72,10 +95,22 @@ export function PropertyMapWorkspace({
     const hasFilters =
         normalizedSearch !== '' || zone !== 'all' || occupancy !== 'all';
 
+    const selectAsset = (asset: PropertyMapAsset) => {
+        setSelectedAssetId(asset.id);
+        const resultIndex = visibleAssets.findIndex(
+            (record) => record.id === asset.id,
+        );
+
+        if (resultIndex >= 0) {
+            setPage(Math.floor(resultIndex / pageSize) + 1);
+        }
+    };
+
     const resetFilters = () => {
         setSearch('');
         setZone('all');
         setOccupancy('all');
+        setPage(1);
     };
 
     return (
@@ -139,9 +174,10 @@ export function PropertyMapWorkspace({
                             className="form-control"
                             value={search}
                             placeholder={t('map.search_placeholder')}
-                            onChange={(event) =>
-                                setSearch(event.currentTarget.value)
-                            }
+                            onChange={(event) => {
+                                setSearch(event.currentTarget.value);
+                                setPage(1);
+                            }}
                         />
                     </div>
                 </label>
@@ -150,7 +186,10 @@ export function PropertyMapWorkspace({
                     <select
                         className="form-select"
                         value={zone}
-                        onChange={(event) => setZone(event.currentTarget.value)}
+                        onChange={(event) => {
+                            setZone(event.currentTarget.value);
+                            setPage(1);
+                        }}
                     >
                         <option value="all">{t('map.all_zones')}</option>
                         {zones.map((zoneOption) => (
@@ -165,9 +204,10 @@ export function PropertyMapWorkspace({
                     <select
                         className="form-select"
                         value={occupancy}
-                        onChange={(event) =>
-                            setOccupancy(event.currentTarget.value)
-                        }
+                        onChange={(event) => {
+                            setOccupancy(event.currentTarget.value);
+                            setPage(1);
+                        }}
                     >
                         <option value="all">{t('map.all_occupancy')}</option>
                         {occupancyStates.map((state) => (
@@ -184,15 +224,15 @@ export function PropertyMapWorkspace({
                             total: assets.length,
                         })}
                     </span>
-                    <button
-                        type="button"
-                        className="btn btn-outline-secondary"
-                        disabled={!hasFilters}
-                        onClick={resetFilters}
-                    >
-                        <i className="bi bi-arrow-counterclockwise" />
-                        {t('actions.reset')}
-                    </button>
+                    {hasFilters ? (
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={resetFilters}
+                        >
+                            {t('actions.reset')}
+                        </button>
+                    ) : null}
                 </div>
             </div>
 
@@ -211,106 +251,72 @@ export function PropertyMapWorkspace({
                     </div>
                     <Link
                         href={setupAssets[0].edit_href}
-                        className="btn btn-light"
+                        className="btn btn-outline-secondary"
                     >
                         {t('map.complete_setup')}
                         <i className="bi bi-arrow-right" />
                     </Link>
                 </div>
-            ) : (
+            ) : assets.length > 0 ? (
                 <div className="pmc-property-map-setup is-ready" role="status">
                     <span>
-                        <i className="bi bi-check-circle" />
+                        <i className="bi bi-check2-circle" />
                     </span>
                     <div>
                         <strong>{t('map.setup_complete')}</strong>
                         <p>{t('map.setup_complete_description')}</p>
                     </div>
                 </div>
-            )}
+            ) : null}
 
             <div className="pmc-property-map-layout">
                 <div className="pmc-property-map-stage">
                     <header>
                         <div>
-                            <span>{t('map.canvas_eyebrow')}</span>
+                            <span>{t('map.map_provider')}</span>
                             <strong>{t('map.canvas_title')}</strong>
                         </div>
-                        <div className="pmc-property-map-legend">
-                            <span className="is-occupied">
-                                {t('status.occupied')}
-                            </span>
-                            <span className="is-vacant">
-                                {t('status.vacant')}
-                            </span>
-                        </div>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setFitRequest((value) => value + 1)}
+                            disabled={positionedAssets.length === 0}
+                        >
+                            <i className="bi bi-arrows-fullscreen" />
+                            {t('map.fit_results')}
+                        </button>
                     </header>
-                    <div
-                        className="pmc-property-map-canvas"
-                        data-testid="property-map-canvas"
-                        data-positioned-count={positionedAssets.length}
-                        aria-label={t('map.canvas_title')}
-                    >
-                        <div className="pmc-property-map-grid" />
-                        <div className="pmc-property-map-road is-one" />
-                        <div className="pmc-property-map-road is-two" />
-
-                        {positionedAssets.map((asset) => (
-                            <button
-                                key={asset.id}
-                                type="button"
-                                className={`pmc-property-map-marker is-${asset.occupancy_status} ${
-                                    selectedAsset?.id === asset.id
-                                        ? 'is-selected'
-                                        : ''
-                                }`}
-                                data-testid="property-map-marker"
-                                style={{
-                                    insetInlineStart: `${clamp(asset.x, 8, 84)}%`,
-                                    top: `${clamp(asset.y, 10, 88)}%`,
-                                }}
-                                aria-label={t(
-                                    'map.select_property',
-                                    undefined,
-                                    {
-                                        property: asset.title,
-                                    },
-                                )}
-                                aria-pressed={selectedAsset?.id === asset.id}
-                                onClick={() => setSelectedAssetId(asset.id)}
-                            >
-                                <span>{asset.land_number ?? asset.code}</span>
-                                <strong>{asset.title}</strong>
-                            </button>
-                        ))}
-
-                        {positionedAssets.length === 0 ? (
-                            <div className="pmc-property-map-empty">
-                                <span>
-                                    <i className="bi bi-geo-alt" />
-                                </span>
-                                <strong>{t('map.empty_title')}</strong>
-                                <p>{t('map.empty_description')}</p>
-                                {setupAssets[0] ? (
-                                    <Link
-                                        href={setupAssets[0].edit_href}
-                                        className="btn btn-primary"
-                                    >
-                                        {t('map.add_first_position')}
-                                    </Link>
-                                ) : null}
-                            </div>
-                        ) : null}
-                    </div>
+                    <GeographicMap
+                        assets={positionedAssets}
+                        selectedAssetId={selectedAssetId}
+                        config={config}
+                        direction={direction}
+                        fitRequest={fitRequest}
+                        onSelect={selectAsset}
+                    />
+                    {positionedAssets.length === 0 ? (
+                        <div className="pmc-property-map-empty">
+                            <span>
+                                <i className="bi bi-geo-alt" />
+                            </span>
+                            <strong>{t('map.empty_title')}</strong>
+                            <p>{t('map.empty_description')}</p>
+                            {assets[0] ? (
+                                <Link
+                                    href={assets[0].edit_href}
+                                    className="btn btn-primary"
+                                >
+                                    {t('map.add_first_position')}
+                                </Link>
+                            ) : null}
+                        </div>
+                    ) : null}
                 </div>
 
-                <PropertyMapDetail
-                    asset={selectedAsset}
-                    onReset={resetFilters}
-                />
+                <PropertyMapDetail asset={selectedAsset} />
             </div>
 
-            <div
+            <section
                 className="pmc-property-map-directory"
                 data-testid="property-map-directory"
             >
@@ -327,75 +333,324 @@ export function PropertyMapWorkspace({
                     </strong>
                 </header>
 
-                {visibleAssets.length > 0 ? (
-                    <div className="pmc-property-map-records">
-                        {visibleAssets.map((asset) => (
-                            <article
-                                key={asset.id}
-                                data-testid="property-map-record"
-                                className={
-                                    selectedAsset?.id === asset.id
-                                        ? 'is-selected'
-                                        : ''
-                                }
+                {pageAssets.length > 0 ? (
+                    <>
+                        <div className="pmc-property-map-records">
+                            {pageAssets.map((asset) => (
+                                <article
+                                    key={asset.id}
+                                    className={
+                                        selectedAsset?.id === asset.id
+                                            ? 'is-selected'
+                                            : ''
+                                    }
+                                    data-testid="property-map-record"
+                                >
+                                    <button
+                                        type="button"
+                                        onClick={() => selectAsset(asset)}
+                                    >
+                                        <span>
+                                            {asset.zone ?? t('map.no_zone')}
+                                        </span>
+                                        <strong>{asset.title}</strong>
+                                        <small>
+                                            {asset.code} ·{' '}
+                                            {asset.land_number ??
+                                                t('map.no_land_number')}
+                                        </small>
+                                    </button>
+                                    {asset.is_showcase ? (
+                                        <span className="pmc-showcase-badge">
+                                            {t('map.showcase')}
+                                        </span>
+                                    ) : null}
+                                    <span
+                                        className={`pmc-property-map-record-status ${asset.map_ready ? 'is-ready' : ''}`}
+                                    >
+                                        {asset.map_ready
+                                            ? t('map.ready')
+                                            : t('map.needs_setup')}
+                                    </span>
+                                    <Link
+                                        href={asset.href}
+                                        aria-label={t(
+                                            'map.open_property_named',
+                                            undefined,
+                                            { property: asset.title },
+                                        )}
+                                    >
+                                        <i className="bi bi-arrow-up-right" />
+                                    </Link>
+                                </article>
+                            ))}
+                        </div>
+                        {lastPage > 1 ? (
+                            <nav
+                                className="pmc-property-map-pagination"
+                                aria-label={t('map.directory_title')}
                             >
                                 <button
                                     type="button"
-                                    onClick={() => setSelectedAssetId(asset.id)}
+                                    className="btn btn-outline-secondary"
+                                    disabled={safePage === 1}
+                                    onClick={() =>
+                                        setPage((value) =>
+                                            Math.max(1, value - 1),
+                                        )
+                                    }
                                 >
-                                    <span>
-                                        {asset.zone ?? t('map.no_zone')}
-                                    </span>
-                                    <strong>{asset.title}</strong>
-                                    <small>
-                                        {asset.land_number ??
-                                            t('map.no_land_number')}{' '}
-                                        · {asset.code}
-                                    </small>
+                                    {t('map.previous_records')}
                                 </button>
-                                <span
-                                    className={`pmc-property-map-record-status ${
-                                        asset.has_coordinates &&
-                                        asset.has_identity
-                                            ? 'is-ready'
-                                            : 'is-setup'
-                                    }`}
-                                >
-                                    {asset.has_coordinates && asset.has_identity
-                                        ? t('map.ready')
-                                        : t('map.needs_setup')}
+                                <span>
+                                    {t('map.directory_page', undefined, {
+                                        page: safePage,
+                                        pages: lastPage,
+                                    })}
                                 </span>
-                                <Link
-                                    href={asset.href}
-                                    aria-label={t(
-                                        'map.open_property_named',
-                                        undefined,
-                                        {
-                                            property: asset.title,
-                                        },
-                                    )}
+                                <button
+                                    type="button"
+                                    className="btn btn-outline-secondary"
+                                    disabled={safePage === lastPage}
+                                    onClick={() =>
+                                        setPage((value) =>
+                                            Math.min(lastPage, value + 1),
+                                        )
+                                    }
                                 >
-                                    <i className="bi bi-arrow-right" />
-                                </Link>
-                            </article>
-                        ))}
-                    </div>
+                                    {t('map.next_records')}
+                                </button>
+                            </nav>
+                        ) : null}
+                    </>
                 ) : (
                     <div className="pmc-property-map-no-results">
                         <strong>{t('map.no_results')}</strong>
                         <p>{t('map.no_results_description')}</p>
                         <button
                             type="button"
-                            className="btn btn-primary"
+                            className="btn btn-outline-secondary"
                             onClick={resetFilters}
                         >
                             {t('map.show_all')}
                         </button>
                     </div>
                 )}
-            </div>
+            </section>
         </section>
     );
+}
+
+function GeographicMap({
+    assets,
+    selectedAssetId,
+    config,
+    direction,
+    fitRequest,
+    onSelect,
+}: {
+    assets: PropertyMapAsset[];
+    selectedAssetId: number | null;
+    config: PropertyMapConfig;
+    direction: 'ltr' | 'rtl';
+    fitRequest: number;
+    onSelect: (asset: PropertyMapAsset) => void;
+}) {
+    const { t } = useTranslator();
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const mapRef = useRef<L.Map | null>(null);
+    const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
+    const markerRef = useRef(new Map<number, L.Marker>());
+    const onSelectRef = useRef(onSelect);
+    const [tilesFailed, setTilesFailed] = useState(false);
+
+    useEffect(() => {
+        onSelectRef.current = onSelect;
+    }, [onSelect]);
+
+    useEffect(() => {
+        if (!containerRef.current || mapRef.current) {
+            return;
+        }
+
+        const map = L.map(containerRef.current, {
+            center: config.default_center,
+            zoom: config.default_zoom,
+            zoomControl: false,
+            preferCanvas: true,
+        });
+        const zoom = L.control.zoom({
+            position: direction === 'rtl' ? 'topright' : 'topleft',
+        });
+        const tileLayer = L.tileLayer(config.tile_url, {
+            attribution: config.attribution,
+            maxZoom: 19,
+            updateWhenIdle: true,
+            keepBuffer: 1,
+        });
+        const cluster = L.markerClusterGroup({
+            chunkedLoading: true,
+            maxClusterRadius: 48,
+            showCoverageOnHover: false,
+            iconCreateFunction: (group) =>
+                L.divIcon({
+                    className: 'pmc-map-cluster',
+                    html: `<span>${group.getChildCount()}</span>`,
+                    iconSize: L.point(42, 42),
+                }),
+        });
+
+        tileLayer.on('tileerror', () => setTilesFailed(true));
+        zoom.addTo(map);
+        tileLayer.addTo(map);
+        cluster.addTo(map);
+        mapRef.current = map;
+        clusterRef.current = cluster;
+
+        const resizeObserver = new ResizeObserver(() => map.invalidateSize());
+        const markers = markerRef.current;
+        resizeObserver.observe(containerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+            map.remove();
+            mapRef.current = null;
+            clusterRef.current = null;
+            markers.clear();
+        };
+    }, [
+        config.attribution,
+        config.default_center,
+        config.default_zoom,
+        config.tile_url,
+        direction,
+    ]);
+
+    useEffect(() => {
+        const cluster = clusterRef.current;
+        const map = mapRef.current;
+
+        if (!cluster || !map) {
+            return;
+        }
+
+        cluster.clearLayers();
+        markerRef.current.clear();
+
+        assets.forEach((asset) => {
+            const latitude = asset.latitude;
+            const longitude = asset.longitude;
+
+            if (
+                latitude === null ||
+                latitude === undefined ||
+                longitude === null ||
+                longitude === undefined
+            ) {
+                return;
+            }
+
+            const marker = L.marker([latitude, longitude], {
+                title: asset.title,
+                alt: asset.title,
+                keyboard: true,
+                icon: L.divIcon({
+                    className: 'pmc-map-marker-shell',
+                    html: '<span data-testid="property-map-marker"><i class="bi bi-building"></i></span>',
+                    iconAnchor: [18, 36],
+                    iconSize: [36, 36],
+                }),
+                riseOnHover: true,
+            });
+            const elementClass = `is-${safeStatus(asset.occupancy_status)}${asset.id === selectedAssetId ? ' is-selected' : ''}`;
+
+            marker.on('add', () => {
+                marker.getElement()?.classList.add(...elementClass.split(' '));
+            });
+            marker.on('click', () => onSelectRef.current(asset));
+            cluster.addLayer(marker);
+            markerRef.current.set(asset.id, marker);
+        });
+
+        if (assets.length > 0 && fitRequest === 0) {
+            fitMap(map, assets, config);
+        }
+    }, [assets, config, fitRequest, selectedAssetId]);
+
+    useEffect(() => {
+        const map = mapRef.current;
+        const marker = selectedAssetId
+            ? markerRef.current.get(selectedAssetId)
+            : null;
+
+        if (!map || !marker) {
+            return;
+        }
+
+        const position = marker.getLatLng();
+        map.flyTo(position, Math.max(map.getZoom(), 13), {
+            duration: 0.45,
+        });
+    }, [selectedAssetId]);
+
+    useEffect(() => {
+        if (fitRequest === 0 || !mapRef.current) {
+            return;
+        }
+
+        fitMap(mapRef.current, assets, config);
+    }, [assets, config, fitRequest]);
+
+    return (
+        <div className="pmc-geographic-map-wrap">
+            <div
+                ref={containerRef}
+                className="pmc-property-map-canvas"
+                data-testid="property-map-canvas"
+                aria-label={t('map.canvas_title')}
+            />
+            {tilesFailed ? (
+                <div className="pmc-map-tile-warning" role="status">
+                    <i className="bi bi-wifi-off" />
+                    {t('map.tiles_failed')}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+function fitMap(
+    map: L.Map,
+    assets: PropertyMapAsset[],
+    config: PropertyMapConfig,
+) {
+    const points = assets
+        .filter(
+            (
+                asset,
+            ): asset is PropertyMapAsset & {
+                latitude: number;
+                longitude: number;
+            } => asset.latitude !== null && asset.longitude !== null,
+        )
+        .map((asset) => L.latLng(asset.latitude, asset.longitude));
+
+    if (points.length === 0) {
+        map.setView(config.default_center, config.default_zoom);
+
+        return;
+    }
+
+    if (points.length === 1) {
+        map.setView(points[0], 13);
+
+        return;
+    }
+
+    map.fitBounds(L.latLngBounds(points), {
+        padding: [36, 36],
+        maxZoom: 14,
+    });
 }
 
 function MapMetric({
@@ -403,17 +658,17 @@ function MapMetric({
     label,
     value,
     detail,
-    tone = 'default',
+    tone,
 }: {
     icon: string;
     label: string;
     value: string | number;
     detail: string;
-    tone?: 'default' | 'teal';
+    tone?: 'teal';
 }) {
     return (
         <article
-            className={`pmc-property-map-metric is-${tone}`}
+            className={`pmc-property-map-metric ${tone ? `is-${tone}` : ''}`}
             role="listitem"
         >
             <span>
@@ -428,13 +683,7 @@ function MapMetric({
     );
 }
 
-function PropertyMapDetail({
-    asset,
-    onReset,
-}: {
-    asset: PropertyMapAsset | null;
-    onReset: () => void;
-}) {
+function PropertyMapDetail({ asset }: { asset: PropertyMapAsset | null }) {
     const { locale, t } = useTranslator();
 
     if (!asset) {
@@ -445,23 +694,14 @@ function PropertyMapDetail({
             >
                 <div className="pmc-property-map-detail-empty">
                     <span>
-                        <i className="bi bi-search" />
+                        <i className="bi bi-cursor" />
                     </span>
                     <strong>{t('map.no_selection')}</strong>
                     <p>{t('map.no_selection_description')}</p>
-                    <button
-                        type="button"
-                        className="btn btn-primary"
-                        onClick={onReset}
-                    >
-                        {t('map.show_all')}
-                    </button>
                 </div>
             </aside>
         );
     }
-
-    const isReady = asset.has_coordinates && asset.has_identity;
 
     return (
         <aside
@@ -473,14 +713,18 @@ function PropertyMapDetail({
                     <span>{asset.zone ?? t('map.no_zone')}</span>
                     <h3>{asset.title}</h3>
                     <p>
-                        {asset.land_number ?? t('map.no_land_number')} ·{' '}
-                        {asset.code}
+                        {asset.code} ·{' '}
+                        {asset.land_number ?? t('map.no_land_number')}
                     </p>
                 </div>
-                <em className={isReady ? 'is-ready' : 'is-setup'}>
-                    {isReady ? t('map.ready') : t('map.needs_setup')}
+                <em className={asset.map_ready ? 'is-ready' : 'is-setup'}>
+                    {asset.map_ready ? t('map.ready') : t('map.needs_setup')}
                 </em>
             </header>
+
+            {asset.is_showcase ? (
+                <span className="pmc-showcase-badge">{t('map.showcase')}</span>
+            ) : null}
 
             <p className="pmc-property-map-address">
                 <i className="bi bi-geo-alt" />
@@ -528,15 +772,9 @@ function PropertyMapDetail({
                 <div>
                     <span>{t('map.coordinates')}</span>
                     <strong>
-                        {asset.has_coordinates &&
-                        asset.latitude !== null &&
-                        asset.latitude !== undefined &&
-                        asset.longitude !== null &&
-                        asset.longitude !== undefined
+                        {asset.latitude !== null && asset.longitude !== null
                             ? `${asset.latitude}, ${asset.longitude}`
-                            : asset.has_coordinates
-                              ? t('map.manual_position')
-                              : t('map.not_set')}
+                            : t('map.not_set')}
                     </strong>
                 </div>
             </div>
@@ -556,7 +794,10 @@ function PropertyMapDetail({
     );
 }
 
-function uniqueValues(values: Array<string | null | undefined>): string[] {
+function uniqueValues(
+    values: Array<string | null | undefined>,
+    locale: string,
+): string[] {
     return Array.from(
         new Set(
             values.filter(
@@ -564,7 +805,7 @@ function uniqueValues(values: Array<string | null | undefined>): string[] {
                     typeof value === 'string' && value.trim() !== '',
             ),
         ),
-    ).sort((first, second) => first.localeCompare(second));
+    ).sort((first, second) => first.localeCompare(second, locale));
 }
 
 function statusLabel(
@@ -579,6 +820,6 @@ function statusLabel(
     );
 }
 
-function clamp(value: number, minimum: number, maximum: number): number {
-    return Math.max(minimum, Math.min(maximum, value));
+function safeStatus(status: string): string {
+    return status.replace(/[^a-z0-9_-]/gi, '').toLowerCase() || 'unknown';
 }

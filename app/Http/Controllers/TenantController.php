@@ -119,7 +119,7 @@ class TenantController extends Controller
                         'items' => $this->detailItems([
                             ['label' => 'Email', 'value' => $tenant->user?->email],
                             ['label' => 'Phone', 'value' => $tenant->user?->phone],
-                            ['label' => 'Portfolio', 'value' => $tenant->portfolio?->name_en, 'href' => $tenant->portfolio ? route('portfolios.show', $tenant->portfolio) : null],
+                            ['label' => 'Portfolio', 'value' => $this->localized($tenant->portfolio?->name_en, $tenant->portfolio?->name_ar), 'href' => $tenant->portfolio ? route('portfolios.show', $tenant->portfolio) : null],
                             ['label' => 'National ID', 'value' => $tenant->national_id],
                             ['label' => 'Company', 'value' => $tenant->company_name],
                             ['label' => 'Emergency contact', 'value' => trim(($tenant->emergency_contact_name ?? '').' '.$tenant->emergency_contact_phone)],
@@ -132,7 +132,7 @@ class TenantController extends Controller
                         'description' => 'Active lease and remaining balance for this tenant.',
                         'items' => $this->detailItems([
                             ['label' => 'Lease', 'value' => $activeLease?->code, 'href' => $activeLease ? route('leases.show', $activeLease) : null],
-                            ['label' => 'Asset', 'value' => $activeLease?->leaseable?->title_en, 'href' => $activeLease?->leaseable ? route('assets.show', $activeLease->leaseable) : null],
+                            ['label' => 'Asset', 'value' => $this->localized($activeLease?->leaseable?->title_en, $activeLease?->leaseable?->title_ar), 'href' => $activeLease?->leaseable ? route('assets.show', $activeLease->leaseable) : null],
                             ['label' => 'Contract ends', 'value' => $activeLease?->ends_at?->toDateString()],
                             ['label' => 'Balance', 'value' => $activeLease ? number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency : null],
                         ]),
@@ -145,7 +145,7 @@ class TenantController extends Controller
                         'columns' => ['Lease', 'Asset', 'Status', 'Balance'],
                         'rows' => $tenant->leases->map(fn ($lease) => [
                             'Lease' => $lease->code,
-                            'Asset' => $lease->leaseable?->title_en ?? '-',
+                            'Asset' => $this->localized($lease->leaseable?->title_en, $lease->leaseable?->title_ar) ?? '-',
                             'Status' => $lease->status,
                             'Balance' => number_format((float) $lease->balance_remaining, 2).' '.$lease->currency,
                         ])->all(),
@@ -159,7 +159,7 @@ class TenantController extends Controller
                         'columns' => ['Request', 'Asset', 'Status', 'Priority'],
                         'rows' => $tenant->maintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
                             'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
-                            'Asset' => $maintenanceRequest->asset?->title_en ?? '-',
+                            'Asset' => $this->localized($maintenanceRequest->asset?->title_en, $maintenanceRequest->asset?->title_ar) ?? '-',
                             'Status' => $maintenanceRequest->status,
                             'Priority' => $maintenanceRequest->priority,
                         ])->all(),
@@ -237,7 +237,7 @@ class TenantController extends Controller
             ]);
         });
 
-        return to_route('tenants.show', $tenant)->with('success', 'Tenant created successfully.');
+        return to_route('tenants.show', $tenant)->with('success', trans('app.messages.tenant_created'));
     }
 
     public function update(Request $request, TenantProfile $tenant): RedirectResponse
@@ -278,7 +278,7 @@ class TenantController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
-        return to_route('tenants.show', $tenant)->with('success', 'Tenant updated successfully.');
+        return to_route('tenants.show', $tenant)->with('success', trans('app.messages.tenant_updated'));
     }
 
     public function destroy(Request $request, TenantProfile $tenant): RedirectResponse
@@ -288,7 +288,7 @@ class TenantController extends Controller
         $this->ensurePortfolioAccess($actor, $tenant->portfolio_id);
 
         if ($tenant->leases()->where('status', 'active')->exists()) {
-            return back()->with('error', 'Terminate active leases before archiving this tenant.');
+            return back()->with('error', trans('app.errors.tenant_has_active_lease'));
         }
 
         DB::transaction(function () use ($tenant) {
@@ -296,7 +296,7 @@ class TenantController extends Controller
             $tenant->user?->update(['status' => 'suspended']);
         });
 
-        return to_route('tenants.index')->with('success', 'Tenant archived successfully.');
+        return to_route('tenants.index')->with('success', trans('app.messages.tenant_archived'));
     }
 
     /**

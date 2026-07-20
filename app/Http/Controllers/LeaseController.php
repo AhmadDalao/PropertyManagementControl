@@ -113,13 +113,15 @@ class LeaseController extends Controller
             'documents',
         ]);
         $adminMode = $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+        $localizedAssetTitle = $this->localized($lease->leaseable?->title_en, $lease->leaseable?->title_ar);
+        $localizedPortfolioName = $this->localized($lease->portfolio?->name_en, $lease->portfolio?->name_ar);
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
                 'header' => [
                     'eyebrow' => 'Lease detail',
                     'title' => $lease->code,
-                    'description' => trim(($lease->tenantProfile?->user?->name ?? 'Tenant').' · '.($lease->leaseable?->title_en ?? 'Asset').' · '.$lease->status),
+                    'description' => trim(($lease->tenantProfile?->user?->name ?? 'Tenant').' · '.($localizedAssetTitle ?? 'Asset').' · '.$lease->status),
                     'backHref' => $adminMode ? route('leases.index') : route('dashboard'),
                     'backLabel' => $adminMode ? 'All leases' : 'Dashboard',
                     'actions' => array_values(array_filter([
@@ -152,8 +154,8 @@ class LeaseController extends Controller
                         'description' => 'Tenant, rented asset, dates, billing, and manager.',
                         'items' => $this->detailItems([
                             ['label' => 'Tenant', 'value' => $lease->tenantProfile?->user?->name, 'href' => $lease->tenantProfile ? route('tenants.show', $lease->tenantProfile) : null],
-                            ['label' => 'Asset', 'value' => $lease->leaseable?->title_en, 'href' => $lease->leaseable ? route('assets.show', $lease->leaseable) : null],
-                            ['label' => 'Portfolio', 'value' => $lease->portfolio?->name_en, 'href' => $lease->portfolio ? route('portfolios.show', $lease->portfolio) : null],
+                            ['label' => 'Asset', 'value' => $localizedAssetTitle, 'href' => $lease->leaseable ? route('assets.show', $lease->leaseable) : null],
+                            ['label' => 'Portfolio', 'value' => $localizedPortfolioName, 'href' => $lease->portfolio ? route('portfolios.show', $lease->portfolio) : null],
                             ['label' => 'Managed by', 'value' => $lease->managedBy?->name, 'href' => $lease->managedBy ? route('users.show', $lease->managedBy) : null],
                             ['label' => 'Started', 'value' => $lease->started_at?->toDateString()],
                             ['label' => 'Ends', 'value' => $lease->ends_at?->toDateString()],
@@ -247,14 +249,14 @@ class LeaseController extends Controller
         $this->ensurePortfolioAccess($actor, $portfolioId);
 
         $asset = Asset::query()->findOrFail($data['asset_id']);
-        abort_if($asset->portfolio_id !== $portfolioId, 422, 'Asset does not belong to the selected portfolio.');
+        abort_if($asset->portfolio_id !== $portfolioId, 422, trans('app.errors.lease_asset_portfolio_mismatch'));
         abort_unless(
             TenantProfile::query()
                 ->whereKey($data['tenant_profile_id'])
                 ->where('portfolio_id', $portfolioId)
                 ->exists(),
             422,
-            'Tenant does not belong to the selected portfolio.'
+            trans('app.errors.tenant_portfolio_mismatch')
         );
         abort_if(
             Lease::query()
@@ -263,7 +265,7 @@ class LeaseController extends Controller
                 ->where('status', 'active')
                 ->exists(),
             422,
-            'This asset already has an active lease.'
+            trans('app.errors.asset_already_leased')
         );
 
         $lease = Lease::query()->create([
@@ -290,7 +292,7 @@ class LeaseController extends Controller
         $this->leaseFinancials->syncInstallments($lease);
         $asset->update(['occupancy_status' => 'occupied']);
 
-        return to_route('leases.show', $lease)->with('success', "Lease {$lease->code} created.");
+        return to_route('leases.show', $lease)->with('success', trans('app.messages.lease_created', ['code' => $lease->code]));
     }
 
     public function update(Request $request, Lease $lease): RedirectResponse
@@ -316,7 +318,7 @@ class LeaseController extends Controller
             $this->leaseFinancials->syncInstallments($lease);
         }
 
-        return to_route('leases.show', $lease)->with('success', "Lease {$lease->code} updated.");
+        return to_route('leases.show', $lease)->with('success', trans('app.messages.lease_updated', ['code' => $lease->code]));
     }
 
     public function destroy(Request $request, Lease $lease): RedirectResponse
@@ -346,7 +348,7 @@ class LeaseController extends Controller
             }
         });
 
-        return to_route('leases.index')->with('success', "Lease {$lease->code} terminated.");
+        return to_route('leases.index')->with('success', trans('app.messages.lease_terminated', ['code' => $lease->code]));
     }
 
     public function uploadSignedContract(Request $request, Lease $lease): RedirectResponse
@@ -378,7 +380,7 @@ class LeaseController extends Controller
             'is_public' => false,
         ]);
 
-        return to_route('leases.show', $lease)->with('success', 'Signed contract uploaded.');
+        return to_route('leases.show', $lease)->with('success', trans('app.messages.signed_contract_uploaded'));
     }
 
     public function contract(Request $request, Lease $lease): StreamedResponse
@@ -436,7 +438,7 @@ class LeaseController extends Controller
     {
         if ($lease) {
             return [
-                'title' => 'Edit '.$lease->code,
+                'title' => trans('app.actions.edit').' '.$lease->code,
                 'description' => 'Update the lease state, signature date, and notes. Financial edits stay locked once payments exist.',
                 'backHref' => route('leases.show', $lease),
                 'backLabel' => 'Lease detail',
@@ -464,7 +466,10 @@ class LeaseController extends Controller
             ->all();
         $assetOptions = $this->scopeByPortfolio(Asset::query()->where('rentable', true)->orderBy('title_en'), $actor)
             ->get()
-            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->map(fn (Asset $asset) => [
+                'value' => $asset->id,
+                'label' => $this->localized($asset->title_en, $asset->title_ar).' · '.$asset->code,
+            ])
             ->all();
         $fields = [];
 
@@ -568,6 +573,7 @@ class LeaseController extends Controller
             'leaseable' => [
                 'id' => $lease->leaseable?->getKey(),
                 'title_en' => $lease->leaseable?->title_en,
+                'title_ar' => $lease->leaseable?->title_ar,
                 'code' => $lease->leaseable?->code,
             ],
             'total_due' => (float) $lease->total_due,
@@ -597,6 +603,7 @@ class LeaseController extends Controller
                 'id' => $document->id,
                 'type' => $document->type,
                 'title_en' => $document->title_en,
+                'title_ar' => $document->title_ar,
                 'original_name' => $document->original_name,
                 'download_url' => route('documents.download', $document),
             ])->values()->all(),
@@ -644,7 +651,7 @@ class LeaseController extends Controller
         abort_unless(
             $actor->hasRole('tenant') && $lease->tenantProfile?->user_id === $actor->id,
             403,
-            'You are not allowed to access this lease.'
+            trans('app.errors.lease_access_denied')
         );
     }
 }

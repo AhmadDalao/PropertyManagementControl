@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\CmsPage;
+use App\Models\CmsPageSection;
 use App\Models\CmsSection;
 use App\Models\NavigationItem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -273,5 +274,65 @@ class CmsManagementTest extends TestCase
         $this->assertSame('footer', $item->location);
         $this->assertSame(9, $item->sort_order);
         $this->assertFalse($item->is_visible);
+    }
+
+    public function test_draft_may_hold_incomplete_arabic_copy_but_publish_is_blocked_until_complete(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $page = CmsPage::query()->create([
+            'slug' => 'translation-review',
+            'title_en' => 'Translation Review',
+            'title_ar' => 'مراجعة الترجمة',
+            'excerpt_en' => 'English draft summary.',
+            'excerpt_ar' => null,
+            'status' => 'draft',
+            'is_homepage' => false,
+            'is_visible' => true,
+        ]);
+        $section = CmsSection::query()->create([
+            'section_type' => 'content',
+            'name_en' => 'Incomplete content',
+            'name_ar' => 'محتوى غير مكتمل',
+            'content_en' => ['headline' => 'English content'],
+            'content_ar' => null,
+            'status' => 'active',
+        ]);
+        CmsPageSection::query()->create([
+            'cms_page_id' => $page->id,
+            'cms_section_id' => $section->id,
+            'sort_order' => 0,
+            'is_visible' => true,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->put(route('cms.pages.update', $page), [
+                'slug' => $page->slug,
+                'title_en' => $page->title_en,
+                'title_ar' => $page->title_ar,
+                'excerpt_en' => $page->excerpt_en,
+                'excerpt_ar' => '',
+                'status' => 'published',
+                'is_homepage' => false,
+                'is_visible' => true,
+            ])
+            ->assertUnprocessable();
+
+        $page->update(['excerpt_ar' => 'ملخص المسودة بالعربية.']);
+        $section->update(['content_ar' => ['headline' => 'المحتوى العربي']]);
+
+        $this->actingAs($superadmin)
+            ->put(route('cms.pages.update', $page), [
+                'slug' => $page->slug,
+                'title_en' => $page->title_en,
+                'title_ar' => $page->title_ar,
+                'excerpt_en' => $page->excerpt_en,
+                'excerpt_ar' => $page->excerpt_ar,
+                'status' => 'published',
+                'is_homepage' => false,
+                'is_visible' => true,
+            ])
+            ->assertRedirect(route('cms.pages.show', $page));
+
+        $this->assertSame('published', $page->fresh()->status);
     }
 }

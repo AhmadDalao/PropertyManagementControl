@@ -91,12 +91,13 @@ class MediaFileController extends Controller
         $actor = $this->actor($request);
         $this->ensureMediaAccess($actor, $mediaFile);
         $mediaFile->loadMissing(['portfolio', 'uploadedBy']);
+        $localizedTitle = $this->localized($mediaFile->title_en, $mediaFile->title_ar) ?: basename($mediaFile->path);
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
                 'header' => [
                     'eyebrow' => 'Media detail',
-                    'title' => $mediaFile->title_en ?: basename($mediaFile->path),
+                    'title' => $localizedTitle,
                     'description' => trim($mediaFile->collection.' · '.$mediaFile->visibility.' · '.$mediaFile->mime_type),
                     'backHref' => route('media-files.index'),
                     'backLabel' => 'All media',
@@ -118,7 +119,7 @@ class MediaFileController extends Controller
                             ['label' => 'Arabic title', 'value' => $mediaFile->title_ar],
                             ['label' => 'Alt text EN', 'value' => $mediaFile->alt_text_en],
                             ['label' => 'Alt text AR', 'value' => $mediaFile->alt_text_ar],
-                            ['label' => 'Portfolio', 'value' => $mediaFile->portfolio?->name_en, 'href' => $mediaFile->portfolio ? route('portfolios.show', $mediaFile->portfolio) : null],
+                            ['label' => 'Portfolio', 'value' => $this->localized($mediaFile->portfolio?->name_en, $mediaFile->portfolio?->name_ar), 'href' => $mediaFile->portfolio ? route('portfolios.show', $mediaFile->portfolio) : null],
                             ['label' => 'Uploaded by', 'value' => $mediaFile->uploadedBy?->name, 'href' => $mediaFile->uploadedBy ? route('users.show', $mediaFile->uploadedBy) : null],
                             ['label' => 'Public URL', 'value' => $mediaFile->disk === 'public' ? Storage::disk('public')->url($mediaFile->path) : null],
                             ['label' => 'Path', 'value' => $mediaFile->path],
@@ -150,10 +151,10 @@ class MediaFileController extends Controller
         $data = $request->validate([
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
             'collection' => ['nullable', 'string', 'max:255'],
-            'title_en' => ['nullable', 'string', 'max:255'],
-            'title_ar' => ['nullable', 'string', 'max:255'],
-            'alt_text_en' => ['nullable', 'string', 'max:255'],
-            'alt_text_ar' => ['nullable', 'string', 'max:255'],
+            'title_en' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'title_ar' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'alt_text_en' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'alt_text_ar' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
             'visibility' => ['required', 'string'],
             'file' => ['required', 'file', 'max:10240'],
         ]);
@@ -179,7 +180,7 @@ class MediaFileController extends Controller
             'visibility' => $data['visibility'],
         ]);
 
-        return to_route('media-files.show', $mediaFile)->with('success', 'Media uploaded successfully.');
+        return to_route('media-files.show', $mediaFile)->with('success', trans('app.messages.media_uploaded'));
     }
 
     public function update(Request $request, MediaFile $mediaFile): RedirectResponse
@@ -190,10 +191,10 @@ class MediaFileController extends Controller
         $data = $request->validate([
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
             'collection' => ['nullable', 'string', 'max:255'],
-            'title_en' => ['nullable', 'string', 'max:255'],
-            'title_ar' => ['nullable', 'string', 'max:255'],
-            'alt_text_en' => ['nullable', 'string', 'max:255'],
-            'alt_text_ar' => ['nullable', 'string', 'max:255'],
+            'title_en' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'title_ar' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'alt_text_en' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
+            'alt_text_ar' => ['required_if:visibility,public', 'nullable', 'string', 'max:255'],
             'visibility' => ['required', 'string'],
         ]);
 
@@ -210,7 +211,7 @@ class MediaFileController extends Controller
             'visibility' => $data['visibility'],
         ]);
 
-        return to_route('media-files.show', $mediaFile)->with('success', 'Media details updated successfully.');
+        return to_route('media-files.show', $mediaFile)->with('success', trans('app.messages.media_updated'));
     }
 
     public function destroy(MediaFile $mediaFile): RedirectResponse
@@ -221,7 +222,7 @@ class MediaFileController extends Controller
         Storage::disk($mediaFile->disk)->delete($mediaFile->path);
         $mediaFile->delete();
 
-        return to_route('media-files.index')->with('success', 'Media deleted successfully.');
+        return to_route('media-files.index')->with('success', trans('app.messages.media_deleted'));
     }
 
     private function mediaFormPage(User $actor, ?MediaFile $mediaFile = null): array
@@ -244,10 +245,10 @@ class MediaFileController extends Controller
         $fields = [
             ...$fields,
             ['name' => 'collection', 'label' => 'Collection'],
-            ['name' => 'title_en', 'label' => 'English title'],
-            ['name' => 'title_ar', 'label' => 'Arabic title'],
-            ['name' => 'alt_text_en', 'label' => 'English alt text'],
-            ['name' => 'alt_text_ar', 'label' => 'Arabic alt text'],
+            ['name' => 'title_en', 'label' => 'English title', 'required' => true],
+            ['name' => 'title_ar', 'label' => 'Arabic title', 'required' => true],
+            ['name' => 'alt_text_en', 'label' => 'English alt text', 'required' => true],
+            ['name' => 'alt_text_ar', 'label' => 'Arabic alt text', 'required' => true],
             ['name' => 'visibility', 'label' => 'Visibility', 'type' => 'select', 'options' => $this->fieldOptions(['public', 'private'])],
         ];
 

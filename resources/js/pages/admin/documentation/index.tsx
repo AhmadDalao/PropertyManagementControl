@@ -233,7 +233,7 @@ export default function DocumentationPage() {
 
             <div className="pmc-doc-index-grid">
                 <WorkspacePanel
-                    eyebrow="Guides"
+                    eyebrow={t('docs.guides', 'Guides')}
                     title={t('docs.all_guides', 'All guides')}
                     description={t(
                         'docs.guides_available',

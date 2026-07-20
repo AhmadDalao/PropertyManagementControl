@@ -130,6 +130,19 @@ class ReportsManagementTest extends TestCase
         $this->assertStringContainsString('Own leak', $sheetXml);
         $this->assertStringNotContainsString('Foreign outage', $sheetXml);
         $this->assertStringNotContainsString('9000', $sheetXml);
+
+        $arabicExport = $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('reports.export'))
+            ->assertOk();
+        $arabicSheet = $this->xlsxWorksheetXml($arabicExport);
+
+        $this->assertStringContainsString('تقرير نظام إدارة العقارات', $arabicSheet);
+        $this->assertStringContainsString('طلبات الصيانة المتراكمة', $arabicSheet);
+        $this->assertStringContainsString('مفتوح', $arabicSheet);
+        $this->assertStringContainsString('مرتفع', $arabicSheet);
+        $this->assertStringContainsString('سباكة', $arabicSheet);
+        $this->assertStringNotContainsString('Foreign outage', $arabicSheet);
     }
 
     public function test_report_date_filters_limit_financial_activity(): void
@@ -250,6 +263,7 @@ class ReportsManagementTest extends TestCase
         $payload = [
             'resource' => 'portfolio-report',
             'title_en' => 'Global finance view',
+            'title_ar' => 'عرض مالي عام',
             'visibility' => 'global',
             'filters_json' => ['date_from' => '2026-01-01'],
         ];

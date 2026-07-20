@@ -63,6 +63,7 @@ type MaintenanceRow = {
 type ReportPreset = {
     id: number;
     title_en: string;
+    title_ar?: string | null;
     visibility: string;
     url: string;
 };
@@ -106,8 +107,9 @@ export default function ReportsIndexPage() {
             : 'all',
     });
     const [presetTitle, setPresetTitle] = useState('');
+    const [presetTitleAr, setPresetTitleAr] = useState('');
     const [filtersOpen, setFiltersOpen] = useState(false);
-    const { t } = useTranslator();
+    const { locale, t, text } = useTranslator();
     const query = new URLSearchParams(cleanFilters(filters)).toString();
     const exportHref = query ? `/reports/export?${query}` : '/reports/export';
     const collectionBase = props.summary.revenue + props.summary.arrears;
@@ -130,7 +132,7 @@ export default function ReportsIndexPage() {
     const savePreset = () => {
         const title = presetTitle.trim();
 
-        if (!title) {
+        if (!title || !presetTitleAr.trim()) {
             return;
         }
 
@@ -139,7 +141,7 @@ export default function ReportsIndexPage() {
             {
                 resource: 'portfolio-report',
                 title_en: title,
-                title_ar: '',
+                title_ar: presetTitleAr.trim(),
                 visibility: 'private',
                 is_default: false,
                 filters_json: cleanFilters(filters),
@@ -147,11 +149,12 @@ export default function ReportsIndexPage() {
             { preserveScroll: true },
         );
         setPresetTitle('');
+        setPresetTitleAr('');
     };
 
     return (
         <AdminLayout>
-            <Head title="Reports" />
+            <Head title={text('Reports')} />
 
             <WorkspaceHeader
                 eyebrow="Overview"
@@ -191,7 +194,7 @@ export default function ReportsIndexPage() {
                 onSubmit={applyFilters}
             >
                 <label>
-                    <span>Date from</span>
+                    <span>{t('reports.date_from')}</span>
                     <input
                         type="date"
                         className="form-control"
@@ -205,7 +208,7 @@ export default function ReportsIndexPage() {
                     />
                 </label>
                 <label>
-                    <span>Date to</span>
+                    <span>{t('reports.date_to')}</span>
                     <input
                         type="date"
                         className="form-control"
@@ -220,7 +223,7 @@ export default function ReportsIndexPage() {
                 </label>
                 {props.mode === 'superadmin' ? (
                     <label>
-                        <span>Portfolio</span>
+                        <span>{text('Portfolio')}</span>
                         <select
                             className="form-select"
                             value={filters.portfolio_id}
@@ -231,7 +234,9 @@ export default function ReportsIndexPage() {
                                 }))
                             }
                         >
-                            <option value="all">All portfolios</option>
+                            <option value="all">
+                                {t('reports.all_portfolios')}
+                            </option>
                             {props.portfolioOptions.map((portfolio) => (
                                 <option key={portfolio.id} value={portfolio.id}>
                                     {portfolio.name}
@@ -243,10 +248,10 @@ export default function ReportsIndexPage() {
                 <div className="pmc-report-toolbar-actions">
                     <button className="btn btn-primary">
                         <i className="bi bi-funnel me-2" />
-                        Apply
+                        {t('reports.apply')}
                     </button>
                     <Link href="/reports" className="btn btn-outline-secondary">
-                        Reset
+                        {t('actions.reset')}
                     </Link>
                 </div>
             </form>
@@ -259,7 +264,13 @@ export default function ReportsIndexPage() {
                             props.summary.revenue,
                             props.app.locale,
                         ),
-                        detail: `${percent(collectionRate)} collection health`,
+                        detail: t(
+                            'reports.collection_health_value',
+                            undefined,
+                            {
+                                value: percent(collectionRate),
+                            },
+                        ),
                         icon: 'bi-cash-stack',
                         tone: 'ink',
                         href: '/payments',
@@ -270,7 +281,9 @@ export default function ReportsIndexPage() {
                             props.summary.expenses,
                             props.app.locale,
                         ),
-                        detail: `${props.recentExpenses.length} recent costs`,
+                        detail: t('reports.recent_costs', undefined, {
+                            count: props.recentExpenses.length,
+                        }),
                         icon: 'bi-receipt',
                         tone: 'amber',
                         href: '/expenses',
@@ -278,7 +291,9 @@ export default function ReportsIndexPage() {
                     {
                         label: 'Net position',
                         value: currency(props.summary.net, props.app.locale),
-                        detail: `${percent(props.summary.occupancyRate)} occupancy`,
+                        detail: t('reports.occupancy_value', undefined, {
+                            value: percent(props.summary.occupancyRate),
+                        }),
                         icon: 'bi-graph-up-arrow',
                         tone: props.summary.net >= 0 ? 'teal' : 'red',
                     },
@@ -288,7 +303,9 @@ export default function ReportsIndexPage() {
                             props.summary.arrears,
                             props.app.locale,
                         ),
-                        detail: `${props.summary.unpaidLeases} unpaid leases`,
+                        detail: t('reports.unpaid_count', undefined, {
+                            count: props.summary.unpaidLeases,
+                        }),
                         icon: 'bi-exclamation-circle',
                         tone: props.summary.arrears > 0 ? 'red' : 'blue',
                         href: '/leases',
@@ -300,21 +317,27 @@ export default function ReportsIndexPage() {
                 <ReportPulse
                     label="Collection health"
                     value={percent(collectionRate)}
-                    detail={`${currency(props.summary.revenue, props.app.locale)} received`}
+                    detail={t('reports.received_amount', undefined, {
+                        amount: currency(props.summary.revenue, locale),
+                    })}
                     icon="bi-wallet2"
                     tone={collectionRate >= 80 ? 'good' : 'risk'}
                 />
                 <ReportPulse
                     label="Occupancy"
                     value={percent(props.summary.occupancyRate)}
-                    detail={`${props.summary.activeLeases} active leases`}
+                    detail={t('reports.active_leases', undefined, {
+                        count: props.summary.activeLeases,
+                    })}
                     icon="bi-building-check"
                     tone={props.summary.occupancyRate >= 70 ? 'good' : 'warn'}
                 />
                 <ReportPulse
                     label="Service backlog"
                     value={props.summary.openRequests.toLocaleString()}
-                    detail={`${props.summary.resolvedRequests} resolved`}
+                    detail={t('reports.resolved_count', undefined, {
+                        count: props.summary.resolvedRequests,
+                    })}
                     icon="bi-tools"
                     tone={props.summary.openRequests > 0 ? 'warn' : 'good'}
                 />
@@ -376,7 +399,7 @@ export default function ReportsIndexPage() {
                     rows={props.arrearsLeases.map((lease) => ({
                         href: `/leases/${lease.id}`,
                         title: lease.code,
-                        meta: `${lease.tenant ?? 'No tenant'} · ${lease.asset ?? 'No asset'}`,
+                        meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
                         value: currency(
                             lease.balance_remaining,
                             props.app.locale,
@@ -391,8 +414,14 @@ export default function ReportsIndexPage() {
                     empty="No revenue-producing assets in this range."
                     rows={props.topAssets.map((asset, index) => ({
                         href: '/assets',
-                        title: asset.asset || `Asset ${index + 1}`,
-                        meta: `${asset.lease_count} lease${asset.lease_count === 1 ? '' : 's'}`,
+                        title:
+                            asset.asset ||
+                            t('reports.asset_number', undefined, {
+                                number: index + 1,
+                            }),
+                        meta: t('reports.lease_count', undefined, {
+                            count: asset.lease_count,
+                        }),
                         value: currency(
                             asset.revenue,
                             props.app.locale,
@@ -408,7 +437,7 @@ export default function ReportsIndexPage() {
                     rows={props.recentPayments.map((payment) => ({
                         href: `/payments/${payment.id}`,
                         title: payment.reference,
-                        meta: `${payment.tenant ?? 'No tenant'} · ${humanDate(payment.received_on, props.app.locale)}`,
+                        meta: `${payment.tenant ?? text('No tenant')} · ${humanDate(payment.received_on, locale)}`,
                         value: currency(
                             payment.amount,
                             props.app.locale,
@@ -424,7 +453,7 @@ export default function ReportsIndexPage() {
                     rows={props.recentExpenses.map((expense) => ({
                         href: `/expenses/${expense.id}`,
                         title: expense.title,
-                        meta: `${humanLabel(expense.category)} · ${expense.asset ?? 'No asset'}`,
+                        meta: `${text(humanLabel(expense.category))} · ${expense.asset ?? text('No asset')}`,
                         value: currency(
                             expense.amount,
                             props.app.locale,
@@ -440,8 +469,8 @@ export default function ReportsIndexPage() {
                     rows={props.maintenanceBacklog.map((request) => ({
                         href: `/maintenance-requests/${request.id}`,
                         title: request.title,
-                        meta: `${request.asset ?? 'No asset'} · ${humanLabel(request.priority)}`,
-                        value: humanLabel(request.status),
+                        meta: `${request.asset ?? text('No asset')} · ${text(humanLabel(request.priority))}`,
+                        value: text(humanLabel(request.status)),
                         status: request.status,
                     }))}
                 />
@@ -451,7 +480,7 @@ export default function ReportsIndexPage() {
                 <summary>
                     <div>
                         <i className="bi bi-bookmark" />
-                        <span>Saved report views</span>
+                        <span>{t('reports.saved_views')}</span>
                         <strong>{props.savedPresets.length}</strong>
                     </div>
                     <i className="bi bi-chevron-down" />
@@ -462,15 +491,31 @@ export default function ReportsIndexPage() {
                             className="visually-hidden"
                             htmlFor="report-preset-title"
                         >
-                            Preset name
+                            {t('reports.preset_name_en')}
                         </label>
                         <input
                             id="report-preset-title"
                             className="form-control"
                             value={presetTitle}
-                            placeholder="Preset name"
+                            placeholder={t('reports.preset_name_en')}
                             onChange={(event) =>
                                 setPresetTitle(event.currentTarget.value)
+                            }
+                        />
+                        <label
+                            className="visually-hidden"
+                            htmlFor="report-preset-title-ar"
+                        >
+                            {t('reports.preset_name_ar')}
+                        </label>
+                        <input
+                            id="report-preset-title-ar"
+                            className="form-control"
+                            dir="rtl"
+                            value={presetTitleAr}
+                            placeholder={t('reports.preset_name_ar')}
+                            onChange={(event) =>
+                                setPresetTitleAr(event.currentTarget.value)
                             }
                         />
                         <button
@@ -478,7 +523,7 @@ export default function ReportsIndexPage() {
                             className="btn btn-primary"
                             onClick={savePreset}
                         >
-                            Save current filters
+                            {t('reports.save_filters')}
                         </button>
                     </div>
                     <div className="pmc-report-preset-list">
@@ -486,10 +531,22 @@ export default function ReportsIndexPage() {
                             props.savedPresets.map((preset) => (
                                 <article key={preset.id}>
                                     <div>
-                                        <strong>{preset.title_en}</strong>
-                                        <span>{preset.visibility}</span>
+                                        <strong>
+                                            {locale === 'ar'
+                                                ? preset.title_ar ||
+                                                  preset.title_en
+                                                : preset.title_en ||
+                                                  preset.title_ar}
+                                        </strong>
+                                        <span>
+                                            {text(
+                                                humanLabel(preset.visibility),
+                                            )}
+                                        </span>
                                     </div>
-                                    <Link href={preset.url}>Open</Link>
+                                    <Link href={preset.url}>
+                                        {t('actions.open')}
+                                    </Link>
                                     <button
                                         type="button"
                                         onClick={() =>
@@ -499,12 +556,12 @@ export default function ReportsIndexPage() {
                                             )
                                         }
                                     >
-                                        Remove
+                                        {t('reports.remove')}
                                     </button>
                                 </article>
                             ))
                         ) : (
-                            <p>No saved views yet.</p>
+                            <p>{t('reports.no_saved_views')}</p>
                         )}
                     </div>
                 </div>
@@ -526,13 +583,15 @@ function ReportPulse({
     icon: string;
     tone: 'good' | 'warn' | 'risk';
 }) {
+    const { text } = useTranslator();
+
     return (
         <article className={`pmc-report-pulse is-${tone}`}>
             <i className={`bi ${icon}`} />
             <div>
-                <span>{label}</span>
+                <span>{text(label)}</span>
                 <strong>{value}</strong>
-                <small>{detail}</small>
+                <small>{text(detail)}</small>
             </div>
         </article>
     );
@@ -545,11 +604,12 @@ function BreakdownBars({
     source: Record<string, number>;
     format: (value: number) => string;
 }) {
+    const { text } = useTranslator();
     const entries = Object.entries(source);
     const maximum = Math.max(...entries.map(([, value]) => value), 1);
 
     if (entries.length === 0) {
-        return <ReportEmpty>No data in this range.</ReportEmpty>;
+        return <ReportEmpty>{text('No data in this range.')}</ReportEmpty>;
     }
 
     return (
@@ -557,7 +617,7 @@ function BreakdownBars({
             {entries.map(([label, value]) => (
                 <div key={label}>
                     <div>
-                        <span>{humanLabel(label)}</span>
+                        <span>{text(humanLabel(label))}</span>
                         <strong>{format(value)}</strong>
                     </div>
                     <div>
@@ -570,17 +630,18 @@ function BreakdownBars({
 }
 
 function BreakdownCards({ source }: { source: Record<string, number> }) {
+    const { text } = useTranslator();
     const entries = Object.entries(source);
 
     if (entries.length === 0) {
-        return <ReportEmpty>No data in this range.</ReportEmpty>;
+        return <ReportEmpty>{text('No data in this range.')}</ReportEmpty>;
     }
 
     return (
         <div className="pmc-report-breakdown-cards">
             {entries.map(([label, value]) => (
                 <div key={label}>
-                    <span>{humanLabel(label)}</span>
+                    <span>{text(humanLabel(label))}</span>
                     <strong>{value}</strong>
                 </div>
             ))}
@@ -639,7 +700,13 @@ function ReportRecordSection({
 }
 
 function ReportEmpty({ children }: { children: ReactNode }) {
-    return <div className="pmc-command-empty">{children}</div>;
+    const { text } = useTranslator();
+
+    return (
+        <div className="pmc-command-empty">
+            {typeof children === 'string' ? text(children) : children}
+        </div>
+    );
 }
 
 function cleanFilters(filters: Record<string, string>) {

@@ -170,6 +170,8 @@ class CmsPageController extends Controller
             'is_visible' => ['nullable', 'boolean'],
         ]);
 
+        $this->ensurePageCanPublish($data);
+
         if ($data['is_homepage'] ?? false) {
             CmsPage::query()->where('is_homepage', true)->update(['is_homepage' => false]);
         }
@@ -182,7 +184,7 @@ class CmsPageController extends Controller
             'published_at' => $data['status'] === 'published' ? now() : null,
         ]);
 
-        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page created successfully.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_page_created'));
     }
 
     public function update(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -205,6 +207,8 @@ class CmsPageController extends Controller
             'is_visible' => ['nullable', 'boolean'],
         ]);
 
+        $this->ensurePageCanPublish($data, $cmsPage);
+
         if ($data['is_homepage'] ?? false) {
             CmsPage::query()
                 ->whereKeyNot($cmsPage->id)
@@ -220,7 +224,7 @@ class CmsPageController extends Controller
             'published_at' => $data['status'] === 'published' ? now() : null,
         ]);
 
-        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page updated successfully.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_page_updated'));
     }
 
     public function destroy(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -234,7 +238,7 @@ class CmsPageController extends Controller
             'is_homepage' => false,
         ]);
 
-        return to_route('cms.index')->with('success', 'Page archived successfully.');
+        return to_route('cms.index')->with('success', trans('app.messages.cms_page_archived'));
     }
 
     public function storeSection(Request $request): RedirectResponse
@@ -254,7 +258,7 @@ class CmsPageController extends Controller
 
         CmsSection::query()->create($data);
 
-        return to_route('cms.index')->with('success', 'Section created successfully.');
+        return to_route('cms.index')->with('success', trans('app.messages.cms_section_created'));
     }
 
     public function updateSection(Request $request, CmsSection $cmsSection): RedirectResponse
@@ -274,7 +278,7 @@ class CmsPageController extends Controller
 
         $cmsSection->update($data);
 
-        return to_route('cms.index')->with('success', 'Section updated successfully.');
+        return to_route('cms.index')->with('success', trans('app.messages.cms_section_updated'));
     }
 
     public function destroySection(Request $request, CmsSection $cmsSection): RedirectResponse
@@ -284,7 +288,7 @@ class CmsPageController extends Controller
 
         $cmsSection->update(['status' => 'archived']);
 
-        return to_route('cms.index')->with('success', 'Section archived successfully.');
+        return to_route('cms.index')->with('success', trans('app.messages.cms_section_archived'));
     }
 
     public function attachSection(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -309,7 +313,7 @@ class CmsPageController extends Controller
             ],
         );
 
-        return to_route('cms.pages.show', $cmsPage)->with('success', 'Section attached to page.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_section_attached'));
     }
 
     public function updatePageSection(Request $request, CmsPageSection $cmsPageSection): RedirectResponse
@@ -329,7 +333,7 @@ class CmsPageController extends Controller
             'settings_json' => $data['settings_json'] ?? null,
         ]);
 
-        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', 'Page section updated.');
+        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', trans('app.messages.cms_page_section_updated'));
     }
 
     public function reorderPageSections(Request $request, CmsPage $cmsPage): RedirectResponse
@@ -348,7 +352,7 @@ class CmsPageController extends Controller
             ->map(fn ($id) => (int) $id)
             ->all();
 
-        abort_unless(count($validIds) === count($data['ordered_ids']), 422, 'Section order does not match this page.');
+        abort_unless(count($validIds) === count($data['ordered_ids']), 422, trans('app.errors.not_allowed'));
 
         foreach (array_values($data['ordered_ids']) as $index => $id) {
             CmsPageSection::query()
@@ -357,7 +361,7 @@ class CmsPageController extends Controller
                 ->update(['sort_order' => $index + 1]);
         }
 
-        return to_route('cms.pages.show', $cmsPage)->with('success', 'Page sections reordered.');
+        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_sections_reordered'));
     }
 
     public function destroyPageSection(CmsPageSection $cmsPageSection): RedirectResponse
@@ -367,13 +371,15 @@ class CmsPageController extends Controller
 
         $cmsPageSection->delete();
 
-        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', 'Page section removed.');
+        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', trans('app.messages.cms_page_section_removed'));
     }
 
     private function cmsPageFormPage(?CmsPage $cmsPage = null): array
     {
         return [
-            'title' => $cmsPage ? 'Edit '.$cmsPage->title_en : 'Create CMS page',
+            'title' => $cmsPage
+                ? trans('app.actions.edit').' '.$this->localized($cmsPage->title_en, $cmsPage->title_ar)
+                : 'Create CMS page',
             'description' => 'Create the bilingual page shell, then compose sections in the visual builder.',
             'backHref' => $cmsPage ? route('cms.pages.show', $cmsPage) : route('cms.index'),
             'backLabel' => $cmsPage ? 'Page builder' : 'Website control',
@@ -431,5 +437,40 @@ class CmsPageController extends Controller
             'label' => Str::of($type)->replace('_', ' ')->title()->toString(),
             'value' => $type,
         ])->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function ensurePageCanPublish(array $data, ?CmsPage $page = null): void
+    {
+        if (($data['status'] ?? 'draft') !== 'published') {
+            return;
+        }
+
+        $pairedFieldsComplete = collect([
+            ['en' => $data['excerpt_en'] ?? null, 'ar' => $data['excerpt_ar'] ?? null],
+            ['en' => $data['seo_title_en'] ?? null, 'ar' => $data['seo_title_ar'] ?? null],
+            ['en' => $data['seo_description_en'] ?? null, 'ar' => $data['seo_description_ar'] ?? null],
+        ])->every(fn (array $pair): bool => blank($pair['en']) || filled($pair['ar']));
+
+        $sectionsComplete = $page === null || $page
+            ->pageSections()
+            ->where('is_visible', true)
+            ->with('section')
+            ->get()
+            ->every(function (CmsPageSection $pageSection): bool {
+                $section = $pageSection->section;
+
+                return $section !== null
+                    && filled($section->name_ar)
+                    && (blank($section->content_en) || filled($section->content_ar));
+            });
+
+        abort_unless(
+            filled($data['title_ar'] ?? null) && $pairedFieldsComplete && $sectionsComplete,
+            422,
+            trans('app.errors.cms_arabic_incomplete'),
+        );
     }
 }

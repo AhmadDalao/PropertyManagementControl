@@ -174,7 +174,7 @@ export function ResourceFormShell({
 }) {
     const form = useForm<ResourceFormValues>(initialValues);
     const hasFile = fields.some((field) => field.type === 'file');
-    const { text } = useTranslator();
+    const { t, text } = useTranslator();
     const errors = Object.values(form.errors).filter(Boolean);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
@@ -207,10 +207,7 @@ export function ResourceFormShell({
                         <i className="bi bi-pencil-square" />
                     </span>
                     <strong>{text('One job on this page')}</strong>
-                    <p>
-                        Fill the record cleanly, save it, then review the detail
-                        page for documents, history, and next actions.
-                    </p>
+                    <p>{t('resource.form_guidance')}</p>
                 </div>
 
                 <form className="pmc-resource-form" onSubmit={submit}>
@@ -222,7 +219,9 @@ export function ResourceFormShell({
                         >
                             <i className="bi bi-exclamation-circle" />
                             <div>
-                                <strong>Check the highlighted fields</strong>
+                                <strong>
+                                    {t('resource.validation_title')}
+                                </strong>
                                 <ul>
                                     {errors.map((error) => (
                                         <li key={String(error)}>
@@ -253,7 +252,7 @@ export function ResourceFormShell({
                             className="btn btn-primary"
                             disabled={form.processing}
                         >
-                            {submitLabel}
+                            {text(submitLabel)}
                         </button>
                     </div>
                 </form>
@@ -355,7 +354,7 @@ export function ResourceDetailShell({
             ? (requested ?? 'overview')
             : 'overview';
     });
-    const { text } = useTranslator();
+    const { t, text } = useTranslator();
 
     const selectTab = (tab: ResourceDetailTab) => {
         setActiveTab(tab);
@@ -373,7 +372,10 @@ export function ResourceDetailShell({
         <>
             <ResourceHeader {...header} />
 
-            <nav className="pmc-resource-tabs" aria-label="Record sections">
+            <nav
+                className="pmc-resource-tabs"
+                aria-label={t('resource.record_sections')}
+            >
                 {availableTabs.map((tab) => (
                     <button
                         key={tab.key}
@@ -455,6 +457,8 @@ export function ResourceDetailShell({
 }
 
 function DecisionCardGrid({ cards }: { cards: DecisionCard[] }) {
+    const { t, text } = useTranslator();
+
     return (
         <section className="pmc-resource-decision-grid">
             {cards.map((card) => (
@@ -464,13 +468,21 @@ function DecisionCardGrid({ cards }: { cards: DecisionCard[] }) {
                 >
                     <div>
                         {card.icon ? <i className={`bi ${card.icon}`} /> : null}
-                        <span>{card.title}</span>
+                        <span>{text(card.title)}</span>
                     </div>
                     <strong>{card.value}</strong>
-                    {card.detail ? <p>{card.detail}</p> : null}
+                    {card.detail ? (
+                        <p>
+                            {typeof card.detail === 'string'
+                                ? text(card.detail)
+                                : card.detail}
+                        </p>
+                    ) : null}
                     {card.href ? (
                         <Link href={card.href}>
-                            {card.actionLabel ?? 'Open'}
+                            {card.actionLabel
+                                ? text(card.actionLabel)
+                                : t('actions.open')}
                             <i className="bi bi-arrow-right" />
                         </Link>
                     ) : null}
@@ -485,29 +497,31 @@ function ResourceSpotlightPanel({
 }: {
     spotlight: ResourceSpotlight;
 }) {
+    const { text } = useTranslator();
+
     return (
         <section className="pmc-resource-spotlight">
             <div className="pmc-resource-spotlight-main">
                 <div>
                     <div className="pmc-kicker mb-2">
-                        {spotlight.eyebrow ?? 'Record focus'}
+                        {text(spotlight.eyebrow ?? 'Record focus')}
                     </div>
-                    <h2>{spotlight.title}</h2>
+                    <h2>{text(spotlight.title)}</h2>
                     {spotlight.subtitle ? (
-                        <strong>{spotlight.subtitle}</strong>
+                        <strong>{text(spotlight.subtitle)}</strong>
                     ) : null}
                     {spotlight.description ? (
-                        <p>{spotlight.description}</p>
+                        <p>{text(spotlight.description)}</p>
                     ) : null}
                 </div>
-                {spotlight.status ? <em>{spotlight.status}</em> : null}
+                {spotlight.status ? <em>{text(spotlight.status)}</em> : null}
             </div>
 
             {spotlight.items && spotlight.items.length > 0 ? (
                 <dl>
                     {spotlight.items.map((item) => (
                         <div key={item.label}>
-                            <dt>{item.label}</dt>
+                            <dt>{text(item.label)}</dt>
                             <dd>
                                 {item.href ? (
                                     <Link href={item.href}>
@@ -597,7 +611,9 @@ function ResourceInput({
                     className="form-control"
                     rows={field.rows ?? 4}
                     value={String(value ?? '')}
-                    placeholder={field.placeholder}
+                    placeholder={
+                        field.placeholder ? text(field.placeholder) : undefined
+                    }
                     onChange={(event) => onChange(event.currentTarget.value)}
                     aria-describedby={describedBy}
                     aria-invalid={Boolean(error)}
@@ -617,7 +633,7 @@ function ResourceInput({
                             key={String(option.value)}
                             value={String(option.value)}
                         >
-                            {option.label}
+                            {text(option.label)}
                         </option>
                     ))}
                 </select>
@@ -641,7 +657,9 @@ function ResourceInput({
                     className="form-control"
                     type={field.type ?? 'text'}
                     value={String(value ?? '')}
-                    placeholder={field.placeholder}
+                    placeholder={
+                        field.placeholder ? text(field.placeholder) : undefined
+                    }
                     step={field.step}
                     min={field.min}
                     max={field.max}
@@ -698,19 +716,25 @@ function DetailCard({ section }: { section: DetailSection }) {
 }
 
 function RelatedRecordsTable({ table }: { table: RelatedTable }) {
+    const { t, text } = useTranslator();
+
     return (
         <article className="pmc-card p-4 pmc-related-table-card">
             <header className="pmc-related-table-head">
                 <div>
-                    <div className="pmc-kicker mb-2">{table.title}</div>
-                    {table.description ? <p>{table.description}</p> : null}
+                    <div className="pmc-kicker mb-2">{text(table.title)}</div>
+                    {table.description ? (
+                        <p>{text(table.description)}</p>
+                    ) : null}
                 </div>
                 {table.actionHref ? (
                     <Link
                         href={table.actionHref}
                         className="btn btn-light btn-sm"
                     >
-                        {table.actionLabel ?? 'Open'}
+                        {table.actionLabel
+                            ? text(table.actionLabel)
+                            : t('actions.open')}
                     </Link>
                 ) : null}
             </header>
@@ -720,7 +744,7 @@ function RelatedRecordsTable({ table }: { table: RelatedTable }) {
                         <thead>
                             <tr>
                                 {table.columns.map((column) => (
-                                    <th key={column}>{column}</th>
+                                    <th key={column}>{text(column)}</th>
                                 ))}
                             </tr>
                         </thead>
@@ -733,7 +757,7 @@ function RelatedRecordsTable({ table }: { table: RelatedTable }) {
                                         return (
                                             <td
                                                 key={column}
-                                                data-label={column}
+                                                data-label={text(column)}
                                             >
                                                 {isRelatedCellLink(value) ? (
                                                     <Link href={value.href}>
@@ -752,7 +776,9 @@ function RelatedRecordsTable({ table }: { table: RelatedTable }) {
                 </div>
             ) : (
                 <p className="pmc-empty-inline">
-                    {table.emptyText ?? 'No related records yet.'}
+                    {table.emptyText
+                        ? text(table.emptyText)
+                        : t('resource.no_related_records')}
                 </p>
             )}
         </article>
@@ -782,10 +808,12 @@ function DocumentStrip({
         href: string;
     }>;
 }) {
+    const { t } = useTranslator();
+
     return (
         <article className="pmc-card p-4 pmc-side-panel">
-            <div className="pmc-kicker mb-2">Documents</div>
-            <h2>Files and downloads</h2>
+            <div className="pmc-kicker mb-2">{t('common.documents')}</div>
+            <h2>{t('resource.files_and_downloads')}</h2>
             {documents.length > 0 ? (
                 <div className="pmc-document-strip">
                     {documents.map((document) => (
@@ -800,7 +828,7 @@ function DocumentStrip({
                     ))}
                 </div>
             ) : (
-                <p className="pmc-empty-inline">No documents attached yet.</p>
+                <p className="pmc-empty-inline">{t('resource.no_documents')}</p>
             )}
         </article>
     );
@@ -817,18 +845,20 @@ function HistoryTimeline({
         created_at?: string;
     }>;
 }) {
+    const { t, text } = useTranslator();
+
     return (
         <article className="pmc-card p-4 pmc-side-panel">
-            <div className="pmc-kicker mb-2">History</div>
-            <h2>Audit trail</h2>
+            <div className="pmc-kicker mb-2">{t('common.history')}</div>
+            <h2>{t('resource.audit_trail')}</h2>
             {timeline.length > 0 ? (
                 <div className="pmc-history-timeline">
                     {timeline.map((item) => (
                         <div key={item.id}>
                             <span />
-                            <strong>{item.event}</strong>
+                            <strong>{text(item.event)}</strong>
                             <small>
-                                {item.causer ?? 'System'} ·{' '}
+                                {item.causer ?? t('resource.system')} ·{' '}
                                 {item.created_at ?? ''}
                             </small>
                             {item.description ? (
@@ -839,7 +869,7 @@ function HistoryTimeline({
                 </div>
             ) : (
                 <p className="pmc-empty-inline">
-                    No audit events recorded yet.
+                    {t('resource.no_audit_events')}
                 </p>
             )}
         </article>
@@ -863,7 +893,7 @@ function ActionLink({ action }: { action: ResourceAction }) {
             type="button"
             className={className}
             onClick={() => {
-                if (action.confirm && !window.confirm(action.confirm)) {
+                if (action.confirm && !window.confirm(text(action.confirm))) {
                     return;
                 }
 

@@ -5,6 +5,7 @@ import {
     StatusBadge,
     WorkspaceHeader,
     WorkspacePanel,
+    humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
@@ -13,7 +14,7 @@ import { currency, humanDate } from '@/lib/utils';
 import type { DashboardPageProps } from '../types';
 
 export function TenantDashboard({ props }: { props: DashboardPageProps }) {
-    const { text } = useTranslator();
+    const { locale, t, text } = useTranslator();
     const isArabic = props.app.locale === 'ar';
     const lease = props.tenantPortal?.lease;
     const payments = props.tenantPortal?.payments ?? [];
@@ -23,18 +24,21 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
 
     return (
         <AdminLayout>
-            <Head title="Tenant Dashboard" />
+            <Head title={t('dashboard.tenant_dashboard')} />
 
             <WorkspaceHeader
                 eyebrow="Tenant portal"
                 title={
                     (isArabic
-                        ? lease?.leaseable?.title_ar
-                        : lease?.leaseable?.title_en) ?? 'Your rental portal'
+                        ? lease?.leaseable?.title_ar ||
+                          lease?.leaseable?.title_en
+                        : lease?.leaseable?.title_en ||
+                          lease?.leaseable?.title_ar) ??
+                    text('Your rental portal')
                 }
                 description={
                     lease
-                        ? `${lease.code} · ${lease.leaseable?.code ?? 'Rental asset'}`
+                        ? `${lease.code} · ${lease.leaseable?.code ?? t('dashboard.rental_asset')}`
                         : text(
                               'Your owner or manager needs to activate a lease before payment and document information appears.',
                           )
@@ -60,15 +64,12 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                     {
                         label: 'Lease',
                         value:
-                            props.stats.leaseCode ??
-                            (isArabic ? 'غير نشط' : 'Not active'),
+                            props.stats.leaseCode ?? t('dashboard.not_active'),
                         detail: lease?.ends_at
-                            ? isArabic
-                                ? `ينتهي ${humanDate(lease.ends_at, props.app.locale)}`
-                                : `Ends ${humanDate(lease.ends_at, props.app.locale)}`
-                            : isArabic
-                              ? 'لا يوجد تاريخ انتهاء'
-                              : 'No end date',
+                            ? t('dashboard.ends_on', undefined, {
+                                  date: humanDate(lease.ends_at, locale),
+                              })
+                            : t('dashboard.no_end_date'),
                         icon: 'bi-file-earmark-text',
                         tone: 'ink',
                     },
@@ -86,9 +87,13 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             props.app.locale,
                             currencyCode,
                         ),
-                        detail: isArabic
-                            ? `${payments.length} دفعات مسجلة`
-                            : `${payments.length} posted payments`,
+                        detail: t(
+                            'dashboard.posted_payments_count',
+                            undefined,
+                            {
+                                count: payments.length,
+                            },
+                        ),
                         icon: 'bi-check-circle',
                         tone: 'teal',
                     },
@@ -99,9 +104,11 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             props.app.locale,
                             currencyCode,
                         ),
-                        detail: isArabic
-                            ? `${requests.length} طلبات صيانة`
-                            : `${requests.length} maintenance requests`,
+                        detail: t(
+                            'dashboard.maintenance_requests_count',
+                            undefined,
+                            { count: requests.length },
+                        ),
                         icon: 'bi-hourglass-split',
                         tone:
                             Number(props.stats.amountLeft ?? 0) > 0
@@ -170,7 +177,9 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                                                 : document.title_en) ??
                                                 document.title_en}
                                         </strong>
-                                        <span>{document.type}</span>
+                                        <span>
+                                            {text(humanLabel(document.type))}
+                                        </span>
                                     </div>
                                     <i className="bi bi-download" />
                                 </a>
@@ -195,9 +204,11 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                                     <div>
                                         <strong>
                                             {payment.reference ??
-                                                (isArabic
-                                                    ? `إيصال #${payment.id}`
-                                                    : `Receipt #${payment.id}`)}
+                                                t(
+                                                    'dashboard.receipt_number',
+                                                    undefined,
+                                                    { id: payment.id },
+                                                )}
                                         </strong>
                                         <span>
                                             {humanDate(

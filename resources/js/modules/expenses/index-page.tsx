@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -28,7 +29,11 @@ type ExpenseRecord = {
     amount: number;
     currency: string;
     incurred_on?: string | null;
-    asset?: { title_en?: string | null; code?: string | null };
+    asset?: {
+        title_en?: string | null;
+        title_ar?: string | null;
+        code?: string | null;
+    };
     maintenance_request?: {
         id?: number | null;
         title?: string | null;
@@ -60,6 +65,7 @@ type PageProps = SharedProps & {
 
 export default function ExpensesIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const filterFields: TableFilterField[] = [
         {
             name: 'status',
@@ -102,7 +108,7 @@ export default function ExpensesIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Expenses" />
+            <Head title={text('Expenses')} />
 
             <WorkspaceHeader
                 eyebrow="Money & service"
@@ -131,7 +137,9 @@ export default function ExpensesIndexPage() {
                             props.expenseInsights.posted_amount,
                             props.app.locale,
                         ),
-                        detail: `${props.expenseInsights.posted_count} posted entries`,
+                        detail: t('expenses.posted_entries', undefined, {
+                            count: props.expenseInsights.posted_count,
+                        }),
                         icon: 'bi-receipt',
                         tone: 'ink',
                     },
@@ -141,7 +149,9 @@ export default function ExpensesIndexPage() {
                             props.expenseInsights.posted_this_month,
                             props.app.locale,
                         ),
-                        detail: `${props.expenseInsights.vendors} vendors`,
+                        detail: t('expenses.vendors', undefined, {
+                            count: props.expenseInsights.vendors,
+                        }),
                         icon: 'bi-calendar3',
                         tone: 'blue',
                     },
@@ -151,7 +161,9 @@ export default function ExpensesIndexPage() {
                             props.expenseInsights.maintenance_amount,
                             props.app.locale,
                         ),
-                        detail: `${props.expenseInsights.linked_to_maintenance} linked tickets`,
+                        detail: t('expenses.linked_tickets', undefined, {
+                            count: props.expenseInsights.linked_to_maintenance,
+                        }),
                         icon: 'bi-tools',
                         tone: 'teal',
                     },
@@ -160,7 +172,13 @@ export default function ExpensesIndexPage() {
                         value:
                             props.expenseInsights.pending_count +
                             props.expenseInsights.unlinked_count,
-                        detail: `${currency(props.expenseInsights.pending_amount, props.app.locale)} pending · ${props.expenseInsights.unlinked_count} unlinked`,
+                        detail: t('expenses.review_mix', undefined, {
+                            amount: currency(
+                                props.expenseInsights.pending_amount,
+                                locale,
+                            ),
+                            count: props.expenseInsights.unlinked_count,
+                        }),
                         icon: 'bi-exclamation-circle',
                         tone:
                             props.expenseInsights.pending_count +
@@ -190,7 +208,9 @@ export default function ExpensesIndexPage() {
                         render: (expense) => (
                             <div className="pmc-primary-cell">
                                 <strong>{expense.title}</strong>
-                                <span>{humanLabel(expense.category)}</span>
+                                <span>
+                                    {text(humanLabel(expense.category))}
+                                </span>
                                 <StatusBadge value={expense.status} />
                             </div>
                         ),
@@ -201,11 +221,16 @@ export default function ExpensesIndexPage() {
                         render: (expense) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {expense.asset?.title_en ?? 'No asset'}
+                                    {(locale === 'ar'
+                                        ? expense.asset?.title_ar ||
+                                          expense.asset?.title_en
+                                        : expense.asset?.title_en ||
+                                          expense.asset?.title_ar) ??
+                                        text('No asset')}
                                 </strong>
                                 <span>
                                     {expense.maintenance_request?.title ??
-                                        'No maintenance link'}
+                                        text('No maintenance link')}
                                 </span>
                             </div>
                         ),
@@ -216,9 +241,12 @@ export default function ExpensesIndexPage() {
                         render: (expense) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {expense.vendor_name ?? 'Not recorded'}
+                                    {expense.vendor_name ??
+                                        text('Not recorded')}
                                 </strong>
-                                <span>{humanLabel(expense.category)}</span>
+                                <span>
+                                    {text(humanLabel(expense.category))}
+                                </span>
                             </div>
                         ),
                     },
@@ -254,7 +282,11 @@ export default function ExpensesIndexPage() {
                                     <ArchiveAction
                                         href={`/expenses/${expense.id}`}
                                         label="Void"
-                                        confirmMessage={`Void expense ${expense.title}? Reports will stop counting this cost.`}
+                                        confirmMessage={t(
+                                            'expenses.void_confirm',
+                                            undefined,
+                                            { title: expense.title },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

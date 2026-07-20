@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -31,7 +32,11 @@ type LeaseRecord = {
     tenant_profile?: {
         user?: { name?: string | null; email?: string | null };
     };
-    leaseable?: { title_en?: string | null; code?: string | null };
+    leaseable?: {
+        title_en?: string | null;
+        title_ar?: string | null;
+        code?: string | null;
+    };
     total_due: number;
     total_paid: number;
     balance_remaining: number;
@@ -61,6 +66,7 @@ type PageProps = SharedProps & {
 
 export default function LeasesIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const filterFields: TableFilterField[] = [
         {
             name: 'status',
@@ -103,7 +109,7 @@ export default function LeasesIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Leases" />
+            <Head title={text('Leases')} />
 
             <WorkspaceHeader
                 eyebrow="Portfolio"
@@ -129,7 +135,9 @@ export default function LeasesIndexPage() {
                     {
                         label: 'Active leases',
                         value: props.leaseInsights.active,
-                        detail: `${props.leaseInsights.total} total contracts`,
+                        detail: t('leases.total_contracts', undefined, {
+                            count: props.leaseInsights.total,
+                        }),
                         icon: 'bi-file-earmark-text',
                         tone: 'ink',
                     },
@@ -139,7 +147,12 @@ export default function LeasesIndexPage() {
                             props.leaseInsights.total_paid,
                             props.app.locale,
                         ),
-                        detail: `${currency(props.leaseInsights.total_due, props.app.locale)} scheduled`,
+                        detail: t('leases.scheduled_amount', undefined, {
+                            amount: currency(
+                                props.leaseInsights.total_due,
+                                locale,
+                            ),
+                        }),
                         icon: 'bi-check-circle',
                         tone: 'teal',
                     },
@@ -149,7 +162,9 @@ export default function LeasesIndexPage() {
                             props.leaseInsights.balance_remaining,
                             props.app.locale,
                         ),
-                        detail: `${props.leaseInsights.overdue} overdue contracts`,
+                        detail: t('leases.overdue_contracts', undefined, {
+                            count: props.leaseInsights.overdue,
+                        }),
                         icon: 'bi-hourglass-split',
                         tone:
                             props.leaseInsights.balance_remaining > 0
@@ -161,7 +176,10 @@ export default function LeasesIndexPage() {
                         value:
                             props.leaseInsights.unsigned +
                             props.leaseInsights.expiring_soon,
-                        detail: `${props.leaseInsights.unsigned} unsigned · ${props.leaseInsights.expiring_soon} expiring`,
+                        detail: t('leases.attention_mix', undefined, {
+                            unsigned: props.leaseInsights.unsigned,
+                            expiring: props.leaseInsights.expiring_soon,
+                        }),
                         icon: 'bi-file-earmark-excel',
                         tone:
                             props.leaseInsights.unsigned +
@@ -191,7 +209,7 @@ export default function LeasesIndexPage() {
                             <div className="pmc-primary-cell">
                                 <strong>{lease.code}</strong>
                                 <span>
-                                    {humanLabel(lease.payment_frequency)}
+                                    {text(humanLabel(lease.payment_frequency))}
                                 </span>
                                 <StatusBadge value={lease.status} />
                             </div>
@@ -204,11 +222,16 @@ export default function LeasesIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <strong>
                                     {lease.tenant_profile?.user?.name ??
-                                        'No tenant'}
+                                        text('No tenant')}
                                 </strong>
                                 <span>
-                                    {lease.leaseable?.title_en ?? 'No asset'} ·{' '}
-                                    {lease.leaseable?.code ?? 'No code'}
+                                    {(locale === 'ar'
+                                        ? lease.leaseable?.title_ar ||
+                                          lease.leaseable?.title_en
+                                        : lease.leaseable?.title_en ||
+                                          lease.leaseable?.title_ar) ??
+                                        text('No asset')}{' '}
+                                    · {lease.leaseable?.code ?? text('No code')}
                                 </span>
                             </div>
                         ),
@@ -223,12 +246,17 @@ export default function LeasesIndexPage() {
                                         lease.started_at,
                                         props.app.locale,
                                     )}{' '}
-                                    to{' '}
+                                    {text('to')}{' '}
                                     {humanDate(lease.ends_at, props.app.locale)}
                                 </strong>
                                 <span>
-                                    {lease.days_remaining ?? 0} days remaining ·{' '}
-                                    {lease.signed_at ? 'Signed' : 'Unsigned'}
+                                    {t('leases.days_remaining', undefined, {
+                                        count: lease.days_remaining ?? 0,
+                                    })}{' '}
+                                    ·{' '}
+                                    {lease.signed_at
+                                        ? text('Signed')
+                                        : text('Unsigned')}
                                 </span>
                             </div>
                         ),
@@ -244,7 +272,7 @@ export default function LeasesIndexPage() {
                                         props.app.locale,
                                         lease.currency,
                                     )}{' '}
-                                    left
+                                    {text('left')}
                                 </strong>
                                 <span>
                                     {currency(
@@ -252,7 +280,7 @@ export default function LeasesIndexPage() {
                                         props.app.locale,
                                         lease.currency,
                                     )}{' '}
-                                    paid
+                                    {text('paid')}
                                 </span>
                             </div>
                         ),
@@ -275,11 +303,18 @@ export default function LeasesIndexPage() {
                                               props.app.locale,
                                               lease.currency,
                                           )
-                                        : 'No open installment'}
+                                        : text('No open installment')}
                                 </span>
                                 {lease.overdue_count > 0 ? (
                                     <StatusBadge
-                                        value={`${lease.overdue_count} overdue`}
+                                        value="overdue"
+                                        label={t(
+                                            'leases.overdue_installments',
+                                            undefined,
+                                            {
+                                                count: lease.overdue_count,
+                                            },
+                                        )}
                                         tone="danger"
                                     />
                                 ) : null}
@@ -300,13 +335,17 @@ export default function LeasesIndexPage() {
                                     className="btn btn-outline-secondary btn-sm"
                                 >
                                     <i className="bi bi-file-earmark-pdf" />
-                                    <span>Contract</span>
+                                    <span>{text('Contract')}</span>
                                 </a>
                                 {lease.status !== 'terminated' ? (
                                     <ArchiveAction
                                         href={`/leases/${lease.id}`}
                                         label="Terminate"
-                                        confirmMessage={`Terminate lease ${lease.code}? The asset will become vacant if no other active lease exists.`}
+                                        confirmMessage={t(
+                                            'leases.terminate_confirm',
+                                            undefined,
+                                            { code: lease.code },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

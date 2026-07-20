@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 
+import { useTranslator } from '@/lib/i18n';
 import { currency } from '@/lib/utils';
 
 import type { LeaseBalance, NextAction } from './types';
@@ -23,18 +24,20 @@ export function SectionTitle({
     actionHref?: string;
     actionLabel?: string;
 }) {
+    const { text } = useTranslator();
+
     return (
         <div className="pmc-section-title">
             <div>
-                <div className="pmc-kicker mb-2">{eyebrow}</div>
-                <h2>{title}</h2>
+                <div className="pmc-kicker mb-2">{text(eyebrow)}</div>
+                <h2>{text(title)}</h2>
             </div>
             {actionHref && actionLabel ? (
                 <Link
                     href={actionHref}
                     className="btn btn-outline-secondary btn-sm"
                 >
-                    {actionLabel}
+                    {text(actionLabel)}
                 </Link>
             ) : null}
         </div>
@@ -42,6 +45,8 @@ export function SectionTitle({
 }
 
 export function NextActionDeck({ actions }: { actions: NextAction[] }) {
+    const { t, text } = useTranslator();
+
     if (actions.length === 0) {
         return null;
     }
@@ -56,12 +61,12 @@ export function NextActionDeck({ actions }: { actions: NextAction[] }) {
                 >
                     <i className={`bi ${action.icon}`} />
                     <div>
-                        <span>Next action</span>
-                        <strong>{action.label}</strong>
-                        <small>{action.description}</small>
+                        <span>{t('dashboard.next_action')}</span>
+                        <strong>{text(action.label)}</strong>
+                        <small>{text(action.description)}</small>
                     </div>
                     <em>
-                        Open
+                        {t('actions.open')}
                         <i className="bi bi-arrow-right-short" />
                     </em>
                 </Link>
@@ -81,18 +86,22 @@ export function CycleMap({
         icon: string;
     }>;
 }) {
+    const { t, text } = useTranslator();
+
     return (
         <section className="pmc-cycle-map">
             <div className="pmc-section-title">
                 <div>
-                    <div className="pmc-kicker mb-2">Operating cycle</div>
-                    <h2>Follow the property workflow in order</h2>
+                    <div className="pmc-kicker mb-2">
+                        {t('dashboard.operating_cycle')}
+                    </div>
+                    <h2>{t('dashboard.workflow_order')}</h2>
                 </div>
                 <Link
                     href="/documentation"
                     className="btn btn-outline-secondary btn-sm"
                 >
-                    How it works
+                    {t('dashboard.how_it_works')}
                 </Link>
             </div>
             <div className="pmc-cycle-rail">
@@ -104,8 +113,8 @@ export function CycleMap({
                     >
                         <span>{index + 1}</span>
                         <i className={`bi ${step.icon}`} />
-                        <strong>{step.label}</strong>
-                        <small>{step.description}</small>
+                        <strong>{text(step.label)}</strong>
+                        <small>{text(step.description)}</small>
                     </Link>
                 ))}
             </div>
@@ -124,6 +133,8 @@ export function LeaseList({
     empty: string;
     showBalanceOnly?: boolean;
 }) {
+    const { t, text } = useTranslator();
+
     if (leases.length === 0) {
         return <InlineEmptyState message={empty} />;
     }
@@ -135,8 +146,8 @@ export function LeaseList({
                     <div>
                         <strong>{lease.code}</strong>
                         <span>
-                            {lease.tenant ?? 'No tenant'} ·{' '}
-                            {lease.asset ?? 'No asset'}
+                            {lease.tenant ?? text('No tenant')} ·{' '}
+                            {lease.asset ?? text('No asset')}
                         </span>
                     </div>
                     <em>
@@ -146,7 +157,9 @@ export function LeaseList({
                                   locale,
                                   lease.currency,
                               )
-                            : `${lease.days_remaining ?? 0} days`}
+                            : t('dashboard.days_count', undefined, {
+                                  count: lease.days_remaining ?? 0,
+                              })}
                     </em>
                 </Link>
             ))}
@@ -161,6 +174,7 @@ export function MiniMetricList({
     source: Record<string, number>;
     empty: string;
 }) {
+    const { text } = useTranslator();
     const entries = Object.entries(source);
 
     if (entries.length === 0) {
@@ -171,7 +185,7 @@ export function MiniMetricList({
         <div className="pmc-mini-metric-list">
             {entries.map(([label, value]) => (
                 <div key={label}>
-                    <span>{label.replaceAll('_', ' ')}</span>
+                    <span>{text(label.replaceAll('_', ' '))}</span>
                     <strong>{value}</strong>
                 </div>
             ))}
@@ -214,15 +228,19 @@ export function ChartEmptyState({
     title: string;
     message: string;
 }) {
+    const { text } = useTranslator();
+
     return (
         <div className="pmc-chart-empty">
             <i className={`bi ${icon}`} />
-            <strong>{title}</strong>
-            <span>{message}</span>
+            <strong>{text(title)}</strong>
+            <span>{text(message)}</span>
         </div>
     );
 }
 
 export function InlineEmptyState({ message }: { message: string }) {
-    return <div className="pmc-inline-empty">{message}</div>;
+    const { text } = useTranslator();
+
+    return <div className="pmc-inline-empty">{text(message)}</div>;
 }

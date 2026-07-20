@@ -255,6 +255,33 @@
     text-decoration: none;
 }
 
+.pmc-table-primary-record {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.pmc-table-showcase-badge {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid #ead6a0;
+    border-radius: 999px;
+    background: #fff8df;
+    color: #775400;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0.25rem 0.45rem;
+}
+
+.pmc-table-showcase-badge i {
+    font-size: 0.7rem;
+}
+
 .pmc-empty-cell {
     padding: 1.5rem !important;
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Modules\Wording\UiTranslationCatalog;
 use App\Support\PortfolioModules;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -98,7 +100,11 @@ class DocumentationController extends Controller
             )
             ->map(function (array $item) use ($collection): array {
                 $translationKey = $this->documentationTranslationKey($collection, $item);
-                $localized = trans("property_docs.{$collection}.{$translationKey}");
+                $localized = Arr::get(
+                    app(UiTranslationCatalog::class)->forLocale(app()->getLocale()),
+                    "property_docs.{$collection}.{$translationKey}",
+                    [],
+                );
                 $slug = $collection === 'guides'
                     ? Str::slug((string) $item['title'])
                     : null;

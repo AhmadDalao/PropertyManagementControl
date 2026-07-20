@@ -21,7 +21,7 @@ trait InteractsWithPortfolioScope
     protected function requireRoles(User $user, array $roles): void
     {
         if (! $user->hasAnyRole($roles)) {
-            throw new HttpException(403, 'You are not allowed to access this section.');
+            throw new HttpException(403, trans('app.errors.section_access_denied'));
         }
     }
 
@@ -41,7 +41,7 @@ trait InteractsWithPortfolioScope
         }
 
         if ($portfolioId === null || $user->portfolio_id !== $portfolioId) {
-            throw new HttpException(403, 'You are not allowed to access this portfolio.');
+            throw new HttpException(403, trans('app.errors.portfolio_access_denied'));
         }
     }
 
@@ -50,11 +50,13 @@ trait InteractsWithPortfolioScope
      */
     protected function portfolioOptions(User $user): array
     {
-        return $this->scopeByPortfolio(Portfolio::query()->orderBy('name_en'), $user, 'id')
+        $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+
+        return $this->scopeByPortfolio(Portfolio::query()->orderBy($nameColumn), $user, 'id')
             ->get()
             ->map(fn (Portfolio $portfolio) => [
                 'id' => $portfolio->id,
-                'name' => $portfolio->name_en,
+                'name' => $this->localized($portfolio->name_en, $portfolio->name_ar),
             ])
             ->all();
     }

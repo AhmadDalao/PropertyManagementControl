@@ -177,4 +177,46 @@ class PropertyMapWorkspaceTest extends TestCase
             ->get(route('property-map.index'))
             ->assertForbidden();
     }
+
+    public function test_arabic_property_map_returns_localized_titles_addresses_zones_and_portfolios(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Riyadh Portfolio',
+            'name_ar' => 'محفظة الرياض',
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio, [
+            'preferred_locale' => 'ar',
+        ]);
+        $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'North Operations Tower',
+            'title_ar' => 'برج العمليات الشمالي',
+            'address' => 'King Fahd Road',
+            'address_ar' => 'طريق الملك فهد',
+            'code' => 'AR-MAP-01',
+            'meta_json' => [
+                'map' => [
+                    'zone' => 'Legacy North',
+                    'zone_en' => 'North District',
+                    'zone_ar' => 'الحي الشمالي',
+                    'land_number' => 'AR-101',
+                    'latitude' => 24.7136,
+                    'longitude' => 46.6753,
+                ],
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('property-map.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.locale', 'ar')
+                ->where('app.direction', 'rtl')
+                ->where('propertyMap.assets.0.title', 'برج العمليات الشمالي')
+                ->where('propertyMap.assets.0.portfolio', 'محفظة الرياض')
+                ->where('propertyMap.assets.0.address', 'طريق الملك فهد')
+                ->where('propertyMap.assets.0.zone', 'الحي الشمالي')
+                ->where('propertyMap.assets.0.land_number', 'AR-101'));
+    }
 }

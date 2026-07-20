@@ -388,7 +388,7 @@
 .pmc-badge-stack > span:not(.pmc-status-badge) {
     max-width: 100%;
     overflow: hidden;
-    color: #77777e;
+    color: #6f6f76;
     font-size: 0.71rem;
     line-height: 1.35;
     text-overflow: ellipsis;

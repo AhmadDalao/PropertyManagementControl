@@ -1,3 +1,5 @@
+import { useTranslator } from '@/lib/i18n';
+
 import type { ContentCollection, ContentField } from './section-schema';
 import {
     defaultSectionContent,
@@ -22,6 +24,7 @@ export function SectionContentEditor({
     onContentEnChange: (value: string) => void;
     onContentArChange: (value: string) => void;
 }) {
+    const { t } = useTranslator();
     const schema = sectionContentSchema(sectionType);
     const loadTemplate = () => {
         onContentEnChange(jsonText(defaultSectionContent(sectionType, 'en')));
@@ -32,9 +35,19 @@ export function SectionContentEditor({
         <section className="pmc-section-editor">
             <header className="pmc-section-editor-head">
                 <div>
-                    <span>Guided bilingual content</span>
-                    <h2>{readableSectionType(sectionType)}</h2>
-                    <p>{schema.description}</p>
+                    <span>{t('cms.guided_content')}</span>
+                    <h2>
+                        {t(
+                            `cms.section_types.${sectionType}`,
+                            readableSectionType(sectionType),
+                        )}
+                    </h2>
+                    <p>
+                        {t(
+                            `cms.section_descriptions.${sectionType}`,
+                            schema.description,
+                        )}
+                    </p>
                 </div>
                 <button
                     type="button"
@@ -42,7 +55,7 @@ export function SectionContentEditor({
                     onClick={loadTemplate}
                 >
                     <i className="bi bi-stars" />
-                    Load starter content
+                    {t('cms.load_starter_content')}
                 </button>
             </header>
 
@@ -66,11 +79,11 @@ export function SectionContentEditor({
             <details className="pmc-section-json">
                 <summary>
                     <i className="bi bi-braces" />
-                    Advanced JSON
+                    {t('cms.advanced_json')}
                 </summary>
                 <div>
                     <label>
-                        <span>English JSON</span>
+                        <span>{t('cms.english_json')}</span>
                         <textarea
                             className="form-control pmc-code-textarea"
                             rows={12}
@@ -81,7 +94,7 @@ export function SectionContentEditor({
                         />
                     </label>
                     <label>
-                        <span>Arabic JSON</span>
+                        <span>{t('cms.arabic_json')}</span>
                         <textarea
                             className="form-control pmc-code-textarea"
                             rows={12}
@@ -111,6 +124,7 @@ function LanguageEditor({
     contentJson: string;
     onChange: (value: string) => void;
 }) {
+    const { t } = useTranslator();
     const content = safeJsonObject(contentJson);
 
     return (
@@ -119,9 +133,13 @@ function LanguageEditor({
             dir={language === 'ar' ? 'rtl' : 'ltr'}
         >
             <header>
-                <strong>{language === 'ar' ? 'Arabic' : 'English'}</strong>
+                <strong>
+                    {language === 'ar' ? t('cms.arabic') : t('cms.english')}
+                </strong>
                 <span>
-                    {language === 'ar' ? 'RTL public copy' : 'Public copy'}
+                    {language === 'ar'
+                        ? t('cms.rtl_public_copy')
+                        : t('cms.public_copy')}
                 </span>
             </header>
 
@@ -160,9 +178,11 @@ function FieldControl({
     value: string;
     onChange: (value: string) => void;
 }) {
+    const { t } = useTranslator();
+
     return (
         <label className="pmc-resource-field">
-            <span>{field.label}</span>
+            <span>{t(`cms.fields.${field.key}`, field.label)}</span>
             {field.type === 'textarea' ? (
                 <textarea
                     className="form-control"
@@ -192,16 +212,32 @@ function CollectionEditor({
     contentJson: string;
     onChange: (value: string) => void;
 }) {
+    const { t } = useTranslator();
     const rows = Array.isArray(content[collection.key])
         ? (content[collection.key] as unknown[])
         : [];
+    const collectionLabel = t(
+        `cms.collections.${collection.key}`,
+        collection.label,
+    );
+    const itemLabelKey = collection.itemLabel
+        .toLowerCase()
+        .replaceAll(' ', '_');
+    const itemLabel = t(
+        `cms.item_labels.${itemLabelKey}`,
+        collection.itemLabel,
+    );
 
     return (
         <section className="pmc-section-collection">
             <header>
                 <div>
-                    <strong>{collection.label}</strong>
-                    <span>{rows.length} items</span>
+                    <strong>{collectionLabel}</strong>
+                    <span>
+                        {t('cms.item_count', undefined, {
+                            count: rows.length,
+                        })}
+                    </span>
                 </div>
                 <button
                     type="button"
@@ -209,7 +245,7 @@ function CollectionEditor({
                     onClick={() => addRow(contentJson, onChange, collection)}
                 >
                     <i className="bi bi-plus-lg" />
-                    Add
+                    {t('cms.add_item')}
                 </button>
             </header>
 
@@ -222,7 +258,10 @@ function CollectionEditor({
                             <article key={`${collection.key}-${index}`}>
                                 <header>
                                     <strong>
-                                        {collection.itemLabel} {index + 1}
+                                        {t('cms.collection_item', undefined, {
+                                            label: itemLabel,
+                                            number: index + 1,
+                                        })}
                                     </strong>
                                     <button
                                         type="button"
@@ -236,7 +275,7 @@ function CollectionEditor({
                                             )
                                         }
                                     >
-                                        Remove
+                                        {t('cms.remove_item')}
                                     </button>
                                 </header>
                                 <div className="pmc-section-field-grid">
@@ -266,7 +305,9 @@ function CollectionEditor({
                 </div>
             ) : (
                 <p className="pmc-inline-empty">
-                    No {collection.label.toLowerCase()} yet.
+                    {t('cms.no_collection_items', undefined, {
+                        label: collectionLabel,
+                    })}
                 </p>
             )}
         </section>

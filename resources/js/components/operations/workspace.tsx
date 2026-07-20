@@ -82,7 +82,10 @@ export function MetricGrid({ metrics }: { metrics: WorkspaceMetric[] }) {
     const { text } = useTranslator();
 
     return (
-        <section className="pmc-metric-grid" aria-label="Workspace summary">
+        <section
+            className="pmc-metric-grid"
+            aria-label={text('Workspace summary')}
+        >
             {metrics.map((metric) => {
                 const content = (
                     <>
@@ -160,19 +163,21 @@ export function WorkspacePanel({
 export function StatusBadge({
     value,
     tone,
+    label,
 }: {
     value: string;
     tone?: 'success' | 'warning' | 'danger' | 'neutral' | 'blue';
+    label?: string;
 }) {
     const { t } = useTranslator();
     const translated = t(
         `status.${value}` as `status.${string}`,
-        humanLabel(value),
+        t(`roles.${value}`, humanLabel(value)),
     );
 
     return (
         <span className={`pmc-status-badge is-${tone ?? statusTone(value)}`}>
-            {translated}
+            {label ?? translated}
         </span>
     );
 }

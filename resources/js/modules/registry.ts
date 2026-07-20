@@ -123,6 +123,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin'],
             },
             {
+                labelKey: 'nav.showcase_data',
+                href: '/system/showcase-data',
+                icon: 'bi-database-gear',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.media',
                 href: '/media-files',
                 icon: 'bi-images',

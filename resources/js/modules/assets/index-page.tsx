@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -41,7 +42,7 @@ type AssetRecord = {
     level_label?: string | null;
     unit_label?: string | null;
     stakeholders?: StakeholderRecord[];
-    parent?: { title_en: string } | null;
+    parent?: { title_en: string; title_ar?: string | null } | null;
     children_count?: number;
     active_leases_count?: number;
 };
@@ -68,6 +69,7 @@ type PageProps = SharedProps & {
 
 export default function AssetsIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const assignmentGaps =
         props.insights.missing_owner + props.insights.missing_manager;
     const filterFields: TableFilterField[] = [
@@ -142,7 +144,7 @@ export default function AssetsIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Properties & Units" />
+            <Head title={text('Properties & Units')} />
 
             <WorkspaceHeader
                 eyebrow="Portfolio"
@@ -168,7 +170,10 @@ export default function AssetsIndexPage() {
                     {
                         label: 'Assets',
                         value: props.insights.total_assets,
-                        detail: `${props.insights.buildings} buildings · ${props.insights.units} units`,
+                        detail: t('assets.mix', undefined, {
+                            buildings: props.insights.buildings,
+                            units: props.insights.units,
+                        }),
                         icon: 'bi-buildings',
                         tone: 'ink',
                     },
@@ -178,21 +183,26 @@ export default function AssetsIndexPage() {
                             props.insights.total_value,
                             props.app.locale,
                         ),
-                        detail: 'Recorded asset valuation',
+                        detail: t('assets.recorded_valuation'),
                         icon: 'bi-bank',
                         tone: 'blue',
                     },
                     {
                         label: 'Occupancy',
                         value: `${props.insights.rentable_occupancy_rate}%`,
-                        detail: `${props.insights.vacant_rentable_assets} vacant rentable`,
+                        detail: t('assets.vacant_rentable', undefined, {
+                            count: props.insights.vacant_rentable_assets,
+                        }),
                         icon: 'bi-house-check',
                         tone: 'teal',
                     },
                     {
                         label: 'Assignment gaps',
                         value: assignmentGaps,
-                        detail: `${props.insights.missing_owner} owners · ${props.insights.missing_manager} managers missing`,
+                        detail: t('assets.assignment_gaps', undefined, {
+                            owners: props.insights.missing_owner,
+                            managers: props.insights.missing_manager,
+                        }),
                         icon: 'bi-person-exclamation',
                         tone: assignmentGaps > 0 ? 'red' : 'amber',
                     },
@@ -215,11 +225,21 @@ export default function AssetsIndexPage() {
                         label: 'Asset',
                         render: (asset) => (
                             <div className="pmc-primary-cell">
-                                <strong>{asset.title_en}</strong>
+                                <strong>
+                                    {locale === 'ar'
+                                        ? asset.title_ar || asset.title_en
+                                        : asset.title_en || asset.title_ar}
+                                </strong>
                                 <span>
                                     {asset.code}
                                     {asset.parent
-                                        ? ` · ${asset.parent.title_en}`
+                                        ? ` · ${
+                                              locale === 'ar'
+                                                  ? asset.parent.title_ar ||
+                                                    asset.parent.title_en
+                                                  : asset.parent.title_en ||
+                                                    asset.parent.title_ar
+                                          }`
                                         : ''}
                                 </span>
                             </div>
@@ -230,11 +250,15 @@ export default function AssetsIndexPage() {
                         label: 'Type',
                         render: (asset) => (
                             <div className="pmc-stacked-cell">
-                                <strong>{humanLabel(asset.asset_type)}</strong>
+                                <strong>
+                                    {text(humanLabel(asset.asset_type))}
+                                </strong>
                                 <span>
-                                    {humanLabel(asset.usage_type)}
+                                    {text(humanLabel(asset.usage_type))}
                                     {asset.level_label
-                                        ? ` · Level ${asset.level_label}`
+                                        ? ` · ${t('assets.level', undefined, {
+                                              level: asset.level_label,
+                                          })}`
                                         : ''}
                                     {asset.unit_label
                                         ? ` · ${asset.unit_label}`
@@ -260,9 +284,9 @@ export default function AssetsIndexPage() {
                                     }
                                 />
                                 {asset.rentable ? (
-                                    <span>Rentable</span>
+                                    <span>{text('Rentable')}</span>
                                 ) : (
-                                    <span>Not rentable</span>
+                                    <span>{text('Not rentable')}</span>
                                 )}
                             </div>
                         ),
@@ -274,11 +298,11 @@ export default function AssetsIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <strong>
                                     {primaryStakeholder(asset, 'owner') ??
-                                        'Owner not assigned'}
+                                        text('Owner not assigned')}
                                 </strong>
                                 <span>
                                     {primaryStakeholder(asset, 'manager') ??
-                                        'Manager not assigned'}
+                                        text('Manager not assigned')}
                                 </span>
                             </div>
                         ),
@@ -297,8 +321,10 @@ export default function AssetsIndexPage() {
                                 </strong>
                                 <span>
                                     {asset.area
-                                        ? `${asset.area} sqm`
-                                        : 'Area not set'}
+                                        ? t('assets.area_sqm', undefined, {
+                                              area: asset.area,
+                                          })
+                                        : text('Area not set')}
                                 </span>
                             </div>
                         ),
@@ -315,7 +341,18 @@ export default function AssetsIndexPage() {
                                 {asset.status !== 'archived' ? (
                                     <ArchiveAction
                                         href={`/assets/${asset.id}`}
-                                        confirmMessage={`Archive ${asset.title_en}? Active leases must be terminated first.`}
+                                        confirmMessage={t(
+                                            'assets.archive_confirm',
+                                            undefined,
+                                            {
+                                                name:
+                                                    locale === 'ar'
+                                                        ? asset.title_ar ||
+                                                          asset.title_en
+                                                        : asset.title_en ||
+                                                          asset.title_ar,
+                                            },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

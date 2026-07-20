@@ -18,7 +18,7 @@ class EnsurePortfolioModuleEnabled
         abort_unless(
             $user && PortfolioModules::enabledForUser($user, $module),
             403,
-            'This module is disabled for this portfolio.'
+            trans('app.errors.module_disabled')
         );
 
         return $next($request);

@@ -54,7 +54,7 @@ class NavigationItemController extends Controller
             'is_visible' => (bool) ($data['is_visible'] ?? true),
         ]);
 
-        return to_route('cms.index')->with('success', 'Navigation item created.');
+        return to_route('cms.index')->with('success', trans('app.messages.navigation_created'));
     }
 
     public function update(Request $request, NavigationItem $navigationItem): RedirectResponse
@@ -81,7 +81,7 @@ class NavigationItemController extends Controller
             'is_visible' => (bool) ($data['is_visible'] ?? true),
         ]);
 
-        return to_route('cms.index')->with('success', 'Navigation item updated.');
+        return to_route('cms.index')->with('success', trans('app.messages.navigation_updated'));
     }
 
     public function destroy(NavigationItem $navigationItem): RedirectResponse
@@ -89,7 +89,7 @@ class NavigationItemController extends Controller
         $this->requireRoles($this->actor(request()), ['superadmin']);
         $navigationItem->delete();
 
-        return to_route('cms.index')->with('success', 'Navigation item deleted.');
+        return to_route('cms.index')->with('success', trans('app.messages.navigation_deleted'));
     }
 
     private function ensureNavigationParentIsValid(?int $parentId, ?NavigationItem $navigationItem = null): void
@@ -98,10 +98,10 @@ class NavigationItemController extends Controller
             return;
         }
 
-        abort_if($parentId === $navigationItem->id, 422, 'A navigation item cannot be its own parent.');
+        abort_if($parentId === $navigationItem->id, 422, trans('app.errors.navigation_self_parent'));
 
         $childrenIds = $navigationItem->children()->pluck('id')->all();
-        abort_if(in_array($parentId, $childrenIds, true), 422, 'A navigation item cannot be moved under its child.');
+        abort_if(in_array($parentId, $childrenIds, true), 422, trans('app.errors.navigation_child_parent'));
     }
 
     private function navigationFormPage(?NavigationItem $navigationItem = null): array
@@ -116,7 +116,7 @@ class NavigationItemController extends Controller
             ->orderBy('sort_order')
             ->get()
             ->map(fn (NavigationItem $item) => [
-                'label' => $item->title_en.' · '.$item->location,
+                'label' => $this->localized($item->title_en, $item->title_ar).' · '.$item->location,
                 'value' => $item->id,
             ])
             ->prepend(['label' => 'No parent', 'value' => ''])
@@ -127,7 +127,7 @@ class NavigationItemController extends Controller
             ->orderBy('title_en')
             ->get()
             ->map(fn (CmsPage $page) => [
-                'label' => $page->title_en.' · /pages/'.$page->slug,
+                'label' => $this->localized($page->title_en, $page->title_ar).' · /pages/'.$page->slug,
                 'value' => $page->id,
             ])
             ->prepend(['label' => 'Custom URL', 'value' => ''])
@@ -135,7 +135,9 @@ class NavigationItemController extends Controller
             ->all();
 
         return [
-            'title' => $navigationItem ? 'Edit '.$navigationItem->title_en : 'Create navigation item',
+            'title' => $navigationItem
+                ? trans('app.actions.edit').' '.$this->localized($navigationItem->title_en, $navigationItem->title_ar)
+                : 'Create navigation item',
             'description' => 'Add one clear bilingual link to the public header or footer.',
             'backHref' => route('cms.index'),
             'backLabel' => 'Website control',

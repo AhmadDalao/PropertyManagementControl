@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type {
     PaginatedData,
     SharedProps,
@@ -48,6 +49,7 @@ type PageProps = SharedProps & {
 
 export default function UsersIndexPage() {
     const { props } = usePage<PageProps>();
+    const { t, text } = useTranslator();
     const filterFields: TableFilterField[] = [
         {
             name: 'status',
@@ -88,7 +90,7 @@ export default function UsersIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Users & Roles" />
+            <Head title={text('Users & Roles')} />
 
             <WorkspaceHeader
                 eyebrow="System"
@@ -131,7 +133,9 @@ export default function UsersIndexPage() {
                     {
                         label: 'Temporary passwords',
                         value: props.userInsights.temporary_passwords,
-                        detail: `${props.userInsights.tenants_without_profile} tenant profiles missing`,
+                        detail: t('users.tenant_profiles_missing', undefined, {
+                            count: props.userInsights.tenants_without_profile,
+                        }),
                         icon: 'bi-key',
                         tone:
                             props.userInsights.temporary_passwords > 0
@@ -196,8 +200,8 @@ export default function UsersIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <strong>
                                     {user.preferred_locale === 'ar'
-                                        ? 'Arabic'
-                                        : 'English'}
+                                        ? text('Arabic')
+                                        : text('English')}
                                 </strong>
                                 <span>
                                     {user.preferred_locale.toUpperCase()}
@@ -212,9 +216,9 @@ export default function UsersIndexPage() {
                             <div className="pmc-badge-stack">
                                 <StatusBadge value={user.status} />
                                 {user.force_password_reset ? (
-                                    <span>Must change password</span>
+                                    <span>{text('Must change password')}</span>
                                 ) : (
-                                    <span>Password confirmed</span>
+                                    <span>{text('Password confirmed')}</span>
                                 )}
                             </div>
                         ),
@@ -230,7 +234,7 @@ export default function UsersIndexPage() {
                                         href="/profile"
                                         className="pmc-record-open"
                                     >
-                                        My profile
+                                        {text('My profile')}
                                         <i className="bi bi-arrow-up-right" />
                                     </Link>
                                 </div>
@@ -242,7 +246,11 @@ export default function UsersIndexPage() {
                                     {user.status !== 'suspended' ? (
                                         <ArchiveAction
                                             href={`/users/${user.id}`}
-                                            confirmMessage={`Archive ${user.name}? They will no longer have an active portal account.`}
+                                            confirmMessage={t(
+                                                'users.archive_confirm',
+                                                undefined,
+                                                { name: user.name },
+                                            )}
                                         />
                                     ) : null}
                                 </RecordActions>

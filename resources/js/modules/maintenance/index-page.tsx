@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
@@ -29,7 +30,12 @@ type RequestRecord = {
     due_at?: string | null;
     is_overdue: boolean;
     assigned_to?: { id: number; name: string } | null;
-    asset?: { id: number; title_en: string; code?: string | null } | null;
+    asset?: {
+        id: number;
+        title_en: string;
+        title_ar?: string | null;
+        code?: string | null;
+    } | null;
     tenant_profile?: {
         user?: { name?: string | null; email?: string | null };
     };
@@ -60,6 +66,7 @@ type PageProps = SharedProps & {
 
 export default function MaintenanceIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const activeCount =
         props.maintenanceInsights.open + props.maintenanceInsights.in_progress;
     const filterFields: TableFilterField[] = [
@@ -102,7 +109,7 @@ export default function MaintenanceIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Maintenance" />
+            <Head title={text('Maintenance')} />
 
             <WorkspaceHeader
                 eyebrow="Money & service"
@@ -137,7 +144,10 @@ export default function MaintenanceIndexPage() {
                     {
                         label: 'Active requests',
                         value: activeCount,
-                        detail: `${props.maintenanceInsights.open} open · ${props.maintenanceInsights.in_progress} in progress`,
+                        detail: t('maintenance.active_mix', undefined, {
+                            open: props.maintenanceInsights.open,
+                            in_progress: props.maintenanceInsights.in_progress,
+                        }),
                         icon: 'bi-tools',
                         tone: 'ink',
                     },
@@ -146,7 +156,10 @@ export default function MaintenanceIndexPage() {
                         value: props.maintenanceInsights.urgent,
                         detail:
                             props.mode === 'manager'
-                                ? `${props.maintenanceInsights.unassigned} unassigned`
+                                ? t('maintenance.unassigned', undefined, {
+                                      count: props.maintenanceInsights
+                                          .unassigned,
+                                  })
                                 : 'High-priority tenant issues',
                         icon: 'bi-exclamation-triangle',
                         tone:
@@ -157,7 +170,9 @@ export default function MaintenanceIndexPage() {
                     {
                         label: 'Overdue',
                         value: props.maintenanceInsights.overdue,
-                        detail: `${props.maintenanceInsights.resolved} resolved requests`,
+                        detail: t('maintenance.resolved', undefined, {
+                            count: props.maintenanceInsights.resolved,
+                        }),
                         icon: 'bi-clock-history',
                         tone:
                             props.maintenanceInsights.overdue > 0
@@ -176,7 +191,9 @@ export default function MaintenanceIndexPage() {
                                       props.app.locale,
                                   )
                                 : props.maintenanceInsights.total,
-                        detail: `${props.maintenanceInsights.total} total requests`,
+                        detail: t('maintenance.total_requests', undefined, {
+                            count: props.maintenanceInsights.total,
+                        }),
                         icon:
                             props.mode === 'manager'
                                 ? 'bi-cash-coin'
@@ -212,10 +229,12 @@ export default function MaintenanceIndexPage() {
                                 <strong>
                                     #{request.id} {request.title}
                                 </strong>
-                                <span>{humanLabel(request.category)}</span>
+                                <span>
+                                    {text(humanLabel(request.category))}
+                                </span>
                                 {request.is_overdue ? (
                                     <StatusBadge
-                                        value="Overdue"
+                                        value="overdue"
                                         tone="danger"
                                     />
                                 ) : null}
@@ -228,11 +247,16 @@ export default function MaintenanceIndexPage() {
                         render: (request) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {request.asset?.title_en ?? 'No asset'}
+                                    {(locale === 'ar'
+                                        ? request.asset?.title_ar ||
+                                          request.asset?.title_en
+                                        : request.asset?.title_en ||
+                                          request.asset?.title_ar) ??
+                                        text('No asset')}
                                 </strong>
                                 <span>
                                     {request.tenant_profile?.user?.name ??
-                                        'No tenant'}
+                                        text('No tenant')}
                                 </span>
                             </div>
                         ),
@@ -243,14 +267,17 @@ export default function MaintenanceIndexPage() {
                         render: (request) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {request.assigned_to?.name ?? 'Unassigned'}
+                                    {request.assigned_to?.name ??
+                                        text('Unassigned')}
                                 </strong>
                                 <span>
                                     {currency(
                                         request.expense_total,
                                         props.app.locale,
                                     )}{' '}
-                                    cost · {request.expense_count} entries
+                                    {t('maintenance.cost_entries', undefined, {
+                                        count: request.expense_count,
+                                    })}
                                 </span>
                             </div>
                         ),
@@ -278,7 +305,7 @@ export default function MaintenanceIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <StatusBadge value={request.status} />
                                 <span>
-                                    Due{' '}
+                                    {text('Due')}{' '}
                                     {humanDate(
                                         request.due_at,
                                         props.app.locale,
@@ -312,7 +339,11 @@ export default function MaintenanceIndexPage() {
                                     <ArchiveAction
                                         href={`/maintenance-requests/${request.id}`}
                                         label="Cancel"
-                                        confirmMessage={`Cancel maintenance request #${request.id}?`}
+                                        confirmMessage={t(
+                                            'maintenance.cancel_confirm',
+                                            undefined,
+                                            { id: request.id },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>

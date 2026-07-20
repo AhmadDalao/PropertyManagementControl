@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
@@ -32,6 +33,7 @@ class User extends Authenticatable
     use HasFactory;
 
     use HasRoles;
+    use HasShowcaseBadge;
     use LogsModelActivity;
     use Notifiable;
 
@@ -39,6 +41,7 @@ class User extends Authenticatable
 
     protected $fillable = [
         'portfolio_id',
+        'showcase_dataset_id',
         'name',
         'email',
         'phone',
@@ -68,6 +71,11 @@ class User extends Authenticatable
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
+    }
+
+    public function showcaseDataset(): BelongsTo
+    {
+        return $this->belongsTo(ShowcaseDataset::class);
     }
 
     public function portfoliosOwned(): HasMany

@@ -67,6 +67,7 @@ export default function PropertyMapPage() {
             <PropertyMapWorkspace
                 assets={props.propertyMap.assets}
                 summary={props.propertyMap.summary}
+                config={props.propertyMap.config}
                 toolbar={
                     isSuperadmin ? (
                         <label>

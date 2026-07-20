@@ -56,12 +56,18 @@ class AssetController extends Controller
             'level_label',
             'unit_label',
             'address',
+            'address_ar',
             fn ($query, $search, $like) => $query
                 ->orWhere('meta_json->map->zone', 'like', $like)
+                ->orWhere('meta_json->map->zone_en', 'like', $like)
+                ->orWhere('meta_json->map->zone_ar', 'like', $like)
                 ->orWhere('meta_json->map->land_number', 'like', $like),
             fn ($query, $search, $like) => $query->orWhereHas(
                 'parent',
-                fn ($parentQuery) => $parentQuery->where('title_en', 'like', $like)->orWhere('code', 'like', $like)
+                fn ($parentQuery) => $parentQuery
+                    ->where('title_en', 'like', $like)
+                    ->orWhere('title_ar', 'like', $like)
+                    ->orWhere('code', 'like', $like)
             ),
             fn ($query, $search, $like) => $query->orWhereHas(
                 'stakeholders.user',
@@ -92,7 +98,7 @@ class AssetController extends Controller
             'portfolioOptions' => $this->portfolioOptions($actor),
             'parentOptions' => (clone $baseQuery)->orderBy('title_en')->get()->map(fn (Asset $asset) => [
                 'id' => $asset->id,
-                'name' => $asset->title_en,
+                'name' => $this->localized($asset->title_en, $asset->title_ar),
                 'code' => $asset->code,
                 'asset_type' => $asset->asset_type,
                 'portfolio_id' => $asset->portfolio_id,
@@ -139,7 +145,15 @@ class AssetController extends Controller
         $postedExpensesTotal = (float) $asset->expenses->where('status', 'posted')->sum('amount');
         $openMaintenanceCount = $asset->maintenanceRequests->whereIn('status', ['open', 'in_progress'])->count();
         $mapReady = $this->assetHasMapPosition($asset) && $this->assetHasMapIdentity($asset);
-        $mapIdentity = trim(($this->assetMapMeta($asset, 'zone') ?: 'No zone').' · '.($this->assetMapMeta($asset, 'land_number') ?: 'No land number'));
+        $localizedZone = $this->localized(
+            $this->assetMapMeta($asset, 'zone_en') ?: $this->assetMapMeta($asset, 'zone'),
+            $this->assetMapMeta($asset, 'zone_ar'),
+        );
+        $localizedAssetTitle = $this->localized($asset->title_en, $asset->title_ar);
+        $localizedPortfolioName = $this->localized($asset->portfolio?->name_en, $asset->portfolio?->name_ar);
+        $localizedParentTitle = $this->localized($asset->parent?->title_en, $asset->parent?->title_ar);
+        $localizedAddress = $this->localized($asset->address, $asset->address_ar);
+        $mapIdentity = trim(($localizedZone ?: 'No zone').' · '.($this->assetMapMeta($asset, 'land_number') ?: 'No land number'));
         $mapPosition = $this->assetCoordinateLabel($asset) ?: $this->mapPositionLabel($asset);
         $propertyMapHref = route(
             'property-map.index',
@@ -150,7 +164,7 @@ class AssetController extends Controller
             'detailPage' => [
                 'header' => [
                     'eyebrow' => 'Asset detail',
-                    'title' => $asset->title_en,
+                    'title' => $localizedAssetTitle,
                     'description' => trim($asset->code.' · '.$asset->asset_type.' · '.$asset->usage_type),
                     'backHref' => route('assets.index'),
                     'backLabel' => 'All assets',
@@ -163,12 +177,12 @@ class AssetController extends Controller
                 'spotlight' => [
                     'eyebrow' => 'Clicked land record',
                     'title' => $this->assetMapMeta($asset, 'land_number') ?: $asset->code,
-                    'subtitle' => $this->assetMapMeta($asset, 'zone') ?: 'No zone recorded',
-                    'description' => $asset->address ?: 'No address recorded yet. Add the address and coordinates from Edit asset.',
+                    'subtitle' => $localizedZone ?: 'No zone recorded',
+                    'description' => $localizedAddress ?: 'No address recorded yet. Add the address and coordinates from Edit asset.',
                     'status' => str($asset->occupancy_status)->headline()->toString(),
                     'items' => $this->detailItems([
-                        ['label' => 'Property', 'value' => $asset->title_en],
-                        ['label' => 'Portfolio', 'value' => $asset->portfolio?->name_en],
+                        ['label' => 'Property', 'value' => $localizedAssetTitle],
+                        ['label' => 'Portfolio', 'value' => $localizedPortfolioName],
                         ['label' => 'Owner', 'value' => $asset->stakeholders->firstWhere('relationship_type', 'owner')?->user?->name ?? 'Not assigned'],
                         ['label' => 'Manager', 'value' => $asset->stakeholders->firstWhere('relationship_type', 'manager')?->user?->name ?? 'Not assigned'],
                         ['label' => 'Coordinates', 'value' => $this->assetCoordinateLabel($asset)],
@@ -195,7 +209,10 @@ class AssetController extends Controller
                         'title' => 'Rental state',
                         'value' => $activeLease ? str($activeLease->status)->headline()->toString() : str($asset->occupancy_status)->headline()->toString(),
                         'detail' => $activeLease
-                            ? 'Tenant: '.($activeLease->tenantProfile?->user?->name ?? 'Not assigned').' · Balance '.number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency
+                            ? trans('app.assets.tenant_balance', [
+                                'tenant' => $activeLease->tenantProfile?->user?->name ?? trans('app.map.not_assigned'),
+                                'balance' => number_format((float) $activeLease->balance_remaining, 2).' '.$activeLease->currency,
+                            ])
                             : 'No active lease is attached to this property record.',
                         'href' => $activeLease ? route('leases.show', $activeLease) : route('leases.create', ['asset_id' => $asset->id]),
                         'actionLabel' => $activeLease ? 'Open lease' : 'Create lease',
@@ -216,7 +233,9 @@ class AssetController extends Controller
                     [
                         'title' => 'Financial position',
                         'value' => number_format((float) $asset->valuation_amount, 2).' '.$asset->currency,
-                        'detail' => 'Posted expenses: '.number_format($postedExpensesTotal, 2).' '.$asset->currency,
+                        'detail' => trans('app.assets.posted_expenses', [
+                            'amount' => number_format($postedExpensesTotal, 2).' '.$asset->currency,
+                        ]),
                         'href' => route('expenses.create', ['asset_id' => $asset->id]),
                         'actionLabel' => 'Add expense',
                         'tone' => $postedExpensesTotal > 0 ? 'primary' : 'muted',
@@ -238,19 +257,19 @@ class AssetController extends Controller
                         'items' => $this->detailItems([
                             ['label' => 'Arabic title', 'value' => $asset->title_ar],
                             ['label' => 'Code', 'value' => $asset->code],
-                            ['label' => 'Portfolio', 'value' => $asset->portfolio?->name_en, 'href' => $asset->portfolio ? route('portfolios.show', $asset->portfolio) : null],
-                            ['label' => 'Parent', 'value' => $asset->parent?->title_en, 'href' => $asset->parent ? route('assets.show', $asset->parent) : null],
+                            ['label' => 'Portfolio', 'value' => $localizedPortfolioName, 'href' => $asset->portfolio ? route('portfolios.show', $asset->portfolio) : null],
+                            ['label' => 'Parent', 'value' => $localizedParentTitle, 'href' => $asset->parent ? route('assets.show', $asset->parent) : null],
                             ['label' => 'Rentable', 'value' => $asset->rentable ? 'Yes' : 'No'],
                             ['label' => 'Status', 'value' => $asset->status],
-                            ['label' => 'Area', 'value' => $asset->area ? $asset->area.' sqm' : null],
-                            ['label' => 'Address', 'value' => $asset->address],
+                            ['label' => 'Area', 'value' => $asset->area ? trans('app.assets.area_sqm', ['area' => $asset->area]) : null],
+                            ['label' => 'Address', 'value' => $localizedAddress],
                         ]),
                     ],
                     [
                         'title' => 'Map and land record',
                         'description' => 'Zone, land number, and map position used by the owner dashboard property map.',
                         'items' => $this->detailItems([
-                            ['label' => 'Zone', 'value' => $this->assetMapMeta($asset, 'zone')],
+                            ['label' => 'Zone', 'value' => $localizedZone],
                             ['label' => 'Land number', 'value' => $this->assetMapMeta($asset, 'land_number')],
                             ['label' => 'Latitude', 'value' => $this->assetMapMeta($asset, 'latitude')],
                             ['label' => 'Longitude', 'value' => $this->assetMapMeta($asset, 'longitude')],
@@ -283,7 +302,7 @@ class AssetController extends Controller
                         'description' => 'Floors, units, spaces, and other nested records.',
                         'columns' => ['Asset', 'Type', 'Occupancy', 'Open'],
                         'rows' => $asset->children->map(fn (Asset $child) => [
-                            'Asset' => $child->title_en,
+                            'Asset' => $this->localized($child->title_en, $child->title_ar),
                             'Type' => $child->asset_type,
                             'Occupancy' => $child->occupancy_status,
                             'Open' => ['label' => 'Open', 'href' => route('assets.show', $child)],
@@ -378,9 +397,12 @@ class AssetController extends Controller
             'level_label' => ['nullable', 'string', 'max:255'],
             'unit_label' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'address_ar' => ['nullable', 'string'],
             'description_en' => ['nullable', 'string'],
             'description_ar' => ['nullable', 'string'],
             'map_zone' => ['nullable', 'string', 'max:80'],
+            'map_zone_en' => ['nullable', 'string', 'max:80'],
+            'map_zone_ar' => ['nullable', 'string', 'max:80'],
             'land_number' => ['nullable', 'string', 'max:80'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
@@ -412,6 +434,7 @@ class AssetController extends Controller
             'level_label' => $data['level_label'] ?? null,
             'unit_label' => $data['unit_label'] ?? null,
             'address' => $data['address'] ?? null,
+            'address_ar' => $data['address_ar'] ?? null,
             'description_en' => $data['description_en'] ?? null,
             'description_ar' => $data['description_ar'] ?? null,
             'meta_json' => $this->assetMetaFromData($data),
@@ -419,7 +442,10 @@ class AssetController extends Controller
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
 
-        return to_route('assets.show', $asset)->with('success', "Asset {$asset->title_en} created.");
+        return to_route('assets.show', $asset)->with('success', trans('app.messages.record_created', [
+            'resource' => trans('app.nav.assets'),
+            'name' => app()->isLocale('ar') ? $asset->title_ar : $asset->title_en,
+        ]));
     }
 
     public function update(Request $request, Asset $asset): RedirectResponse
@@ -443,9 +469,12 @@ class AssetController extends Controller
             'level_label' => ['nullable', 'string', 'max:255'],
             'unit_label' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
+            'address_ar' => ['nullable', 'string'],
             'description_en' => ['nullable', 'string'],
             'description_ar' => ['nullable', 'string'],
             'map_zone' => ['nullable', 'string', 'max:80'],
+            'map_zone_en' => ['nullable', 'string', 'max:80'],
+            'map_zone_ar' => ['nullable', 'string', 'max:80'],
             'land_number' => ['nullable', 'string', 'max:80'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
@@ -472,6 +501,7 @@ class AssetController extends Controller
             'level_label' => $data['level_label'] ?? null,
             'unit_label' => $data['unit_label'] ?? null,
             'address' => $data['address'] ?? null,
+            'address_ar' => $data['address_ar'] ?? null,
             'description_en' => $data['description_en'] ?? null,
             'description_ar' => $data['description_ar'] ?? null,
             'meta_json' => $this->assetMetaFromData($data, $asset),
@@ -479,7 +509,10 @@ class AssetController extends Controller
 
         $this->syncStakeholders($asset, $data['primary_owner_user_id'] ?? null, $data['primary_manager_user_id'] ?? null);
 
-        return to_route('assets.show', $asset)->with('success', "Asset {$asset->title_en} updated.");
+        return to_route('assets.show', $asset)->with('success', trans('app.messages.record_updated', [
+            'resource' => trans('app.nav.assets'),
+            'name' => app()->isLocale('ar') ? $asset->title_ar : $asset->title_en,
+        ]));
     }
 
     public function destroy(Request $request, Asset $asset): RedirectResponse
@@ -495,7 +528,7 @@ class AssetController extends Controller
             ->whereIn('leaseable_id', $assetIds)
             ->where('status', 'active')
             ->exists()) {
-            return back()->with('error', 'Terminate active leases before archiving this asset.');
+            return back()->with('error', trans('app.errors.asset_has_active_lease'));
         }
 
         DB::transaction(function () use ($assetIds) {
@@ -506,7 +539,9 @@ class AssetController extends Controller
             }
         });
 
-        return to_route('assets.index')->with('success', "Asset {$asset->title_en} archived.");
+        return to_route('assets.index')->with('success', trans('app.messages.asset_archived', [
+            'name' => app()->isLocale('ar') ? $asset->title_ar : $asset->title_en,
+        ]));
     }
 
     /**
@@ -584,7 +619,7 @@ class AssetController extends Controller
             ->get()
             ->map(fn (Asset $record) => [
                 'value' => $record->id,
-                'label' => $record->title_en.' · '.$record->code.' · '.$record->asset_type,
+                'label' => $this->localized($record->title_en, $record->title_ar).' · '.$record->code.' · '.$record->asset_type,
             ])
             ->prepend(['value' => '', 'label' => 'No parent'])
             ->values()
@@ -631,22 +666,24 @@ class AssetController extends Controller
             ['name' => 'area', 'label' => 'Area', 'type' => 'number', 'min' => 0],
             ['name' => 'level_label', 'label' => 'Floor / level label'],
             ['name' => 'unit_label', 'label' => 'Unit / space label'],
-            ['name' => 'map_zone', 'label' => 'Map zone', 'placeholder' => 'Zone A', 'help' => 'Shown on the owner dashboard map.'],
+            ['name' => 'map_zone_en', 'label' => trans('app.fields.zone_en'), 'placeholder' => 'North Riyadh'],
+            ['name' => 'map_zone_ar', 'label' => trans('app.fields.zone_ar'), 'placeholder' => 'شمال الرياض'],
             ['name' => 'land_number', 'label' => 'Land number', 'placeholder' => 'Land 42', 'help' => 'Click target label for the property map.'],
             ['name' => 'latitude', 'label' => 'Latitude', 'type' => 'number', 'step' => '0.000001', 'min' => -90, 'max' => 90],
             ['name' => 'longitude', 'label' => 'Longitude', 'type' => 'number', 'step' => '0.000001', 'min' => -180, 'max' => 180],
-            ['name' => 'map_x', 'label' => 'Map X position', 'type' => 'number', 'min' => 0, 'max' => 100, 'help' => 'Optional 0-100 horizontal position for the dashboard map.'],
-            ['name' => 'map_y', 'label' => 'Map Y position', 'type' => 'number', 'min' => 0, 'max' => 100, 'help' => 'Optional 0-100 vertical position for the dashboard map.'],
             ['name' => 'primary_owner_user_id', 'label' => 'Primary owner', 'type' => 'select', 'options' => $userOptions],
             ['name' => 'primary_manager_user_id', 'label' => 'Primary manager', 'type' => 'select', 'options' => $userOptions],
-            ['name' => 'address', 'label' => 'Address', 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'address', 'label' => trans('app.fields.address_en'), 'type' => 'textarea', 'rows' => 2],
+            ['name' => 'address_ar', 'label' => trans('app.fields.address_ar'), 'type' => 'textarea', 'rows' => 2],
             ['name' => 'description_en', 'label' => 'English description', 'type' => 'textarea'],
             ['name' => 'description_ar', 'label' => 'Arabic description', 'type' => 'textarea'],
             ['name' => 'rentable', 'label' => 'Rentable', 'type' => 'checkbox', 'help' => 'Only rentable assets can be leased.'],
         ];
 
         return [
-            'title' => $asset ? 'Edit '.$asset->title_en : 'Create asset',
+            'title' => $asset
+                ? trans('app.actions.edit').' '.$this->localized($asset->title_en, $asset->title_ar)
+                : 'Create asset',
             'description' => 'Build the property tree cleanly before leases, documents, and reports depend on it.',
             'backHref' => $asset ? route('assets.show', $asset) : route('assets.index'),
             'backLabel' => $asset ? 'Asset detail' : 'All assets',
@@ -669,15 +706,15 @@ class AssetController extends Controller
                 'area' => (float) ($asset?->area ?? 0),
                 'level_label' => $asset?->level_label ?? '',
                 'unit_label' => $asset?->unit_label ?? '',
-                'map_zone' => $this->assetMapMeta($asset, 'zone') ?? '',
+                'map_zone_en' => $this->assetMapMeta($asset, 'zone_en') ?? $this->assetMapMeta($asset, 'zone') ?? '',
+                'map_zone_ar' => $this->assetMapMeta($asset, 'zone_ar') ?? '',
                 'land_number' => $this->assetMapMeta($asset, 'land_number') ?? '',
                 'latitude' => $this->assetMapMeta($asset, 'latitude') ?? '',
                 'longitude' => $this->assetMapMeta($asset, 'longitude') ?? '',
-                'map_x' => $this->assetMapMeta($asset, 'x') ?? '',
-                'map_y' => $this->assetMapMeta($asset, 'y') ?? '',
                 'primary_owner_user_id' => (string) ($owner?->user_id ?? ''),
                 'primary_manager_user_id' => (string) ($manager?->user_id ?? ''),
                 'address' => $asset?->address ?? '',
+                'address_ar' => $asset?->address_ar ?? '',
                 'description_en' => $asset?->description_en ?? '',
                 'description_ar' => $asset?->description_ar ?? '',
                 'rentable' => (bool) ($asset?->rentable ?? false),
@@ -702,7 +739,9 @@ class AssetController extends Controller
         $map = is_array($meta['map'] ?? null) ? $meta['map'] : [];
 
         $values = [
-            'zone' => $data['map_zone'] ?? null,
+            'zone_en' => $data['map_zone_en'] ?? $data['map_zone'] ?? null,
+            'zone_ar' => $data['map_zone_ar'] ?? null,
+            'zone' => $data['map_zone_en'] ?? $data['map_zone'] ?? null,
             'land_number' => $data['land_number'] ?? null,
             'latitude' => $data['latitude'] ?? null,
             'longitude' => $data['longitude'] ?? null,
@@ -800,18 +839,18 @@ class AssetController extends Controller
     {
         if (! empty($data['parent_id'])) {
             if ($currentAsset) {
-                abort_if((int) $data['parent_id'] === $currentAsset->id, 422, 'An asset cannot be its own parent.');
+                abort_if((int) $data['parent_id'] === $currentAsset->id, 422, trans('app.errors.asset_self_parent'));
                 abort_if(
                     in_array((int) $data['parent_id'], $this->assetAndDescendantIds($currentAsset), true),
                     422,
-                    'An asset cannot be moved under one of its descendants.'
+                    trans('app.errors.asset_descendant_parent')
                 );
             }
 
             abort_unless(
                 Asset::query()->whereKey($data['parent_id'])->where('portfolio_id', $portfolioId)->exists(),
                 422,
-                'Parent asset does not belong to this portfolio.'
+                trans('app.errors.parent_asset_portfolio_mismatch')
             );
         }
 
@@ -823,7 +862,7 @@ class AssetController extends Controller
             abort_unless(
                 User::query()->whereKey($data[$userKey])->where('portfolio_id', $portfolioId)->exists(),
                 422,
-                'Assigned user does not belong to this portfolio.'
+                trans('app.errors.assigned_user_portfolio_mismatch')
             );
         }
     }

@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type {
     PaginatedData,
     SharedProps,
@@ -34,6 +35,7 @@ type PageProps = SharedProps & {
 
 export default function CmsIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const published = countValue(props.counts, 'Published');
     const activeSections = props.sections.filter(
         (section) => section.status === 'active',
@@ -44,7 +46,7 @@ export default function CmsIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Website Control" />
+            <Head title={text('Website Control')} />
 
             <WorkspaceHeader
                 eyebrow="System"
@@ -92,7 +94,9 @@ export default function CmsIndexPage() {
                     {
                         label: 'Sections',
                         value: activeSections,
-                        detail: `${props.sections.length} total reusable blocks`,
+                        detail: t('cms.reusable_blocks', undefined, {
+                            count: props.sections.length,
+                        }),
                         icon: 'bi-grid-1x2',
                         tone: 'blue',
                     },
@@ -135,18 +139,23 @@ export default function CmsIndexPage() {
                         label: 'Page',
                         render: (page) => (
                             <div className="pmc-primary-cell">
-                                <strong>{page.title_en}</strong>
+                                <strong>
+                                    {locale === 'ar'
+                                        ? page.title_ar || page.title_en
+                                        : page.title_en || page.title_ar}
+                                </strong>
                                 <span>{page.title_ar || `/${page.slug}`}</span>
                                 <div className="pmc-inline-badges">
                                     {page.is_homepage ? (
                                         <StatusBadge
-                                            value="Homepage"
+                                            value="homepage"
+                                            label={text('Homepage')}
                                             tone="blue"
                                         />
                                     ) : null}
                                     {!page.is_visible ? (
                                         <StatusBadge
-                                            value="Hidden"
+                                            value="hidden"
                                             tone="neutral"
                                         />
                                     ) : null}
@@ -164,7 +173,12 @@ export default function CmsIndexPage() {
                                         ? '/'
                                         : `/pages/${page.slug}`}
                                 </strong>
-                                <span>{page.excerpt_en || 'No excerpt'}</span>
+                                <span>
+                                    {(locale === 'ar'
+                                        ? page.excerpt_ar || page.excerpt_en
+                                        : page.excerpt_en || page.excerpt_ar) ||
+                                        text('No excerpt')}
+                                </span>
                             </div>
                         ),
                     },
@@ -176,7 +190,7 @@ export default function CmsIndexPage() {
                                 <strong>
                                     {page.page_sections?.length ?? 0}
                                 </strong>
-                                <span>Attached blocks</span>
+                                <span>{text('Attached blocks')}</span>
                             </div>
                         ),
                     },
@@ -197,7 +211,20 @@ export default function CmsIndexPage() {
                                 {page.status !== 'archived' ? (
                                     <ArchiveAction
                                         href={`/cms/pages/${page.id}`}
-                                        confirmMessage={`Archive ${page.title_en}? It will be removed from the public site.`}
+                                        confirmMessage={t(
+                                            'cms.archive_page_confirm',
+                                            undefined,
+                                            {
+                                                title:
+                                                    locale === 'ar'
+                                                        ? page.title_ar ||
+                                                          page.title_en ||
+                                                          ''
+                                                        : page.title_en ||
+                                                          page.title_ar ||
+                                                          '',
+                                            },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>
@@ -230,19 +257,29 @@ export default function CmsIndexPage() {
                                     </div>
                                     <div className="pmc-cms-library-copy">
                                         <span>
-                                            {humanLabel(section.section_type)}
+                                            {text(
+                                                humanLabel(
+                                                    section.section_type,
+                                                ),
+                                            )}
                                         </span>
-                                        <strong>{section.name_en}</strong>
+                                        <strong>
+                                            {locale === 'ar'
+                                                ? section.name_ar ||
+                                                  section.name_en
+                                                : section.name_en ||
+                                                  section.name_ar}
+                                        </strong>
                                         <small>
                                             {section.name_ar ||
-                                                'Arabic name missing'}
+                                                text('Arabic name missing')}
                                         </small>
                                     </div>
                                     <div className="pmc-cms-library-meta">
                                         <StatusBadge value={section.status} />
                                         <span>
                                             {section.page_sections_count ?? 0}{' '}
-                                            pages
+                                            {text('pages')}
                                         </span>
                                     </div>
                                     <div className="pmc-cms-card-actions">
@@ -251,12 +288,25 @@ export default function CmsIndexPage() {
                                             href={`/cms/sections/${section.id}/edit`}
                                         >
                                             <i className="bi bi-pencil" />
-                                            Edit copy
+                                            {text('Edit copy')}
                                         </Link>
                                         {section.status !== 'archived' ? (
                                             <ArchiveAction
                                                 href={`/cms/sections/${section.id}`}
-                                                confirmMessage={`Archive ${section.name_en}? Inactive sections stop rendering on public pages.`}
+                                                confirmMessage={t(
+                                                    'cms.archive_section_confirm',
+                                                    undefined,
+                                                    {
+                                                        title:
+                                                            locale === 'ar'
+                                                                ? section.name_ar ||
+                                                                  section.name_en ||
+                                                                  ''
+                                                                : section.name_en ||
+                                                                  section.name_ar ||
+                                                                  '',
+                                                    },
+                                                )}
                                             />
                                         ) : null}
                                     </div>
@@ -264,7 +314,7 @@ export default function CmsIndexPage() {
                             ))
                         ) : (
                             <div className="pmc-inline-empty">
-                                No reusable sections yet. Create the hero first.
+                                {t('cms.no_sections')}
                             </div>
                         )}
                     </div>
@@ -286,7 +336,7 @@ export default function CmsIndexPage() {
                             ))
                         ) : (
                             <div className="pmc-inline-empty">
-                                No navigation links yet.
+                                {t('cms.no_navigation')}
                             </div>
                         )}
                     </div>
@@ -297,6 +347,7 @@ export default function CmsIndexPage() {
 }
 
 function NavigationCard({ item }: { item: NavigationRecord }) {
+    const { locale, t, text } = useTranslator();
     const destination = item.page
         ? `/pages/${item.page.slug}`
         : item.url || '/';
@@ -304,18 +355,26 @@ function NavigationCard({ item }: { item: NavigationRecord }) {
     return (
         <article className="pmc-cms-navigation-card">
             <div>
-                <span>{humanLabel(item.location)}</span>
-                <strong>{item.title_en}</strong>
+                <span>{text(humanLabel(item.location))}</span>
+                <strong>
+                    {locale === 'ar'
+                        ? item.title_ar || item.title_en
+                        : item.title_en || item.title_ar}
+                </strong>
                 <small>{item.title_ar || destination}</small>
             </div>
             <div className="pmc-cms-navigation-meta">
                 <StatusBadge
-                    value={item.is_visible ? 'Visible' : 'Hidden'}
+                    value={item.is_visible ? 'visible' : 'hidden'}
                     tone={item.is_visible ? 'success' : 'neutral'}
                 />
                 <span>{destination}</span>
                 {item.children?.length ? (
-                    <span>{item.children.length} child links</span>
+                    <span>
+                        {t('cms.child_links', undefined, {
+                            count: item.children.length,
+                        })}
+                    </span>
                 ) : null}
             </div>
             <div className="pmc-cms-card-actions">
@@ -324,12 +383,21 @@ function NavigationCard({ item }: { item: NavigationRecord }) {
                     href={`/cms/navigation/${item.id}/edit`}
                 >
                     <i className="bi bi-pencil" />
-                    Edit
+                    {text('Edit')}
                 </Link>
                 <ArchiveAction
                     href={`/navigation-items/${item.id}`}
                     label="Delete"
-                    confirmMessage={`Delete navigation item ${item.title_en}?`}
+                    confirmMessage={t(
+                        'cms.delete_navigation_confirm',
+                        undefined,
+                        {
+                            title:
+                                locale === 'ar'
+                                    ? item.title_ar || item.title_en || ''
+                                    : item.title_en || item.title_ar || '',
+                        },
+                    )}
                 />
             </div>
         </article>

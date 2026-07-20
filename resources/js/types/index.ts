@@ -4,6 +4,12 @@ export type * from './auth';
 
 export type TranslationMap = Record<string, unknown>;
 
+export type LocalizedCopy = {
+    key: string;
+    fallback?: string;
+    replacements?: Record<string, string | number>;
+};
+
 export type SharedProps = {
     name: string;
     url: string;

@@ -60,7 +60,7 @@ class ProfileController extends Controller
         $user->update($data);
         $request->session()->put('locale', $data['preferred_locale']);
 
-        return to_route('profile.index')->with('success', 'Profile updated.');
+        return to_route('profile.index')->with('success', trans('app.messages.profile_updated'));
     }
 
     public function updatePassword(Request $request): RedirectResponse
@@ -75,7 +75,7 @@ class ProfileController extends Controller
 
         if (! $user->force_password_reset && ! Hash::check($data['current_password'], $user->password)) {
             throw ValidationException::withMessages([
-                'current_password' => 'The current password is incorrect.',
+                'current_password' => trans('validation.current_password'),
             ]);
         }
 
@@ -84,6 +84,6 @@ class ProfileController extends Controller
             'force_password_reset' => false,
         ]);
 
-        return to_route('profile.index')->with('success', 'Password updated.');
+        return to_route('profile.index')->with('success', trans('app.messages.password_updated'));
     }
 }

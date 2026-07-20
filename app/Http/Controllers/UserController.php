@@ -118,7 +118,7 @@ class UserController extends Controller
                             ['label' => 'Email', 'value' => $user->email],
                             ['label' => 'Phone', 'value' => $user->phone],
                             ['label' => 'Locale', 'value' => $user->preferred_locale],
-                            ['label' => 'Portfolio', 'value' => $user->portfolio?->name_en, 'href' => $user->portfolio ? route('portfolios.show', $user->portfolio) : null],
+                            ['label' => 'Portfolio', 'value' => $this->localized($user->portfolio?->name_en, $user->portfolio?->name_ar), 'href' => $user->portfolio ? route('portfolios.show', $user->portfolio) : null],
                             ['label' => 'Roles', 'value' => $user->roles->pluck('name')->implode(', ')],
                             ['label' => 'Temporary password', 'value' => $user->force_password_reset ? 'Yes' : 'No'],
                             ['label' => 'Last login', 'value' => $user->last_login_at?->toDateTimeString()],
@@ -131,7 +131,7 @@ class UserController extends Controller
                         'description' => 'Asset stakeholder records tied to this user.',
                         'columns' => ['Asset', 'Relationship', 'Primary', 'Status'],
                         'rows' => $stakeholders->map(fn (AssetStakeholder $stakeholder) => [
-                            'Asset' => $stakeholder->asset?->title_en ?? '-',
+                            'Asset' => $this->localized($stakeholder->asset?->title_en, $stakeholder->asset?->title_ar) ?? '-',
                             'Relationship' => $stakeholder->relationship_type,
                             'Primary' => $stakeholder->is_primary ? 'Yes' : 'No',
                             'Status' => $stakeholder->ends_on ? 'Ended' : 'Active',
@@ -144,7 +144,7 @@ class UserController extends Controller
                         'columns' => ['Request', 'Asset', 'Status', 'Priority'],
                         'rows' => $user->assignedMaintenanceRequests->take(8)->map(fn ($maintenanceRequest) => [
                             'Request' => '#'.$maintenanceRequest->id.' '.$maintenanceRequest->title,
-                            'Asset' => $maintenanceRequest->asset?->title_en ?? '-',
+                            'Asset' => $this->localized($maintenanceRequest->asset?->title_en, $maintenanceRequest->asset?->title_ar) ?? '-',
                             'Status' => $maintenanceRequest->status,
                             'Priority' => $maintenanceRequest->priority,
                         ])->all(),
@@ -188,8 +188,12 @@ class UserController extends Controller
 
         $portfolioId = $data['portfolio_id'] ?? $actor->portfolio_id;
         $this->ensurePortfolioAccess($actor, $portfolioId);
-        abort_if($data['role'] !== 'superadmin' && $portfolioId === null, 422, 'Select a portfolio before creating this role.');
-        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
+        abort_if(
+            $data['role'] !== 'superadmin' && $portfolioId === null,
+            422,
+            trans('app.errors.role_requires_portfolio'),
+        );
+        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, trans('app.errors.invalid_role'));
 
         $user = DB::transaction(function () use ($data, $portfolioId) {
             $user = User::query()->create([
@@ -209,7 +213,7 @@ class UserController extends Controller
             return $user;
         });
 
-        return to_route('users.show', $user)->with('success', "User {$user->name} created.");
+        return to_route('users.show', $user)->with('success', trans('app.messages.user_created', ['name' => $user->name]));
     }
 
     public function update(Request $request, User $user): RedirectResponse
@@ -228,7 +232,7 @@ class UserController extends Controller
             'role' => ['required', 'string'],
         ]);
 
-        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, 'Invalid role.');
+        abort_unless(in_array($data['role'], $this->roleOptions($actor), true), 422, trans('app.errors.invalid_role'));
 
         $updates = [
             'name' => $data['name'],
@@ -248,7 +252,7 @@ class UserController extends Controller
             $this->ensureTenantProfileForRole($user, $user->portfolio_id, $data['role'], $data['status']);
         });
 
-        return to_route('users.show', $user)->with('success', "User {$user->name} updated.");
+        return to_route('users.show', $user)->with('success', trans('app.messages.user_updated', ['name' => $user->name]));
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
@@ -259,15 +263,15 @@ class UserController extends Controller
         $this->ensureCanManageUser($actor, $user);
 
         if ($actor->is($user)) {
-            return back()->with('error', 'You cannot archive your own account.');
+            return back()->with('error', trans('app.errors.archive_self'));
         }
 
         if (! $actor->hasRole('superadmin') && $user->hasAnyRole(['superadmin', 'owner'])) {
-            return back()->with('error', 'Only the system owner can archive owner or superadmin accounts.');
+            return back()->with('error', trans('app.errors.archive_privileged_account'));
         }
 
         if ($actor->hasRole('property_manager') && ! $user->hasRole('tenant')) {
-            return back()->with('error', 'Managers can only archive tenant accounts.');
+            return back()->with('error', trans('app.errors.manager_archive_scope'));
         }
 
         DB::transaction(function () use ($user) {
@@ -275,7 +279,7 @@ class UserController extends Controller
             $user->tenantProfile?->update(['status' => 'blocked']);
         });
 
-        return to_route('users.index')->with('success', "User {$user->name} archived.");
+        return to_route('users.index')->with('success', trans('app.messages.user_archived', ['name' => $user->name]));
     }
 
     /**
@@ -297,7 +301,7 @@ class UserController extends Controller
     private function ensureCanManageUser(User $actor, User $target): void
     {
         if ($actor->is($target)) {
-            abort(403, 'Use Profile to update your own account.');
+            abort(403, trans('app.errors.update_self_in_profile'));
         }
 
         if ($actor->hasRole('superadmin')) {
@@ -312,7 +316,7 @@ class UserController extends Controller
             return;
         }
 
-        abort(403, 'You are not allowed to manage this account.');
+        abort(403, trans('app.errors.manage_account_denied'));
     }
 
     /**
@@ -348,7 +352,7 @@ class UserController extends Controller
             return;
         }
 
-        abort_if($portfolioId === null, 422, 'Tenant accounts must belong to a portfolio.');
+        abort_if($portfolioId === null, 422, trans('app.errors.tenant_requires_portfolio'));
 
         TenantProfile::query()->updateOrCreate(
             ['user_id' => $user->id],
@@ -405,7 +409,7 @@ class UserController extends Controller
         ];
 
         return [
-            'title' => $user ? 'Edit '.$user->name : 'Create user',
+            'title' => $user ? trans('app.actions.edit').' '.$user->name : 'Create user',
             'description' => 'Create only the role this person needs. Permissions flow from role and portfolio.',
             'backHref' => $user ? route('users.show', $user) : route('users.index'),
             'backLabel' => $user ? 'User detail' : 'All users',

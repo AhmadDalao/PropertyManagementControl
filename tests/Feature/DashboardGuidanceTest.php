@@ -169,7 +169,7 @@ class DashboardGuidanceTest extends TestCase
             );
     }
 
-    public function test_owner_dashboard_map_includes_child_assets_with_explicit_land_metadata(): void
+    public function test_owner_dashboard_map_includes_child_assets_with_explicit_geographic_position(): void
     {
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
@@ -187,6 +187,8 @@ class DashboardGuidanceTest extends TestCase
                 'map' => [
                     'zone' => 'Retail Strip',
                     'land_number' => 'RS-12',
+                    'latitude' => 24.7162,
+                    'longitude' => 46.6791,
                     'x' => 52,
                     'y' => 44,
                 ],
@@ -216,7 +218,7 @@ class DashboardGuidanceTest extends TestCase
             );
     }
 
-    public function test_owner_dashboard_map_fallback_has_no_artificial_cap(): void
+    public function test_owner_dashboard_map_omits_unpositioned_child_units(): void
     {
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
@@ -234,15 +236,14 @@ class DashboardGuidanceTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('dashboard')
-                ->where('propertyMap.summary.total', 22)
+                ->where('propertyMap.summary.total', 0)
                 ->where('propertyMap.summary.ready', 0)
-                ->where('propertyMap.summary.needs_position', 22)
-                ->where('propertyMap.summary.needs_identity', 22)
+                ->where('propertyMap.summary.needs_position', 0)
+                ->where('propertyMap.summary.needs_identity', 0)
                 ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 0.0)
                 ->where('propertyMap.summary.zones', [])
-                ->where('propertyMap.assets.0.zone', null)
-                ->where('propertyMap.assets.0.land_number', null)
-                ->has('propertyMap.assets', 22)
+                ->where('propertyMap.summary.payload_limit', 40)
+                ->has('propertyMap.assets', 0)
             );
     }
 

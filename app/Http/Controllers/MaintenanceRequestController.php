@@ -204,7 +204,7 @@ class MaintenanceRequestController extends Controller
                         'title' => 'Request',
                         'description' => 'Problem, people, asset, and SLA context.',
                         'items' => $this->detailItems([
-                            ['label' => 'Asset', 'value' => $maintenanceRequest->asset?->title_en, 'href' => $maintenanceRequest->asset ? route('assets.show', $maintenanceRequest->asset) : null],
+                            ['label' => 'Asset', 'value' => $this->localized($maintenanceRequest->asset?->title_en, $maintenanceRequest->asset?->title_ar), 'href' => $maintenanceRequest->asset ? route('assets.show', $maintenanceRequest->asset) : null],
                             ['label' => 'Tenant', 'value' => $maintenanceRequest->tenantProfile?->user?->name, 'href' => $maintenanceRequest->tenantProfile ? route('tenants.show', $maintenanceRequest->tenantProfile) : null],
                             ['label' => 'Lease', 'value' => $maintenanceRequest->lease?->code, 'href' => $maintenanceRequest->lease ? route('leases.show', $maintenanceRequest->lease) : null],
                             ['label' => 'Submitted by', 'value' => $maintenanceRequest->submittedBy?->name],
@@ -291,7 +291,7 @@ class MaintenanceRequestController extends Controller
             abort_unless(
                 $lease,
                 422,
-                'You can only submit maintenance requests for your rented assets.'
+                trans('app.errors.rented_asset_only')
             );
 
             $requestItem = MaintenanceRequest::query()->create([
@@ -316,7 +316,7 @@ class MaintenanceRequestController extends Controller
                 'comment' => 'Maintenance request created by tenant.',
             ]);
 
-            return to_route('maintenance-requests.show', $requestItem)->with('success', 'Maintenance request submitted.');
+            return to_route('maintenance-requests.show', $requestItem)->with('success', trans('app.messages.maintenance_submitted'));
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -362,7 +362,7 @@ class MaintenanceRequestController extends Controller
             'comment' => 'Maintenance request created by management.',
         ]);
 
-        return to_route('maintenance-requests.show', $requestItem)->with('success', 'Maintenance request created.');
+        return to_route('maintenance-requests.show', $requestItem)->with('success', trans('app.messages.maintenance_created'));
     }
 
     public function update(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
@@ -384,7 +384,7 @@ class MaintenanceRequestController extends Controller
                 'comment' => $data['comment'],
             ]);
 
-            return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', 'Comment added to maintenance request.');
+            return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', trans('app.messages.maintenance_comment_added'));
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -428,7 +428,7 @@ class MaintenanceRequestController extends Controller
             ]);
         }
 
-        return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', 'Maintenance request updated.');
+        return to_route('maintenance-requests.show', $maintenanceRequest)->with('success', trans('app.messages.maintenance_updated'));
     }
 
     public function destroy(Request $request, MaintenanceRequest $maintenanceRequest): RedirectResponse
@@ -439,7 +439,7 @@ class MaintenanceRequestController extends Controller
             abort_if($maintenanceRequest->tenantProfile?->user_id !== $actor->id, 403);
 
             if (! in_array($maintenanceRequest->status, ['open', 'in_progress'], true)) {
-                return back()->with('error', 'Only open maintenance requests can be cancelled.');
+                return back()->with('error', trans('app.errors.maintenance_not_open'));
             }
 
             $previousStatus = $maintenanceRequest->status;
@@ -452,7 +452,7 @@ class MaintenanceRequestController extends Controller
                 'comment' => 'Maintenance request cancelled by tenant.',
             ]);
 
-            return to_route('maintenance-requests.index')->with('success', 'Maintenance request cancelled.');
+            return to_route('maintenance-requests.index')->with('success', trans('app.messages.maintenance_cancelled'));
         }
 
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
@@ -468,7 +468,7 @@ class MaintenanceRequestController extends Controller
             'comment' => 'Maintenance request cancelled by management.',
         ]);
 
-        return to_route('maintenance-requests.index')->with('success', 'Maintenance request cancelled.');
+        return to_route('maintenance-requests.index')->with('success', trans('app.messages.maintenance_cancelled'));
     }
 
     private function maintenanceFormPage(User $actor, ?MaintenanceRequest $maintenanceRequest = null): array
@@ -535,7 +535,10 @@ class MaintenanceRequestController extends Controller
             $assetOptions = $tenantProfile?->leases
                 ->map(fn ($lease) => $lease->leaseable)
                 ->filter()
-                ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+                ->map(fn (Asset $asset) => [
+                    'value' => $asset->id,
+                    'label' => $this->localized($asset->title_en, $asset->title_ar).' · '.$asset->code,
+                ])
                 ->values()
                 ->all() ?? [];
 
@@ -567,7 +570,10 @@ class MaintenanceRequestController extends Controller
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $assetOptions = $this->scopeByPortfolio(Asset::query()->orderBy('title_en'), $actor)
             ->get()
-            ->map(fn (Asset $asset) => ['value' => $asset->id, 'label' => $asset->title_en.' · '.$asset->code])
+            ->map(fn (Asset $asset) => [
+                'value' => $asset->id,
+                'label' => $this->localized($asset->title_en, $asset->title_ar).' · '.$asset->code,
+            ])
             ->all();
         $tenantOptions = $this->scopeByPortfolio(TenantProfile::query()->with('user'), $actor)
             ->get()
@@ -637,7 +643,7 @@ class MaintenanceRequestController extends Controller
             abort_unless(
                 Asset::query()->whereKey($data['asset_id'])->where('portfolio_id', $portfolioId)->exists(),
                 422,
-                'Selected asset does not belong to this portfolio.'
+                trans('app.errors.asset_portfolio_mismatch')
             );
         }
 
@@ -648,7 +654,7 @@ class MaintenanceRequestController extends Controller
                     ->where('portfolio_id', $portfolioId)
                     ->exists(),
                 422,
-                'Selected tenant does not belong to this portfolio.'
+                trans('app.errors.tenant_selection_portfolio_mismatch')
             );
         }
 
@@ -660,7 +666,7 @@ class MaintenanceRequestController extends Controller
                     ->whereHas('roles', fn ($query) => $query->whereIn('name', ['owner', 'property_manager']))
                     ->exists(),
                 422,
-                'Assigned user must be an owner or property manager in this portfolio.'
+                trans('app.errors.manager_assignment_invalid')
             );
         }
     }
@@ -712,6 +718,7 @@ class MaintenanceRequestController extends Controller
             'asset' => $maintenanceRequest->asset ? [
                 'id' => $maintenanceRequest->asset->id,
                 'title_en' => $maintenanceRequest->asset->title_en,
+                'title_ar' => $maintenanceRequest->asset->title_ar,
                 'code' => $maintenanceRequest->asset->code,
             ] : null,
             'tenant_profile' => [

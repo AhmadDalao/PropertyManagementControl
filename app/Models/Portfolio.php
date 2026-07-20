@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Portfolio extends Model
 {
     use HasFactory;
+    use HasShowcaseBadge;
     use LogsModelActivity;
 
     protected $guarded = [];
@@ -26,6 +28,11 @@ class Portfolio extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function showcaseDataset(): BelongsTo
+    {
+        return $this->belongsTo(ShowcaseDataset::class);
     }
 
     public function users(): HasMany

@@ -3,86 +3,305 @@
 namespace App\Modules\Assets;
 
 use App\Models\Asset;
+use App\Models\Lease;
+use App\Models\MaintenanceRequest;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 
 class PropertyMapPresenter
 {
-    /**
-     * These are shown by default because they represent land/property-level records.
-     */
     private const MAP_ASSET_TYPES = ['property', 'building', 'space'];
 
+    private const MAX_MARKERS = 40;
+
     /**
-     * @return array{assets:array<int, array<string, mixed>>,summary:array<string, mixed>}
+     * @param  Builder<Asset>  $assetQuery
+     * @return array{
+     *     assets:array<int, array<string, mixed>>,
+     *     summary:array<string, mixed>,
+     *     config:array<string, mixed>
+     * }
      */
     public function forQuery(Builder $assetQuery): array
     {
-        $allAssets = (clone $assetQuery)
+        $locale = app()->getLocale();
+        $titleColumn = $locale === 'ar' ? 'title_ar' : 'title_en';
+        $candidates = (clone $assetQuery)
+            ->where(function (Builder $query): void {
+                $query
+                    ->where(function (Builder $query): void {
+                        $query
+                            ->whereNull('parent_id')
+                            ->whereIn('asset_type', self::MAP_ASSET_TYPES);
+                    })
+                    ->orWhere(function (Builder $query): void {
+                        $query
+                            ->where('meta_json', 'like', '%"latitude"%')
+                            ->where('meta_json', 'like', '%"longitude"%');
+                    })
+                    ->orWhere(function (Builder $query): void {
+                        $query
+                            ->where('meta_json', 'like', '%"x"%')
+                            ->where('meta_json', 'like', '%"y"%');
+                    });
+            })
             ->with(['portfolio', 'stakeholders.user'])
-            ->withCount([
-                'children',
-                'children as rentable_children_count' => fn (Builder $query) => $query->where('rentable', true),
-                'leases as active_leases_count' => fn (Builder $query) => $query->where('status', 'active'),
-                'maintenanceRequests as open_requests_count' => fn (Builder $query) => $query->whereIn('status', ['open', 'in_progress']),
-            ])
             ->orderByRaw("CASE asset_type WHEN 'property' THEN 0 WHEN 'building' THEN 1 WHEN 'space' THEN 2 ELSE 3 END")
-            ->orderBy('title_en')
+            ->orderBy($titleColumn)
+            ->limit(self::MAX_MARKERS)
             ->get();
 
-        $assets = $allAssets
-            ->filter(fn (Asset $asset) => $this->isMapCandidate($asset))
+        $nodes = (clone $assetQuery)
+            ->get([
+                'id',
+                'parent_id',
+                'portfolio_id',
+                'asset_type',
+                'rentable',
+                'occupancy_status',
+            ]);
+        $nodeCollection = $this->assetCollection($nodes);
+        $children = $nodeCollection->groupBy(fn (Asset $asset): int => (int) ($asset->parent_id ?? 0));
+        $candidateCollection = $this->assetCollection($candidates);
+        $candidateDescendants = $candidateCollection->mapWithKeys(
+            fn (Asset $asset): array => [$asset->id => $this->descendantIds($asset->id, $children)],
+        );
+        $scopedAssetIds = $candidateDescendants
+            ->flatten()
+            ->map(fn (mixed $id): int => (int) $id)
+            ->unique()
             ->values();
-
-        if ($assets->isEmpty()) {
-            $assets = $allAssets->values();
-        }
-
-        $bounds = $this->coordinateBounds($assets);
-        $mappedAssets = $assets
-            ->values()
-            ->map(fn (Asset $asset, int $index) => $this->propertyMapAsset($asset, $index, $bounds))
-            ->all();
-        $mappedAssetCollection = collect($mappedAssets);
-        $readyCount = $mappedAssetCollection
-            ->filter(fn (array $asset) => $asset['has_coordinates'] && $asset['has_identity'])
-            ->count();
+        $leaseCounts = $this->activeLeaseCounts($scopedAssetIds);
+        $maintenanceCounts = $this->openMaintenanceCounts($scopedAssetIds);
+        $bounds = $this->coordinateBounds($candidateCollection);
+        $mappedAssets = $candidateCollection
+            ->map(fn (Asset $asset): array => $this->mapAsset(
+                $asset,
+                collect($candidateDescendants->get($asset->id, [$asset->id])),
+                $nodeCollection,
+                $leaseCounts,
+                $maintenanceCounts,
+                $locale,
+                $bounds,
+            ))
+            ->values();
+        $ready = $mappedAssets->where('map_ready', true)->count();
 
         return [
-            'assets' => $mappedAssets,
+            'assets' => $mappedAssets->all(),
             'summary' => [
-                'mapped' => $mappedAssetCollection->filter(fn (array $asset) => $asset['has_coordinates'])->count(),
-                'total' => count($mappedAssets),
-                'ready' => $readyCount,
-                'needs_position' => $mappedAssetCollection->reject(fn (array $asset) => $asset['has_coordinates'])->count(),
-                'needs_identity' => $mappedAssetCollection->reject(fn (array $asset) => $asset['has_identity'])->count(),
-                'coverage_percent' => count($mappedAssets) > 0 ? round(($readyCount / count($mappedAssets)) * 100, 1) : 0,
-                'zones' => $mappedAssetCollection->pluck('zone')->filter()->unique()->values()->all(),
+                'mapped' => $mappedAssets->where('has_coordinates', true)->count(),
+                'total' => $mappedAssets->count(),
+                'ready' => $ready,
+                'needs_position' => $mappedAssets->where('has_coordinates', false)->count(),
+                'needs_identity' => $mappedAssets->where('has_identity', false)->count(),
+                'coverage_percent' => $mappedAssets->isNotEmpty()
+                    ? round(($ready / $mappedAssets->count()) * 100, 1)
+                    : 0,
+                'zones' => $mappedAssets->pluck('zone')->filter()->unique()->sort()->values()->all(),
+                'payload_limit' => self::MAX_MARKERS,
+            ],
+            'config' => [
+                'tile_url' => config('property-map.tile_url'),
+                'attribution' => config('property-map.attribution'),
+                'default_center' => config('property-map.default_center'),
+                'default_zoom' => config('property-map.default_zoom'),
+                'directory_page_size' => 12,
             ],
         ];
     }
 
-    private function isMapCandidate(Asset $asset): bool
+    /**
+     * @param  Collection<int, Collection<int, Asset>>  $children
+     * @return array<int, int>
+     */
+    private function descendantIds(int $assetId, Collection $children): array
     {
-        if (in_array($asset->asset_type, self::MAP_ASSET_TYPES, true)) {
-            return true;
+        $ids = [$assetId];
+        $queue = [$assetId];
+
+        while ($queue !== []) {
+            $parentId = array_shift($queue);
+
+            foreach ($children->get($parentId, collect()) as $child) {
+                $ids[] = $child->id;
+                $queue[] = $child->id;
+            }
         }
 
-        $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
-
-        return collect(['zone', 'land_number', 'latitude', 'longitude', 'x', 'y'])
-            ->contains(fn (string $key) => isset($map[$key]) && $map[$key] !== '');
+        return $ids;
     }
 
     /**
-     * @return array<string, float>|null
+     * @param  Collection<int, int>  $assetIds
+     * @return Collection<int, int>
      */
-    private function coordinateBounds($assets): ?array
+    private function activeLeaseCounts(Collection $assetIds): Collection
+    {
+        if ($assetIds->isEmpty()) {
+            return collect();
+        }
+
+        return Lease::query()
+            ->whereIn('leaseable_type', array_unique([Asset::class, (new Asset)->getMorphClass(), 'asset']))
+            ->whereIn('leaseable_id', $assetIds)
+            ->where('status', 'active')
+            ->selectRaw('leaseable_id, COUNT(*) as aggregate')
+            ->groupBy('leaseable_id')
+            ->pluck('aggregate', 'leaseable_id')
+            ->map(fn (mixed $count): int => (int) $count);
+    }
+
+    /**
+     * @param  Collection<int, int>  $assetIds
+     * @return Collection<int, int>
+     */
+    private function openMaintenanceCounts(Collection $assetIds): Collection
+    {
+        if ($assetIds->isEmpty()) {
+            return collect();
+        }
+
+        return MaintenanceRequest::query()
+            ->whereIn('asset_id', $assetIds)
+            ->whereIn('status', ['open', 'in_progress'])
+            ->selectRaw('asset_id, COUNT(*) as aggregate')
+            ->groupBy('asset_id')
+            ->pluck('aggregate', 'asset_id')
+            ->map(fn (mixed $count): int => (int) $count);
+    }
+
+    /**
+     * @param  Collection<int, int>  $descendantIds
+     * @param  Collection<int, Asset>  $nodes
+     * @param  Collection<int, int>  $leaseCounts
+     * @param  Collection<int, int>  $maintenanceCounts
+     * @param  array{min_latitude:float,max_latitude:float,min_longitude:float,max_longitude:float}|null  $bounds
+     * @return array<string, mixed>
+     */
+    private function mapAsset(
+        Asset $asset,
+        Collection $descendantIds,
+        Collection $nodes,
+        Collection $leaseCounts,
+        Collection $maintenanceCounts,
+        string $locale,
+        ?array $bounds,
+    ): array {
+        $map = $this->mapMetadata($asset);
+        $latitude = is_numeric($map['latitude'] ?? null) ? (float) $map['latitude'] : null;
+        $longitude = is_numeric($map['longitude'] ?? null) ? (float) $map['longitude'] : null;
+        $zone = $this->localizedMapValue($map, 'zone', $locale);
+        $landNumber = $this->mapValue($map, 'land_number');
+        $descendantNodes = $nodes->whereIn('id', $descendantIds);
+        $rentableUnits = $descendantNodes
+            ->where('rentable', true)
+            ->whereIn('asset_type', ['unit', 'space'])
+            ->count();
+        $activeLeases = $descendantIds->sum(fn (int $id): int => (int) $leaseCounts->get($id, 0));
+        $openRequests = $descendantIds->sum(fn (int $id): int => (int) $maintenanceCounts->get($id, 0));
+        $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
+        $manager = $asset->stakeholders->firstWhere('relationship_type', 'manager');
+        $occupancy = $this->occupancy($asset, $rentableUnits, $activeLeases);
+        $hasCoordinates = $latitude !== null && $longitude !== null;
+        $hasIdentity = $zone !== null && $landNumber !== null;
+
+        return [
+            'id' => $asset->id,
+            'title' => $this->localized($asset->title_en, $asset->title_ar, $locale),
+            'code' => $asset->code,
+            'portfolio' => $this->localizedModel(
+                $asset->getRelation('portfolio'),
+                'name_en',
+                'name_ar',
+                $locale,
+            ),
+            'asset_type' => $asset->asset_type,
+            'usage_type' => $asset->usage_type,
+            'status' => $asset->status,
+            'occupancy_status' => $occupancy,
+            'valuation_amount' => (float) $asset->valuation_amount,
+            'currency' => $asset->currency,
+            'address' => $locale === 'ar'
+                ? ($asset->address_ar ?: $asset->address)
+                : ($asset->address ?: $asset->address_ar),
+            'zone' => $zone,
+            'land_number' => $landNumber,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'x' => is_numeric($map['x'] ?? null)
+                ? (float) $map['x']
+                : $this->coordinatePercent($longitude, $bounds, 'longitude'),
+            'y' => is_numeric($map['y'] ?? null)
+                ? (float) $map['y']
+                : $this->coordinatePercent($latitude, $bounds, 'latitude', true),
+            'has_coordinates' => $hasCoordinates,
+            'has_identity' => $hasIdentity,
+            'map_ready' => $hasCoordinates && $hasIdentity,
+            'href' => route('assets.show', $asset),
+            'edit_href' => route('assets.edit', $asset),
+            'children_count' => max(0, $descendantIds->count() - 1),
+            'rentable_children_count' => $rentableUnits,
+            'active_leases_count' => $activeLeases,
+            'open_requests_count' => $openRequests,
+            'owner' => $this->stakeholderName($owner),
+            'manager' => $this->stakeholderName($manager),
+            'is_showcase' => $asset->getIsShowcaseAttribute(),
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $map
+     */
+    private function localizedMapValue(array $map, string $key, string $locale): ?string
+    {
+        return $this->mapValue($map, "{$key}_{$locale}")
+            ?? $this->mapValue($map, $key)
+            ?? $this->mapValue($map, $locale === 'ar' ? "{$key}_en" : "{$key}_ar");
+    }
+
+    /**
+     * @param  array<string, mixed>  $map
+     */
+    private function mapValue(array $map, string $key): ?string
+    {
+        $value = trim((string) ($map[$key] ?? ''));
+
+        return $value === '' ? null : $value;
+    }
+
+    private function occupancy(Asset $asset, int $rentableUnits, int $activeLeases): string
+    {
+        if ($rentableUnits === 0) {
+            return $asset->occupancy_status;
+        }
+
+        if ($activeLeases === 0) {
+            return 'vacant';
+        }
+
+        return $activeLeases >= $rentableUnits ? 'occupied' : 'partially_occupied';
+    }
+
+    private function localized(?string $english, ?string $arabic, string $locale): ?string
+    {
+        return $locale === 'ar'
+            ? ($arabic ?: $english)
+            : ($english ?: $arabic);
+    }
+
+    /**
+     * @param  Collection<int, Asset>  $assets
+     * @return array{min_latitude:float,max_latitude:float,min_longitude:float,max_longitude:float}|null
+     */
+    private function coordinateBounds(Collection $assets): ?array
     {
         $coordinates = $assets
             ->map(function (Asset $asset): ?array {
-                $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
+                $map = $this->mapMetadata($asset);
 
-                if (! isset($map['latitude'], $map['longitude']) || ! is_numeric($map['latitude']) || ! is_numeric($map['longitude'])) {
+                if (! is_numeric($map['latitude'] ?? null) || ! is_numeric($map['longitude'] ?? null)) {
                     return null;
                 }
 
@@ -108,125 +327,81 @@ class PropertyMapPresenter
 
     /**
      * @param  array<string, float>|null  $bounds
+     */
+    private function coordinatePercent(?float $value, ?array $bounds, string $axis, bool $inverse = false): float
+    {
+        if ($value === null || $bounds === null) {
+            return 50.0;
+        }
+
+        $minimum = $bounds["min_{$axis}"];
+        $maximum = $bounds["max_{$axis}"];
+        $range = $maximum - $minimum;
+        $ratio = $range > 0 ? ($value - $minimum) / $range : 0.5;
+
+        if ($inverse) {
+            $ratio = 1 - $ratio;
+        }
+
+        return round(10 + ($ratio * 80), 4);
+    }
+
+    /**
      * @return array<string, mixed>
      */
-    private function propertyMapAsset(Asset $asset, int $index, ?array $bounds): array
+    private function mapMetadata(Asset $asset): array
     {
-        $map = is_array($asset->meta_json['map'] ?? null) ? $asset->meta_json['map'] : [];
-        $coordinates = $this->coordinates($map);
-        $zone = $this->nonEmptyMapValue($map, 'zone');
-        $landNumber = $this->nonEmptyMapValue($map, 'land_number');
-        $hasIdentity = $zone !== null && $landNumber !== null;
-        $fallbackX = 14 + (($index * 23) % 72);
-        $fallbackY = 18 + (($index * 31) % 62);
-        $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
-        $manager = $asset->stakeholders->firstWhere('relationship_type', 'manager');
+        $metadata = $asset->getAttribute('meta_json');
 
-        return [
-            'id' => $asset->id,
-            'title' => $asset->title_en,
-            'code' => $asset->code,
-            'portfolio' => $asset->portfolio?->name_en,
-            'asset_type' => $asset->asset_type,
-            'usage_type' => $asset->usage_type,
-            'status' => $asset->status,
-            'occupancy_status' => $asset->occupancy_status,
-            'valuation_amount' => (float) $asset->valuation_amount,
-            'currency' => $asset->currency,
-            'address' => $asset->address,
-            'zone' => $zone,
-            'land_number' => $landNumber,
-            'latitude' => $coordinates['latitude'] ?? null,
-            'longitude' => $coordinates['longitude'] ?? null,
-            'x' => $this->mapPercent($map['x'] ?? null, $this->coordinateX($coordinates, $bounds) ?? $fallbackX),
-            'y' => $this->mapPercent($map['y'] ?? null, $this->coordinateY($coordinates, $bounds) ?? $fallbackY),
-            'has_coordinates' => $coordinates !== null || isset($map['x'], $map['y']),
-            'has_identity' => $hasIdentity,
-            'edit_href' => route('assets.edit', $asset),
-            'href' => route('assets.show', $asset),
-            'children_count' => (int) $asset->children_count,
-            'rentable_children_count' => (int) $asset->rentable_children_count,
-            'active_leases_count' => (int) $asset->active_leases_count,
-            'open_requests_count' => (int) $asset->open_requests_count,
-            'owner' => $owner?->user?->name,
-            'manager' => $manager?->user?->name,
-        ];
+        if (! is_array($metadata)) {
+            return [];
+        }
+
+        $map = $metadata['map'] ?? null;
+
+        return is_array($map) ? $map : [];
     }
 
-    /**
-     * @param  array<string, mixed>  $map
-     * @return array{latitude:float,longitude:float}|null
-     */
-    private function coordinates(array $map): ?array
-    {
-        if (! isset($map['latitude'], $map['longitude']) || ! is_numeric($map['latitude']) || ! is_numeric($map['longitude'])) {
+    private function localizedModel(
+        mixed $model,
+        string $englishAttribute,
+        string $arabicAttribute,
+        string $locale,
+    ): ?string {
+        if (! $model instanceof Model) {
             return null;
         }
 
-        return [
-            'latitude' => (float) $map['latitude'],
-            'longitude' => (float) $map['longitude'],
-        ];
+        $english = $model->getAttribute($englishAttribute);
+        $arabic = $model->getAttribute($arabicAttribute);
+
+        return $this->localized(
+            is_string($english) ? $english : null,
+            is_string($arabic) ? $arabic : null,
+            $locale,
+        );
     }
 
-    /**
-     * @param  array{latitude:float,longitude:float}|null  $coordinates
-     * @param  array<string, float>|null  $bounds
-     */
-    private function coordinateX(?array $coordinates, ?array $bounds): ?float
+    private function stakeholderName(mixed $stakeholder): ?string
     {
-        if (! $coordinates || ! $bounds) {
+        if (! $stakeholder instanceof Model) {
             return null;
         }
 
-        $range = $bounds['max_longitude'] - $bounds['min_longitude'];
+        $user = $stakeholder->getRelation('user');
+        $name = $user instanceof Model ? $user->getAttribute('name') : null;
 
-        if ($range <= 0) {
-            return 50;
-        }
-
-        return 10 + (($coordinates['longitude'] - $bounds['min_longitude']) / $range) * 80;
+        return is_string($name) ? $name : null;
     }
 
     /**
-     * @param  array{latitude:float,longitude:float}|null  $coordinates
-     * @param  array<string, float>|null  $bounds
+     * @param  iterable<mixed>  $assets
+     * @return Collection<int, Asset>
      */
-    private function coordinateY(?array $coordinates, ?array $bounds): ?float
+    private function assetCollection(iterable $assets): Collection
     {
-        if (! $coordinates || ! $bounds) {
-            return null;
-        }
-
-        $range = $bounds['max_latitude'] - $bounds['min_latitude'];
-
-        if ($range <= 0) {
-            return 50;
-        }
-
-        return 10 + (($bounds['max_latitude'] - $coordinates['latitude']) / $range) * 80;
-    }
-
-    private function mapPercent(mixed $value, float $fallback): float
-    {
-        if (is_numeric($value)) {
-            return max(4, min(96, (float) $value));
-        }
-
-        return max(4, min(96, $fallback));
-    }
-
-    /**
-     * @param  array<string, mixed>  $map
-     */
-    private function nonEmptyMapValue(array $map, string $key): ?string
-    {
-        if (! isset($map[$key])) {
-            return null;
-        }
-
-        $value = trim((string) $map[$key]);
-
-        return $value === '' ? null : $value;
+        return collect($assets)
+            ->filter(fn (mixed $asset): bool => $asset instanceof Asset)
+            ->values();
     }
 }

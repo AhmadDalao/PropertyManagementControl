@@ -1,8 +1,10 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
+import { humanLabel } from '@/components/operations';
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type { SharedProps } from '@/types';
 
 type ProfileRecord = {
@@ -36,6 +38,7 @@ type PageProps = SharedProps & {
 export default function ProfilePage() {
     const { props } = usePage<PageProps>();
     const { profile } = props;
+    const { locale, t, text } = useTranslator();
 
     const profileForm = useForm({
         name: profile.name,
@@ -69,21 +72,21 @@ export default function ProfilePage() {
 
     return (
         <AdminLayout>
-            <Head title="Profile" />
+            <Head title={text('Profile')} />
             <PageHeader
                 title="Profile"
                 description="Control your account details, portal language, and password without touching user-management records."
                 actions={
                     <Link href="/documentation" className="btn btn-primary">
-                        Account guide
+                        {t('profile.account_guide')}
                     </Link>
                 }
             />
 
             {profile.force_password_reset ? (
                 <div className="alert alert-warning mb-4 border-0">
-                    <strong>Temporary password active.</strong> Set a new
-                    password below to secure this portal account.
+                    <strong>{t('profile.temporary_password')}</strong>{' '}
+                    {t('profile.temporary_password_description')}
                 </div>
             ) : null}
 
@@ -96,7 +99,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                                 <div className="pmc-kicker mb-2">
-                                    Signed-in account
+                                    {t('profile.signed_in_account')}
                                 </div>
                                 <h2 className="h4 mb-1">{profile.name}</h2>
                                 <p className="text-secondary mb-0">
@@ -106,22 +109,41 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="d-grid gap-3">
-                            <InfoRow label="Status" value={profile.status} />
                             <InfoRow
-                                label="Role"
-                                value={profile.roles.join(' / ') || 'User'}
+                                label={text('Status')}
+                                value={t(
+                                    `status.${profile.status}`,
+                                    text(humanLabel(profile.status)),
+                                )}
                             />
                             <InfoRow
-                                label="Language"
+                                label={text('Role')}
                                 value={
-                                    profile.preferred_locale === 'ar'
-                                        ? 'Arabic'
-                                        : 'English'
+                                    profile.roles
+                                        .map((role) =>
+                                            t(
+                                                `roles.${role}`,
+                                                text(humanLabel(role)),
+                                            ),
+                                        )
+                                        .join(' / ') || text('User')
                                 }
                             />
                             <InfoRow
-                                label="Last login"
-                                value={formatDate(profile.last_login_at)}
+                                label={text('Language')}
+                                value={
+                                    profile.preferred_locale === 'ar'
+                                        ? text('Arabic')
+                                        : text('English')
+                                }
+                            />
+                            <InfoRow
+                                label={text('Last login')}
+                                value={formatDate(
+                                    profile.last_login_at,
+                                    locale,
+                                    t('profile.not_recorded'),
+                                )}
                             />
                         </div>
                     </section>
@@ -132,10 +154,10 @@ export default function ProfilePage() {
                         <div className="col-lg-6">
                             <section className="pmc-card p-4 h-100">
                                 <div className="pmc-kicker mb-2">
-                                    Profile details
+                                    {t('profile.details')}
                                 </div>
                                 <h2 className="h4 mb-3">
-                                    Keep contact details current
+                                    {t('profile.details_title')}
                                 </h2>
 
                                 <form
@@ -147,7 +169,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="profile-name"
                                         >
-                                            Name
+                                            {text('Name')}
                                         </label>
                                         <input
                                             id="profile-name"
@@ -170,7 +192,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="profile-email"
                                         >
-                                            Email
+                                            {text('Email')}
                                         </label>
                                         <input
                                             id="profile-email"
@@ -181,9 +203,7 @@ export default function ProfilePage() {
                                             disabled
                                         />
                                         <div className="form-text">
-                                            Email changes are handled by an
-                                            administrator to avoid broken tenant
-                                            access.
+                                            {t('profile.email_notice')}
                                         </div>
                                     </div>
                                     <div>
@@ -191,7 +211,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="profile-phone"
                                         >
-                                            Phone
+                                            {text('Phone')}
                                         </label>
                                         <input
                                             id="profile-phone"
@@ -215,7 +235,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="profile-locale"
                                         >
-                                            Portal language
+                                            {t('profile.portal_language')}
                                         </label>
                                         <select
                                             id="profile-locale"
@@ -233,15 +253,19 @@ export default function ProfilePage() {
                                                 )
                                             }
                                         >
-                                            <option value="en">English</option>
-                                            <option value="ar">Arabic</option>
+                                            <option value="en">
+                                                {text('English')}
+                                            </option>
+                                            <option value="ar">
+                                                {text('Arabic')}
+                                            </option>
                                         </select>
                                     </div>
                                     <button
                                         className="btn btn-primary"
                                         disabled={profileForm.processing}
                                     >
-                                        Update profile
+                                        {t('profile.update_profile')}
                                     </button>
                                 </form>
                             </section>
@@ -249,12 +273,14 @@ export default function ProfilePage() {
 
                         <div className="col-lg-6">
                             <section className="pmc-card p-4 h-100">
-                                <div className="pmc-kicker mb-2">Security</div>
-                                <h2 className="h4 mb-3">Change password</h2>
+                                <div className="pmc-kicker mb-2">
+                                    {t('profile.security')}
+                                </div>
+                                <h2 className="h4 mb-3">
+                                    {t('profile.change_password')}
+                                </h2>
                                 <p className="text-secondary small">
-                                    Use a strong password. If your owner or
-                                    manager just created this account, this
-                                    clears the temporary-password flag.
+                                    {t('profile.password_notice')}
                                 </p>
 
                                 <form
@@ -266,7 +292,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="current-password"
                                         >
-                                            Current password
+                                            {t('profile.current_password')}
                                         </label>
                                         <input
                                             id="current-password"
@@ -286,8 +312,9 @@ export default function ProfilePage() {
                                         />
                                         {profile.force_password_reset ? (
                                             <div className="form-text">
-                                                Optional while temporary
-                                                password reset is active.
+                                                {t(
+                                                    'profile.current_password_optional',
+                                                )}
                                             </div>
                                         ) : null}
                                         <FieldError
@@ -302,7 +329,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="new-password"
                                         >
-                                            New password
+                                            {t('profile.new_password')}
                                         </label>
                                         <input
                                             id="new-password"
@@ -328,7 +355,7 @@ export default function ProfilePage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="password-confirmation"
                                         >
-                                            Confirm password
+                                            {t('profile.confirm_password')}
                                         </label>
                                         <input
                                             id="password-confirmation"
@@ -351,7 +378,7 @@ export default function ProfilePage() {
                                         className="btn btn-warning"
                                         disabled={passwordForm.processing}
                                     >
-                                        Update password
+                                        {t('profile.update_password')}
                                     </button>
                                 </form>
                             </section>
@@ -360,49 +387,80 @@ export default function ProfilePage() {
                         <div className="col-12">
                             <section className="pmc-card p-4">
                                 <div className="pmc-kicker mb-2">
-                                    Access context
+                                    {t('profile.access_context')}
                                 </div>
                                 <div className="row g-3">
                                     <ContextCard
                                         icon="bi-buildings"
-                                        title="Portfolio"
+                                        title={text('Portfolio')}
                                         value={
-                                            profile.portfolio?.name_en ??
-                                            'Global system account'
+                                            (locale === 'ar'
+                                                ? profile.portfolio?.name_ar ||
+                                                  profile.portfolio?.name_en
+                                                : profile.portfolio?.name_en ||
+                                                  profile.portfolio?.name_ar) ??
+                                            t('profile.global_account')
                                         }
                                         detail={
                                             profile.portfolio
-                                                ? `${profile.portfolio.code} · ${profile.portfolio.status}`
-                                                : 'Superadmin accounts are not tied to one portfolio.'
+                                                ? `${profile.portfolio.code} · ${t(
+                                                      `status.${profile.portfolio.status}`,
+                                                      text(
+                                                          humanLabel(
+                                                              profile.portfolio
+                                                                  .status,
+                                                          ),
+                                                      ),
+                                                  )}`
+                                                : t(
+                                                      'profile.global_account_description',
+                                                  )
                                         }
                                     />
                                     <ContextCard
                                         icon="bi-person-badge"
-                                        title="Tenant profile"
+                                        title={text('Tenant profile')}
                                         value={
                                             profile.tenant_profile
-                                                ? profile.tenant_profile
-                                                      .profile_type
-                                                : 'No tenant profile'
+                                                ? text(
+                                                      humanLabel(
+                                                          profile.tenant_profile
+                                                              .profile_type,
+                                                      ),
+                                                  )
+                                                : t('profile.no_tenant_profile')
                                         }
                                         detail={
                                             profile.tenant_profile
-                                                ? profile.tenant_profile.status
-                                                : 'Owners and managers usually do not have tenant profiles.'
+                                                ? t(
+                                                      `status.${profile.tenant_profile.status}`,
+                                                      text(
+                                                          humanLabel(
+                                                              profile
+                                                                  .tenant_profile
+                                                                  .status,
+                                                          ),
+                                                      ),
+                                                  )
+                                                : t(
+                                                      'profile.no_tenant_profile_description',
+                                                  )
                                         }
                                     />
                                     <ContextCard
                                         icon="bi-shield-check"
-                                        title="Password state"
+                                        title={t('profile.password_state')}
                                         value={
                                             profile.force_password_reset
-                                                ? 'Temporary'
-                                                : 'Confirmed'
+                                                ? t('profile.temporary')
+                                                : t('profile.confirmed')
                                         }
                                         detail={
                                             profile.force_password_reset
-                                                ? 'Change it before continuing.'
-                                                : 'No reset is currently required.'
+                                                ? t(
+                                                      'profile.change_before_continuing',
+                                                  )
+                                                : t('profile.no_reset_required')
                                         }
                                     />
                                 </div>
@@ -455,12 +513,16 @@ function FieldError({ message }: { message?: string }) {
     return <div className="text-danger small mt-1">{message}</div>;
 }
 
-function formatDate(value?: string | null) {
+function formatDate(
+    value?: string | null,
+    locale: string = 'en',
+    fallback: string = 'Not recorded',
+) {
     if (!value) {
-        return 'Not recorded';
+        return fallback;
     }
 
-    return new Intl.DateTimeFormat(undefined, {
+    return new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en', {
         dateStyle: 'medium',
         timeStyle: 'short',
     }).format(new Date(value));

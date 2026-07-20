@@ -5,7 +5,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslator } from '@/lib/i18n';
 
 export default function LoginPage() {
-    const { locale } = useTranslator();
+    const { t } = useTranslator();
     const form = useForm({
         email: '',
         password: '',
@@ -19,13 +19,13 @@ export default function LoginPage() {
 
     return (
         <>
-            <Head title="Login" />
+            <Head title={t('login.title')} />
             <div className="pmc-auth-page">
                 <div className="container">
                     <div className="pmc-auth-topbar">
                         <Link href="/" className="pmc-public-brand">
                             <span>PMC</span>
-                            <strong>Property Management Control</strong>
+                            <strong>{t('login.brand')}</strong>
                         </Link>
                         <LanguageSwitcher />
                     </div>
@@ -34,31 +34,22 @@ export default function LoginPage() {
                         <div className="col-lg-6">
                             <div className="pmc-auth-copy">
                                 <div className="pmc-kicker mb-3">
-                                    Secure portal
+                                    {t('login.secure_portal')}
                                 </div>
-                                <h2>
-                                    {locale === 'ar'
-                                        ? 'دخول واحد للملاك والمديرين والمستأجرين وإدارة النظام.'
-                                        : 'One login for owners, managers, tenants, and system control.'}
-                                </h2>
-                                <p>
-                                    Access portfolio dashboards, rent balances,
-                                    contracts, payment receipts, maintenance
-                                    requests, and website control based on your
-                                    role.
-                                </p>
+                                <h2>{t('login.headline')}</h2>
+                                <p>{t('login.description')}</p>
                                 <div className="pmc-auth-points">
                                     <span>
                                         <i className="bi bi-shield-check" />
-                                        Role-based access
+                                        {t('login.role_access')}
                                     </span>
                                     <span>
                                         <i className="bi bi-translate" />
-                                        English and Arabic
+                                        {t('login.bilingual')}
                                     </span>
                                     <span>
                                         <i className="bi bi-file-earmark-lock" />
-                                        Private documents
+                                        {t('login.private_documents')}
                                     </span>
                                 </div>
                             </div>
@@ -67,14 +58,13 @@ export default function LoginPage() {
                         <div className="col-lg-5 offset-lg-1">
                             <div className="pmc-card pmc-login-panel p-4 p-lg-5 mx-auto">
                                 <div className="pmc-kicker mb-3">
-                                    Secure access
+                                    {t('login.secure_access')}
                                 </div>
                                 <h1 className="pmc-page-title mb-3">
-                                    Property Control Login
+                                    {t('login.title')}
                                 </h1>
                                 <p className="text-secondary mb-4">
-                                    Sign in with the account created for you by
-                                    the system owner or property owner.
+                                    {t('login.form_description')}
                                 </p>
 
                                 <form
@@ -86,7 +76,7 @@ export default function LoginPage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="login-email"
                                         >
-                                            Email
+                                            {t('login.email')}
                                         </label>
                                         <input
                                             id="login-email"
@@ -126,7 +116,7 @@ export default function LoginPage() {
                                             className="form-label pmc-form-label"
                                             htmlFor="login-password"
                                         >
-                                            Password
+                                            {t('login.password')}
                                         </label>
                                         <input
                                             id="login-password"
@@ -178,7 +168,7 @@ export default function LoginPage() {
                                             className="form-check-label"
                                             htmlFor="remember"
                                         >
-                                            Keep me signed in
+                                            {t('login.remember')}
                                         </label>
                                     </div>
 
@@ -188,8 +178,8 @@ export default function LoginPage() {
                                         disabled={form.processing}
                                     >
                                         {form.processing
-                                            ? 'Signing in...'
-                                            : 'Sign in'}
+                                            ? t('login.signing_in')
+                                            : t('login.sign_in')}
                                     </button>
                                 </form>
                             </div>

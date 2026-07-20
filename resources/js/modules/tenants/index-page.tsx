@@ -11,6 +11,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type {
     PaginatedData,
     SharedProps,
@@ -57,6 +58,7 @@ type PageProps = SharedProps & {
 
 export default function TenantsIndexPage() {
     const { props } = usePage<PageProps>();
+    const { t, text } = useTranslator();
     const profileGaps =
         props.tenantInsights.missing_emergency +
         props.tenantInsights.missing_address;
@@ -98,7 +100,7 @@ export default function TenantsIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Tenants" />
+            <Head title={text('Tenants')} />
 
             <WorkspaceHeader
                 eyebrow="Portfolio"
@@ -124,7 +126,9 @@ export default function TenantsIndexPage() {
                     {
                         label: 'Tenant profiles',
                         value: props.tenantInsights.total,
-                        detail: `${props.tenantInsights.companies} company profiles`,
+                        detail: t('tenants.company_profiles', undefined, {
+                            count: props.tenantInsights.companies,
+                        }),
                         icon: 'bi-people',
                         tone: 'ink',
                     },
@@ -148,7 +152,10 @@ export default function TenantsIndexPage() {
                     {
                         label: 'Profile gaps',
                         value: profileGaps,
-                        detail: `${props.tenantInsights.missing_emergency} emergency · ${props.tenantInsights.missing_address} address`,
+                        detail: t('tenants.profile_gaps', undefined, {
+                            emergency: props.tenantInsights.missing_emergency,
+                            address: props.tenantInsights.missing_address,
+                        }),
                         icon: 'bi-person-exclamation',
                         tone: profileGaps > 0 ? 'red' : 'amber',
                     },
@@ -174,9 +181,13 @@ export default function TenantsIndexPage() {
                                 <strong>
                                     {tenant.user?.name ??
                                         tenant.company_name ??
-                                        `Tenant #${tenant.id}`}
+                                        t('tenants.tenant_number', undefined, {
+                                            id: tenant.id,
+                                        })}
                                 </strong>
-                                <span>{tenant.user?.email ?? 'No email'}</span>
+                                <span>
+                                    {tenant.user?.email ?? text('No email')}
+                                </span>
                                 {tenant.user?.phone ? (
                                     <small>{tenant.user.phone}</small>
                                 ) : null}
@@ -189,12 +200,12 @@ export default function TenantsIndexPage() {
                         render: (tenant) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {humanLabel(tenant.profile_type)}
+                                    {text(humanLabel(tenant.profile_type))}
                                 </strong>
                                 <span>
                                     {tenant.company_name ??
                                         tenant.national_id ??
-                                        'Identity not recorded'}
+                                        text('Identity not recorded')}
                                 </span>
                                 <ProfileCompleteness tenant={tenant} />
                             </div>
@@ -206,16 +217,16 @@ export default function TenantsIndexPage() {
                         render: (tenant) => (
                             <div className="pmc-stacked-cell">
                                 <strong>
-                                    {tenant.active_leases_count ?? 0} active
-                                    lease
-                                    {(tenant.active_leases_count ?? 0) === 1
-                                        ? ''
-                                        : 's'}
+                                    {t('tenants.active_leases', undefined, {
+                                        count: tenant.active_leases_count ?? 0,
+                                    })}
                                 </strong>
                                 <span>
-                                    {tenant.leases_count ?? 0} total ·{' '}
-                                    {tenant.open_requests_count ?? 0} open
-                                    service
+                                    {t('tenants.activity', undefined, {
+                                        total: tenant.leases_count ?? 0,
+                                        service:
+                                            tenant.open_requests_count ?? 0,
+                                    })}
                                 </span>
                             </div>
                         ),
@@ -239,7 +250,15 @@ export default function TenantsIndexPage() {
                                 {tenant.status !== 'blocked' ? (
                                     <ArchiveAction
                                         href={`/tenants/${tenant.id}`}
-                                        confirmMessage={`Archive ${tenant.user?.name ?? 'this tenant'}? Active leases must be terminated first.`}
+                                        confirmMessage={t(
+                                            'tenants.archive_confirm',
+                                            undefined,
+                                            {
+                                                name:
+                                                    tenant.user?.name ??
+                                                    text('this tenant'),
+                                            },
+                                        )}
                                     />
                                 ) : null}
                             </RecordActions>
@@ -252,19 +271,26 @@ export default function TenantsIndexPage() {
 }
 
 function ProfileCompleteness({ tenant }: { tenant: TenantRecord }) {
+    const { t, text } = useTranslator();
     const missing = [
         tenant.emergency_contact_name && tenant.emergency_contact_phone
             ? null
-            : 'emergency contact',
-        tenant.address ? null : 'address',
+            : text('Emergency contact'),
+        tenant.address ? null : text('Address'),
         tenant.profile_type === 'company' && !tenant.company_name
-            ? 'company'
+            ? text('Company')
             : null,
     ].filter(Boolean);
 
     return missing.length === 0 ? (
-        <StatusBadge value="Complete" tone="success" />
+        <StatusBadge value="complete" tone="success" />
     ) : (
-        <StatusBadge value={`Missing ${missing.join(', ')}`} tone="warning" />
+        <StatusBadge
+            value="incomplete"
+            label={t('tenants.missing_fields', undefined, {
+                fields: missing.join(', '),
+            })}
+            tone="warning"
+        />
     );
 }

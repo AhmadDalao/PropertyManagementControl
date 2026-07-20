@@ -10,6 +10,7 @@ import {
     WorkspaceHeader,
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { useTranslator } from '@/lib/i18n';
 import type {
     PaginatedData,
     SharedProps,
@@ -22,6 +23,7 @@ type MediaRecord = {
     title_en?: string | null;
     title_ar?: string | null;
     alt_text_en?: string | null;
+    alt_text_ar?: string | null;
     path: string;
     disk: string;
     collection: string;
@@ -40,6 +42,7 @@ type PageProps = SharedProps & {
 
 export default function MediaIndexPage() {
     const { props } = usePage<PageProps>();
+    const { locale, t, text } = useTranslator();
     const filterFields: TableFilterField[] = [
         {
             name: 'visibility',
@@ -79,7 +82,7 @@ export default function MediaIndexPage() {
 
     return (
         <AdminLayout>
-            <Head title="Media Library" />
+            <Head title={text('Media Library')} />
 
             <WorkspaceHeader
                 eyebrow="System"
@@ -148,7 +151,15 @@ export default function MediaIndexPage() {
                                     <img
                                         className="pmc-media-thumb"
                                         src={mediaUrl(media)}
-                                        alt={media.alt_text_en ?? ''}
+                                        alt={
+                                            locale === 'ar'
+                                                ? media.alt_text_ar ||
+                                                  media.alt_text_en ||
+                                                  ''
+                                                : media.alt_text_en ||
+                                                  media.alt_text_ar ||
+                                                  ''
+                                        }
                                     />
                                 ) : (
                                     <span className="pmc-media-file-icon">
@@ -157,7 +168,11 @@ export default function MediaIndexPage() {
                                 )}
                                 <div className="pmc-primary-cell">
                                     <strong>
-                                        {media.title_en ?? 'Untitled media'}
+                                        {(locale === 'ar'
+                                            ? media.title_ar || media.title_en
+                                            : media.title_en ||
+                                              media.title_ar) ??
+                                            text('Untitled media')}
                                     </strong>
                                     <span>
                                         {media.title_ar ?? media.collection}
@@ -173,7 +188,7 @@ export default function MediaIndexPage() {
                             <div className="pmc-stacked-cell">
                                 <strong>{media.path}</strong>
                                 <span>
-                                    {media.mime_type ?? 'Unknown type'} ·{' '}
+                                    {media.mime_type ?? text('Unknown type')} ·{' '}
                                     {formatBytes(media.size)}
                                 </span>
                             </div>
@@ -210,13 +225,25 @@ export default function MediaIndexPage() {
                                         rel="noreferrer"
                                     >
                                         <i className="bi bi-box-arrow-up-right" />
-                                        <span>File</span>
+                                        <span>{text('File')}</span>
                                     </a>
                                 ) : null}
                                 <ArchiveAction
                                     href={`/media-files/${media.id}`}
                                     label="Delete"
-                                    confirmMessage={`Delete ${media.title_en ?? media.path}? This removes the file from storage.`}
+                                    confirmMessage={t(
+                                        'media.delete_confirm',
+                                        undefined,
+                                        {
+                                            title:
+                                                (locale === 'ar'
+                                                    ? media.title_ar ||
+                                                      media.title_en
+                                                    : media.title_en ||
+                                                      media.title_ar) ??
+                                                media.path,
+                                        },
+                                    )}
                                 />
                             </RecordActions>
                         ),

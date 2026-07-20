@@ -39,6 +39,7 @@ const primaryAdminRoutes = [
     '/audit-logs',
     '/cms',
     '/wording',
+    '/system/showcase-data',
     '/reports',
     '/documentation',
 ] as const;
@@ -185,9 +186,11 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-map-command-strip')).toHaveCount(0);
         await expect(page.locator('.pmc-map-setup-queue')).toHaveCount(0);
         await expect(page.locator('.pmc-zone-directory')).toHaveCount(0);
+        await expect(page.locator('.pmc-map-cluster').first()).toBeVisible();
 
         const records = page.getByTestId('property-map-record');
         const recordCount = await records.count();
+        expect(recordCount).toBe(12);
 
         if (recordCount > 1) {
             const secondRecord = records.nth(1);
@@ -203,6 +206,10 @@ test.describe('authenticated administration', () => {
                 }),
             ).toBeVisible();
         }
+
+        await page.getByRole('button', { name: 'Next records' }).click();
+        await expect(page.getByText('Page 2 of 4')).toBeVisible();
+        await expect(records).toHaveCount(12);
     });
 
     test('Arabic property map is translated and RTL', async ({ page }) => {
@@ -259,6 +266,31 @@ test.describe('authenticated administration', () => {
         await guide.click();
         await expect(page).toHaveURL(/\/documentation\/[^/?]+/);
         await expect(page.locator('.pmc-doc-detail-layout')).toBeVisible();
+    });
+
+    test('authenticated command-center routes have no serious accessibility violations', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+
+            for (const path of [
+                '/dashboard',
+                '/assets',
+                '/property-map',
+                '/reports',
+                '/cms',
+                '/wording',
+                '/system/showcase-data',
+            ]) {
+                await page.goto(path);
+                const results = await new AxeBuilder({ page })
+                    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+                    .analyze();
+
+                expect(results.violations).toEqual([]);
+            }
+        }
     });
 });
 
