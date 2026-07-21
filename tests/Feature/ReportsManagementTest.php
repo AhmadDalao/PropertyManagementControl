@@ -236,10 +236,15 @@ class ReportsManagementTest extends TestCase
         $this->assertSame('portfolio-report', $preset->resource);
         $this->assertSame('portfolio', $preset->visibility);
         $this->assertTrue($preset->is_default);
-        $this->assertSame('arrears', $preset->filters_json['preset']);
+        $this->assertSame('2026-01-01', $preset->filters_json['date_from']);
+        $this->assertSame('2026-01-31', $preset->filters_json['date_to']);
+        $this->assertArrayNotHasKey('preset', $preset->filters_json);
 
         $this->actingAs($owner)
-            ->get(route('reports.index'))
+            ->get(route('reports.index', [
+                'date_from' => '2026-01-01',
+                'date_to' => '2026-01-31',
+            ]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('savedPresets', 1)
@@ -288,6 +293,88 @@ class ReportsManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('savedPresets', 1)
-                ->where('savedPresets.0.title_en', 'Global finance view'));
+                ->where('savedPresets.0.title_en', 'Global finance view')
+                ->where('savedPresets.0.can_delete', false));
+    }
+
+    public function test_report_filters_reject_invalid_ranges_and_foreign_portfolios(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'date_from' => 'not-a-date',
+                'date_to' => now()->toDateString(),
+            ]))
+            ->assertRedirect()
+            ->assertSessionHasErrors('date_from');
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'date_from' => '2026-02-01',
+                'date_to' => '2026-01-01',
+            ]))
+            ->assertRedirect()
+            ->assertSessionHasErrors('date_to');
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['portfolio_id' => $foreignPortfolio->id]))
+            ->assertForbidden();
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), [
+                'title_en' => 'Foreign view',
+                'title_ar' => 'عرض خارجي',
+                'visibility' => 'private',
+                'filters_json' => ['portfolio_id' => $foreignPortfolio->id],
+            ])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('report_presets', ['title_en' => 'Foreign view']);
+    }
+
+    public function test_only_one_personal_report_preset_can_be_default(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $payload = [
+            'title_ar' => 'عرض افتراضي',
+            'visibility' => 'private',
+            'is_default' => true,
+            'filters_json' => [
+                'date_from' => '2026-02-01',
+                'date_to' => '2026-02-28',
+            ],
+        ];
+
+        $this->actingAs($owner)->post(route('reports.presets.store'), [
+            ...$payload,
+            'title_en' => 'First default',
+        ])->assertRedirect();
+
+        $this->actingAs($owner)->post(route('reports.presets.store'), [
+            ...$payload,
+            'title_en' => 'Second default',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('report_presets', [
+            'title_en' => 'First default',
+            'is_default' => false,
+        ]);
+        $this->assertDatabaseHas('report_presets', [
+            'title_en' => 'Second default',
+            'is_default' => true,
+        ]);
+
+        $redirect = $this->actingAs($owner)
+            ->get(route('reports.index', ['tab' => 'costs']))
+            ->assertRedirect();
+        $location = (string) $redirect->headers->get('Location');
+
+        $this->assertStringContainsString('date_from=2026-02-01', $location);
+        $this->assertStringContainsString('date_to=2026-02-28', $location);
+        $this->assertStringContainsString('tab=costs', $location);
     }
 }

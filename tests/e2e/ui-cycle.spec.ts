@@ -567,6 +567,41 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-doc-detail-layout')).toBeVisible();
     });
 
+    test('reports use responsive cards, complete Arabic controls, and real XLSX export', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/reports?locale=ar');
+
+        await expect(
+            page.getByRole('heading', { name: 'التقارير', exact: true }),
+        ).toBeVisible();
+        await page.getByRole('button', { name: 'إظهار التصفيات' }).click();
+        await expect(page.locator('#report-filter-panel')).toBeVisible();
+        await expect(page.getByLabel('التاريخ من')).toBeVisible();
+        await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+
+        for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
+            await page.getByRole('button', { name: tab, exact: true }).click();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await expect(page.locator('.pmc-report-record-grid')).toBeVisible();
+        await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
+
+        const workbook = await page.request.get('/reports/export');
+        expect(workbook.ok()).toBeTruthy();
+        expect(workbook.headers()['content-type']).toContain(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/reports');
+        await expect(page.locator('.pmc-report-pulse-grid')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('authenticated command-center routes have no serious accessibility violations', async ({
         page,
     }) => {

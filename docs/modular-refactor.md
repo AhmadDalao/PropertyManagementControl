@@ -55,6 +55,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - CMS is the tenth complete vertical module. Page, section, composition, navigation, public rendering, form, and workspace responsibilities live under `app/Modules/Cms`; the page controller is a 166-line route adapter and the builder entry is a 60-line composer.
 - Media is the eleventh complete vertical module. Scoped directory queries, image validation, safe storage transitions, authorized responses, CMS usage detection, forms, details, and the reusable CMS picker live under `app/Modules/Media` and `resources/js/modules/media`; its controller is an 86-line adapter and its index is a 37-line composer.
 - `MediaModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation, private storage, real image validation, public/private disk transitions, CMS usage locks, portable public URLs, safe picker scope, and physical file deletion.
+- Reports are the twelfth complete vertical module. `ReportController` fell from 493 lines to a 57-line adapter; validated filters, scoped calculations, saved-view permissions, page presentation, and `.xlsx` generation now live under `app/Modules/Reports`.
+- The Report React workspace fell from an 838-line monolith to a 131-line composer with module-owned filters, tabs, KPI cards, collection/cost/operations panels, visuals, saved views, and contracts. Feature coverage rejects malformed dates and foreign portfolio filters, strips unsupported saved filters, enforces one personal default view, hides unauthorized delete actions, and verifies Arabic workbook output.
 
 ## Resource Refactor Checklist
 
@@ -66,7 +68,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend targets by risk are Reports and Audit, followed by consolidation of shared search and export contracts.
+The next backend target by risk is Audit, followed by consolidation of shared global-search and export contracts.
 
 ## Local Verification
 
