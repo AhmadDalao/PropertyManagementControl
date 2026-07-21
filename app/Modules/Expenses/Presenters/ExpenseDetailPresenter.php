@@ -7,12 +7,14 @@ use App\Models\User;
 use App\Modules\Expenses\Support\ExpenseAccess;
 use App\Modules\Expenses\Support\ExpenseOptions;
 use App\Modules\Shared\ResourcePresenter;
+use App\Modules\Users\Support\UserAccess;
 
 class ExpenseDetailPresenter
 {
     public function __construct(
         private readonly ExpenseAccess $access,
         private readonly ResourcePresenter $resources,
+        private readonly UserAccess $userAccess,
     ) {}
 
     /** @return array<string, mixed> */
@@ -106,7 +108,7 @@ class ExpenseDetailPresenter
                         ['label' => trans('app.expenses.maintenance_request'), 'value' => $maintenanceRequest?->title, 'href' => $maintenanceRequest ? route('maintenance-requests.show', $maintenanceRequest) : null],
                         ['label' => trans('app.expenses.lease'), 'value' => $expense->lease?->code, 'href' => $expense->lease ? route('leases.show', $expense->lease) : null],
                         ['label' => trans('app.expenses.portfolio'), 'value' => $this->resources->localized($expense->portfolio?->name_en, $expense->portfolio?->name_ar), 'href' => $expense->portfolio ? route('portfolios.show', $expense->portfolio) : null],
-                        ['label' => trans('app.expenses.created_by'), 'value' => $expense->createdBy?->name, 'href' => $expense->createdBy ? route('users.show', $expense->createdBy) : null],
+                        ['label' => trans('app.expenses.created_by'), 'value' => $expense->createdBy?->name, 'href' => $this->userAccess->recordHref($actor, $expense->createdBy)],
                         ['label' => trans('app.expenses.description'), 'value' => $expense->description],
                     ]),
                 ],

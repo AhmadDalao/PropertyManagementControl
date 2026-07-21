@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\AssetHierarchy;
 use App\Modules\Assets\Support\AssetMetadata;
 use App\Modules\Shared\ResourcePresenter;
+use App\Modules\Users\Support\UserAccess;
 use Illuminate\Database\Eloquent\Collection;
 
 class AssetDetailPresenter
@@ -16,6 +17,7 @@ class AssetDetailPresenter
         private readonly ResourcePresenter $resources,
         private readonly AssetMetadata $metadata,
         private readonly AssetHierarchy $hierarchy,
+        private readonly UserAccess $userAccess,
     ) {}
 
     /**
@@ -184,7 +186,7 @@ class AssetDetailPresenter
                     'items' => $asset->stakeholders->map(fn ($stakeholder) => [
                         'label' => str($stakeholder->relationship_type)->headline()->toString(),
                         'value' => $stakeholder->user?->name,
-                        'href' => $stakeholder->user ? route('users.show', $stakeholder->user) : null,
+                        'href' => $this->userAccess->recordHref($actor, $stakeholder->user),
                         'tone' => $stakeholder->is_primary ? 'primary' : 'muted',
                     ])->values()->all(),
                 ],

@@ -15,17 +15,28 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property int $id
+ * @property int|null $portfolio_id
  * @property string $name
  * @property string $email
+ * @property string|null $phone
+ * @property string $preferred_locale
+ * @property string $status
+ * @property bool $force_password_reset
+ * @property Carbon|null $last_login_at
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
+ * @property-read Portfolio|null $portfolio
+ * @property-read TenantProfile|null $tenantProfile
+ * @property-read Collection<int, Role> $roles
  */
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
@@ -69,21 +80,25 @@ class User extends Authenticatable
         ];
     }
 
+    /** @return BelongsTo<Portfolio, $this> */
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
     }
 
+    /** @return BelongsTo<ShowcaseDataset, $this> */
     public function showcaseDataset(): BelongsTo
     {
         return $this->belongsTo(ShowcaseDataset::class);
     }
 
+    /** @return HasMany<Portfolio, $this> */
     public function portfoliosOwned(): HasMany
     {
         return $this->hasMany(Portfolio::class, 'owner_user_id');
     }
 
+    /** @return HasOne<TenantProfile, $this> */
     public function tenantProfile(): HasOne
     {
         return $this->hasOne(TenantProfile::class);
@@ -94,26 +109,31 @@ class User extends Authenticatable
         $this->notify(new ResetPasswordNotification((string) $token));
     }
 
+    /** @return HasMany<Payment, $this> */
     public function recordedPayments(): HasMany
     {
         return $this->hasMany(Payment::class, 'recorded_by_user_id');
     }
 
+    /** @return HasMany<MaintenanceRequest, $this> */
     public function submittedMaintenanceRequests(): HasMany
     {
         return $this->hasMany(MaintenanceRequest::class, 'submitted_by_user_id');
     }
 
+    /** @return HasMany<MaintenanceRequest, $this> */
     public function assignedMaintenanceRequests(): HasMany
     {
         return $this->hasMany(MaintenanceRequest::class, 'assigned_to_user_id');
     }
 
+    /** @return HasMany<Document, $this> */
     public function uploadedDocuments(): HasMany
     {
         return $this->hasMany(Document::class, 'uploaded_by_user_id');
     }
 
+    /** @return HasMany<MediaFile, $this> */
     public function uploadedMedia(): HasMany
     {
         return $this->hasMany(MediaFile::class, 'uploaded_by_user_id');

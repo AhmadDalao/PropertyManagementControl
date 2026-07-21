@@ -9,10 +9,14 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Leases\Support\LeaseOptions;
 use App\Modules\Shared\ResourcePresenter;
+use App\Modules\Users\Support\UserAccess;
 
 class LeaseDetailPresenter
 {
-    public function __construct(private readonly ResourcePresenter $resources) {}
+    public function __construct(
+        private readonly ResourcePresenter $resources,
+        private readonly UserAccess $userAccess,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -112,8 +116,8 @@ class LeaseDetailPresenter
                         [
                             'label' => 'Managed by',
                             'value' => $lease->managedBy?->name,
-                            'href' => $adminMode && $lease->managedBy
-                                ? route('users.show', $lease->managedBy)
+                            'href' => $adminMode
+                                ? $this->userAccess->recordHref($actor, $lease->managedBy)
                                 : null,
                         ],
                         ['label' => 'Started', 'value' => $lease->started_at?->toDateString()],

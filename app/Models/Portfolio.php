@@ -11,6 +11,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $id
+ * @property int|null $owner_user_id
+ * @property string $name_en
+ * @property string $name_ar
+ * @property string $code
+ * @property string $slug
+ * @property string $status
+ * @property string $default_currency
  * @property-read User|null $owner
  * @property-read ShowcaseDataset|null $showcaseDataset
  * @property-read Collection<int, User> $users

@@ -15,6 +15,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Expenses\Queries\ExpenseIndexQuery;
 use App\Modules\Tenants\Queries\TenantIndexQuery;
+use App\Modules\Users\Queries\UserIndexQuery;
 use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
 use App\Support\PortfolioModules;
@@ -32,6 +33,7 @@ class AdminExportController extends Controller
         private readonly UiTranslationCatalog $translations,
         private readonly TenantIndexQuery $tenantIndex,
         private readonly ExpenseIndexQuery $expenseIndex,
+        private readonly UserIndexQuery $userIndex,
     ) {}
 
     public function __invoke(Request $request, string $resource): BinaryFileResponse
@@ -87,23 +89,16 @@ class AdminExportController extends Controller
 
     private function exportUsers(Request $request): BinaryFileResponse
     {
-        $actor = $this->actor($request);
-        $filters = $this->tableFilters($request, ['status' => 'all', 'role' => 'all']);
-        $query = $this->scopeByPortfolio(User::query(), $actor)->with(['portfolio', 'roles']);
-        $this->applyExactFilter($query, $filters, 'portfolio_id');
-        $this->applyExactFilter($query, $filters, 'status');
-        $this->applySearch($query, $filters['search'], [
-            'name',
-            'email',
-            'phone',
-            fn ($query, $search, $like) => $query->orWhereHas('roles', fn ($roleQuery) => $roleQuery->where('name', 'like', $like)),
-        ]);
+        $query = $this->userIndex->forExport($request, $this->actor($request));
 
-        if (($filters['role'] ?? 'all') !== 'all') {
-            $query->whereHas('roles', fn ($roleQuery) => $roleQuery->where('name', $filters['role']));
-        }
-
-        return $this->xlsx('users', ['Name', 'Email', 'Phone', 'Roles', 'Status', 'Portfolio'], $query, fn (User $row) => [
+        return $this->xlsx('users', [
+            trans('app.users.name'),
+            trans('app.users.email'),
+            trans('app.users.phone'),
+            trans('app.users.role'),
+            trans('app.users.status'),
+            trans('app.users.portfolio'),
+        ], $query, fn (User $row) => [
             $row->name,
             $row->email,
             $row->phone,

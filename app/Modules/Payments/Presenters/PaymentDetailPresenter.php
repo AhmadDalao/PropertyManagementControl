@@ -8,10 +8,14 @@ use App\Models\PaymentAllocation;
 use App\Models\User;
 use App\Modules\Payments\Support\PaymentOptions;
 use App\Modules\Shared\ResourcePresenter;
+use App\Modules\Users\Support\UserAccess;
 
 class PaymentDetailPresenter
 {
-    public function __construct(private readonly ResourcePresenter $resources) {}
+    public function __construct(
+        private readonly ResourcePresenter $resources,
+        private readonly UserAccess $userAccess,
+    ) {}
 
     /** @return array<string, mixed> */
     public function present(Payment $payment, User $actor): array
@@ -99,8 +103,8 @@ class PaymentDetailPresenter
                     [
                         'label' => 'Recorded by',
                         'value' => $adminMode ? $payment->recordedBy?->name : null,
-                        'href' => $adminMode && $payment->recordedBy
-                            ? route('users.show', $payment->recordedBy)
+                        'href' => $adminMode
+                            ? $this->userAccess->recordHref($actor, $payment->recordedBy)
                             : null,
                     ],
                     ['label' => 'Received on', 'value' => $payment->received_on?->toDateString()],

@@ -14,6 +14,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentAttachments;
 use App\Modules\Documents\Support\DocumentOptions;
+use App\Modules\Users\Support\UserAccess;
 use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -21,7 +22,10 @@ use Illuminate\Http\Request;
 
 class GlobalSearchController extends Controller
 {
-    public function __construct(private readonly DocumentAttachments $documentAttachments) {}
+    public function __construct(
+        private readonly DocumentAttachments $documentAttachments,
+        private readonly UserAccess $userAccess,
+    ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
@@ -148,10 +152,16 @@ class GlobalSearchController extends Controller
         }
 
         if ($this->moduleEnabled($actor, 'users')) {
-            $userQuery = $this->scopeByPortfolio(User::query()->with('roles'), $actor);
+            $userQuery = $this->userAccess->directoryScope(User::query()->with('roles'), $actor);
             $this->applySearch($userQuery, $search, ['name', 'email', 'phone']);
             foreach ($userQuery->limit(5)->get() as $user) {
-                $results[] = $this->result(trans('app.nav.users'), $user->name, $user->email, $user->roles->pluck('name')->map(fn (string $role): string => trans("app.roles.{$role}"))->join(', '), route('users.show', $user));
+                $results[] = $this->result(
+                    trans('app.nav.users'),
+                    $user->name,
+                    $user->email,
+                    $user->roles->pluck('name')->map(fn (string $role): string => trans("app.roles.{$role}"))->join(', '),
+                    $this->userAccess->recordHref($actor, $user) ?? route('users.index'),
+                );
             }
         }
 

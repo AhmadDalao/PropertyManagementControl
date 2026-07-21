@@ -330,6 +330,42 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic user workspace, form, and detail stay localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/users?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'المستخدمون والأدوار' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-card')).toHaveCount(10);
+        await expect(page.locator('body')).not.toContainText('users.');
+        await expectNoHorizontalOverflow(page);
+
+        const userDetailLinks = page.locator(
+            '.pmc-mobile-record-card a[href^="/users/"]',
+        );
+        await expect(userDetailLinks.first()).toBeVisible();
+        const userHref = await userDetailLinks.first().getAttribute('href');
+        expect(userHref).toBeTruthy();
+
+        await page.goto(`${userHref}?locale=ar`);
+        await expect(page.getByText('حساب المستخدم')).toBeVisible();
+        await expect(page.getByText('الحساب والنطاق')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/users/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء مستخدم' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        await expect(page.getByLabel(/^الدور/)).toBeVisible();
+        await expect(page.getByLabel(/^الاسم الكامل/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('language buttons persist Arabic and English after reload', async ({
         page,
     }) => {
