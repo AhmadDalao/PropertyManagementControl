@@ -22,10 +22,10 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, restores focus, and keeps the topbar at 64px.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 226 PHP tests with 10,484 assertions and 22 Playwright/axe scenarios pass.
+- Automated status: 237 PHP tests with 11,092 assertions and 23 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
-- The main CSS bundle is 320.71 KB before gzip. Further CSS reduction is useful, but it is not a launch blocker.
-- PHPStan has 185 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, and shared-module extractions add zero findings in their touched slices.
+- The main CSS bundle is 322.40 KB before gzip. Further CSS reduction is useful, but it is not a launch blocker.
+- PHPStan has 143 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
 - Leases are the third complete vertical feature module: its controller is now a 117-line adapter and its React index is a 42-line composer. Lease creation stores canonical morph aliases, alias records enforce exclusivity and occupancy, and tenant details omit internal notes, actions, documents, and history.
@@ -36,6 +36,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Expenses are the seventh complete vertical feature module: its controller is now an 81-line adapter and its React index is a 45-line composer. Expense changes use row locks, portfolio references and currency are authoritative, voiding is terminal, mixed-currency totals are explicit, stored legacy/showcase categories remain editable in EN/AR, and the index no longer ships unbounded form-option data.
 - Users are the eighth complete vertical feature module: its controller is now an 85-line adapter and its React index is a 37-line composer. Directory queries, exports, global search, detail links, role assignment, portfolio ownership, tenant-role transitions, and account status changes now share one authorization boundary, preventing managers from seeing owners or peer managers and blocking unsafe ownership or active-lease changes.
 - Portfolios are the ninth complete vertical feature module: its controller is now a 91-line adapter and its React index is a 44-line composer. Indexes, exports, exact-code search, forms, details, module visibility, ownership, and archive rules now share one scoped boundary; detail relationships are bounded; mixed-currency totals are explicit; and owners cannot reactivate or archive records through unsafe status edits.
+- CMS is the tenth complete vertical feature module: page, section, composition, navigation, public-query, form, and workspace responsibilities now live in dedicated actions, requests, presenters, and queries. The 476-line page controller is now a 171-line route adapter, the 179-line navigation controller is 55 lines, the 661-line builder is a 60-line composer, and the 447-line section schema is a 15-line module barrel. Public pages require published and visible state, archived sections cannot leak into pages, reorder payloads must match the exact composition, navigation cycles are rejected, and the focused page/section/navigation workspace is verified in English and Arabic at mobile and desktop sizes.
 
 ## Required before real tenant onboarding
 
@@ -57,4 +58,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Continue the vertical modular refactor with CMS and public-page management. Keep routes and schemas stable, turn the page builder into a focused module with bounded queries and reusable components, and do not delay the production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Continue the vertical modular refactor with media, reports, audit, and shared search/export infrastructure. Keep routes and schemas stable, remove duplicated authorization and presentation logic, and do not delay the production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.

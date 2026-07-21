@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Models\Concerns\LogsModelActivity;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/** @property-read Collection<int, CmsPageSection> $pageSections */
 class CmsSection extends Model
 {
-    use HasFactory;
     use LogsModelActivity;
 
     protected $guarded = [];
@@ -23,6 +23,7 @@ class CmsSection extends Model
         ];
     }
 
+    /** @return HasMany<CmsPageSection, $this> */
     public function pageSections(): HasMany
     {
         return $this->hasMany(CmsPageSection::class);

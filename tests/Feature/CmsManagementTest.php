@@ -315,7 +315,8 @@ class CmsManagementTest extends TestCase
                 'is_homepage' => false,
                 'is_visible' => true,
             ])
-            ->assertUnprocessable();
+            ->assertRedirect()
+            ->assertSessionHasErrors('status');
 
         $page->update(['excerpt_ar' => 'ملخص المسودة بالعربية.']);
         $section->update(['content_ar' => ['headline' => 'المحتوى العربي']]);

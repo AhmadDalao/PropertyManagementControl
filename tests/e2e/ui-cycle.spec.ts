@@ -428,6 +428,86 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'ltr');
     });
 
+    test('CMS workspace and builder stay focused on mobile and desktop', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/cms?view=pages&locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'إدارة الموقع' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-card')).toHaveCount(1);
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expectNoHorizontalOverflow(page);
+
+        await page
+            .locator('.pmc-filter-chip')
+            .filter({ hasText: 'منشور' })
+            .click();
+        await expect
+            .poll(() => new URL(page.url()).searchParams.get('view'))
+            .toBe('pages');
+        await expect
+            .poll(() => new URL(page.url()).searchParams.get('status'))
+            .toBe('published');
+
+        await page.goto('/cms?view=sections&locale=ar');
+        await expect(page.locator('.pmc-cms-library-grid')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/cms?view=navigation&locale=ar');
+        await expect(page.locator('.pmc-cms-navigation-list')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/cms?view=pages&locale=ar');
+        const builderLink = page.locator(
+            '.pmc-mobile-record-head > div > a[href^="/cms/pages/"]',
+        );
+        await expect(builderLink).toHaveCount(1);
+        const builderHref = await builderLink.getAttribute('href');
+        expect(builderHref).toBeTruthy();
+
+        await page.goto(`${builderHref}?locale=ar`);
+        await page.getByRole('button', { name: 'المعاينة' }).click();
+        await expect(page.locator('.pmc-cms-preview-pane')).toBeVisible();
+        await expect(page.locator('.pmc-cms-library-pane')).toBeHidden();
+        await expect(page.locator('.pmc-cms-preview-frame')).toHaveClass(
+            /is-mobile/,
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.getByRole('button', { name: 'الإعدادات' }).click();
+        await expect(page.locator('.pmc-cms-inspector-pane')).toBeVisible();
+        expect(await page.locator('.pmc-cms-outline article').count()).toBe(8);
+        await expect(
+            page.getByRole('button', { name: 'نقل القسم للأسفل' }),
+        ).toBeVisible();
+        const sectionEditHref = await page
+            .locator('.pmc-cms-selection a[href^="/cms/sections/"]')
+            .getAttribute('href');
+        expect(sectionEditHref).toBeTruthy();
+        await expectNoHorizontalOverflow(page);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.reload();
+        await expect(page.locator('.pmc-cms-library-pane')).toBeVisible();
+        await expect(page.locator('.pmc-cms-preview-pane')).toBeVisible();
+        await expect(page.locator('.pmc-cms-inspector-pane')).toBeVisible();
+        await expect(page.locator('.pmc-cms-preview-frame')).toHaveClass(
+            /is-desktop/,
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto(`${sectionEditHref}?locale=ar`);
+        await expect(page.locator('.pmc-section-editor')).toBeVisible();
+        await expect(page.locator('.pmc-section-language')).toHaveCount(2);
+        await expect(page.locator('.pmc-section-json')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('documentation uses focused guide pages', async ({ page }) => {
         await page.goto('/documentation');
         const guide = page.locator('a[href^="/documentation/"]').first();

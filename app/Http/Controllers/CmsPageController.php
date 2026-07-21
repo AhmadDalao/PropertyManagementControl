@@ -5,472 +5,167 @@ namespace App\Http\Controllers;
 use App\Models\CmsPage;
 use App\Models\CmsPageSection;
 use App\Models\CmsSection;
-use App\Models\NavigationItem;
+use App\Modules\Cms\Actions\ComposeCmsPage;
+use App\Modules\Cms\Actions\ManageCmsPages;
+use App\Modules\Cms\Actions\ManageCmsSections;
+use App\Modules\Cms\Presenters\CmsBuilderPresenter;
+use App\Modules\Cms\Presenters\CmsPageFormPresenter;
+use App\Modules\Cms\Queries\CmsWorkspaceQuery;
+use App\Modules\Cms\Queries\PublicCmsPageQuery;
+use App\Modules\Cms\Requests\AttachCmsSectionRequest;
+use App\Modules\Cms\Requests\ReorderCmsPageSectionsRequest;
+use App\Modules\Cms\Requests\SaveCmsSectionRequest;
+use App\Modules\Cms\Requests\StoreCmsPageRequest;
+use App\Modules\Cms\Requests\UpdateCmsPageRequest;
+use App\Modules\Cms\Requests\UpdateCmsPageSectionRequest;
+use App\Modules\Cms\Support\CmsAccess;
+use App\Modules\Cms\Support\CmsOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class CmsPageController extends Controller
 {
+    public function __construct(
+        private readonly PublicCmsPageQuery $publicPages,
+        private readonly CmsWorkspaceQuery $workspace,
+        private readonly CmsPageFormPresenter $pageForms,
+        private readonly CmsBuilderPresenter $builder,
+        private readonly ManageCmsPages $pages,
+        private readonly ManageCmsSections $sections,
+        private readonly ComposeCmsPage $composition,
+        private readonly CmsAccess $access,
+    ) {}
+
     public function home(): Response
     {
-        $page = CmsPage::query()
-            ->where('is_homepage', true)
-            ->where('status', 'published')
-            ->with([
-                'pageSections' => fn ($query) => $query
-                    ->where('is_visible', true)
-                    ->with(['section' => fn ($query) => $query->where('status', 'active')]),
-                'navigationItems',
-            ])
-            ->first();
-
-        return Inertia::render('public/home', [
-            'page' => $page,
-        ]);
+        return Inertia::render('public/home', ['page' => $this->publicPages->homepage()]);
     }
 
     public function show(string $slug): Response
     {
-        $page = CmsPage::query()
-            ->where('slug', $slug)
-            ->where('status', 'published')
-            ->with([
-                'pageSections' => fn ($query) => $query
-                    ->where('is_visible', true)
-                    ->with(['section' => fn ($query) => $query->where('status', 'active')]),
-            ])
-            ->firstOrFail();
-
-        return Inertia::render('public/page', [
-            'page' => $page,
-        ]);
+        return Inertia::render('public/page', ['page' => $this->publicPages->bySlug($slug)]);
     }
 
     public function index(Request $request): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $filters = $this->tableFilters($request, ['status' => 'all']);
-        $baseQuery = CmsPage::query();
-        $pages = (clone $baseQuery)->with(['pageSections.section']);
-
-        $this->applyExactFilter($pages, $filters, 'status');
-        $this->applySearch($pages, $filters['search'], [
-            'title_en',
-            'title_ar',
-            'slug',
-            'excerpt_en',
-            'excerpt_ar',
-        ]);
-
-        return Inertia::render('admin/cms/index', [
-            'pages' => $this->paginateTable($pages, $request, $filters, [
-                'created_at',
-                'title_en',
-                'slug',
-                'status',
-            ]),
-            'filters' => $filters,
-            'counts' => $this->statusCounts($baseQuery, ['draft', 'published', 'archived'], $filters),
-            'sections' => CmsSection::query()
-                ->withCount('pageSections')
-                ->orderByRaw("CASE WHEN status = 'active' THEN 0 ELSE 1 END")
-                ->orderBy('name_en')
-                ->get(),
-            'navigationItems' => NavigationItem::query()
-                ->with(['children', 'page'])
-                ->whereNull('parent_id')
-                ->orderBy('location')
-                ->orderBy('sort_order')
-                ->get(),
-        ]);
+        return Inertia::render(
+            'admin/cms/index',
+            $this->workspace->handle($request, $this->actor($request)),
+        );
     }
 
     public function create(Request $request): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
         return Inertia::render('admin/resource-form', [
-            'formPage' => $this->cmsPageFormPage(),
+            'formPage' => $this->pageForms->present($this->actor($request)),
         ]);
     }
 
     public function builder(Request $request, CmsPage $cmsPage): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $cmsPage->loadMissing(['pageSections.section', 'navigationItems']);
-
-        return Inertia::render('admin/cms/builder', [
-            'page' => $cmsPage,
-            'sections' => CmsSection::query()
-                ->withCount('pageSections')
-                ->orderBy('name_en')
-                ->get(),
-            'timeline' => $this->activityTimeline($cmsPage),
-        ]);
+        return Inertia::render(
+            'admin/cms/builder',
+            $this->builder->present($this->actor($request), $cmsPage),
+        );
     }
 
     public function edit(Request $request, CmsPage $cmsPage): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
         return Inertia::render('admin/resource-form', [
-            'formPage' => $this->cmsPageFormPage($cmsPage),
+            'formPage' => $this->pageForms->present($this->actor($request), $cmsPage),
         ]);
     }
 
     public function createSection(Request $request): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
+        $this->access->ensureAdmin($this->actor($request));
 
         return Inertia::render('admin/cms/section-form', [
             'section' => null,
-            'sectionTypes' => $this->sectionTypes(),
+            'sectionTypes' => CmsOptions::sectionTypes(),
         ]);
     }
 
     public function editSection(Request $request, CmsSection $cmsSection): Response
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
+        $this->access->ensureAdmin($this->actor($request));
 
         return Inertia::render('admin/cms/section-form', [
             'section' => $cmsSection,
-            'sectionTypes' => $this->sectionTypes(),
+            'sectionTypes' => CmsOptions::sectionTypes(),
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCmsPageRequest $request): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
+        $page = $this->pages->create($this->actor($request), $request->validated());
 
-        $data = $request->validate([
-            'slug' => ['nullable', 'string', 'max:255', 'unique:cms_pages,slug'],
-            'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['required', 'string', 'max:255'],
-            'excerpt_en' => ['nullable', 'string'],
-            'excerpt_ar' => ['nullable', 'string'],
-            'seo_title_en' => ['nullable', 'string', 'max:255'],
-            'seo_title_ar' => ['nullable', 'string', 'max:255'],
-            'seo_description_en' => ['nullable', 'string'],
-            'seo_description_ar' => ['nullable', 'string'],
-            'status' => ['required', 'string'],
-            'is_homepage' => ['nullable', 'boolean'],
-            'is_visible' => ['nullable', 'boolean'],
-        ]);
-
-        $this->ensurePageCanPublish($data);
-
-        if ($data['is_homepage'] ?? false) {
-            CmsPage::query()->where('is_homepage', true)->update(['is_homepage' => false]);
-        }
-
-        $cmsPage = CmsPage::query()->create([
-            ...$data,
-            'slug' => $data['slug'] ?: Str::slug($data['title_en']),
-            'is_homepage' => (bool) ($data['is_homepage'] ?? false),
-            'is_visible' => (bool) ($data['is_visible'] ?? true),
-            'published_at' => $data['status'] === 'published' ? now() : null,
-        ]);
-
-        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_page_created'));
+        return to_route('cms.pages.show', $page)->with('success', trans('app.messages.cms_page_created'));
     }
 
-    public function update(Request $request, CmsPage $cmsPage): RedirectResponse
+    public function update(UpdateCmsPageRequest $request, CmsPage $cmsPage): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
+        $page = $this->pages->update($this->actor($request), $cmsPage, $request->validated());
 
-        $data = $request->validate([
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('cms_pages', 'slug')->ignore($cmsPage->id)],
-            'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['required', 'string', 'max:255'],
-            'excerpt_en' => ['nullable', 'string'],
-            'excerpt_ar' => ['nullable', 'string'],
-            'seo_title_en' => ['nullable', 'string', 'max:255'],
-            'seo_title_ar' => ['nullable', 'string', 'max:255'],
-            'seo_description_en' => ['nullable', 'string'],
-            'seo_description_ar' => ['nullable', 'string'],
-            'status' => ['required', 'string'],
-            'is_homepage' => ['nullable', 'boolean'],
-            'is_visible' => ['nullable', 'boolean'],
-        ]);
-
-        $this->ensurePageCanPublish($data, $cmsPage);
-
-        if ($data['is_homepage'] ?? false) {
-            CmsPage::query()
-                ->whereKeyNot($cmsPage->id)
-                ->where('is_homepage', true)
-                ->update(['is_homepage' => false]);
-        }
-
-        $cmsPage->update([
-            ...$data,
-            'slug' => $data['slug'] ?: Str::slug($data['title_en']),
-            'is_homepage' => (bool) ($data['is_homepage'] ?? false),
-            'is_visible' => (bool) ($data['is_visible'] ?? true),
-            'published_at' => $data['status'] === 'published' ? now() : null,
-        ]);
-
-        return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_page_updated'));
+        return to_route('cms.pages.show', $page)->with('success', trans('app.messages.cms_page_updated'));
     }
 
     public function destroy(Request $request, CmsPage $cmsPage): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $cmsPage->update([
-            'status' => 'archived',
-            'is_visible' => false,
-            'is_homepage' => false,
-        ]);
+        $this->pages->archive($this->actor($request), $cmsPage);
 
         return to_route('cms.index')->with('success', trans('app.messages.cms_page_archived'));
     }
 
-    public function storeSection(Request $request): RedirectResponse
+    public function storeSection(SaveCmsSectionRequest $request): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $data = $request->validate([
-            'section_type' => ['required', 'string'],
-            'name_en' => ['required', 'string', 'max:255'],
-            'name_ar' => ['required', 'string', 'max:255'],
-            'content_en' => ['nullable', 'array'],
-            'content_ar' => ['nullable', 'array'],
-            'settings_json' => ['nullable', 'array'],
-            'status' => ['required', 'string'],
-        ]);
-
-        CmsSection::query()->create($data);
+        $this->sections->create($this->actor($request), $request->validated());
 
         return to_route('cms.index')->with('success', trans('app.messages.cms_section_created'));
     }
 
-    public function updateSection(Request $request, CmsSection $cmsSection): RedirectResponse
+    public function updateSection(SaveCmsSectionRequest $request, CmsSection $cmsSection): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $data = $request->validate([
-            'section_type' => ['required', 'string'],
-            'name_en' => ['required', 'string', 'max:255'],
-            'name_ar' => ['required', 'string', 'max:255'],
-            'content_en' => ['nullable', 'array'],
-            'content_ar' => ['nullable', 'array'],
-            'settings_json' => ['nullable', 'array'],
-            'status' => ['required', 'string'],
-        ]);
-
-        $cmsSection->update($data);
+        $this->sections->update($this->actor($request), $cmsSection, $request->validated());
 
         return to_route('cms.index')->with('success', trans('app.messages.cms_section_updated'));
     }
 
     public function destroySection(Request $request, CmsSection $cmsSection): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $cmsSection->update(['status' => 'archived']);
+        $this->sections->archive($this->actor($request), $cmsSection);
 
         return to_route('cms.index')->with('success', trans('app.messages.cms_section_archived'));
     }
 
-    public function attachSection(Request $request, CmsPage $cmsPage): RedirectResponse
+    public function attachSection(AttachCmsSectionRequest $request, CmsPage $cmsPage): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $data = $request->validate([
-            'cms_section_id' => ['required', 'integer', 'exists:cms_sections,id'],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-            'is_visible' => ['nullable', 'boolean'],
-        ]);
-
-        CmsPageSection::query()->updateOrCreate(
-            [
-                'cms_page_id' => $cmsPage->id,
-                'cms_section_id' => $data['cms_section_id'],
-            ],
-            [
-                'sort_order' => $data['sort_order'] ?? 0,
-                'is_visible' => (bool) ($data['is_visible'] ?? true),
-            ],
-        );
+        $this->composition->attach($this->actor($request), $cmsPage, $request->validated());
 
         return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_section_attached'));
     }
 
-    public function updatePageSection(Request $request, CmsPageSection $cmsPageSection): RedirectResponse
+    public function updatePageSection(UpdateCmsPageSectionRequest $request, CmsPageSection $cmsPageSection): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
+        $pageSection = $this->composition->update($this->actor($request), $cmsPageSection, $request->validated());
 
-        $data = $request->validate([
-            'sort_order' => ['required', 'integer', 'min:0'],
-            'is_visible' => ['nullable', 'boolean'],
-            'settings_json' => ['nullable', 'array'],
-        ]);
-
-        $cmsPageSection->update([
-            'sort_order' => $data['sort_order'],
-            'is_visible' => (bool) ($data['is_visible'] ?? true),
-            'settings_json' => $data['settings_json'] ?? null,
-        ]);
-
-        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', trans('app.messages.cms_page_section_updated'));
+        return to_route('cms.pages.show', $pageSection->page)->with('success', trans('app.messages.cms_page_section_updated'));
     }
 
-    public function reorderPageSections(Request $request, CmsPage $cmsPage): RedirectResponse
+    public function reorderPageSections(ReorderCmsPageSectionsRequest $request, CmsPage $cmsPage): RedirectResponse
     {
-        $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-
-        $data = $request->validate([
-            'ordered_ids' => ['required', 'array', 'min:1'],
-            'ordered_ids.*' => ['integer', 'exists:cms_page_sections,id'],
-        ]);
-
-        $validIds = $cmsPage->pageSections()
-            ->whereIn('id', $data['ordered_ids'])
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
-
-        abort_unless(count($validIds) === count($data['ordered_ids']), 422, trans('app.errors.not_allowed'));
-
-        foreach (array_values($data['ordered_ids']) as $index => $id) {
-            CmsPageSection::query()
-                ->whereKey($id)
-                ->where('cms_page_id', $cmsPage->id)
-                ->update(['sort_order' => $index + 1]);
-        }
+        $orderedIds = array_map('intval', $request->validated('ordered_ids'));
+        $this->composition->reorder($this->actor($request), $cmsPage, $orderedIds);
 
         return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_sections_reordered'));
     }
 
-    public function destroyPageSection(CmsPageSection $cmsPageSection): RedirectResponse
+    public function destroyPageSection(Request $request, CmsPageSection $cmsPageSection): RedirectResponse
     {
-        $actor = $this->actor(request());
-        $this->requireRoles($actor, ['superadmin']);
+        $page = $this->composition->remove($this->actor($request), $cmsPageSection);
 
-        $cmsPageSection->delete();
-
-        return to_route('cms.pages.show', $cmsPageSection->page)->with('success', trans('app.messages.cms_page_section_removed'));
-    }
-
-    private function cmsPageFormPage(?CmsPage $cmsPage = null): array
-    {
-        return [
-            'title' => $cmsPage
-                ? trans('app.actions.edit').' '.$this->localized($cmsPage->title_en, $cmsPage->title_ar)
-                : 'Create CMS page',
-            'description' => 'Create the bilingual page shell, then compose sections in the visual builder.',
-            'backHref' => $cmsPage ? route('cms.pages.show', $cmsPage) : route('cms.index'),
-            'backLabel' => $cmsPage ? 'Page builder' : 'Website control',
-            'action' => $cmsPage ? route('cms.pages.update', $cmsPage) : route('cms.pages.store'),
-            'method' => $cmsPage ? 'put' : 'post',
-            'submitLabel' => $cmsPage ? 'Update page' : 'Create page',
-            'fields' => [
-                ['name' => 'slug', 'label' => 'Slug', 'help' => 'Leave blank to generate from English title.'],
-                ['name' => 'title_en', 'label' => 'English title', 'required' => true],
-                ['name' => 'title_ar', 'label' => 'Arabic title', 'required' => true],
-                ['name' => 'excerpt_en', 'label' => 'English excerpt', 'type' => 'textarea'],
-                ['name' => 'excerpt_ar', 'label' => 'Arabic excerpt', 'type' => 'textarea'],
-                ['name' => 'seo_title_en', 'label' => 'SEO title EN'],
-                ['name' => 'seo_title_ar', 'label' => 'SEO title AR'],
-                ['name' => 'seo_description_en', 'label' => 'SEO description EN', 'type' => 'textarea'],
-                ['name' => 'seo_description_ar', 'label' => 'SEO description AR', 'type' => 'textarea'],
-                ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['draft', 'published', 'archived'])],
-                ['name' => 'is_homepage', 'label' => 'Set as homepage', 'type' => 'checkbox'],
-                ['name' => 'is_visible', 'label' => 'Visible in public site', 'type' => 'checkbox'],
-            ],
-            'initialValues' => [
-                'slug' => $cmsPage?->slug ?? '',
-                'title_en' => $cmsPage?->title_en ?? '',
-                'title_ar' => $cmsPage?->title_ar ?? '',
-                'excerpt_en' => $cmsPage?->excerpt_en ?? '',
-                'excerpt_ar' => $cmsPage?->excerpt_ar ?? '',
-                'seo_title_en' => $cmsPage?->seo_title_en ?? '',
-                'seo_title_ar' => $cmsPage?->seo_title_ar ?? '',
-                'seo_description_en' => $cmsPage?->seo_description_en ?? '',
-                'seo_description_ar' => $cmsPage?->seo_description_ar ?? '',
-                'status' => $cmsPage?->status ?? 'draft',
-                'is_homepage' => (bool) ($cmsPage?->is_homepage ?? false),
-                'is_visible' => (bool) ($cmsPage?->is_visible ?? true),
-            ],
-        ];
-    }
-
-    /**
-     * @return array<int, array{label: string, value: string}>
-     */
-    private function sectionTypes(): array
-    {
-        return collect([
-            'hero',
-            'role_cards',
-            'workflow',
-            'dashboard_preview',
-            'feature_grid',
-            'operations_strip',
-            'faq',
-            'final_cta',
-            'metrics',
-            'content',
-        ])->map(fn (string $type) => [
-            'label' => Str::of($type)->replace('_', ' ')->title()->toString(),
-            'value' => $type,
-        ])->all();
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     */
-    private function ensurePageCanPublish(array $data, ?CmsPage $page = null): void
-    {
-        if (($data['status'] ?? 'draft') !== 'published') {
-            return;
-        }
-
-        $pairedFieldsComplete = collect([
-            ['en' => $data['excerpt_en'] ?? null, 'ar' => $data['excerpt_ar'] ?? null],
-            ['en' => $data['seo_title_en'] ?? null, 'ar' => $data['seo_title_ar'] ?? null],
-            ['en' => $data['seo_description_en'] ?? null, 'ar' => $data['seo_description_ar'] ?? null],
-        ])->every(fn (array $pair): bool => blank($pair['en']) || filled($pair['ar']));
-
-        $sectionsComplete = $page === null || $page
-            ->pageSections()
-            ->where('is_visible', true)
-            ->with('section')
-            ->get()
-            ->every(function (CmsPageSection $pageSection): bool {
-                $section = $pageSection->section;
-
-                return $section !== null
-                    && filled($section->name_ar)
-                    && (blank($section->content_en) || filled($section->content_ar));
-            });
-
-        abort_unless(
-            filled($data['title_ar'] ?? null) && $pairedFieldsComplete && $sectionsComplete,
-            422,
-            trans('app.errors.cms_arabic_incomplete'),
-        );
+        return to_route('cms.pages.show', $page)->with('success', trans('app.messages.cms_page_section_removed'));
     }
 }

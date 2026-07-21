@@ -4,6 +4,56 @@
     flex-wrap: wrap;
 }
 
+.pmc-cms-view-switcher {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 1rem 0 1.25rem;
+    padding: 0.4rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 1rem;
+    background: #faf8f2;
+}
+
+.pmc-cms-view-switcher a {
+    display: grid;
+    min-width: 0;
+    min-height: 3.1rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid transparent;
+    border-radius: 0.72rem;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-cms-view-switcher a:hover,
+.pmc-cms-view-switcher a:focus-visible {
+    border-color: #d8c57b;
+    background: #fff;
+    color: var(--pmc-ink);
+}
+
+.pmc-cms-view-switcher a.active {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-cms-view-switcher strong {
+    display: grid;
+    min-width: 1.65rem;
+    min-height: 1.65rem;
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 14%);
+    font-size: 0.68rem;
+}
+
 .pmc-cms-overview-grid {
     display: grid;
     grid-template-columns: minmax(0, 1.55fr) minmax(19rem, 0.75fr);
@@ -364,6 +414,24 @@
 }
 
 @media (max-width: 767.98px) {
+    .pmc-cms-view-switcher {
+        gap: 0.25rem;
+        padding: 0.3rem;
+    }
+
+    .pmc-cms-view-switcher a {
+        min-height: 3.5rem;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 0.18rem;
+        padding: 0.45rem 0.25rem;
+        text-align: center;
+    }
+
+    .pmc-cms-view-switcher strong {
+        display: none;
+    }
+
     .pmc-cms-library-grid,
     .pmc-cms-section-basics,
     .pmc-section-language-grid,
@@ -658,6 +726,7 @@
 .pmc-cms-preview-document {
     width: min(100%, 72rem);
     min-height: 100%;
+    container-type: inline-size;
     overflow: hidden;
     border: 1px solid #d2cdc3;
     border-radius: 0.7rem;
@@ -673,8 +742,31 @@
 .pmc-cms-preview-document .pmc-section-band,
 .pmc-cms-preview-document .pmc-landing-hero,
 .pmc-cms-preview-document .pmc-final-cta {
+    width: 100%;
     margin-inline: 0;
     border-radius: 0;
+}
+
+.pmc-cms-preview-frame.is-desktop .pmc-landing-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.72fr);
+    min-height: auto;
+    gap: 1.5rem;
+    padding: 3rem 1.5rem;
+}
+
+.pmc-cms-preview-frame.is-desktop .pmc-hero-copy h1 {
+    font-size: clamp(2.25rem, 7cqi, 3.5rem);
+}
+
+.pmc-cms-preview-frame.is-desktop .pmc-section-band,
+.pmc-cms-preview-frame.is-desktop .pmc-final-cta {
+    padding: 3rem 1.5rem;
+}
+
+.pmc-cms-preview-frame.is-desktop .pmc-section-heading h2,
+.pmc-cms-preview-frame.is-desktop .pmc-section-copy h2,
+.pmc-cms-preview-frame.is-desktop .pmc-final-cta h2 {
+    font-size: clamp(1.8rem, 5cqi, 2.75rem);
 }
 
 .pmc-cms-outline article {
