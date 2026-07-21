@@ -6,8 +6,10 @@ use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
+use App\Modules\Assets\Actions\ManageAssets;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class AssetWorkspaceTest extends TestCase
@@ -109,6 +111,45 @@ class AssetWorkspaceTest extends TestCase
             ->assertSessionHas('error');
 
         $this->assertSame('active', $asset->fresh()->status);
+    }
+
+    public function test_asset_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
+    {
+        $ownerPortfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $ownerPortfolio);
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+
+        try {
+            app(ManageAssets::class)->archive($owner, $foreignAsset);
+            $this->fail('Cross-portfolio asset mutation was not rejected.');
+        } catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+
+        $this->assertSame('active', $foreignAsset->fresh()->status);
+    }
+
+    public function test_asset_action_rejects_tenant_mutation_when_reused_directly(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $tenant = $this->createUserWithRole('tenant', $portfolio);
+
+        try {
+            app(ManageAssets::class)->create($tenant, [
+                'asset_type' => 'unit',
+                'usage_type' => 'residential',
+                'title_en' => 'Rejected unit',
+                'title_ar' => 'وحدة مرفوضة',
+                'status' => 'active',
+                'occupancy_status' => 'vacant',
+            ]);
+            $this->fail('Tenant asset mutation was not rejected.');
+        } catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+
+        $this->assertDatabaseMissing('assets', ['title_en' => 'Rejected unit']);
     }
 
     public function test_asset_create_stores_map_and_land_metadata(): void

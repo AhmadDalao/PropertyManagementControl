@@ -11,13 +11,37 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Shared UI primitives stay in `resources/js/components` only when they are truly cross-module.
 - Module-owned widgets, metrics, local types, and view helpers stay inside that module folder.
 
-## Current First Slice
+## Dependency Rules
+
+1. Controllers may authorize, delegate, render, and redirect. They do not build queries, validate field lists, mutate related records, or assemble page payloads.
+2. `Queries` read scoped data; `Actions` perform transactions; `Requests` own validation and request authorization; `Presenters` shape Inertia payloads; `Support` contains module-specific pure helpers.
+3. A feature module may depend on models and `app/Modules/Shared`. Shared code must not depend on a feature module.
+4. Frontend route entries compose module components. Table columns, filters, metrics, types, and record-specific helpers stay inside their feature module.
+5. Do not create a shared abstraction until two modules need the same behavior. Folder theater is still theater.
+
+## Current Slices
 
 - Dashboard backend data aggregation now lives in `app/Modules/Dashboard/DashboardPresenter.php`.
 - Dashboard frontend implementation now lives in `resources/js/modules/dashboard`.
 - `resources/js/pages/dashboard.tsx` remains as the stable Inertia page adapter.
 - Admin navigation metadata now lives in `resources/js/modules/registry.ts`.
 - Backend module names are documented in `app/Modules/ModuleRegistry.php`.
+- Assets are the reference full-cycle module. `AssetController` is a 103-line HTTP adapter; queries, requests, transactions, forms, details, metadata, and hierarchy rules live under `app/Modules/Assets`.
+- Reusable portfolio scoping, table query behavior, and resource payload helpers live under `app/Modules/Shared`.
+- The Asset React workspace is split into a 42-line page composer plus module-owned filters, metrics, table, and contracts.
+- `AssetModuleArchitectureTest` prevents query, validation, and database work from leaking back into the controller.
+
+## Resource Refactor Checklist
+
+1. Preserve routes and response contracts with focused feature tests.
+2. Move validation to module `Requests`.
+3. Move mutations to a transactional `Action`.
+4. Move index reads to a scoped `Query`.
+5. Move form and detail payloads to `Presenters`.
+6. Split the React page into module contracts and focused components.
+7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
+
+Next backend targets by risk and size are Maintenance, Leases, Payments, and Documents.
 
 ## Local Verification
 

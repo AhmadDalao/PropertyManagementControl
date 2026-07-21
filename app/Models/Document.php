@@ -9,6 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property-read Portfolio|null $portfolio
+ * @property-read User|null $uploadedBy
+ * @property-read Model|null $documentable
+ */
 class Document extends Model
 {
     use HasFactory;
@@ -25,16 +30,19 @@ class Document extends Model
         ];
     }
 
+    /** @return BelongsTo<Portfolio, $this> */
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by_user_id');
     }
 
+    /** @return MorphTo<Model, $this> */
     public function documentable(): MorphTo
     {
         return $this->morphTo();

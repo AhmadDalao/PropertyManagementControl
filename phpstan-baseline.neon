@@ -7,27 +7,9 @@ parameters:
 			path: app/Http/Controllers/AdminExportController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AdminExportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/AdminExportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AdminExportController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/AdminExportController.php
 
 		-
@@ -35,348 +17,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/AdminExportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$category\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_primary\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$priority\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$relationship_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Call to function is_array\(\) with array\{\} will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Call to function is_array\(\) with null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Cannot assign offset ''map'' to array\|string\.$#'
-			identifier: offsetAssign.dimType
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Cannot unset offset ''map'' on array\{\}\|string\.$#'
-			identifier: unset.offset
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\AssetController\:\:assetFormPage\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\AssetController\:\:assetInsights\(\) has parameter \$baseQuery with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\AssetController\:\:assetInsights\(\) has parameter \$filters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\AssetController\:\:valueOptions\(\) has parameter \$values with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\AssetController\:\:valueOptions\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Offset ''map'' on array\{\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Offset ''map'' on array\{\}\|string on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Offset string on array\{\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{Asset\: string\|null, Type\: string, Occupancy\: string, Open\: array\{label\: ''Open'', href\: string\}\}, Closure\(App\\Models\\Asset\)\: array\{Asset\: string\|null, Type\: string, Occupancy\: string, Open\: array\{label\: ''Open'', href\: string\}\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, name\: string\|null, code\: string, asset_type\: string, portfolio_id\: int\<0, max\>\}, Closure\(App\\Models\\Asset\)\: array\{id\: int, name\: string\|null, code\: string, asset_type\: string, portfolio_id\: int\<0, max\>\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: non\-falsy\-string\}, Closure\(App\\Models\\Asset\)\: array\{value\: int, label\: non\-falsy\-string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: string\}, Closure\(App\\Models\\User\)\: array\{value\: int, label\: string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, int\|string\>\>\:\:prepend\(\) expects array\{value\: int, label\: non\-falsy\-string\}, array\{value\: '''', label\: ''No parent''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, int\|string\>\>\:\:prepend\(\) expects array\{value\: int, label\: string\}, array\{value\: '''', label\: ''Unassigned''\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>address_ar" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>area" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>asset_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>currency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>description_ar" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>description_en" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>level_label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>meta_json" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 5
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>occupancy_status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>parent_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>portfolio_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>rentable" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>title_ar" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>title_en" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>unit_label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>usage_type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>user_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/AssetController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>valuation_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/AssetController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:through\(\)\.$#'
@@ -739,24 +379,6 @@ parameters:
 			path: app/Http/Controllers/Controller.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DocumentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DocumentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/DocumentController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tenantProfile\.$#'
 			identifier: property.notFound
 			count: 1
@@ -865,66 +487,6 @@ parameters:
 			path: app/Http/Controllers/DocumentationController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$priority\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:through\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -967,13 +529,7 @@ parameters:
 			path: app/Http/Controllers/ExpenseEntryController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, asset_id\: int\<0, max\>, title\: string, status\: string, priority\: string, asset\: array\{title_en\: mixed, title_ar\: mixed, code\: mixed\}\}, Closure\(App\\Models\\MaintenanceRequest\)\: array\{id\: int, asset_id\: int\<0, max\>, title\: string, status\: string, priority\: string, asset\: array\{title_en\: mixed, title_ar\: mixed, code\: mixed\}\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, asset_id\: int\<0, max\>, title\: string, status\: string, priority\: string, asset\: array\{title_en\: string\|null, title_ar\: string\|null, code\: string\|null\}\}, Closure\(App\\Models\\MaintenanceRequest\)\: array\{id\: int, asset_id\: int\<0, max\>, title\: string, status\: string, priority\: string, asset\: array\{title_en\: string\|null, title_ar\: string\|null, code\: string\|null\}\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ExpenseEntryController.php
@@ -1011,12 +567,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, int\|string\>\>\:\:prepend\(\) expects array\{value\: int, label\: non\-falsy\-string\}, array\{value\: '''', label\: ''No maintenance…''\} given\.$#'
 			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/ExpenseEntryController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Http/Controllers/ExpenseEntryController.php
 
@@ -1167,13 +717,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 4
 			path: app/Http/Controllers/GlobalSearchController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 4
 			path: app/Http/Controllers/GlobalSearchController.php
 
 		-
@@ -1261,117 +811,9 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount_due\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount_paid\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$due_date\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$period_end\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$period_start\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$received_on\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$reference\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$remaining_amount\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 3
 			path: app/Http/Controllers/LeaseController.php
 
 		-
@@ -1387,18 +829,6 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:through\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -1411,9 +841,15 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
+			message: '#^Cannot call method lessThan\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/LeaseController.php
+
+		-
 			message: '#^Cannot call method toDateString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 7
+			count: 13
 			path: app/Http/Controllers/LeaseController.php
 
 		-
@@ -1435,25 +871,25 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\LeaseInstallment\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 4
+			count: 2
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, type\: string, title_en\: string, title_ar\: string\|null, original_name\: string, download_url\: string\}, Closure\(App\\Models\\Document\)\: array\{id\: int, type\: string, title_en\: string, title_ar\: string\|null, original_name\: string, download_url\: string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: mixed\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: mixed\} given\.$#'
-			identifier: argument.type
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/LeaseController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: non\-falsy\-string\}, Closure\(App\\Models\\Asset\)\: array\{value\: int, label\: non\-falsy\-string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/LeaseController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: string\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/LeaseController.php
@@ -1471,13 +907,13 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\LeaseInstallment\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 4
+			count: 2
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Http/Controllers/LeaseController.php
@@ -1485,7 +921,7 @@ parameters:
 		-
 			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 4
+			count: 9
 			path: app/Http/Controllers/LeaseController.php
 
 		-
@@ -1495,75 +931,9 @@ parameters:
 			path: app/Http/Controllers/LeaseController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseable\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 4
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
@@ -1621,37 +991,25 @@ parameters:
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
-			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\Lease\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MaintenanceUpdate\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 4
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{By\: mixed, From\: string, To\: string, Comment\: string\|null\}, Closure\(App\\Models\\MaintenanceUpdate\)\: array\{By\: mixed, From\: string, To\: string, Comment\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, user\: mixed, status_from\: string\|null, status_to\: string\|null, is_public_comment\: bool, comment\: string\|null, created_at\: string\|null\}, Closure\(App\\Models\\MaintenanceUpdate\)\: array\{id\: int, user\: mixed, status_from\: string\|null, status_to\: string\|null, is_public_comment\: bool, comment\: string\|null, created_at\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: mixed\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: mixed\} given\.$#'
-			identifier: argument.type
-			count: 1
+			count: 2
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: non\-falsy\-string\}, Closure\(App\\Models\\Asset\)\: array\{value\: int, label\: non\-falsy\-string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/MaintenanceRequestController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: string\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/MaintenanceRequestController.php
@@ -1681,27 +1039,21 @@ parameters:
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\MaintenanceUpdate\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 4
+			count: 2
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 3
+			count: 2
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 1
-			path: app/Http/Controllers/MaintenanceRequestController.php
-
-		-
-			message: '#^Unable to resolve the template type TMapValue in call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\)$#'
-			identifier: argument.templateType
-			count: 2
 			path: app/Http/Controllers/MaintenanceRequestController.php
 
 		-
@@ -1917,7 +1269,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
@@ -1965,7 +1317,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 3
 			path: app/Http/Controllers/PaymentController.php
 
 		-
@@ -2007,23 +1359,23 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 3
+			count: 2
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, portfolio_id\: int\<0, max\>, tenant_profile_id\: int\<0, max\>, code\: string, currency\: string, balance_remaining\: float, total_due\: float, total_paid\: float, tenant_profile\: array\{user\: array\{name\: mixed\}\}, leaseable\: array\{title_en\: mixed, code\: mixed\}\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, portfolio_id\: int\<0, max\>, tenant_profile_id\: int\<0, max\>, code\: string, currency\: string, balance_remaining\: float, total_due\: float, total_paid\: float, tenant_profile\: array\{user\: array\{name\: mixed\}\}, leaseable\: array\{title_en\: mixed, code\: mixed\}\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: mixed\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: mixed\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, portfolio_id\: int\<0, max\>, tenant_profile_id\: int\<0, max\>, code\: string, currency\: string, balance_remaining\: float, total_due\: float, total_paid\: float, tenant_profile\: array\{user\: array\{name\: string\|null\}\}, leaseable\: array\{title_en\: mixed, code\: mixed\}\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, portfolio_id\: int\<0, max\>, tenant_profile_id\: int\<0, max\>, code\: string, currency\: string, balance_remaining\: float, total_due\: float, total_paid\: float, tenant_profile\: array\{user\: array\{name\: string\|null\}\}, leaseable\: array\{title_en\: mixed, code\: mixed\}\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: non\-falsy\-string\}, Closure\(App\\Models\\Lease\)\: array\{value\: int, label\: non\-falsy\-string\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: string\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
@@ -2047,13 +1399,7 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:prepend\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:prepend\(\) expects array\{value\: int, label\: mixed\}, array\{value\: '''', label\: ''Use selected lease…''\} given\.$#'
+			message: '#^Parameter \#1 \$value of method Illuminate\\Support\\Collection\<int,array\<string, int\|string\>\>\:\:prepend\(\) expects array\{value\: int, label\: string\}, array\{value\: '''', label\: ''Use selected lease…''\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
@@ -2061,23 +1407,11 @@ parameters:
 		-
 			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 3
+			count: 2
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, array\<string, mixed\>\|float\|int\|string\>\>\:\:values\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
@@ -2095,60 +1429,6 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$asset_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$occupancy_status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$roles\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
 			message: '#^Method App\\Http\\Controllers\\PortfolioController\:\:portfolioFormPage\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -2161,12 +1441,6 @@ parameters:
 			path: app/Http/Controllers/PortfolioController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,int\>\:\:map\(\) expects callable\(0, int\)\: string, Closure\(string\)\: string given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2176,12 +1450,6 @@ parameters:
 			message: '#^Parameter \#1 \$value of function collect expects Illuminate\\Contracts\\Support\\Arrayable\<\*NEVER\*, \*NEVER\*\>\|iterable\<\*NEVER\*, \*NEVER\*\>\|null, array\{\}\|string given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Http/Controllers/PortfolioController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 2
 			path: app/Http/Controllers/PortfolioController.php
 
 		-
@@ -2307,19 +1575,19 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
@@ -2413,7 +1681,7 @@ parameters:
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, title\: string, asset\: string\|null, tenant\: mixed, status\: string, priority\: string, created_at\: string\|null\}, Closure\(App\\Models\\MaintenanceRequest\)\: array\{id\: int, title\: string, asset\: string\|null, tenant\: mixed, status\: string, priority\: string, created_at\: string\|null\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, title\: string, asset\: string\|null, tenant\: string\|null, status\: string, priority\: string, created_at\: string\|null\}, Closure\(App\\Models\\MaintenanceRequest\)\: array\{id\: int, title\: string, asset\: string\|null, tenant\: string\|null, status\: string, priority\: string, created_at\: string\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ReportController.php
@@ -2431,13 +1699,7 @@ parameters:
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\LeaseInstallment\)\: mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<int, Illuminate\\Database\\Eloquent\\Model\>\|Illuminate\\Support\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\), Closure\(App\\Models\\Lease\)\: Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:flatMap\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(array\<int, App\\Models\\LeaseInstallment\>\|Illuminate\\Support\\Collection\<int, App\\Models\\LeaseInstallment\>\), Closure\(App\\Models\\Lease\)\: Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\LeaseInstallment\> given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ReportController.php
@@ -2446,12 +1708,6 @@ parameters:
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: float\)\|string\|null, Closure\(App\\Models\\Lease\)\: float given\.$#'
 			identifier: argument.type
 			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: float\)\|string\|null, Closure\(App\\Models\\LeaseInstallment\)\: float given\.$#'
-			identifier: argument.type
-			count: 2
 			path: app/Http/Controllers/ReportController.php
 
 		-
@@ -2509,104 +1765,20 @@ parameters:
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$asset\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/TenantController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$balance_remaining\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/TenantController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documents\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ends_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseable\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$preferred_locale\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$priority\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
 			count: 1
 			path: app/Http/Controllers/TenantController.php
 
@@ -2620,18 +1792,6 @@ parameters:
 			message: '#^Method App\\Http\\Controllers\\TenantController\:\:tenantInsights\(\) has parameter \$baseQuery with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 2
 			path: app/Http/Controllers/TenantController.php
 
 		-
@@ -2756,18 +1916,6 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/UserController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/UserController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/UserController.php
@@ -2923,73 +2071,7 @@ parameters:
 			path: app/Models/Asset.php
 
 		-
-			message: '#^Method App\\Models\\Asset\:\:children\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:documents\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:expenses\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:leases\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:maintenanceRequests\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:parent\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
-			message: '#^Method App\\Models\\Asset\:\:stakeholders\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Asset.php
-
-		-
 			message: '#^Class App\\Models\\AssetStakeholder uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AssetStakeholder.php
-
-		-
-			message: '#^Method App\\Models\\AssetStakeholder\:\:asset\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AssetStakeholder.php
-
-		-
-			message: '#^Method App\\Models\\AssetStakeholder\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/AssetStakeholder.php
-
-		-
-			message: '#^Method App\\Models\\AssetStakeholder\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/AssetStakeholder.php
@@ -3049,55 +2131,7 @@ parameters:
 			path: app/Models/Document.php
 
 		-
-			message: '#^Method App\\Models\\Document\:\:documentable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Document.php
-
-		-
-			message: '#^Method App\\Models\\Document\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Document.php
-
-		-
-			message: '#^Method App\\Models\\Document\:\:uploadedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Document.php
-
-		-
 			message: '#^Class App\\Models\\ExpenseEntry uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ExpenseEntry.php
-
-		-
-			message: '#^Method App\\Models\\ExpenseEntry\:\:asset\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ExpenseEntry.php
-
-		-
-			message: '#^Method App\\Models\\ExpenseEntry\:\:createdBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ExpenseEntry.php
-
-		-
-			message: '#^Method App\\Models\\ExpenseEntry\:\:lease\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ExpenseEntry.php
-
-		-
-			message: '#^Method App\\Models\\ExpenseEntry\:\:maintenanceRequest\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ExpenseEntry.php
-
-		-
-			message: '#^Method App\\Models\\ExpenseEntry\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/ExpenseEntry.php
@@ -3133,68 +2167,8 @@ parameters:
 			path: app/Models/Lease.php
 
 		-
-			message: '#^Method App\\Models\\Lease\:\:documents\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
 			message: '#^Method App\\Models\\Lease\:\:getDaysRemainingAttribute\(\) should return int\|null but returns float\.$#'
 			identifier: return.type
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:getNextDueInstallmentAttribute\(\) should return App\\Models\\LeaseInstallment\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:installments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:leaseable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:managedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:tenantProfile\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\LeaseInstallment\)\: bool given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: float\)\|string\|null, Closure\(App\\Models\\LeaseInstallment\)\: float given\.$#'
-			identifier: argument.type
 			count: 1
 			path: app/Models/Lease.php
 
@@ -3224,54 +2198,6 @@ parameters:
 
 		-
 			message: '#^Class App\\Models\\MaintenanceRequest uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:asset\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:assignedTo\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:expenses\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:lease\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:submittedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:tenantProfile\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/MaintenanceRequest.php
-
-		-
-			message: '#^Method App\\Models\\MaintenanceRequest\:\:updates\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/MaintenanceRequest.php
@@ -3403,60 +2329,6 @@ parameters:
 			path: app/Models/Portfolio.php
 
 		-
-			message: '#^Method App\\Models\\Portfolio\:\:assets\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:expenseEntries\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:leases\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:maintenanceRequests\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:owner\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:showcaseDataset\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:tenantProfiles\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
-			message: '#^Method App\\Models\\Portfolio\:\:users\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Portfolio.php
-
-		-
 			message: '#^Class App\\Models\\ReportPreset uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1
@@ -3476,36 +2348,6 @@ parameters:
 
 		-
 			message: '#^Class App\\Models\\TenantProfile uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantProfile.php
-
-		-
-			message: '#^Method App\\Models\\TenantProfile\:\:leases\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantProfile.php
-
-		-
-			message: '#^Method App\\Models\\TenantProfile\:\:maintenanceRequests\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantProfile.php
-
-		-
-			message: '#^Method App\\Models\\TenantProfile\:\:payments\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantProfile.php
-
-		-
-			message: '#^Method App\\Models\\TenantProfile\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/TenantProfile.php
-
-		-
-			message: '#^Method App\\Models\\TenantProfile\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/TenantProfile.php
@@ -3565,105 +2407,15 @@ parameters:
 			path: app/Models/User.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$balance_remaining\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$currency\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$days_remaining\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$due_now_amount\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ends_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseable\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$next_due_installment\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$overdue_amount\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$rent_amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$started_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_paid\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:documents\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
 			message: '#^Cannot call method toDateString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 2
+			count: 5
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
@@ -3697,31 +2449,31 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Modules/Dashboard/DashboardPresenter.php
+
+		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 3
+			count: 2
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{code\: string, tenant\: mixed, due\: float, paid\: float, remaining\: float, due_now\: float, overdue\: float\}, Closure\(App\\Models\\Lease\)\: array\{code\: string, tenant\: mixed, due\: float, paid\: float, remaining\: float, due_now\: float, overdue\: float\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{code\: string, tenant\: string\|null, due\: float, paid\: float, remaining\: float, due_now\: float, overdue\: float\}, Closure\(App\\Models\\Lease\)\: array\{code\: string, tenant\: string\|null, due\: float, paid\: float, remaining\: float, due_now\: float, overdue\: float\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, amount\: float, currency\: string, received_on\: mixed, reference\: string\|null, receipt_url\: string\}, Closure\(App\\Models\\Payment\)\: array\{id\: int, amount\: float, currency\: string, received_on\: mixed, reference\: string\|null, receipt_url\: string\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, arrears_amount\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, arrears_amount\: float, currency\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: mixed, asset\: mixed, arrears_amount\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: mixed, asset\: mixed, arrears_amount\: float, currency\: string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: mixed, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: mixed, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Modules/Dashboard/DashboardPresenter.php
@@ -3745,9 +2497,15 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Modules/Dashboard/DashboardPresenter.php
+
+		-
 			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 3
+			count: 2
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
@@ -3759,7 +2517,7 @@ parameters:
 		-
 			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 4
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-

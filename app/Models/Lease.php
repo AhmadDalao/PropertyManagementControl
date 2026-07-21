@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property-read Portfolio|null $portfolio
+ * @property-read TenantProfile|null $tenantProfile
+ * @property-read User|null $managedBy
+ * @property-read Model|null $leaseable
+ * @property-read Collection<int, LeaseInstallment> $installments
+ * @property-read Collection<int, Payment> $payments
+ * @property-read Collection<int, Document> $documents
+ */
 class Lease extends Model
 {
     use HasFactory;
@@ -29,36 +39,43 @@ class Lease extends Model
         ];
     }
 
+    /** @return BelongsTo<Portfolio, $this> */
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
     }
 
+    /** @return BelongsTo<TenantProfile, $this> */
     public function tenantProfile(): BelongsTo
     {
         return $this->belongsTo(TenantProfile::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function managedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'managed_by_user_id');
     }
 
+    /** @return MorphTo<Model, $this> */
     public function leaseable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /** @return HasMany<LeaseInstallment, $this> */
     public function installments(): HasMany
     {
         return $this->hasMany(LeaseInstallment::class)->orderBy('sequence');
     }
 
+    /** @return HasMany<Payment, $this> */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /** @return MorphMany<Document, $this> */
     public function documents(): MorphMany
     {
         return $this->morphMany(Document::class, 'documentable');
