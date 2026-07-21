@@ -44,6 +44,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - The Document React workspace is a 37-line composer with module-owned filters, metrics, table, and contracts. Index payloads expose a small attachment summary instead of full polymorphic records and no longer preload three unused option collections.
 - `DocumentModuleArchitectureTest` guards the split. Feature coverage enforces immutable attachments, portfolio isolation, real PDF signatures, tenant-safe lease and receipt downloads, missing-file handling, Arabic wording, supported page sizes, filtered XLSX exports, and the portal-visibility migration.
 - `documents.is_public` now means tenant-portal visibility, not unauthenticated public access. Only approved lease documents and payment receipts can use it; all files remain on private storage and every download is authorized.
+- Tenants are the sixth complete vertical module. `TenantController` fell from 434 lines to an 83-line adapter; scoped reads, validation, account synchronization, archive guards, forms, details, access rules, and options now live under `app/Modules/Tenants`.
+- The Tenant React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Index payloads use SQL aggregates, detail history is bounded, and explicit financial tabs avoid locale-dependent content guessing.
+- `TenantModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation, strict profile values, inactive-portfolio rejection, transactional portal-account synchronization, password reset, orphan-login recovery, active-lease archive guards, tenant-role denial, bounded history, and Arabic forms/details.
 
 ## Resource Refactor Checklist
 
@@ -55,7 +58,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend targets by risk are Tenants and Expenses, followed by Users and Portfolios.
+The next backend targets by risk are Expenses, followed by Users and Portfolios.
 
 ## Local Verification
 

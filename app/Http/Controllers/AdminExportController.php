@@ -13,6 +13,7 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Tenants\Queries\TenantIndexQuery;
 use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
 use App\Support\PortfolioModules;
@@ -28,6 +29,7 @@ class AdminExportController extends Controller
     public function __construct(
         private readonly XlsxWorkbook $workbook,
         private readonly UiTranslationCatalog $translations,
+        private readonly TenantIndexQuery $tenantIndex,
     ) {}
 
     public function __invoke(Request $request, string $resource): BinaryFileResponse
@@ -157,17 +159,7 @@ class AdminExportController extends Controller
 
     private function exportTenants(Request $request): BinaryFileResponse
     {
-        $actor = $this->actor($request);
-        $filters = $this->tableFilters($request, ['status' => 'all', 'profile_type' => 'all']);
-        $query = $this->scopeByPortfolio(TenantProfile::query(), $actor)->with(['portfolio', 'user']);
-        $this->applyExactFilter($query, $filters, 'portfolio_id');
-        $this->applyExactFilter($query, $filters, 'status');
-        $this->applyExactFilter($query, $filters, 'profile_type');
-        $this->applySearch($query, $filters['search'], [
-            'national_id',
-            'company_name',
-            fn ($query, $search, $like) => $query->orWhereHas('user', fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)->orWhere('phone', 'like', $like)),
-        ]);
+        $query = $this->tenantIndex->forExport($request, $this->actor($request));
 
         return $this->xlsx('tenants', ['Name', 'Email', 'Phone', 'Profile', 'National ID', 'Company', 'Status', 'Portfolio'], $query, fn (TenantProfile $row) => [
             $row->user?->name,
@@ -364,8 +356,10 @@ class AdminExportController extends Controller
     }
 
     /**
+     * @template TModel of Model
+     *
      * @param  array<int, string>  $headers
-     * @param  Builder<Model>  $query
+     * @param  Builder<TModel>  $query
      */
     private function xlsx(string $resource, array $headers, Builder $query, callable $rowMapper): BinaryFileResponse
     {

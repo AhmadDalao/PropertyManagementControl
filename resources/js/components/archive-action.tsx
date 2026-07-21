@@ -1,6 +1,8 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 
+import { useTranslator } from '@/lib/i18n';
+
 type ArchiveActionProps = {
     href: string;
     label?: string;
@@ -11,12 +13,13 @@ type ArchiveActionProps = {
 
 export function ArchiveAction({
     href,
-    label = 'Archive',
+    label,
     confirmMessage,
-    busyLabel = 'Working...',
+    busyLabel,
     className = '',
 }: ArchiveActionProps) {
     const [busy, setBusy] = useState(false);
+    const { t } = useTranslator();
 
     const submit = () => {
         if (!window.confirm(confirmMessage)) {
@@ -37,7 +40,9 @@ export function ArchiveAction({
             disabled={busy}
             onClick={submit}
         >
-            {busy ? busyLabel : label}
+            {busy
+                ? (busyLabel ?? t('actions.working'))
+                : (label ?? t('actions.archive'))}
         </button>
     );
 }

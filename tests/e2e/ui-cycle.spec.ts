@@ -245,6 +245,49 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic tenant workspace, form, and financial detail stay localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/tenants?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'المستأجرون' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-card')).toHaveCount(10);
+        await page.locator('.pmc-mobile-action-menu summary').first().click();
+        await expect(page.getByRole('button', { name: 'أرشفة' })).toBeVisible();
+        await expect(page.getByRole('button', { name: 'Archive' })).toHaveCount(
+            0,
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/tenants/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء مستأجر' }),
+        ).toBeVisible();
+        await expect(
+            page.getByLabel('اسم المستأجر', { exact: false }),
+        ).toBeVisible();
+        await expect(
+            page.getByLabel('بريد تسجيل الدخول', { exact: false }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/tenants/1?locale=ar');
+        await page.locator('.pmc-resource-tab-select select').selectOption({
+            value: 'financial',
+        });
+        await expect(page).toHaveURL(/tab=financial/);
+        await expect(
+            page
+                .locator('.pmc-resource-detail-card')
+                .getByText('الموقف المالي'),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('language buttons persist Arabic and English after reload', async ({
         page,
     }) => {

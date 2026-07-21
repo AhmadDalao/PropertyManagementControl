@@ -58,6 +58,7 @@ export type DetailItem = {
 export type DetailSection = {
     title: string;
     description?: string;
+    tab?: 'overview' | 'financial';
     items: DetailItem[];
 };
 
@@ -351,11 +352,14 @@ export function ResourceDetailShell({
         created_at?: string;
     }>;
 }) {
-    const financialSections = sections.filter((section) =>
-        financialSectionPattern.test(section.title),
+    const financialSections = sections.filter(
+        (section) =>
+            section.tab === 'financial' ||
+            (section.tab === undefined &&
+                financialSectionPattern.test(section.title)),
     );
     const overviewSections = sections.filter(
-        (section) => !financialSectionPattern.test(section.title),
+        (section) => !financialSections.includes(section),
     );
     const availableTabs: Array<{
         key: ResourceDetailTab;
