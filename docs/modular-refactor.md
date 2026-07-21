@@ -68,6 +68,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - `SharedFrontendArchitectureTest` caps every shared frontend unit at 250 lines or fewer, keeps both public wrappers at five lines or fewer, and prevents form, detail, query, desktop, and mobile responsibilities from collapsing back together.
 - The property map is now an Assets-owned vertical slice. Its 406-line backend presenter is a 57-line orchestrator over scoped source/activity queries, hierarchy and coordinate helpers, localization, and focused asset/payload presenters. Its 825-line React workspace is an 87-line composer over state, filters, metrics, Leaflet rendering, setup guidance, selection detail, and the paginated directory.
 - `PropertyMapModuleArchitectureTest` caps the backend orchestrator at 70 lines, focused backend units at 160, the frontend composer at 100, and focused frontend units at 250. It also keeps querying out of presenters, Leaflet out of the composer, and map state inside its dedicated hook.
+- Page Wording is now a complete vertical control surface. Its controller fell from 127 lines to a 49-line adapter, the public catalog from 445 lines to a 73-line compatibility facade, the completeness service from 231 lines to an 85-line orchestrator, and the React entry from 568 lines to a 79-line composer.
+- Translation defaults, documentation copy, override reads, transactional writes, placeholder protection, resolved dictionaries, cache invalidation, entry pagination, and four content-translation domains now have separate owners. `WordingModuleArchitectureTest` caps those boundaries, and the wording cache is versioned so new EN/AR keys cannot be hidden by an older resolved dictionary.
 
 ## Resource Refactor Checklist
 
@@ -79,7 +81,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is Page Wording. Split its 568-line React entry, 445-line translation catalog, and 231-line completeness service into focused catalog, override editor, translation queue, pagination, and completeness units without changing translation keys, database overrides, cache invalidation, or Arabic coverage.
+The next refactor target by risk is the role dashboard slice. Split the 405-line backend presenter, 406-line owner/manager operations view, and 299-line tenant view into role-owned queries, widget payloads, action queues, financial/occupancy panels, and focused view composers without changing KPI definitions or portfolio and tenant scoping.
 
 ## Local Verification
 

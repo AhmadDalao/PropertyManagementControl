@@ -115,12 +115,6 @@ parameters:
 			path: app/Http/Controllers/DocumentationController.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<int,bool\|string\>\:\:contains\(\) expects bool\|\(callable\(bool\|string, int\)\: bool\)\|string, Closure\(string\)\: bool given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/WordingController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1

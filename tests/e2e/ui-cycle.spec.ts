@@ -680,6 +680,37 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('wording workspace keeps editing focused, responsive, and Arabic', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/wording');
+        await expect(page.locator('.pmc-wording-row').first()).toBeVisible();
+        await page.locator('.pmc-wording-row').first().click();
+
+        const editor = page.locator('.pmc-wording-editor[role="dialog"]');
+        await expect(editor).toBeVisible();
+        await expect(editor.locator('textarea').first()).toBeFocused();
+        expect(
+            await page.locator('body').evaluate((node) => node.style.overflow),
+        ).toBe('hidden');
+        await expectNoHorizontalOverflow(page);
+
+        await page.keyboard.press('Escape');
+        await expect(editor).toBeHidden();
+        expect(
+            await page.locator('body').evaluate((node) => node.style.overflow),
+        ).not.toBe('hidden');
+
+        await page.goto('/wording?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await page.getByRole('button', { name: /ترجمة المحتوى/ }).click();
+        await expect(
+            page.getByRole('button', { name: /المحافظ/ }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('authenticated command-center routes have no serious accessibility violations', async ({
         page,
     }) => {

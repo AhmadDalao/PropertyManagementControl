@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Modules\Wording\UiTranslationCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -70,7 +71,9 @@ class LocalizationAndWordingTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/wording/index')
                 ->has('entries')
-                ->where('groups', fn ($groups) => collect($groups)->contains('nav'))
+                ->where('groups', fn (mixed $groups): bool => $groups instanceof Collection
+                    ? $groups->contains('nav')
+                    : is_array($groups) && in_array('nav', $groups, true))
             );
 
         $this->actingAs($owner)
@@ -145,6 +148,56 @@ class LocalizationAndWordingTest extends TestCase
         $this->assertDatabaseCount('label_overrides', 0);
     }
 
+    public function test_wording_writes_and_resets_are_superadmin_only(): void
+    {
+        $owner = $this->createUserWithRole('owner', $this->createPortfolio());
+        $payload = [
+            'group' => 'nav',
+            'key' => 'dashboard',
+            'english' => 'Unsafe owner override',
+            'arabic' => 'تعديل مالك غير مسموح',
+        ];
+
+        $this->actingAs($owner)
+            ->put(route('wording.update'), $payload)
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->delete(route('wording.destroy'), Arr::only($payload, ['group', 'key']))
+            ->assertForbidden();
+        $this->assertDatabaseCount('label_overrides', 0);
+    }
+
+    public function test_required_wording_placeholders_cannot_be_removed(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->put(route('wording.update'), [
+                'group' => 'validation',
+                'key' => 'required',
+                'english' => 'This field is required.',
+                'arabic' => 'هذا الحقل مطلوب.',
+            ])
+            ->assertUnprocessable();
+
+        $this->assertDatabaseCount('label_overrides', 0);
+    }
+
+    public function test_wording_index_rejects_unsupported_filter_values(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->from(route('wording.index'))
+            ->get(route('wording.index', [
+                'state' => 'unsafe',
+                'per_page' => 999,
+                'content_module' => 'unknown',
+            ]))
+            ->assertRedirect(route('wording.index'))
+            ->assertSessionHasErrors(['state', 'per_page', 'content_module']);
+    }
+
     public function test_english_and_arabic_translation_catalogs_have_matching_keys_and_placeholders(): void
     {
         $this->assertTranslationParity(
@@ -198,6 +251,38 @@ class LocalizationAndWordingTest extends TestCase
             'عمليات العقار مرتبة بوضوح.',
             $catalog->forLocale('ar')['text'][$sentence],
         );
+    }
+
+    public function test_saving_wording_invalidates_a_dictionary_loaded_in_the_same_request(): void
+    {
+        $catalog = app(UiTranslationCatalog::class);
+        $this->assertSame('Dashboard', $catalog->forLocale('en')['nav']['dashboard']);
+
+        $catalog->save('nav', 'dashboard', 'Live Operations', 'العمليات المباشرة');
+
+        $this->assertSame(
+            'Live Operations',
+            $catalog->forLocale('en')['nav']['dashboard'],
+        );
+        $catalog->reset('nav', 'dashboard');
+        $this->assertSame('Dashboard', $catalog->forLocale('en')['nav']['dashboard']);
+    }
+
+    public function test_runtime_overrides_never_replace_the_immutable_editor_defaults(): void
+    {
+        $catalog = app(UiTranslationCatalog::class);
+        $catalog->save('nav', 'dashboard', 'Runtime dashboard', 'لوحة وقت التشغيل');
+        $catalog->applyLaravelOverrides('en');
+
+        $freshCatalog = app()->make(UiTranslationCatalog::class);
+        $entry = collect($freshCatalog->entries())->first(
+            fn (array $item): bool => $item['group'] === 'nav'
+                && $item['key'] === 'dashboard',
+        );
+
+        $this->assertIsArray($entry);
+        $this->assertSame('Runtime dashboard', $entry['english']);
+        $this->assertSame('Dashboard', $entry['default_english']);
     }
 
     public function test_wording_workspace_supports_pagination_filters_and_content_translation_queue(): void
