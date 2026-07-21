@@ -63,6 +63,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Index pages and exports now call the same module-owned filter query. This removes duplicate scope logic, makes relational searches consistent, and deleted the obsolete `BuildsAdminTables` controller trait.
 - The global-search frontend is now a 48-line composer under `resources/js/modules/search`; request state, result grouping, desktop input, and the accessible mobile search sheet are separate focused units. The old shared component remains a one-line compatibility export.
 - `SearchExportArchitectureTest` prevents the shared controllers and frontend entry from becoming monoliths again. Feature coverage enforces malformed-query rejection, Arabic expense search, portfolio isolation, tenant export denial, unknown-resource handling, relational-filter parity, and valid scoped XLSX output.
+- Shared resource-cycle UI is now a compatibility barrel backed by focused header, form, input, action, spotlight, detail-tab, decision-card, related-record, document, and history modules. The former 1,047-line implementation is gone; the largest focused unit is 228 lines.
+- Shared operational tables are now a compatibility barrel backed by separate query-state, toolbar, desktop-table, mobile-card, pagination, empty-state, showcase-badge, utility, and contract modules. Feature modules keep the same `DataTable`, `OperationsTable`, `exportUrl`, and type imports.
+- `SharedFrontendArchitectureTest` caps every shared frontend unit at 250 lines or fewer, keeps both public wrappers at five lines or fewer, and prevents form, detail, query, desktop, and mobile responsibilities from collapsing back together.
 
 ## Resource Refactor Checklist
 
@@ -74,7 +77,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is the shared frontend resource cycle. Split `resource-cycle.tsx` and `data-table.tsx` into stable form, detail, table, pagination, action-menu, and mobile-card primitives without changing route payloads or feature-module ownership.
+The next refactor target by risk is the property-map slice. Split its 825-line workspace and 406-line presenter into focused map, directory, filters, selection, aggregate, and presentation units while preserving the existing route, Leaflet behavior, Arabic rendering, and 40-marker payload limit. The wording workspace follows after that.
 
 ## Local Verification
 
