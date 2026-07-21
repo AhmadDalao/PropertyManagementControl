@@ -12,7 +12,16 @@ class LocalizationSourceGuardTest extends TestCase
     public function test_localized_workspaces_do_not_add_visible_english_jsx_literals(): void
     {
         $files = [
+            'resources/js/modules/property-map/geographic-map.tsx',
+            'resources/js/modules/property-map/index-page.tsx',
+            'resources/js/modules/property-map/map-filters.tsx',
+            'resources/js/modules/property-map/map-metrics.tsx',
+            'resources/js/modules/property-map/map-setup-status.tsx',
+            'resources/js/modules/property-map/map-stage.tsx',
             'resources/js/modules/property-map/map-workspace.tsx',
+            'resources/js/modules/property-map/portfolio-filter.tsx',
+            'resources/js/modules/property-map/property-map-detail.tsx',
+            'resources/js/modules/property-map/property-map-directory.tsx',
             'resources/js/modules/showcase-data/index-page.tsx',
             'resources/js/modules/wording/index-page.tsx',
             'resources/js/modules/audit/index-page.tsx',

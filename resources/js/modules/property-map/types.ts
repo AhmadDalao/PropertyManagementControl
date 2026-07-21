@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 export type PropertyMapAsset = {
     id: number;
     title: string;
@@ -53,4 +55,13 @@ export type PropertyMapPayload = {
     assets: PropertyMapAsset[];
     summary: PropertyMapSummary;
     config: PropertyMapConfig;
+};
+
+export type PropertyMapWorkspaceProps = PropertyMapPayload & {
+    toolbar?: ReactNode;
+};
+
+export type PropertyMapPortfolioOption = {
+    id: number;
+    name: string;
 };

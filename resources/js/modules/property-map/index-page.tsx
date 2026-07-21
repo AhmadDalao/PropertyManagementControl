@@ -1,5 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
-import type { ChangeEvent } from 'react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
@@ -9,11 +8,12 @@ import type { SharedProps } from '@/types';
 import '../../../css/styles/property-map.css';
 
 import { PropertyMapWorkspace } from './map-workspace';
-import type { PropertyMapPayload } from './types';
+import { PropertyMapPortfolioFilter } from './portfolio-filter';
+import type { PropertyMapPayload, PropertyMapPortfolioOption } from './types';
 
 type PropertyMapPageProps = SharedProps & {
     propertyMap: PropertyMapPayload;
-    portfolioOptions: Array<{ id: number; name: string }>;
+    portfolioOptions: PropertyMapPortfolioOption[];
     filters: {
         portfolio_id?: number | null;
     };
@@ -26,20 +26,6 @@ export default function PropertyMapPage() {
     const selectedPortfolio = props.filters.portfolio_id
         ? String(props.filters.portfolio_id)
         : 'all';
-
-    const changePortfolio = (event: ChangeEvent<HTMLSelectElement>) => {
-        const portfolioId = event.currentTarget.value;
-
-        router.get(
-            '/property-map',
-            portfolioId === 'all' ? {} : { portfolio_id: portfolioId },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
 
     return (
         <AdminLayout>
@@ -70,26 +56,10 @@ export default function PropertyMapPage() {
                 config={props.propertyMap.config}
                 toolbar={
                     isSuperadmin ? (
-                        <label>
-                            <span>{t('map.portfolio')}</span>
-                            <select
-                                className="form-select"
-                                value={selectedPortfolio}
-                                onChange={changePortfolio}
-                            >
-                                <option value="all">
-                                    {t('map.all_portfolios')}
-                                </option>
-                                {props.portfolioOptions.map((portfolio) => (
-                                    <option
-                                        key={portfolio.id}
-                                        value={portfolio.id}
-                                    >
-                                        {portfolio.name}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
+                        <PropertyMapPortfolioFilter
+                            options={props.portfolioOptions}
+                            selectedPortfolio={selectedPortfolio}
+                        />
                     ) : null
                 }
             />

@@ -22,7 +22,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, restores focus, and keeps the topbar at 64px.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 274 PHP tests with 12,673 assertions and 27 Playwright/axe scenarios pass.
+- Automated status: 278 PHP tests with 12,775 assertions and 27 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
 - The main CSS bundle is 323.60 KB before gzip, with Media styles loaded as a separate 3.18 KB route chunk. Further CSS reduction is useful, but it is not a launch blocker.
 - PHPStan has 69 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, and shared-module extractions add zero findings in their touched slices.
@@ -41,7 +41,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Reports are the twelfth complete vertical feature module: its controller is now a 57-line adapter and its React entry is a 131-line composer. Query validation prevents broken date ranges, report and preset portfolio filters share one access boundary, saved views expose only legal actions, default views are deterministic, top-asset cards open the actual asset, and the card-only EN/AR workspace plus real `.xlsx` export passes mobile and desktop accessibility checks.
 - Audit is the thirteenth complete vertical feature module: its controller is now a 34-line adapter and its React entry is a 35-line composer. Portfolio and actor filters share one access boundary, malformed dates are rejected, event facets respect the other active filters, all logged model types are registered, affected records open directly, sensitive keys remain suppressed, and the localized mobile-card/desktop-table workspace exports a real scoped `.xlsx` workbook.
 - Global search and resource export are now modular platform infrastructure. The search controller is 22 lines, the export controller is 21 lines, every result/export belongs to its feature module, and index screens share the exact same scoped filters as their workbooks. Search input validation, tenant export denial, module visibility, Arabic groups, direct exact-code links, and portfolio isolation are covered by feature and browser tests.
-- The property map no longer depends on controller table helpers. Its validated request and scoped query now belong to Assets, malformed portfolio filters are rejected, and the route controller is a 23-line adapter.
+- The property map is a complete Assets-owned slice. Its route controller remains a 23-line adapter, the former 406-line presenter is a 57-line orchestrator over focused source/activity queries and payload presenters, and the former 825-line React workspace is an 87-line composer. Malformed portfolio filters are rejected, the payload remains capped at 40 top-level markers, and architecture plus EN/AR browser tests protect Leaflet behavior, clustering, filtering, selection, and the paginated directory.
 - Shared frontend infrastructure is modular. The former 1,047-line resource cycle and 660-line data table are now one-line compatibility barrels backed by focused modules for forms, fields, actions, detail tabs, documents, history, query state, toolbars, desktop tables, mobile cards, and pagination. Every extracted unit is capped by architecture tests; existing feature imports and route payload contracts remain unchanged.
 
 ## Required before real tenant onboarding
@@ -64,4 +64,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Modularize the property-map slice next: split the 825-line React workspace and 406-line presenter into focused map, filters, directory, selection, aggregate, and payload modules without changing its route or geographic behavior. Then modularize Page Wording and continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Modularize Page Wording next: split its 568-line React entry, 445-line catalog, and 231-line completeness service while preserving editable database overrides and Arabic coverage. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.

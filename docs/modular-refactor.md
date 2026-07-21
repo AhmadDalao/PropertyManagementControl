@@ -66,6 +66,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Shared resource-cycle UI is now a compatibility barrel backed by focused header, form, input, action, spotlight, detail-tab, decision-card, related-record, document, and history modules. The former 1,047-line implementation is gone; the largest focused unit is 228 lines.
 - Shared operational tables are now a compatibility barrel backed by separate query-state, toolbar, desktop-table, mobile-card, pagination, empty-state, showcase-badge, utility, and contract modules. Feature modules keep the same `DataTable`, `OperationsTable`, `exportUrl`, and type imports.
 - `SharedFrontendArchitectureTest` caps every shared frontend unit at 250 lines or fewer, keeps both public wrappers at five lines or fewer, and prevents form, detail, query, desktop, and mobile responsibilities from collapsing back together.
+- The property map is now an Assets-owned vertical slice. Its 406-line backend presenter is a 57-line orchestrator over scoped source/activity queries, hierarchy and coordinate helpers, localization, and focused asset/payload presenters. Its 825-line React workspace is an 87-line composer over state, filters, metrics, Leaflet rendering, setup guidance, selection detail, and the paginated directory.
+- `PropertyMapModuleArchitectureTest` caps the backend orchestrator at 70 lines, focused backend units at 160, the frontend composer at 100, and focused frontend units at 250. It also keeps querying out of presenters, Leaflet out of the composer, and map state inside its dedicated hook.
 
 ## Resource Refactor Checklist
 
@@ -77,7 +79,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is the property-map slice. Split its 825-line workspace and 406-line presenter into focused map, directory, filters, selection, aggregate, and presentation units while preserving the existing route, Leaflet behavior, Arabic rendering, and 40-marker payload limit. The wording workspace follows after that.
+The next refactor target by risk is Page Wording. Split its 568-line React entry, 445-line translation catalog, and 231-line completeness service into focused catalog, override editor, translation queue, pagination, and completeness units without changing translation keys, database overrides, cache invalidation, or Arabic coverage.
 
 ## Local Verification
 
