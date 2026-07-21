@@ -155,7 +155,7 @@ class ExpenseWorkspaceTest extends TestCase
                 'currency' => 'SAR',
                 'status' => 'posted',
             ])
-            ->assertStatus(422);
+            ->assertSessionHasErrors('asset_id');
     }
 
     public function test_dashboard_counts_only_posted_financial_activity(): void

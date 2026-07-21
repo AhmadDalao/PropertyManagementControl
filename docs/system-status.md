@@ -22,10 +22,10 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, restores focus, and keeps the topbar at 64px.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 190 PHP tests with 8,511 assertions and 19 Playwright/axe scenarios pass.
+- Automated status: 202 PHP tests with 9,088 assertions and 20 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
 - The main CSS bundle is 320.71 KB before gzip. Further CSS reduction is useful, but it is not a launch blocker.
-- PHPStan has 279 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, and shared-module extractions add zero findings in their touched slices.
+- PHPStan has 237 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
 - Leases are the third complete vertical feature module: its controller is now a 117-line adapter and its React index is a 42-line composer. Lease creation stores canonical morph aliases, alias records enforce exclusivity and occupancy, and tenant details omit internal notes, actions, documents, and history.
@@ -33,6 +33,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Documents are the fifth complete vertical feature module: its controller is now a 95-line adapter and its React index is a 37-line composer. Uploads require a real PDF signature, attachments cannot be reassigned during edit, private server paths are not exposed, and tenant downloads are restricted to approved portal-visible files on their own leases or payments.
 - The Document workspace has structured editable EN/AR wording, scoped filters and XLSX export, 10/25/50/100 pagination coverage, desktop tables, mobile cards, and a two-screen mobile layout with no horizontal overflow in the tested local dataset.
 - Tenants are the sixth complete vertical feature module: its controller is now an 83-line adapter and its React index is a 42-line composer. Tenant and portal-user changes are transactional, portfolio access is enforced on direct actions, active leases block unsafe archiving, detail history is bounded, and the workspace has structured EN/AR wording with responsive mobile cards.
+- Expenses are the seventh complete vertical feature module: its controller is now an 81-line adapter and its React index is a 45-line composer. Expense changes use row locks, portfolio references and currency are authoritative, voiding is terminal, mixed-currency totals are explicit, and the index no longer ships unbounded form-option data.
 
 ## Required before real tenant onboarding
 
@@ -54,4 +55,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Continue the vertical modular refactor with Expenses, then Users and Portfolios. Keep routes and schemas stable, ship one tested module at a time, and do not delay the production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Continue the vertical modular refactor with Users and Portfolios. Keep routes and schemas stable, ship one tested module at a time, and do not delay the production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.

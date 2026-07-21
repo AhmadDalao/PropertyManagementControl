@@ -409,6 +409,13 @@ class ReportController extends Controller
             ->all();
     }
 
+    /**
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  array<string, mixed>  $filters
+     * @return Builder<TModel>
+     */
     private function scopedReportQuery(Builder $query, mixed $actor, array $filters): Builder
     {
         $this->scopeByPortfolio($query, $actor);

@@ -408,7 +408,7 @@ class UiTranslationCatalog
 
     private function cacheKey(string $locale): string
     {
-        return "ui-translations:v9:{$locale}";
+        return "ui-translations:v10:{$locale}";
     }
 
     private function forget(): void

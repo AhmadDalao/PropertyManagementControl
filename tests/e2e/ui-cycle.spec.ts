@@ -288,6 +288,45 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic expense workspace, form, and financial detail stay localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/expenses?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'المصاريف' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-card')).toHaveCount(10);
+        await page.locator('.pmc-mobile-action-menu summary').first().click();
+        await expect(
+            page.getByRole('button', { name: 'إلغاء المصروف' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Void expense' }),
+        ).toHaveCount(0);
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/expenses/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'تسجيل مصروف' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        await expect(page.getByLabel(/^عنوان المصروف/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/expenses/1?locale=ar');
+        await page.locator('.pmc-resource-tab-select select').selectOption({
+            value: 'financial',
+        });
+        await expect(page).toHaveURL(/tab=financial/);
+        await expect(
+            page.locator('.pmc-resource-detail-card').getByText('السجل المالي'),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('language buttons persist Arabic and English after reload', async ({
         page,
     }) => {

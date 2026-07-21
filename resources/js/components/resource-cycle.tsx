@@ -46,6 +46,7 @@ export type ResourceField = {
     accept?: string;
     section?: string;
     sectionDescription?: string;
+    reloadOnChange?: { queryKey: string };
 };
 
 export type DetailItem = {
@@ -196,6 +197,27 @@ export function ResourceFormShell({
         form.post(action, options);
     };
 
+    const updateField = (field: ResourceField, value: ResourceFormValue) => {
+        form.setData(field.name, value);
+
+        if (!field.reloadOnChange) {
+            return;
+        }
+
+        const queryValue =
+            typeof value === 'string' || typeof value === 'number' ? value : '';
+
+        router.get(
+            window.location.pathname,
+            { [field.reloadOnChange.queryKey]: queryValue },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                replace: true,
+            },
+        );
+    };
+
     return (
         <>
             <ResourceHeader
@@ -257,10 +279,7 @@ export function ResourceFormShell({
                                                   form.errors[field.name] ?? '',
                                               )}
                                               onChange={(value) =>
-                                                  form.setData(
-                                                      field.name,
-                                                      value,
-                                                  )
+                                                  updateField(field, value)
                                               }
                                           />
                                       ))}
@@ -274,7 +293,7 @@ export function ResourceFormShell({
                                   value={form.data[field.name]}
                                   error={String(form.errors[field.name] ?? '')}
                                   onChange={(value) =>
-                                      form.setData(field.name, value)
+                                      updateField(field, value)
                                   }
                               />
                           ))}

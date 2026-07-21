@@ -47,6 +47,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Tenants are the sixth complete vertical module. `TenantController` fell from 434 lines to an 83-line adapter; scoped reads, validation, account synchronization, archive guards, forms, details, access rules, and options now live under `app/Modules/Tenants`.
 - The Tenant React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Index payloads use SQL aggregates, detail history is bounded, and explicit financial tabs avoid locale-dependent content guessing.
 - `TenantModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation, strict profile values, inactive-portfolio rejection, transactional portal-account synchronization, password reset, orphan-login recovery, active-lease archive guards, tenant-role denial, bounded history, and Arabic forms/details.
+- Expenses are the seventh complete vertical module. `ExpenseEntryController` fell from 412 lines to an 81-line adapter; scoped reads, strict validation, locked mutations, form references, financial summaries, access rules, and detail payloads now live under `app/Modules/Expenses`.
+- The Expense React workspace is a 45-line composer with module-owned filters, metrics, table, and contracts. Index payloads no longer preload unbounded asset and maintenance collections, and mixed-currency scopes no longer display a false combined total.
+- `ExpenseModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation across pages and XLSX exports, active-portfolio creation, portfolio-derived currency, reference consistency, terminal voiding, tenant denial, and Arabic forms/details.
 
 ## Resource Refactor Checklist
 
@@ -58,7 +61,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend targets by risk are Expenses, followed by Users and Portfolios.
+The next backend targets by risk are Users and Portfolios.
 
 ## Local Verification
 

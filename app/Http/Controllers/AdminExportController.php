@@ -13,6 +13,7 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Expenses\Queries\ExpenseIndexQuery;
 use App\Modules\Tenants\Queries\TenantIndexQuery;
 use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
@@ -30,6 +31,7 @@ class AdminExportController extends Controller
         private readonly XlsxWorkbook $workbook,
         private readonly UiTranslationCatalog $translations,
         private readonly TenantIndexQuery $tenantIndex,
+        private readonly ExpenseIndexQuery $expenseIndex,
     ) {}
 
     public function __invoke(Request $request, string $resource): BinaryFileResponse
@@ -251,14 +253,7 @@ class AdminExportController extends Controller
 
     private function exportExpenses(Request $request): BinaryFileResponse
     {
-        $actor = $this->actor($request);
-        $filters = $this->tableFilters($request, ['status' => 'all', 'category' => 'all', 'date_from' => '', 'date_to' => '']);
-        $query = $this->scopeByPortfolio(ExpenseEntry::query(), $actor)->with(['asset']);
-        $this->applyExactFilter($query, $filters, 'portfolio_id');
-        $this->applyExactFilter($query, $filters, 'status');
-        $this->applyExactFilter($query, $filters, 'category');
-        $this->applyDateRange($query, $filters, 'incurred_on');
-        $this->applySearch($query, $filters['search'], ['title', 'description', 'category', 'vendor_name']);
+        $query = $this->expenseIndex->forExport($request, $this->actor($request));
 
         return $this->xlsx('expenses', ['Title', 'Asset', 'Category', 'Vendor', 'Date', 'Status', 'Amount', 'Currency'], $query, fn (ExpenseEntry $row) => [
             $row->title,

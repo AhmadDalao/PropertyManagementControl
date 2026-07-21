@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Lease|null $lease
  * @property-read MaintenanceRequest|null $maintenanceRequest
  * @property-read User|null $createdBy
+ * @property CarbonInterface|null $incurred_on
+ * @property float $amount
  */
 class ExpenseEntry extends Model
 {
@@ -27,6 +30,7 @@ class ExpenseEntry extends Model
     {
         return [
             'incurred_on' => 'date',
+            'amount' => 'float',
             'meta_json' => 'array',
         ];
     }
