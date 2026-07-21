@@ -57,6 +57,8 @@ class DashboardPresenter
                 'leaseCode' => $activeLease?->code,
                 'daysLeft' => $activeLease?->days_remaining,
                 'amountLeft' => (float) ($activeLease?->balance_remaining ?? 0),
+                'dueNow' => (float) ($activeLease?->due_now_amount ?? 0),
+                'overdue' => (float) ($activeLease?->overdue_amount ?? 0),
                 'paidAmount' => (float) ($activeLease?->total_paid ?? 0),
                 'maintenanceRequests' => $tenantProfile?->maintenanceRequests->count() ?? 0,
             ],
@@ -67,6 +69,9 @@ class DashboardPresenter
                     'code' => $activeLease->code,
                     'days_remaining' => $activeLease->days_remaining,
                     'balance_remaining' => (float) $activeLease->balance_remaining,
+                    'due_now' => (float) $activeLease->due_now_amount,
+                    'overdue' => (float) $activeLease->overdue_amount,
+                    'next_due_date' => $activeLease->next_due_installment?->due_date?->toDateString(),
                     'total_paid' => (float) $activeLease->total_paid,
                     'rent_amount' => (float) $activeLease->rent_amount,
                     'currency' => $activeLease->currency,
@@ -134,9 +139,10 @@ class DashboardPresenter
                 ->sum('amount'),
             'openRequests' => (clone $maintenanceQuery)->whereIn('status', ['open', 'in_progress'])->count(),
             'arrears' => (float) (clone $leaseQuery)
+                ->whereIn('status', ['active', 'expired'])
                 ->with('installments')
                 ->get()
-                ->sum(fn (Lease $lease) => $lease->balance_remaining),
+                ->sum(fn (Lease $lease) => $lease->overdue_amount),
             'vacantUnits' => (clone $assetQuery)->where('rentable', true)->where('occupancy_status', 'vacant')->count(),
         ];
 
@@ -149,6 +155,7 @@ class DashboardPresenter
             'nextActions' => $this->operationsNextActions($setupChecklist, $stats, $propertyMap['summary']),
             'charts' => [
                 'occupancy' => (clone $assetQuery)
+                    ->where('rentable', true)
                     ->selectRaw('occupancy_status, COUNT(*) as total')
                     ->groupBy('occupancy_status')
                     ->pluck('total', 'occupancy_status'),
@@ -161,6 +168,8 @@ class DashboardPresenter
                         'due' => $lease->total_due,
                         'paid' => $lease->total_paid,
                         'remaining' => $lease->balance_remaining,
+                        'due_now' => $lease->due_now_amount,
+                        'overdue' => $lease->overdue_amount,
                     ]),
                 'assetMix' => (clone $assetQuery)
                     ->selectRaw('asset_type, COUNT(*) as total')
@@ -244,8 +253,8 @@ class DashboardPresenter
             ->with(['tenantProfile.user', 'leaseable', 'installments'])
             ->whereIn('status', ['active', 'expired'])
             ->get()
-            ->filter(fn (Lease $lease) => $lease->balance_remaining > 0)
-            ->sortByDesc(fn (Lease $lease) => $lease->balance_remaining)
+            ->filter(fn (Lease $lease) => $lease->overdue_amount > 0)
+            ->sortByDesc(fn (Lease $lease) => $lease->overdue_amount)
             ->take(8)
             ->values()
             ->map(fn (Lease $lease) => [
@@ -253,7 +262,7 @@ class DashboardPresenter
                 'code' => $lease->code,
                 'tenant' => $lease->tenantProfile?->user?->name,
                 'asset' => $lease->leaseable?->title_en,
-                'balance_remaining' => $lease->balance_remaining,
+                'arrears_amount' => $lease->overdue_amount,
                 'currency' => $lease->currency,
             ])
             ->all();

@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\EnsurePortfolioModuleEnabled;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RequirePermanentPassword;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -20,9 +22,11 @@ return Application::configure(basePath: dirname(__DIR__))
             SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            AddSecurityHeaders::class,
         ]);
         $middleware->alias([
             'portfolio.module' => EnsurePortfolioModuleEnabled::class,
+            'password.changed' => RequirePermanentPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

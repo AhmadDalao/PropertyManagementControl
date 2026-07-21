@@ -44,6 +44,8 @@ export type ResourceField = {
     min?: string | number;
     max?: string | number;
     accept?: string;
+    section?: string;
+    sectionDescription?: string;
 };
 
 export type DetailItem = {
@@ -176,6 +178,8 @@ export function ResourceFormShell({
     const hasFile = fields.some((field) => field.type === 'file');
     const { t, text } = useTranslator();
     const errors = Object.values(form.errors).filter(Boolean);
+    const groupedFields = groupResourceFields(fields);
+    const usesSections = fields.some((field) => field.section);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -232,17 +236,47 @@ export function ResourceFormShell({
                             </div>
                         </div>
                     ) : null}
-                    {fields.map((field) => (
-                        <ResourceInput
-                            key={field.name}
-                            field={field}
-                            value={form.data[field.name]}
-                            error={String(form.errors[field.name] ?? '')}
-                            onChange={(value) =>
-                                form.setData(field.name, value)
-                            }
-                        />
-                    ))}
+                    {usesSections
+                        ? groupedFields.map((group) => (
+                              <fieldset
+                                  className="pmc-resource-form-section"
+                                  key={group.title}
+                              >
+                                  <legend>{text(group.title)}</legend>
+                                  {group.description ? (
+                                      <p>{text(group.description)}</p>
+                                  ) : null}
+                                  <div>
+                                      {group.fields.map((field) => (
+                                          <ResourceInput
+                                              key={field.name}
+                                              field={field}
+                                              value={form.data[field.name]}
+                                              error={String(
+                                                  form.errors[field.name] ?? '',
+                                              )}
+                                              onChange={(value) =>
+                                                  form.setData(
+                                                      field.name,
+                                                      value,
+                                                  )
+                                              }
+                                          />
+                                      ))}
+                                  </div>
+                              </fieldset>
+                          ))
+                        : fields.map((field) => (
+                              <ResourceInput
+                                  key={field.name}
+                                  field={field}
+                                  value={form.data[field.name]}
+                                  error={String(form.errors[field.name] ?? '')}
+                                  onChange={(value) =>
+                                      form.setData(field.name, value)
+                                  }
+                              />
+                          ))}
 
                     <div className="pmc-resource-form-actions">
                         <Link href={backHref} className="btn btn-light">
@@ -259,6 +293,31 @@ export function ResourceFormShell({
             </section>
         </>
     );
+}
+
+function groupResourceFields(fields: ResourceField[]) {
+    const groups = new Map<
+        string,
+        {
+            title: string;
+            description?: string;
+            fields: ResourceField[];
+        }
+    >();
+
+    fields.forEach((field) => {
+        const title = field.section ?? 'Details';
+        const group = groups.get(title) ?? {
+            title,
+            description: field.sectionDescription,
+            fields: [],
+        };
+
+        group.fields.push(field);
+        groups.set(title, group);
+    });
+
+    return Array.from(groups.values());
 }
 
 export function ResourceDetailShell({
@@ -371,6 +430,28 @@ export function ResourceDetailShell({
     return (
         <>
             <ResourceHeader {...header} />
+
+            <label className="pmc-resource-tab-select">
+                <i className="bi bi-layout-text-sidebar" />
+                <span className="visually-hidden">
+                    {t('resource.record_sections')}
+                </span>
+                <select
+                    className="form-select"
+                    value={activeTab}
+                    onChange={(event) =>
+                        selectTab(
+                            event.currentTarget.value as ResourceDetailTab,
+                        )
+                    }
+                >
+                    {availableTabs.map((tab) => (
+                        <option key={tab.key} value={tab.key}>
+                            {text(tab.label)}
+                        </option>
+                    ))}
+                </select>
+            </label>
 
             <nav
                 className="pmc-resource-tabs"

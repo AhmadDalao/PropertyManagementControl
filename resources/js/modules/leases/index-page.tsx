@@ -12,7 +12,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { compactCurrency, currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -143,7 +143,7 @@ export default function LeasesIndexPage() {
                     },
                     {
                         label: 'Collected',
-                        value: currency(
+                        value: compactCurrency(
                             props.leaseInsights.total_paid,
                             props.app.locale,
                         ),
@@ -158,7 +158,7 @@ export default function LeasesIndexPage() {
                     },
                     {
                         label: 'Outstanding',
-                        value: currency(
+                        value: compactCurrency(
                             props.leaseInsights.balance_remaining,
                             props.app.locale,
                         ),

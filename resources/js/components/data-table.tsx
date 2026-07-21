@@ -141,6 +141,8 @@ export function DataTable<T extends { id?: number | string }>({
         actions: actionColumn ? (row) => actionColumn.render(row) : undefined,
     };
     const mobile = mobileCard ?? fallbackMobileCard;
+    const previousLink = data.links.at(0);
+    const nextLink = data.links.at(-1);
 
     return (
         <section className="pmc-operations-table">
@@ -494,7 +496,7 @@ export function DataTable<T extends { id?: number | string }>({
                     )}
                 </p>
                 <div
-                    className="pmc-table-pagination"
+                    className="pmc-table-pagination pmc-table-pagination-desktop"
                     aria-label={t('pagination.navigation', 'Pagination')}
                 >
                     {data.links.map((link, index) => (
@@ -515,6 +517,45 @@ export function DataTable<T extends { id?: number | string }>({
                             {cleanPaginationLabel(link.label)}
                         </button>
                     ))}
+                </div>
+                <div
+                    className="pmc-table-pagination-mobile"
+                    aria-label={t('pagination.navigation', 'Pagination')}
+                >
+                    <button
+                        type="button"
+                        disabled={!previousLink?.url}
+                        onClick={() =>
+                            previousLink?.url &&
+                            router.visit(previousLink.url, {
+                                preserveScroll: true,
+                                preserveState: true,
+                            })
+                        }
+                    >
+                        <i className="bi bi-chevron-left" />
+                        <span>{t('pagination.previous', 'Previous')}</span>
+                    </button>
+                    <strong>
+                        {t('pagination.page_of', 'Page :page of :pages', {
+                            page: data.current_page,
+                            pages: data.last_page,
+                        })}
+                    </strong>
+                    <button
+                        type="button"
+                        disabled={!nextLink?.url}
+                        onClick={() =>
+                            nextLink?.url &&
+                            router.visit(nextLink.url, {
+                                preserveScroll: true,
+                                preserveState: true,
+                            })
+                        }
+                    >
+                        <span>{t('pagination.next', 'Next')}</span>
+                        <i className="bi bi-chevron-right" />
+                    </button>
                 </div>
             </div>
         </section>

@@ -342,4 +342,99 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->get(route('leases.contract', $ownLease))
             ->assertOk();
     }
+
+    public function test_generated_contract_statement_and_receipt_are_private_pdf_documents(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio([
+            'contact_email' => 'operations@example.test',
+            'contact_phone' => '+966500000000',
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Portfolio Owner']);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Contract Tenant']);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser, ['national_id' => '1000000000']);
+        $asset = $this->createAsset($portfolio, [
+            'title_en' => 'Riyadh Apartment 12',
+            'title_ar' => 'شقة الرياض 12',
+            'address' => 'Riyadh, Saudi Arabia',
+            'address_ar' => 'الرياض، المملكة العربية السعودية',
+        ]);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, [
+            'terms_json' => [
+                'en' => 'Tenant must follow the approved building rules.',
+                'ar' => 'يلتزم المستأجر بقواعد المبنى المعتمدة.',
+            ],
+        ]);
+        $payment = Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'PDF-RECEIPT-1',
+            'type' => 'rent',
+            'method' => 'bank_transfer',
+            'status' => 'posted',
+            'received_on' => now()->toDateString(),
+            'amount' => 1000,
+            'currency' => 'SAR',
+        ]);
+        app(LeaseFinancialService::class)->allocatePayment($payment);
+
+        $contract = $this->actingAs($owner)->get(route('leases.contract', $lease));
+        $statement = $this->actingAs($owner)->get(route('leases.statement', $lease));
+        $receipt = $this->actingAs($owner)->get(route('payments.receipt', $payment));
+
+        foreach ([$contract, $statement, $receipt] as $response) {
+            $response->assertOk()->assertHeader('content-type', 'application/pdf');
+            $this->assertSame('%PDF-', substr($response->streamedContent(), 0, 5));
+        }
+
+        foreach (['lease_contract', 'tenant_statement', 'receipt'] as $type) {
+            $document = Document::query()->where('type', $type)->firstOrFail();
+
+            $this->assertFalse($document->is_public);
+            $this->assertSame('application/pdf', $document->mime_type);
+            $this->assertStringEndsWith('.pdf', $document->original_name);
+            Storage::disk('local')->assertExists($document->file_path);
+            $this->assertSame('%PDF-', substr(Storage::disk('local')->get($document->file_path), 0, 5));
+        }
+    }
+
+    public function test_receipt_generation_rejects_non_posted_payments(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $payment = Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'PENDING-NO-RECEIPT',
+            'type' => 'rent',
+            'method' => 'cash',
+            'status' => 'pending',
+            'received_on' => now()->toDateString(),
+            'amount' => 1000,
+            'currency' => 'SAR',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('payments.receipt', $payment))
+            ->assertUnprocessable();
+
+        $this->assertDatabaseMissing('documents', [
+            'documentable_type' => $payment->getMorphClass(),
+            'documentable_id' => $payment->id,
+            'type' => 'receipt',
+        ]);
+    }
 }

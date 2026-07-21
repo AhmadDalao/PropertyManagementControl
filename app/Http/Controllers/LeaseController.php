@@ -7,12 +7,11 @@ use App\Models\Document;
 use App\Models\Lease;
 use App\Models\TenantProfile;
 use App\Models\User;
-use App\Services\LeaseFinancialService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Modules\Leases\LeaseLifecycle;
+use App\Support\BilingualPdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -22,7 +21,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class LeaseController extends Controller
 {
-    public function __construct(private readonly LeaseFinancialService $leaseFinancials) {}
+    public function __construct(
+        private readonly LeaseLifecycle $leaseLifecycle,
+        private readonly BilingualPdf $pdf,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -242,6 +244,8 @@ class LeaseController extends Controller
             'discount_amount' => ['nullable', 'numeric', 'min:0'],
             'currency' => ['nullable', 'string', 'size:3'],
             'billing_day' => ['nullable', 'integer', 'between:1,31'],
+            'terms_en' => ['nullable', 'string', 'max:50000'],
+            'terms_ar' => ['nullable', 'string', 'max:50000'],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -258,17 +262,7 @@ class LeaseController extends Controller
             422,
             trans('app.errors.tenant_portfolio_mismatch')
         );
-        abort_if(
-            Lease::query()
-                ->where('leaseable_type', Asset::class)
-                ->where('leaseable_id', $asset->id)
-                ->where('status', 'active')
-                ->exists(),
-            422,
-            trans('app.errors.asset_already_leased')
-        );
-
-        $lease = Lease::query()->create([
+        $lease = $this->leaseLifecycle->create($asset, [
             'portfolio_id' => $portfolioId,
             'tenant_profile_id' => $data['tenant_profile_id'],
             'managed_by_user_id' => $actor->id,
@@ -286,11 +280,12 @@ class LeaseController extends Controller
             'discount_amount' => $data['discount_amount'] ?? 0,
             'currency' => $data['currency'] ?? 'SAR',
             'billing_day' => $data['billing_day'] ?? null,
+            'terms_json' => [
+                'en' => $data['terms_en'] ?? null,
+                'ar' => $data['terms_ar'] ?? null,
+            ],
             'notes' => $data['notes'] ?? null,
         ]);
-
-        $this->leaseFinancials->syncInstallments($lease);
-        $asset->update(['occupancy_status' => 'occupied']);
 
         return to_route('leases.show', $lease)->with('success', trans('app.messages.lease_created', ['code' => $lease->code]));
     }
@@ -304,19 +299,21 @@ class LeaseController extends Controller
         $data = $request->validate([
             'status' => ['required', Rule::in(['draft', 'active', 'expired', 'terminated'])],
             'signed_at' => ['nullable', 'date'],
+            'terms_en' => ['nullable', 'string', 'max:50000'],
+            'terms_ar' => ['nullable', 'string', 'max:50000'],
             'notes' => ['nullable', 'string'],
             'resync_installments' => ['nullable', 'boolean'],
         ]);
 
-        $lease->update([
+        $this->leaseLifecycle->update($lease, [
             'status' => $data['status'],
             'signed_at' => $data['signed_at'] ?? null,
+            'terms_json' => [
+                'en' => $data['terms_en'] ?? null,
+                'ar' => $data['terms_ar'] ?? null,
+            ],
             'notes' => $data['notes'] ?? null,
-        ]);
-
-        if (($data['resync_installments'] ?? false) && $lease->payments()->count() === 0) {
-            $this->leaseFinancials->syncInstallments($lease);
-        }
+        ], (bool) ($data['resync_installments'] ?? false));
 
         return to_route('leases.show', $lease)->with('success', trans('app.messages.lease_updated', ['code' => $lease->code]));
     }
@@ -327,26 +324,7 @@ class LeaseController extends Controller
         $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
         $this->ensurePortfolioAccess($actor, $lease->portfolio_id);
 
-        DB::transaction(function () use ($lease) {
-            $lease->update(['status' => 'terminated']);
-
-            if ($lease->leaseable_type !== Asset::class) {
-                return;
-            }
-
-            $hasOtherActiveLease = Lease::query()
-                ->whereKeyNot($lease->id)
-                ->where('leaseable_type', Asset::class)
-                ->where('leaseable_id', $lease->leaseable_id)
-                ->where('status', 'active')
-                ->exists();
-
-            if (! $hasOtherActiveLease) {
-                Asset::query()
-                    ->whereKey($lease->leaseable_id)
-                    ->update(['occupancy_status' => 'vacant']);
-            }
-        });
+        $this->leaseLifecycle->update($lease, ['status' => 'terminated']);
 
         return to_route('leases.index')->with('success', trans('app.messages.lease_terminated', ['code' => $lease->code]));
     }
@@ -387,9 +365,9 @@ class LeaseController extends Controller
     {
         $actor = $this->actor($request);
         $this->ensureLeaseAccess($actor, $lease);
-        $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'portfolio');
+        $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'portfolio.owner', 'managedBy');
 
-        $pdf = Pdf::loadView('pdf.lease-contract', ['lease' => $lease]);
+        $pdf = $this->pdf->loadView('pdf.lease-contract', ['lease' => $lease])->setPaper('a4');
         $content = $pdf->output();
         $fileName = "lease-contract-{$lease->code}.pdf";
         $path = "generated/leases/{$lease->id}/{$fileName}";
@@ -425,11 +403,36 @@ class LeaseController extends Controller
     {
         $actor = $this->actor($request);
         $this->ensureLeaseAccess($actor, $lease);
-        $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'payments');
+        $lease->loadMissing('tenantProfile.user', 'leaseable', 'installments', 'payments', 'portfolio.owner');
 
-        $pdf = Pdf::loadView('pdf.tenant-statement', ['lease' => $lease]);
+        $pdf = $this->pdf->loadView('pdf.tenant-statement', ['lease' => $lease])->setPaper('a4');
+        $content = $pdf->output();
+        $fileName = "tenant-statement-{$lease->code}.pdf";
+        $path = "generated/leases/{$lease->id}/{$fileName}";
 
-        return response()->streamDownload(fn () => print ($pdf->output()), "tenant-statement-{$lease->code}.pdf", [
+        Storage::disk('local')->put($path, $content);
+
+        Document::query()->updateOrCreate(
+            [
+                'documentable_type' => $lease->getMorphClass(),
+                'documentable_id' => $lease->id,
+                'type' => 'tenant_statement',
+            ],
+            [
+                'portfolio_id' => $lease->portfolio_id,
+                'uploaded_by_user_id' => $actor->id,
+                'title_en' => "Tenant statement {$lease->code}",
+                'title_ar' => "كشف حساب المستأجر {$lease->code}",
+                'disk' => 'local',
+                'file_path' => $path,
+                'original_name' => $fileName,
+                'mime_type' => 'application/pdf',
+                'file_size' => strlen($content),
+                'is_public' => false,
+            ],
+        );
+
+        return response()->streamDownload(fn () => print ($content), $fileName, [
             'Content-Type' => 'application/pdf',
         ]);
     }
@@ -448,12 +451,16 @@ class LeaseController extends Controller
                 'fields' => [
                     ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['draft', 'active', 'expired', 'terminated'])],
                     ['name' => 'signed_at', 'label' => 'Signed at', 'type' => 'date'],
+                    ['name' => 'terms_en', 'label' => 'Approved terms in English', 'type' => 'textarea', 'help' => 'Use only portfolio-approved legal wording.'],
+                    ['name' => 'terms_ar', 'label' => 'Approved terms in Arabic', 'type' => 'textarea', 'help' => 'Use only portfolio-approved legal wording.'],
                     ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
                     ['name' => 'resync_installments', 'label' => 'Regenerate installments', 'type' => 'checkbox', 'help' => 'Only works when no payments exist.'],
                 ],
                 'initialValues' => [
                     'status' => $lease->status,
                     'signed_at' => $lease->signed_at?->toDateString() ?? '',
+                    'terms_en' => data_get($lease->terms_json, 'en', ''),
+                    'terms_ar' => data_get($lease->terms_json, 'ar', ''),
                     'notes' => $lease->notes ?? '',
                     'resync_installments' => false,
                 ],
@@ -497,8 +504,33 @@ class LeaseController extends Controller
             ['name' => 'discount_amount', 'label' => 'Discount', 'type' => 'number', 'min' => 0],
             ['name' => 'currency', 'label' => 'Currency'],
             ['name' => 'billing_day', 'label' => 'Billing day', 'type' => 'number', 'min' => 1, 'max' => 31],
+            ['name' => 'terms_en', 'label' => 'Approved terms in English', 'type' => 'textarea', 'help' => 'Use only portfolio-approved legal wording.'],
+            ['name' => 'terms_ar', 'label' => 'Approved terms in Arabic', 'type' => 'textarea', 'help' => 'Use only portfolio-approved legal wording.'],
             ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
         ];
+
+        $fields = $this->sectionFields($fields, [
+            'Contract scope' => [
+                'description' => 'Select the tenant and rentable asset before setting dates or money.',
+                'fields' => ['portfolio_id', 'tenant_profile_id', 'asset_id', 'status'],
+            ],
+            'Contract period' => [
+                'description' => 'Set the signed period and the installment frequency.',
+                'fields' => ['payment_frequency', 'started_at', 'ends_at', 'signed_at'],
+            ],
+            'Rent schedule' => [
+                'description' => 'These values generate the installment schedule after the lease is saved.',
+                'fields' => ['rent_amount', 'deposit_amount', 'tax_amount', 'discount_amount', 'currency', 'billing_day'],
+            ],
+            'Internal notes' => [
+                'description' => 'Keep operational context here; signed legal terms belong in the contract PDF.',
+                'fields' => ['notes'],
+            ],
+            'Approved legal wording' => [
+                'description' => 'Paste the bilingual clauses approved for this portfolio. The system does not invent legal terms.',
+                'fields' => ['terms_en', 'terms_ar'],
+            ],
+        ]);
 
         return [
             'title' => 'Create lease',
@@ -524,6 +556,8 @@ class LeaseController extends Controller
                 'discount_amount' => 0,
                 'currency' => 'SAR',
                 'billing_day' => 1,
+                'terms_en' => '',
+                'terms_ar' => '',
                 'notes' => '',
             ],
         ];
@@ -538,11 +572,11 @@ class LeaseController extends Controller
 
         $installments = $lease->installments;
         $nextInstallment = $installments
-            ->whereIn('status', ['pending', 'partial'])
+            ->filter(fn ($installment) => $installment->remaining_amount > 0)
             ->sortBy('due_date')
             ->first();
         $overdueCount = $installments
-            ->filter(fn ($installment) => $installment->status !== 'paid' && $installment->due_date?->isPast())
+            ->filter(fn ($installment) => $installment->remaining_amount > 0 && ($installment->due_date?->lessThan(today()) ?? false))
             ->count();
 
         return [
@@ -584,7 +618,9 @@ class LeaseController extends Controller
             'overdue_count' => $overdueCount,
             'next_due_date' => $nextInstallment?->due_date?->toDateString(),
             'next_due_amount' => $nextInstallment ? (float) $nextInstallment->remaining_amount : null,
-            'open_installment_count' => $installments->whereIn('status', ['pending', 'partial'])->count(),
+            'open_installment_count' => $installments
+                ->filter(fn ($installment) => $installment->remaining_amount > 0)
+                ->count(),
             'paid_percent' => $lease->total_due > 0 ? round(min(100, ($lease->total_paid / $lease->total_due) * 100), 1) : 0,
             'installments' => $installments->map(fn ($installment) => [
                 'id' => $installment->id,
@@ -631,7 +667,7 @@ class LeaseController extends Controller
                 ->count(),
             'overdue' => $leases
                 ->filter(fn (Lease $lease) => $lease->installments->contains(
-                    fn ($installment) => $installment->status !== 'paid' && $installment->due_date?->isPast()
+                    fn ($installment) => $installment->remaining_amount > 0 && ($installment->due_date?->lessThan(today()) ?? false)
                 ))
                 ->count(),
             'total_due' => (float) $leases->sum(fn (Lease $lease) => $lease->total_due),

@@ -150,7 +150,7 @@ class LeaseFinancialServiceTest extends TestCase
         $this->assertSame(1000.0, (float) $installments[0]->amount_paid);
         $this->assertSame('paid', $installments[1]->status);
         $this->assertSame(2000.0, (float) $installments[1]->amount_paid);
-        $this->assertSame('partial', $installments[2]->status);
+        $this->assertSame('overdue', $installments[2]->status);
         $this->assertSame(500.0, (float) $installments[2]->amount_paid);
     }
 }

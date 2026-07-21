@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -182,7 +183,7 @@ class UserController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'preferred_locale' => ['required', 'in:en,ar'],
             'status' => ['required', 'string', 'max:50'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:8', PasswordRule::defaults()],
             'role' => ['required', 'string'],
         ]);
 
@@ -228,7 +229,7 @@ class UserController extends Controller
             'phone' => ['nullable', 'string', 'max:30'],
             'preferred_locale' => ['required', 'in:en,ar'],
             'status' => ['required', 'string', 'max:50'],
-            'password' => ['nullable', 'string', 'min:8'],
+            'password' => ['nullable', 'string', 'min:8', PasswordRule::defaults()],
             'role' => ['required', 'string'],
         ]);
 

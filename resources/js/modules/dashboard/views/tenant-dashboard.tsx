@@ -9,7 +9,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { compactCurrency, currency, humanDate } from '@/lib/utils';
 
 import type { DashboardPageProps } from '../types';
 
@@ -82,7 +82,7 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                     },
                     {
                         label: 'Paid',
-                        value: currency(
+                        value: compactCurrency(
                             Number(props.stats.paidAmount ?? 0),
                             props.app.locale,
                             currencyCode,
@@ -98,22 +98,36 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                         tone: 'teal',
                     },
                     {
-                        label: 'Remaining',
-                        value: currency(
-                            Number(props.stats.amountLeft ?? 0),
+                        label: t('dashboard.due_now'),
+                        value: compactCurrency(
+                            Number(props.stats.dueNow ?? 0),
                             props.app.locale,
                             currencyCode,
                         ),
-                        detail: t(
-                            'dashboard.maintenance_requests_count',
-                            undefined,
-                            { count: requests.length },
-                        ),
+                        detail:
+                            Number(props.stats.overdue ?? 0) > 0
+                                ? t('dashboard.overdue_amount', undefined, {
+                                      amount: currency(
+                                          Number(props.stats.overdue ?? 0),
+                                          props.app.locale,
+                                          currencyCode,
+                                      ),
+                                  })
+                                : lease?.next_due_date
+                                  ? t('dashboard.next_due_date', undefined, {
+                                        date: humanDate(
+                                            lease.next_due_date,
+                                            props.app.locale,
+                                        ),
+                                    })
+                                  : t('dashboard.no_amount_due'),
                         icon: 'bi-hourglass-split',
                         tone:
-                            Number(props.stats.amountLeft ?? 0) > 0
-                                ? 'amber'
-                                : 'teal',
+                            Number(props.stats.overdue ?? 0) > 0
+                                ? 'red'
+                                : Number(props.stats.dueNow ?? 0) > 0
+                                  ? 'amber'
+                                  : 'teal',
                     },
                 ]}
             />
@@ -142,6 +156,16 @@ export function TenantDashboard({ props }: { props: DashboardPageProps }) {
                             <strong>
                                 {currency(
                                     Number(lease?.rent_amount ?? 0),
+                                    props.app.locale,
+                                    currencyCode,
+                                )}
+                            </strong>
+                        </div>
+                        <div>
+                            <span>{t('dashboard.contract_balance')}</span>
+                            <strong>
+                                {currency(
+                                    Number(lease?.balance_remaining ?? 0),
                                     props.app.locale,
                                     currencyCode,
                                 )}

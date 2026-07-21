@@ -16,5 +16,6 @@ return [
     'previous' => '&laquo; Previous',
     'next' => 'Next &raquo;',
     'navigation' => 'Pagination',
+    'page_of' => 'Page :page of :pages',
 
 ];

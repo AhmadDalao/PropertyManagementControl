@@ -10,6 +10,20 @@ export function currency(
     }).format(value || 0);
 }
 
+export function compactCurrency(
+    value: number,
+    locale = 'en',
+    currencyCode = 'SAR',
+): string {
+    return new Intl.NumberFormat(localeTag(locale), {
+        style: 'currency',
+        currency: currencyCode,
+        notation: 'compact',
+        compactDisplay: 'short',
+        maximumFractionDigits: 1,
+    }).format(value || 0);
+}
+
 function localeTag(locale: string): string {
     return locale === 'ar' ? 'ar-SA' : 'en';
 }

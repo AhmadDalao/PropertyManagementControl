@@ -11,7 +11,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency } from '@/lib/utils';
+import { compactCurrency, currency } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -108,7 +108,7 @@ export default function PortfoliosIndexPage() {
                     },
                     {
                         label: 'Managed value',
-                        value: currency(
+                        value: compactCurrency(
                             props.portfolioInsights.valuation_total,
                             props.app.locale,
                         ),
@@ -120,7 +120,7 @@ export default function PortfoliosIndexPage() {
                     },
                     {
                         label: 'Posted revenue',
-                        value: currency(
+                        value: compactCurrency(
                             props.portfolioInsights.posted_revenue_total,
                             props.app.locale,
                         ),

@@ -12,6 +12,7 @@ export type LeaseBalance = {
     ends_at?: string | null;
     days_remaining?: number | null;
     balance_remaining: number;
+    arrears_amount?: number;
     currency: string;
 };
 
@@ -75,6 +76,9 @@ export type DashboardPageProps = SharedProps & {
             code: string;
             days_remaining: number;
             balance_remaining: number;
+            due_now: number;
+            overdue: number;
+            next_due_date?: string | null;
             total_paid?: number;
             rent_amount?: number;
             currency?: string;

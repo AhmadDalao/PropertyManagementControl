@@ -11,7 +11,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate, percent } from '@/lib/utils';
+import { compactCurrency, currency, humanDate, percent } from '@/lib/utils';
 import type { SharedProps, TableFilters } from '@/types';
 
 type ArrearsLease = {
@@ -19,7 +19,7 @@ type ArrearsLease = {
     code: string;
     tenant?: string | null;
     asset?: string | null;
-    balance_remaining: number;
+    arrears_amount: number;
     currency: string;
 };
 
@@ -76,10 +76,14 @@ type PageProps = SharedProps & {
         revenue: number;
         expenses: number;
         net: number;
+        scheduledDue: number;
+        scheduledPaid: number;
+        collectionRate: number;
         occupancyRate: number;
         arrears: number;
+        contractBalance: number;
         activeLeases: number;
-        unpaidLeases: number;
+        leasesInArrears: number;
         openRequests: number;
         resolvedRequests: number;
     };
@@ -97,6 +101,27 @@ type PageProps = SharedProps & {
     savedPresets: ReportPreset[];
 };
 
+type ReportTab = 'overview' | 'collections' | 'costs' | 'operations';
+
+const reportTabs: Array<{
+    key: ReportTab;
+    label: `reports.${string}`;
+    icon: string;
+}> = [
+    { key: 'overview', label: 'reports.tab_overview', icon: 'bi-grid' },
+    {
+        key: 'collections',
+        label: 'reports.tab_collections',
+        icon: 'bi-cash-stack',
+    },
+    { key: 'costs', label: 'reports.tab_costs', icon: 'bi-receipt' },
+    {
+        key: 'operations',
+        label: 'reports.tab_operations',
+        icon: 'bi-buildings',
+    },
+];
+
 export default function ReportsIndexPage() {
     const { props } = usePage<PageProps>();
     const [filters, setFilters] = useState({
@@ -109,16 +134,33 @@ export default function ReportsIndexPage() {
     const [presetTitle, setPresetTitle] = useState('');
     const [presetTitleAr, setPresetTitleAr] = useState('');
     const [filtersOpen, setFiltersOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<ReportTab>(() => {
+        if (typeof window === 'undefined') {
+            return 'overview';
+        }
+
+        const requested = new URLSearchParams(window.location.search).get(
+            'tab',
+        );
+
+        return isReportTab(requested) ? requested : 'overview';
+    });
     const { locale, t, text } = useTranslator();
     const query = new URLSearchParams(cleanFilters(filters)).toString();
     const exportHref = query ? `/reports/export?${query}` : '/reports/export';
-    const collectionBase = props.summary.revenue + props.summary.arrears;
-    const collectionRate =
-        collectionBase > 0
-            ? (props.summary.revenue / collectionBase) * 100
-            : props.summary.revenue > 0
-              ? 100
-              : 0;
+    const collectionRate = props.summary.collectionRate;
+
+    const selectTab = (tab: ReportTab) => {
+        setActiveTab(tab);
+
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.replaceState({}, '', url);
+    };
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -256,225 +298,299 @@ export default function ReportsIndexPage() {
                 </div>
             </form>
 
-            <MetricGrid
-                metrics={[
-                    {
-                        label: 'Collected',
-                        value: currency(
-                            props.summary.revenue,
-                            props.app.locale,
-                        ),
-                        detail: t(
-                            'reports.collection_health_value',
-                            undefined,
+            <nav className="pmc-report-tabs" aria-label={t('reports.sections')}>
+                {reportTabs.map((tab) => (
+                    <button
+                        key={tab.key}
+                        type="button"
+                        className={activeTab === tab.key ? 'is-active' : ''}
+                        aria-current={
+                            activeTab === tab.key ? 'page' : undefined
+                        }
+                        onClick={() => selectTab(tab.key)}
+                    >
+                        <i className={`bi ${tab.icon}`} />
+                        {t(tab.label)}
+                    </button>
+                ))}
+            </nav>
+
+            {activeTab === 'overview' ? (
+                <>
+                    <MetricGrid
+                        metrics={[
                             {
-                                value: percent(collectionRate),
+                                label: 'Collected',
+                                value: compactCurrency(
+                                    props.summary.revenue,
+                                    props.app.locale,
+                                ),
+                                detail: t(
+                                    'reports.collection_health_value',
+                                    undefined,
+                                    { value: percent(collectionRate) },
+                                ),
+                                icon: 'bi-cash-stack',
+                                tone: 'ink',
+                                href: '/payments',
                             },
-                        ),
-                        icon: 'bi-cash-stack',
-                        tone: 'ink',
-                        href: '/payments',
-                    },
-                    {
-                        label: 'Expenses',
-                        value: currency(
-                            props.summary.expenses,
-                            props.app.locale,
-                        ),
-                        detail: t('reports.recent_costs', undefined, {
-                            count: props.recentExpenses.length,
-                        }),
-                        icon: 'bi-receipt',
-                        tone: 'amber',
-                        href: '/expenses',
-                    },
-                    {
-                        label: 'Net position',
-                        value: currency(props.summary.net, props.app.locale),
-                        detail: t('reports.occupancy_value', undefined, {
-                            value: percent(props.summary.occupancyRate),
-                        }),
-                        icon: 'bi-graph-up-arrow',
-                        tone: props.summary.net >= 0 ? 'teal' : 'red',
-                    },
-                    {
-                        label: 'Arrears',
-                        value: currency(
-                            props.summary.arrears,
-                            props.app.locale,
-                        ),
-                        detail: t('reports.unpaid_count', undefined, {
-                            count: props.summary.unpaidLeases,
-                        }),
-                        icon: 'bi-exclamation-circle',
-                        tone: props.summary.arrears > 0 ? 'red' : 'blue',
-                        href: '/leases',
-                    },
-                ]}
-            />
-
-            <section className="pmc-report-pulse-grid">
-                <ReportPulse
-                    label="Collection health"
-                    value={percent(collectionRate)}
-                    detail={t('reports.received_amount', undefined, {
-                        amount: currency(props.summary.revenue, locale),
-                    })}
-                    icon="bi-wallet2"
-                    tone={collectionRate >= 80 ? 'good' : 'risk'}
-                />
-                <ReportPulse
-                    label="Occupancy"
-                    value={percent(props.summary.occupancyRate)}
-                    detail={t('reports.active_leases', undefined, {
-                        count: props.summary.activeLeases,
-                    })}
-                    icon="bi-building-check"
-                    tone={props.summary.occupancyRate >= 70 ? 'good' : 'warn'}
-                />
-                <ReportPulse
-                    label="Service backlog"
-                    value={props.summary.openRequests.toLocaleString()}
-                    detail={t('reports.resolved_count', undefined, {
-                        count: props.summary.resolvedRequests,
-                    })}
-                    icon="bi-tools"
-                    tone={props.summary.openRequests > 0 ? 'warn' : 'good'}
-                />
-                <ReportPulse
-                    label="Unpaid leases"
-                    value={props.summary.unpaidLeases.toLocaleString()}
-                    detail="Contracts with a remaining balance"
-                    icon="bi-file-earmark-excel"
-                    tone={props.summary.unpaidLeases > 0 ? 'risk' : 'good'}
-                />
-            </section>
-
-            <div className="pmc-report-breakdown-grid">
-                <WorkspacePanel
-                    eyebrow="Revenue"
-                    title="Monthly collections"
-                    description="Posted payments by month."
-                >
-                    <BreakdownBars
-                        source={props.charts.revenueByMonth}
-                        format={(value) =>
-                            currency(value, props.app.locale, 'SAR')
-                        }
+                            {
+                                label: 'Expenses',
+                                value: compactCurrency(
+                                    props.summary.expenses,
+                                    props.app.locale,
+                                ),
+                                detail: t('reports.recent_costs', undefined, {
+                                    count: props.recentExpenses.length,
+                                }),
+                                icon: 'bi-receipt',
+                                tone: 'amber',
+                                href: '/expenses',
+                            },
+                            {
+                                label: 'Net position',
+                                value: compactCurrency(
+                                    props.summary.net,
+                                    props.app.locale,
+                                ),
+                                detail: t(
+                                    'reports.occupancy_value',
+                                    undefined,
+                                    {
+                                        value: percent(
+                                            props.summary.occupancyRate,
+                                        ),
+                                    },
+                                ),
+                                icon: 'bi-graph-up-arrow',
+                                tone: props.summary.net >= 0 ? 'teal' : 'red',
+                            },
+                            {
+                                label: 'Arrears',
+                                value: compactCurrency(
+                                    props.summary.arrears,
+                                    props.app.locale,
+                                ),
+                                detail: t('reports.arrears_count', undefined, {
+                                    count: props.summary.leasesInArrears,
+                                }),
+                                icon: 'bi-exclamation-circle',
+                                tone:
+                                    props.summary.arrears > 0 ? 'red' : 'blue',
+                                href: '/leases',
+                            },
+                        ]}
                     />
-                </WorkspacePanel>
-                <WorkspacePanel
-                    eyebrow="Costs"
-                    title="Expense categories"
-                    description="Posted expenses by category."
-                >
-                    <BreakdownBars
-                        source={props.charts.expenseByCategory}
-                        format={(value) =>
-                            currency(value, props.app.locale, 'SAR')
-                        }
-                    />
-                </WorkspacePanel>
-                <WorkspacePanel
-                    eyebrow="Portfolio"
-                    title="Asset mix"
-                    description="Property records by type."
-                >
-                    <BreakdownCards source={props.charts.assetMix} />
-                </WorkspacePanel>
-                <WorkspacePanel
-                    eyebrow="Service"
-                    title="Maintenance status"
-                    description="Requests in the selected period."
-                >
-                    <BreakdownCards source={props.charts.maintenanceByStatus} />
-                </WorkspacePanel>
-            </div>
 
-            <div className="pmc-report-record-grid">
-                <ReportRecordSection
-                    title="Arrears"
-                    description="Largest unpaid lease balances."
-                    empty="No unpaid lease balances."
-                    rows={props.arrearsLeases.map((lease) => ({
-                        href: `/leases/${lease.id}`,
-                        title: lease.code,
-                        meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
-                        value: currency(
-                            lease.balance_remaining,
-                            props.app.locale,
-                            lease.currency,
-                        ),
-                        tone: 'danger',
-                    }))}
-                />
-                <ReportRecordSection
-                    title="Top assets"
-                    description="Assets producing the most revenue."
-                    empty="No revenue-producing assets in this range."
-                    rows={props.topAssets.map((asset, index) => ({
-                        href: '/assets',
-                        title:
-                            asset.asset ||
-                            t('reports.asset_number', undefined, {
-                                number: index + 1,
-                            }),
-                        meta: t('reports.lease_count', undefined, {
-                            count: asset.lease_count,
-                        }),
-                        value: currency(
-                            asset.revenue,
-                            props.app.locale,
-                            asset.currency,
-                        ),
-                        tone: 'success',
-                    }))}
-                />
-                <ReportRecordSection
-                    title="Recent payments"
-                    description="Latest posted collections."
-                    empty="No posted payments in this range."
-                    rows={props.recentPayments.map((payment) => ({
-                        href: `/payments/${payment.id}`,
-                        title: payment.reference,
-                        meta: `${payment.tenant ?? text('No tenant')} · ${humanDate(payment.received_on, locale)}`,
-                        value: currency(
-                            payment.amount,
-                            props.app.locale,
-                            payment.currency,
-                        ),
-                        tone: 'success',
-                    }))}
-                />
-                <ReportRecordSection
-                    title="Recent expenses"
-                    description="Latest posted costs."
-                    empty="No posted expenses in this range."
-                    rows={props.recentExpenses.map((expense) => ({
-                        href: `/expenses/${expense.id}`,
-                        title: expense.title,
-                        meta: `${text(humanLabel(expense.category))} · ${expense.asset ?? text('No asset')}`,
-                        value: currency(
-                            expense.amount,
-                            props.app.locale,
-                            expense.currency,
-                        ),
-                        tone: 'warning',
-                    }))}
-                />
-                <ReportRecordSection
-                    title="Maintenance backlog"
-                    description="Open work that needs follow-up."
-                    empty="No open maintenance requests."
-                    rows={props.maintenanceBacklog.map((request) => ({
-                        href: `/maintenance-requests/${request.id}`,
-                        title: request.title,
-                        meta: `${request.asset ?? text('No asset')} · ${text(humanLabel(request.priority))}`,
-                        value: text(humanLabel(request.status)),
-                        status: request.status,
-                    }))}
-                />
-            </div>
+                    <section className="pmc-report-pulse-grid">
+                        <ReportPulse
+                            label="Collection health"
+                            value={percent(collectionRate)}
+                            detail={t('reports.scheduled_paid', undefined, {
+                                paid: currency(
+                                    props.summary.scheduledPaid,
+                                    locale,
+                                ),
+                                due: currency(
+                                    props.summary.scheduledDue,
+                                    locale,
+                                ),
+                            })}
+                            icon="bi-wallet2"
+                            tone={collectionRate >= 80 ? 'good' : 'risk'}
+                        />
+                        <ReportPulse
+                            label="Occupancy"
+                            value={percent(props.summary.occupancyRate)}
+                            detail={t('reports.active_leases', undefined, {
+                                count: props.summary.activeLeases,
+                            })}
+                            icon="bi-building-check"
+                            tone={
+                                props.summary.occupancyRate >= 70
+                                    ? 'good'
+                                    : 'warn'
+                            }
+                        />
+                        <ReportPulse
+                            label="Service backlog"
+                            value={props.summary.openRequests.toLocaleString()}
+                            detail={t('reports.resolved_count', undefined, {
+                                count: props.summary.resolvedRequests,
+                            })}
+                            icon="bi-tools"
+                            tone={
+                                props.summary.openRequests > 0 ? 'warn' : 'good'
+                            }
+                        />
+                        <ReportPulse
+                            label={t('reports.contracts_in_arrears')}
+                            value={props.summary.leasesInArrears.toLocaleString()}
+                            detail={t('reports.contract_balance', undefined, {
+                                amount: currency(
+                                    props.summary.contractBalance,
+                                    locale,
+                                ),
+                            })}
+                            icon="bi-file-earmark-excel"
+                            tone={
+                                props.summary.leasesInArrears > 0
+                                    ? 'risk'
+                                    : 'good'
+                            }
+                        />
+                    </section>
+                </>
+            ) : null}
+
+            {activeTab === 'collections' ? (
+                <>
+                    <div className="pmc-report-breakdown-grid is-single">
+                        <WorkspacePanel
+                            eyebrow="Revenue"
+                            title="Monthly collections"
+                            description="Posted payments by month."
+                        >
+                            <BreakdownBars
+                                source={props.charts.revenueByMonth}
+                                format={(value) =>
+                                    currency(value, props.app.locale, 'SAR')
+                                }
+                            />
+                        </WorkspacePanel>
+                    </div>
+                    <div className="pmc-report-record-grid">
+                        <ReportRecordSection
+                            title={t('reports.contracts_in_arrears')}
+                            description={t('reports.arrears_description')}
+                            empty={t('reports.no_arrears')}
+                            rows={props.arrearsLeases.map((lease) => ({
+                                href: `/leases/${lease.id}`,
+                                title: lease.code,
+                                meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
+                                value: currency(
+                                    lease.arrears_amount,
+                                    props.app.locale,
+                                    lease.currency,
+                                ),
+                                tone: 'danger',
+                            }))}
+                        />
+                        <ReportRecordSection
+                            title="Recent payments"
+                            description="Latest posted collections."
+                            empty="No posted payments in this range."
+                            rows={props.recentPayments.map((payment) => ({
+                                href: `/payments/${payment.id}`,
+                                title: payment.reference,
+                                meta: `${payment.tenant ?? text('No tenant')} · ${humanDate(payment.received_on, locale)}`,
+                                value: currency(
+                                    payment.amount,
+                                    props.app.locale,
+                                    payment.currency,
+                                ),
+                                tone: 'success',
+                            }))}
+                        />
+                        <ReportRecordSection
+                            title="Top assets"
+                            description="Assets producing the most revenue."
+                            empty="No revenue-producing assets in this range."
+                            rows={props.topAssets.map((asset, index) => ({
+                                href: '/assets',
+                                title:
+                                    asset.asset ||
+                                    t('reports.asset_number', undefined, {
+                                        number: index + 1,
+                                    }),
+                                meta: t('reports.lease_count', undefined, {
+                                    count: asset.lease_count,
+                                }),
+                                value: currency(
+                                    asset.revenue,
+                                    props.app.locale,
+                                    asset.currency,
+                                ),
+                                tone: 'success',
+                            }))}
+                        />
+                    </div>
+                </>
+            ) : null}
+
+            {activeTab === 'costs' ? (
+                <>
+                    <div className="pmc-report-breakdown-grid is-single">
+                        <WorkspacePanel
+                            eyebrow="Costs"
+                            title="Expense categories"
+                            description="Posted expenses by category."
+                        >
+                            <BreakdownBars
+                                source={props.charts.expenseByCategory}
+                                format={(value) =>
+                                    currency(value, props.app.locale, 'SAR')
+                                }
+                            />
+                        </WorkspacePanel>
+                    </div>
+                    <div className="pmc-report-record-grid">
+                        <ReportRecordSection
+                            title="Recent expenses"
+                            description="Latest posted costs."
+                            empty="No posted expenses in this range."
+                            rows={props.recentExpenses.map((expense) => ({
+                                href: `/expenses/${expense.id}`,
+                                title: expense.title,
+                                meta: `${text(humanLabel(expense.category))} · ${expense.asset ?? text('No asset')}`,
+                                value: currency(
+                                    expense.amount,
+                                    props.app.locale,
+                                    expense.currency,
+                                ),
+                                tone: 'warning',
+                            }))}
+                        />
+                    </div>
+                </>
+            ) : null}
+
+            {activeTab === 'operations' ? (
+                <>
+                    <div className="pmc-report-breakdown-grid">
+                        <WorkspacePanel
+                            eyebrow="Portfolio"
+                            title="Asset mix"
+                            description="Property records by type."
+                        >
+                            <BreakdownCards source={props.charts.assetMix} />
+                        </WorkspacePanel>
+                        <WorkspacePanel
+                            eyebrow="Service"
+                            title="Maintenance status"
+                            description="Requests in the selected period."
+                        >
+                            <BreakdownCards
+                                source={props.charts.maintenanceByStatus}
+                            />
+                        </WorkspacePanel>
+                    </div>
+                    <div className="pmc-report-record-grid">
+                        <ReportRecordSection
+                            title="Maintenance backlog"
+                            description="Open work that needs follow-up."
+                            empty="No open maintenance requests."
+                            rows={props.maintenanceBacklog.map((request) => ({
+                                href: `/maintenance-requests/${request.id}`,
+                                title: request.title,
+                                meta: `${request.asset ?? text('No asset')} · ${text(humanLabel(request.priority))}`,
+                                value: text(humanLabel(request.status)),
+                                status: request.status,
+                            }))}
+                        />
+                    </div>
+                </>
+            ) : null}
 
             <details className="pmc-report-presets-compact">
                 <summary>
@@ -715,4 +831,8 @@ function cleanFilters(filters: Record<string, string>) {
             ([, value]) => value !== '' && value !== 'all',
         ),
     );
+}
+
+function isReportTab(value: string | null): value is ReportTab {
+    return reportTabs.some((tab) => tab.key === value);
 }

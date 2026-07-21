@@ -79,6 +79,28 @@ class Lease extends Model
         return max(0, $this->total_due - $this->total_paid);
     }
 
+    public function getDueNowAmountAttribute(): float
+    {
+        return $this->outstandingInstallmentAmount(
+            fn (LeaseInstallment $installment): bool => $installment->due_date?->lessThanOrEqualTo(today()) ?? false,
+        );
+    }
+
+    public function getOverdueAmountAttribute(): float
+    {
+        return $this->outstandingInstallmentAmount(
+            fn (LeaseInstallment $installment): bool => $installment->due_date?->lessThan(today()) ?? false,
+        );
+    }
+
+    public function getNextDueInstallmentAttribute(): ?LeaseInstallment
+    {
+        return $this->installments
+            ->filter(fn (LeaseInstallment $installment): bool => $installment->remaining_amount > 0)
+            ->sortBy('due_date')
+            ->first();
+    }
+
     public function getDaysRemainingAttribute(): ?int
     {
         if (! $this->ends_at) {
@@ -86,5 +108,12 @@ class Lease extends Model
         }
 
         return now()->startOfDay()->diffInDays($this->ends_at, false);
+    }
+
+    private function outstandingInstallmentAmount(callable $matches): float
+    {
+        return (float) $this->installments
+            ->filter($matches)
+            ->sum(fn (LeaseInstallment $installment): float => $installment->remaining_amount);
     }
 }

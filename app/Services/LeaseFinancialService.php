@@ -7,6 +7,7 @@ use App\Models\LeaseInstallment;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
 class LeaseFinancialService
 {
@@ -30,7 +31,7 @@ class LeaseFinancialService
                 'period_end' => $start,
                 'due_date' => $start,
                 'amount_due' => $lease->deposit_amount,
-                'status' => 'pending',
+                'status' => $this->installmentStatus($start, $lease->deposit_amount, 0),
             ]);
         }
 
@@ -49,7 +50,11 @@ class LeaseFinancialService
                 'period_end' => $periodEnd,
                 'due_date' => $this->dueDateForPeriod($lease, $cursor),
                 'amount_due' => $rentAmount,
-                'status' => 'pending',
+                'status' => $this->installmentStatus(
+                    $this->dueDateForPeriod($lease, $cursor),
+                    $rentAmount,
+                    0,
+                ),
             ]);
 
             $cursor = $cursor->addMonthsNoOverflow($stepMonths);
@@ -58,76 +63,140 @@ class LeaseFinancialService
 
     public function allocatePayment(Payment $payment): void
     {
-        if ($payment->status !== 'posted') {
-            return;
-        }
+        DB::transaction(function () use ($payment): void {
+            $lockedPayment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
 
-        $payment->loadMissing('lease.installments');
-
-        if (! $payment->lease) {
-            return;
-        }
-
-        $this->reverseAllocations($payment);
-
-        $remaining = (float) $payment->amount;
-        /** @var LeaseInstallment $installment */
-        foreach ($payment->lease->installments()->orderBy('due_date')->get() as $installment) {
-            if ($remaining <= 0) {
-                break;
+            if ($lockedPayment->status !== 'posted' || ! $lockedPayment->lease_id) {
+                return;
             }
 
-            $openAmount = max(0, (float) $installment->amount_due - (float) $installment->amount_paid);
-            if ($openAmount <= 0) {
-                continue;
+            $this->reverseAllocationsLocked($lockedPayment);
+
+            $remainingCents = $this->cents($lockedPayment->amount);
+            $installments = LeaseInstallment::query()
+                ->where('lease_id', $lockedPayment->lease_id)
+                ->orderBy('due_date')
+                ->orderBy('sequence')
+                ->lockForUpdate()
+                ->get();
+
+            /** @var LeaseInstallment $installment */
+            foreach ($installments as $installment) {
+                if ($remainingCents <= 0) {
+                    break;
+                }
+
+                $dueCents = $this->cents($installment->amount_due);
+                $paidCents = $this->cents($installment->amount_paid);
+                $openCents = max(0, $dueCents - $paidCents);
+
+                if ($openCents === 0) {
+                    continue;
+                }
+
+                $allocatedCents = min($remainingCents, $openCents);
+                $paidCents += $allocatedCents;
+
+                PaymentAllocation::query()->create([
+                    'payment_id' => $lockedPayment->id,
+                    'lease_installment_id' => $installment->id,
+                    'allocation_type' => $installment->line_type,
+                    'amount' => $this->decimal($allocatedCents),
+                ]);
+
+                $installment->amount_paid = $this->decimal($paidCents);
+                $installment->status = $this->installmentStatus(
+                    CarbonImmutable::parse($installment->due_date),
+                    $dueCents,
+                    $paidCents,
+                    true,
+                );
+                $installment->paid_at = $installment->status === 'paid' ? now() : null;
+                $installment->save();
+
+                $remainingCents -= $allocatedCents;
             }
-
-            $allocated = min($remaining, $openAmount);
-
-            PaymentAllocation::query()->create([
-                'payment_id' => $payment->id,
-                'lease_installment_id' => $installment->id,
-                'allocation_type' => $installment->line_type,
-                'amount' => $allocated,
-            ]);
-
-            $installment->amount_paid = (float) $installment->amount_paid + $allocated;
-            $installment->status = $installment->amount_paid >= $installment->amount_due ? 'paid' : 'partial';
-            $installment->paid_at = $installment->status === 'paid' ? now() : null;
-            $installment->save();
-
-            $remaining -= $allocated;
-        }
+        });
     }
 
     public function reverseAllocations(Payment $payment): void
     {
-        $payment->loadMissing('allocations.leaseInstallment');
+        DB::transaction(function () use ($payment): void {
+            $lockedPayment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+            $this->reverseAllocationsLocked($lockedPayment);
+        });
+    }
 
-        foreach ($payment->allocations as $allocation) {
-            $installment = $allocation->leaseInstallment;
+    public function voidPayment(Payment $payment): void
+    {
+        DB::transaction(function () use ($payment): void {
+            $lockedPayment = Payment::query()->lockForUpdate()->findOrFail($payment->id);
+            $this->reverseAllocationsLocked($lockedPayment);
+            $lockedPayment->update(['status' => 'void']);
+        });
+    }
+
+    public function refreshInstallmentStatuses(): int
+    {
+        $updated = 0;
+
+        LeaseInstallment::query()
+            ->where('status', '!=', 'paid')
+            ->orderBy('id')
+            ->chunkById(250, function ($installments) use (&$updated): void {
+                /** @var LeaseInstallment $installment */
+                foreach ($installments as $installment) {
+                    $status = $this->installmentStatus(
+                        CarbonImmutable::parse($installment->due_date),
+                        $installment->amount_due,
+                        $installment->amount_paid,
+                    );
+
+                    if ($installment->status === $status) {
+                        continue;
+                    }
+
+                    $installment->update(['status' => $status]);
+                    $updated++;
+                }
+            });
+
+        return $updated;
+    }
+
+    private function reverseAllocationsLocked(Payment $payment): void
+    {
+        $allocations = PaymentAllocation::query()
+            ->where('payment_id', $payment->id)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($allocations as $allocation) {
+            $installment = LeaseInstallment::query()
+                ->lockForUpdate()
+                ->find($allocation->lease_installment_id);
 
             if (! $installment) {
                 continue;
             }
 
-            $installment->amount_paid = max(0, (float) $installment->amount_paid - (float) $allocation->amount);
-            $installment->status = match (true) {
-                $installment->amount_paid <= 0 => 'pending',
-                $installment->amount_paid < $installment->amount_due => 'partial',
-                default => 'paid',
-            };
+            $dueCents = $this->cents($installment->amount_due);
+            $paidCents = max(
+                0,
+                $this->cents($installment->amount_paid) - $this->cents($allocation->amount),
+            );
+            $installment->amount_paid = $this->decimal($paidCents);
+            $installment->status = $this->installmentStatus(
+                CarbonImmutable::parse($installment->due_date),
+                $dueCents,
+                $paidCents,
+                true,
+            );
             $installment->paid_at = $installment->status === 'paid' ? $installment->paid_at : null;
             $installment->save();
         }
 
-        $payment->allocations()->delete();
-    }
-
-    public function voidPayment(Payment $payment): void
-    {
-        $this->reverseAllocations($payment);
-        $payment->update(['status' => 'void']);
+        PaymentAllocation::query()->where('payment_id', $payment->id)->delete();
     }
 
     private function frequencyMonths(string $frequency): int
@@ -181,5 +250,32 @@ class LeaseFinancialService
         }
 
         return sprintf('Rent %s-%s', $periodStart->format('M Y'), $periodEnd->format('M Y'));
+    }
+
+    private function installmentStatus(
+        CarbonImmutable $dueDate,
+        mixed $amountDue,
+        mixed $amountPaid,
+        bool $amountsAreCents = false,
+    ): string {
+        $dueCents = $amountsAreCents ? (int) $amountDue : $this->cents($amountDue);
+        $paidCents = $amountsAreCents ? (int) $amountPaid : $this->cents($amountPaid);
+
+        return match (true) {
+            $paidCents >= $dueCents => 'paid',
+            $dueDate->lessThan(today()) => 'overdue',
+            $paidCents > 0 => 'partial',
+            default => 'pending',
+        };
+    }
+
+    private function cents(mixed $amount): int
+    {
+        return (int) round((float) $amount * 100);
+    }
+
+    private function decimal(int $cents): string
+    {
+        return number_format($cents / 100, 2, '.', '');
     }
 }

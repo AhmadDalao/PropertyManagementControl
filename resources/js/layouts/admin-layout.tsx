@@ -264,7 +264,13 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <LanguageSwitcher />
                         {user ? (
                             <details className="pmc-account-menu">
-                                <summary>
+                                <summary
+                                    aria-label={t(
+                                        'shell.account_menu',
+                                        'Account menu for :name',
+                                        { name: user.name },
+                                    )}
+                                >
                                     <span>
                                         {user.name.slice(0, 1).toUpperCase()}
                                     </span>

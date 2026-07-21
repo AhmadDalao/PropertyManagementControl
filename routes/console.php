@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Modules\Leases\LeaseLifecycle;
 use App\Services\LandingContentSeeder;
 use App\Services\ShowcaseDatasetService;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -155,6 +156,22 @@ Artisan::command('property:seed-showcase-data {--confirm-production : Allow tagg
     return 0;
 })->purpose('Queue a tagged, retryable 40-building showcase dataset.');
 
+Artisan::command('property:sync-operational-statuses', function (LeaseLifecycle $lifecycle) {
+    $result = $lifecycle->synchronize();
+
+    $this->info(sprintf(
+        'Expired %d leases and refreshed %d installment statuses.',
+        $result['expired_leases'],
+        $result['installment_statuses'],
+    ));
+
+    return 0;
+})->purpose('Expire ended leases, release their assets, and refresh overdue installment states.');
+
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()
+    ->withoutOverlapping();
+
+Schedule::command('property:sync-operational-statuses')
+    ->dailyAt('00:05')
     ->withoutOverlapping();

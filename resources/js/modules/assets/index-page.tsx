@@ -12,7 +12,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency } from '@/lib/utils';
+import { compactCurrency, currency } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -179,7 +179,7 @@ export default function AssetsIndexPage() {
                     },
                     {
                         label: 'Portfolio value',
-                        value: currency(
+                        value: compactCurrency(
                             props.insights.total_value,
                             props.app.locale,
                         ),

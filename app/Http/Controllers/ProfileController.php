@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -70,7 +71,7 @@ class ProfileController extends Controller
 
         $data = $request->validate([
             'current_password' => [$user->force_password_reset ? 'nullable' : 'required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:8', 'confirmed', PasswordRule::defaults()],
         ]);
 
         if (! $user->force_password_reset && ! Hash::check($data['current_password'], $user->password)) {

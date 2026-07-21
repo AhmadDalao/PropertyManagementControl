@@ -9,6 +9,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -195,7 +196,7 @@ class TenantController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:30'],
             'preferred_locale' => ['required', 'in:en,ar'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', 'min:8', PasswordRule::defaults()],
             'profile_type' => ['required', 'string'],
             'national_id' => ['nullable', 'string', 'max:255'],
             'company_name' => ['nullable', 'string', 'max:255'],
@@ -374,6 +375,21 @@ class TenantController extends Controller
             ['name' => 'notes', 'label' => 'Notes', 'type' => 'textarea'],
             ['name' => 'status', 'label' => 'Status', 'type' => 'select', 'options' => $this->fieldOptions(['active', 'inactive', 'blocked'])],
         ];
+
+        $fields = $this->sectionFields($fields, [
+            'Portal account' => [
+                'description' => 'Create the login and choose the language and account state.',
+                'fields' => ['portfolio_id', 'name', 'email', 'password', 'phone', 'preferred_locale', 'status'],
+            ],
+            'Tenant identity' => [
+                'description' => 'Record the person or company details used by leases and documents.',
+                'fields' => ['profile_type', 'national_id', 'company_name', 'address'],
+            ],
+            'Emergency and notes' => [
+                'description' => 'Add a reliable emergency contact and private management notes.',
+                'fields' => ['emergency_contact_name', 'emergency_contact_phone', 'notes'],
+            ],
+        ]);
 
         return [
             'title' => $tenant ? 'Edit tenant' : 'Create tenant',

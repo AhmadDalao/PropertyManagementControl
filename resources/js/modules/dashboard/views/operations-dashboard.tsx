@@ -8,7 +8,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { compactCurrency, currency, humanDate } from '@/lib/utils';
 
 import { operationsHealthScore } from '../metrics';
 import type { DashboardPageProps, NextAction } from '../types';
@@ -25,7 +25,9 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
     const healthScore = operationsHealthScore(setupChecklist, props.stats);
     const completedSetup = setupChecklist.filter((item) => item.done).length;
     const occupancy = props.charts?.occupancy ?? {};
-    const occupiedAssets = Number(occupancy.occupied ?? 0);
+    const occupiedAssets =
+        Number(occupancy.occupied ?? 0) +
+        Number(occupancy.partially_occupied ?? 0);
     const occupancyTotal = Object.values(occupancy).reduce(
         (total, value) => total + Number(value),
         0,
@@ -89,7 +91,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                     },
                     {
                         label: 'Portfolio value',
-                        value: currency(
+                        value: compactCurrency(
                             Number(props.stats.totalValue ?? 0),
                             props.app.locale,
                         ),
@@ -102,7 +104,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                     },
                     {
                         label: 'Collected this month',
-                        value: currency(
+                        value: compactCurrency(
                             Number(props.stats.monthlyRevenue ?? 0),
                             props.app.locale,
                         ),
@@ -118,7 +120,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                     },
                     {
                         label: 'Outstanding rent',
-                        value: currency(
+                        value: compactCurrency(
                             Number(props.stats.arrears ?? 0),
                             props.app.locale,
                         ),
@@ -154,7 +156,7 @@ export function OperationsDashboard({ props }: { props: DashboardPageProps }) {
                             title: lease.code,
                             meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
                             value: currency(
-                                lease.balance_remaining,
+                                lease.arrears_amount ?? 0,
                                 props.app.locale,
                                 lease.currency,
                             ),

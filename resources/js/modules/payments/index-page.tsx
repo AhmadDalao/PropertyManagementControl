@@ -12,7 +12,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { compactCurrency, currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -146,7 +146,7 @@ export default function PaymentsIndexPage() {
                 metrics={[
                     {
                         label: 'Posted payments',
-                        value: currency(
+                        value: compactCurrency(
                             props.paymentInsights.posted_amount,
                             props.app.locale,
                         ),
@@ -158,7 +158,7 @@ export default function PaymentsIndexPage() {
                     },
                     {
                         label: 'This month',
-                        value: currency(
+                        value: compactCurrency(
                             props.paymentInsights.received_this_month,
                             props.app.locale,
                         ),
@@ -168,7 +168,7 @@ export default function PaymentsIndexPage() {
                     },
                     {
                         label: 'Pending',
-                        value: currency(
+                        value: compactCurrency(
                             props.paymentInsights.pending_amount,
                             props.app.locale,
                         ),
@@ -183,7 +183,7 @@ export default function PaymentsIndexPage() {
                     },
                     {
                         label: 'Unallocated',
-                        value: currency(
+                        value: compactCurrency(
                             props.paymentInsights.unallocated_amount,
                             props.app.locale,
                         ),

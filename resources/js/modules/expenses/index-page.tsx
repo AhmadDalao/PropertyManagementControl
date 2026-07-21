@@ -12,7 +12,7 @@ import {
 } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { compactCurrency, currency, humanDate } from '@/lib/utils';
 import type {
     PaginatedData,
     SharedProps,
@@ -133,7 +133,7 @@ export default function ExpensesIndexPage() {
                 metrics={[
                     {
                         label: 'Posted expenses',
-                        value: currency(
+                        value: compactCurrency(
                             props.expenseInsights.posted_amount,
                             props.app.locale,
                         ),
@@ -145,7 +145,7 @@ export default function ExpensesIndexPage() {
                     },
                     {
                         label: 'This month',
-                        value: currency(
+                        value: compactCurrency(
                             props.expenseInsights.posted_this_month,
                             props.app.locale,
                         ),
@@ -157,7 +157,7 @@ export default function ExpensesIndexPage() {
                     },
                     {
                         label: 'Maintenance cost',
-                        value: currency(
+                        value: compactCurrency(
                             props.expenseInsights.maintenance_amount,
                             props.app.locale,
                         ),

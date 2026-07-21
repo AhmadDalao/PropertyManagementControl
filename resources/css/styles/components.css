@@ -205,6 +205,10 @@
     scrollbar-width: none;
 }
 
+.pmc-resource-tab-select {
+    display: none;
+}
+
 .pmc-resource-tabs button {
     display: inline-flex;
     min-height: 2.55rem;
@@ -669,7 +673,35 @@
     }
 
     .pmc-resource-tabs {
-        margin-inline: -0.25rem;
+        display: none;
+    }
+
+    .pmc-resource-tab-select {
+        position: sticky;
+        z-index: 20;
+        top: calc(var(--pmc-topbar-height) + 0.5rem);
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+        padding: 0.4rem 0.55rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.96);
+    }
+
+    .pmc-resource-tab-select > i {
+        flex: 0 0 auto;
+        color: var(--pmc-muted);
+    }
+
+    .pmc-resource-tab-select .form-select {
+        min-height: 2.65rem;
+        border: 0;
+        background-color: transparent;
+        font-size: 0.78rem;
+        font-weight: 850;
+        box-shadow: none;
     }
 
     .pmc-resource-decision-grid,

@@ -558,6 +558,11 @@ class AssetController extends Controller
             ->where('rentable', true)
             ->where('occupancy_status', 'vacant')
             ->count();
+        $occupiedRentableAssets = (clone $query)
+            ->where('rentable', true)
+            ->whereIn('occupancy_status', ['occupied', 'partially_occupied'])
+            ->count();
+        $assignmentScope = (clone $query)->whereNull('parent_id');
 
         return [
             'total_assets' => $totalAssets,
@@ -570,16 +575,16 @@ class AssetController extends Controller
             'floors' => (clone $query)->where('asset_type', 'floor')->count(),
             'units' => (clone $query)->where('asset_type', 'unit')->count(),
             'spaces' => (clone $query)->where('asset_type', 'space')->count(),
-            'missing_owner' => (clone $query)->whereDoesntHave(
+            'missing_owner' => (clone $assignmentScope)->whereDoesntHave(
                 'stakeholders',
                 fn ($stakeholderQuery) => $stakeholderQuery->where('relationship_type', 'owner')->where('is_primary', true)
             )->count(),
-            'missing_manager' => (clone $query)->whereDoesntHave(
+            'missing_manager' => (clone $assignmentScope)->whereDoesntHave(
                 'stakeholders',
                 fn ($stakeholderQuery) => $stakeholderQuery->where('relationship_type', 'manager')->where('is_primary', true)
             )->count(),
             'rentable_occupancy_rate' => $rentableAssets > 0
-                ? round((($rentableAssets - $vacantRentableAssets) / $rentableAssets) * 100, 1)
+                ? round(($occupiedRentableAssets / $rentableAssets) * 100, 1)
                 : 0,
         ];
     }
@@ -679,6 +684,31 @@ class AssetController extends Controller
             ['name' => 'description_ar', 'label' => 'Arabic description', 'type' => 'textarea'],
             ['name' => 'rentable', 'label' => 'Rentable', 'type' => 'checkbox', 'help' => 'Only rentable assets can be leased.'],
         ];
+
+        $fieldSections = [
+            'Property structure' => [
+                'description' => 'Choose where the record sits in the property tree and give it clear bilingual identity.',
+                'fields' => ['portfolio_id', 'parent_id', 'asset_type', 'usage_type', 'title_en', 'title_ar', 'code', 'status', 'occupancy_status'],
+            ],
+            'Space and valuation' => [
+                'description' => 'Record the physical label, size, and current operational valuation.',
+                'fields' => ['valuation_amount', 'currency', 'area', 'level_label', 'unit_label'],
+            ],
+            'Map and address' => [
+                'description' => 'Add the bilingual location details used by the property map and directory.',
+                'fields' => ['map_zone_en', 'map_zone_ar', 'land_number', 'latitude', 'longitude', 'address', 'address_ar'],
+            ],
+            'Ownership and management' => [
+                'description' => 'Assign the people responsible for this asset.',
+                'fields' => ['primary_owner_user_id', 'primary_manager_user_id'],
+            ],
+            'Descriptions and leasing' => [
+                'description' => 'Finish the public descriptions and decide whether contracts can use this record.',
+                'fields' => ['description_en', 'description_ar', 'rentable'],
+            ],
+        ];
+
+        $fields = $this->sectionFields($fields, $fieldSections);
 
         return [
             'title' => $asset

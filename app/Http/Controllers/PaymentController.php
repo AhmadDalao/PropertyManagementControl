@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Document;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Services\LeaseFinancialService;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\BilingualPdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,7 +22,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PaymentController extends Controller
 {
-    public function __construct(private readonly LeaseFinancialService $leaseFinancials) {}
+    public function __construct(
+        private readonly LeaseFinancialService $leaseFinancials,
+        private readonly BilingualPdf $pdf,
+    ) {}
 
     public function index(Request $request): Response
     {
@@ -238,24 +244,29 @@ class PaymentController extends Controller
             trans('app.errors.payment_tenant_mismatch')
         );
 
-        $payment = Payment::query()->create([
-            'portfolio_id' => $portfolioId,
-            'lease_id' => $lease->id,
-            'tenant_profile_id' => $tenantProfileId,
-            'recorded_by_user_id' => $actor->id,
-            'reference' => $data['reference'] ?? null,
-            'type' => $data['type'],
-            'method' => $data['method'],
-            'status' => $data['status'],
-            'received_on' => $data['received_on'],
-            'amount' => $data['amount'],
-            'currency' => $data['currency'] ?? $lease->currency,
-            'notes' => $data['notes'] ?? null,
-        ]);
+        $payment = DB::transaction(function () use ($actor, $data, $lease, $portfolioId, $tenantProfileId): Payment {
+            $lockedLease = Lease::query()->lockForUpdate()->findOrFail($lease->id);
+            $payment = Payment::query()->create([
+                'portfolio_id' => $portfolioId,
+                'lease_id' => $lockedLease->id,
+                'tenant_profile_id' => $tenantProfileId,
+                'recorded_by_user_id' => $actor->id,
+                'reference' => $data['reference'] ?? 'PAY-'.Str::upper(Str::random(10)),
+                'type' => $data['type'],
+                'method' => $data['method'],
+                'status' => $data['status'],
+                'received_on' => $data['received_on'],
+                'amount' => $data['amount'],
+                'currency' => $data['currency'] ?? $lockedLease->currency,
+                'notes' => $data['notes'] ?? null,
+            ]);
 
-        if ($payment->status === 'posted') {
-            $this->leaseFinancials->allocatePayment($payment);
-        }
+            if ($payment->status === 'posted') {
+                $this->leaseFinancials->allocatePayment($payment);
+            }
+
+            return $payment;
+        });
 
         return to_route('payments.show', $payment)->with('success', trans('app.messages.payment_created'));
     }
@@ -314,14 +325,45 @@ class PaymentController extends Controller
     {
         $actor = $this->actor($request);
         $this->ensurePaymentReceiptAccess($actor, $payment);
-        $payment->loadMissing('lease', 'tenantProfile.user', 'recordedBy', 'allocations.leaseInstallment');
+        abort_if(
+            $payment->status !== 'posted',
+            422,
+            trans('app.errors.receipt_requires_posted_payment'),
+        );
+        $payment->loadMissing('lease.portfolio.owner', 'lease.leaseable', 'tenantProfile.user', 'recordedBy', 'allocations.leaseInstallment');
 
-        $pdf = Pdf::loadView('pdf.receipt', ['payment' => $payment]);
+        $pdf = $this->pdf->loadView('pdf.receipt', ['payment' => $payment])->setPaper('a4');
         $reference = $payment->reference ?: (string) $payment->id;
+        $content = $pdf->output();
+        $fileName = "receipt-{$reference}.pdf";
+        $path = "generated/payments/{$payment->id}/{$fileName}";
+
+        Storage::disk('local')->put($path, $content);
+
+        Document::query()->updateOrCreate(
+            [
+                'documentable_type' => $payment->getMorphClass(),
+                'documentable_id' => $payment->id,
+                'type' => 'receipt',
+            ],
+            [
+                'portfolio_id' => $payment->portfolio_id,
+                'uploaded_by_user_id' => $actor->id,
+                'title_en' => "Payment receipt {$reference}",
+                'title_ar' => "إيصال الدفعة {$reference}",
+                'disk' => 'local',
+                'file_path' => $path,
+                'original_name' => $fileName,
+                'mime_type' => 'application/pdf',
+                'file_size' => strlen($content),
+                'is_public' => false,
+            ],
+        );
 
         return response()->streamDownload(
-            fn () => print ($pdf->output()),
-            "receipt-{$reference}.pdf"
+            fn () => print ($content),
+            $fileName,
+            ['Content-Type' => 'application/pdf'],
         );
     }
 

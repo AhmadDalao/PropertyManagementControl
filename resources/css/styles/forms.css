@@ -49,6 +49,40 @@
     gap: 0.9rem;
 }
 
+.pmc-resource-form-section {
+    display: grid;
+    min-width: 0;
+    grid-column: 1 / -1;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-resource-form-section > legend {
+    width: auto;
+    margin: 0;
+    padding: 0;
+    color: #111;
+    font-size: 0.85rem;
+    font-weight: 900;
+}
+
+.pmc-resource-form-section > p {
+    margin: 0 0 0.7rem;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+}
+
+.pmc-resource-form-section > div {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
 .pmc-resource-field {
     display: grid;
     min-width: 0;
@@ -184,6 +218,12 @@
     }
 
     .pmc-resource-form {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-resource-form-section,
+    .pmc-resource-form-section > div {
+        grid-column: 1;
         grid-template-columns: 1fr;
     }
 

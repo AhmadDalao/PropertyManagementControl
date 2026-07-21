@@ -25,6 +25,8 @@ export type SharedProps = {
     flash: {
         success?: string | null;
         error?: string | null;
+        warning?: string | null;
+        status?: string | null;
     };
     publicNavigation: {
         header: NavigationItemRecord[];

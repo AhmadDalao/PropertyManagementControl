@@ -1,11 +1,13 @@
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslator } from '@/lib/i18n';
+import type { SharedProps } from '@/types';
 
 export default function LoginPage() {
     const { t } = useTranslator();
+    const { status } = usePage<SharedProps>().props.flash;
     const form = useForm({
         email: '',
         password: '',
@@ -66,6 +68,15 @@ export default function LoginPage() {
                                 <p className="text-secondary mb-4">
                                     {t('login.form_description')}
                                 </p>
+
+                                {status ? (
+                                    <div
+                                        className="alert alert-success"
+                                        role="status"
+                                    >
+                                        {status}
+                                    </div>
+                                ) : null}
 
                                 <form
                                     onSubmit={submit}
@@ -149,6 +160,12 @@ export default function LoginPage() {
                                                 {form.errors.password}
                                             </div>
                                         ) : null}
+                                    </div>
+
+                                    <div className="text-end">
+                                        <Link href="/forgot-password">
+                                            {t('login.forgot_password')}
+                                        </Link>
                                     </div>
 
                                     <div className="form-check">

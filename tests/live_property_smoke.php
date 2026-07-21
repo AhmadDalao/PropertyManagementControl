@@ -126,6 +126,7 @@ function smoke_component(string $html): string
 $publicChecks = [
     '/' => 'public/home',
     '/login' => 'auth/login',
+    '/forgot-password' => 'auth/forgot-password',
     '/?locale=ar' => 'public/home',
 ];
 
@@ -145,11 +146,34 @@ foreach ($publicChecks as $path => $expectedComponent) {
     smoke_note("{$path} {$component}");
 }
 
+$health = smoke_request($baseUrl, $cookieFile, 'GET', '/up');
+
+if ($health['status'] !== 200) {
+    smoke_fail("/up returned {$health['status']}.");
+}
+
+smoke_note('/up healthy');
+
 $loginPage = smoke_request($baseUrl, $cookieFile, 'GET', '/login');
 
 if ($loginPage['status'] !== 200) {
     smoke_fail('Login page did not load.');
 }
+
+$securityHeaders = strtolower((string) $loginPage['headers']);
+
+foreach ([
+    'x-content-type-options: nosniff',
+    'x-frame-options: sameorigin',
+    'referrer-policy: strict-origin-when-cross-origin',
+    'permissions-policy:',
+] as $expectedHeader) {
+    if (! str_contains($securityHeaders, $expectedHeader)) {
+        smoke_fail("Missing security header: {$expectedHeader}");
+    }
+}
+
+smoke_note('Security headers present');
 
 $token = smoke_xsrf_token($cookieFile);
 $login = smoke_request($baseUrl, $cookieFile, 'POST', '/login', [

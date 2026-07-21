@@ -229,7 +229,7 @@
     border-block: 1px solid #ece8df;
     background: #faf8f3;
     color: #5f5a52;
-    font-size: 0.61rem;
+    font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -241,7 +241,7 @@
     padding: 0.72rem 0.8rem;
     border-bottom: 1px solid #eeeae3;
     color: #2f2d29;
-    font-size: 0.73rem;
+    font-size: 0.79rem;
     vertical-align: middle;
 }
 
@@ -307,6 +307,10 @@
     scrollbar-width: none;
 }
 
+.pmc-table-pagination-mobile {
+    display: none;
+}
+
 .pmc-page-button {
     display: grid;
     min-width: 2.15rem;
@@ -362,7 +366,9 @@
 
     .pmc-filter-chips,
     .pmc-active-filters {
+        flex-wrap: wrap;
         padding-inline: 0;
+        overflow: visible;
     }
 
     .pmc-table-toolbar {
@@ -545,6 +551,44 @@
         min-height: 2.35rem;
         border-radius: 999px;
     }
+
+    .pmc-table-pagination-desktop {
+        display: none;
+    }
+
+    .pmc-table-pagination-mobile {
+        display: grid;
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pmc-table-pagination-mobile button {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.7rem;
+        background: #fff;
+        color: #111;
+        font-size: 0.7rem;
+        font-weight: 850;
+    }
+
+    .pmc-table-pagination-mobile button:disabled {
+        opacity: 0.4;
+    }
+
+    .pmc-table-pagination-mobile strong {
+        color: var(--pmc-muted);
+        font-size: 0.68rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
 }
 
 @media (max-width: 575.98px) {
@@ -574,4 +618,9 @@
         align-items: stretch;
         flex-direction: column;
     }
+}
+
+[dir='rtl'] .pmc-table-pagination-mobile .bi-chevron-left,
+[dir='rtl'] .pmc-table-pagination-mobile .bi-chevron-right {
+    transform: scaleX(-1);
 }

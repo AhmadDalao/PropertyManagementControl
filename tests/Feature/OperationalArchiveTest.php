@@ -105,7 +105,7 @@ class OperationalArchiveTest extends TestCase
         $this->assertSame('void', $payment->fresh()->status);
         $this->assertSame(0, $payment->allocations()->count());
         $this->assertSame(0.0, (float) $installment->fresh()->amount_paid);
-        $this->assertSame('pending', $installment->fresh()->status);
+        $this->assertSame('overdue', $installment->fresh()->status);
     }
 
     public function test_tenant_can_only_cancel_their_own_open_maintenance_request(): void

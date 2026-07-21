@@ -58,6 +58,28 @@ trait BuildsResourcePages
     }
 
     /**
+     * @param  array<int, array<string, mixed>>  $fields
+     * @param  array<string, array{description:string,fields:array<int, string>}>  $sections
+     * @return array<int, array<string, mixed>>
+     */
+    protected function sectionFields(array $fields, array $sections): array
+    {
+        return collect($fields)->map(function (array $field) use ($sections): array {
+            foreach ($sections as $section => $definition) {
+                if (in_array($field['name'], $definition['fields'], true)) {
+                    return [
+                        ...$field,
+                        'section' => $section,
+                        'sectionDescription' => $definition['description'],
+                    ];
+                }
+            }
+
+            return $field;
+        })->all();
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     protected function documentStrip(Collection|array $documents): array

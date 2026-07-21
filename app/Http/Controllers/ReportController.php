@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
+use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\ReportPreset;
 use App\Modules\Wording\UiTranslationCatalog;
 use App\Services\XlsxWorkbook;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -136,10 +138,26 @@ class ReportController extends Controller
         $revenue = (float) $payments->sum('amount');
         $expensesTotal = (float) $expenses->sum('amount');
         $rentableAssets = $assets->where('rentable', true);
-        $occupiedAssets = $rentableAssets->where('occupancy_status', 'occupied');
+        $occupiedAssets = $rentableAssets->whereIn('occupancy_status', ['occupied', 'partially_occupied']);
+        $periodStart = CarbonImmutable::parse((string) $filters['date_from'])->startOfDay();
+        $periodEnd = CarbonImmutable::parse((string) $filters['date_to'])->endOfDay();
+        $scheduledInstallments = $leases
+            ->whereIn('status', ['active', 'expired'])
+            ->flatMap(fn (Lease $lease) => $lease->installments)
+            ->filter(fn (LeaseInstallment $installment) => $installment->due_date?->betweenIncluded($periodStart, $periodEnd) ?? false);
+        $scheduledDue = (float) $scheduledInstallments->sum('amount_due');
+        $scheduledPaid = (float) $scheduledInstallments->sum(
+            fn (LeaseInstallment $installment) => min((float) $installment->amount_due, (float) $installment->amount_paid),
+        );
+        $arrearsCutoff = $this->arrearsCutoff($filters);
         $arrearsLeases = $leases
-            ->filter(fn (Lease $lease) => $lease->balance_remaining > 0)
-            ->sortByDesc(fn (Lease $lease) => $lease->balance_remaining)
+            ->whereIn('status', ['active', 'expired'])
+            ->map(fn (Lease $lease) => [
+                'lease' => $lease,
+                'arrears_amount' => $this->arrearsAmount($lease, $arrearsCutoff),
+            ])
+            ->filter(fn (array $item) => $item['arrears_amount'] > 0)
+            ->sortByDesc('arrears_amount')
             ->values();
         $maintenanceBacklog = $maintenanceRequests
             ->whereIn('status', ['open', 'in_progress'])
@@ -152,12 +170,20 @@ class ReportController extends Controller
                 'revenue' => $revenue,
                 'expenses' => $expensesTotal,
                 'net' => $revenue - $expensesTotal,
+                'scheduledDue' => $scheduledDue,
+                'scheduledPaid' => $scheduledPaid,
+                'collectionRate' => $scheduledDue > 0
+                    ? round(min(100, ($scheduledPaid / $scheduledDue) * 100), 2)
+                    : 0,
                 'occupancyRate' => $rentableAssets->count() > 0
                     ? round(($occupiedAssets->count() / $rentableAssets->count()) * 100, 2)
                     : 0,
-                'arrears' => (float) $arrearsLeases->sum(fn (Lease $lease) => $lease->balance_remaining),
+                'arrears' => (float) $arrearsLeases->sum('arrears_amount'),
+                'contractBalance' => (float) $leases
+                    ->whereIn('status', ['active', 'expired'])
+                    ->sum(fn (Lease $lease) => $lease->balance_remaining),
                 'activeLeases' => $leases->where('status', 'active')->count(),
-                'unpaidLeases' => $arrearsLeases->count(),
+                'leasesInArrears' => $arrearsLeases->count(),
                 'openRequests' => $maintenanceBacklog->count(),
                 'resolvedRequests' => $maintenanceRequests->where('status', 'resolved')->count(),
             ],
@@ -181,14 +207,14 @@ class ReportController extends Controller
             ],
             'arrearsLeases' => $arrearsLeases
                 ->take(10)
-                ->map(fn (Lease $lease) => [
-                    'id' => $lease->id,
-                    'code' => $lease->code,
-                    'tenant' => $lease->tenantProfile?->user?->name,
-                    'asset' => $this->localized($lease->leaseable?->title_en, $lease->leaseable?->title_ar),
-                    'ends_at' => $lease->ends_at?->toDateString(),
-                    'balance_remaining' => $lease->balance_remaining,
-                    'currency' => $lease->currency,
+                ->map(fn (array $item) => [
+                    'id' => $item['lease']->id,
+                    'code' => $item['lease']->code,
+                    'tenant' => $item['lease']->tenantProfile?->user?->name,
+                    'asset' => $this->localized($item['lease']->leaseable?->title_en, $item['lease']->leaseable?->title_ar),
+                    'ends_at' => $item['lease']->ends_at?->toDateString(),
+                    'arrears_amount' => $item['arrears_amount'],
+                    'currency' => $item['lease']->currency,
                 ])
                 ->all(),
             'topAssets' => $this->topAssetsByRevenue($payments),
@@ -283,7 +309,7 @@ class ReportController extends Controller
                 $lease['code'],
                 $lease['tenant'],
                 $lease['asset'],
-                $lease['balance_remaining'],
+                $lease['arrears_amount'],
                 $lease['currency'],
             ];
         }
@@ -302,6 +328,38 @@ class ReportController extends Controller
         }
 
         return $rows;
+    }
+
+    /**
+     * Arrears are installments unpaid after their due date. Future contract
+     * balances stay visible elsewhere and never inflate this number.
+     */
+    private function arrearsAmount(Lease $lease, CarbonImmutable $cutoff): float
+    {
+        return (float) $lease->installments
+            ->filter(fn (LeaseInstallment $installment) => $installment->due_date?->lessThan($cutoff) ?? false)
+            ->sum(fn (LeaseInstallment $installment) => $installment->remaining_amount);
+    }
+
+    /**
+     * A historical report includes installments due through its end date;
+     * current and future reports never classify today's rent as overdue.
+     *
+     * @param  array<string, mixed>  $filters
+     */
+    private function arrearsCutoff(array $filters): CarbonImmutable
+    {
+        $today = CarbonImmutable::today();
+
+        if (! empty($filters['date_to'])) {
+            $reportEnd = CarbonImmutable::parse((string) $filters['date_to'])->startOfDay();
+
+            if ($reportEnd->lessThan($today)) {
+                return $reportEnd->addDay();
+            }
+        }
+
+        return $today;
     }
 
     /**
