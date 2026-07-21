@@ -264,6 +264,15 @@
     gap: 1rem;
 }
 
+.pmc-resource-spotlight-image {
+    width: 100%;
+    max-height: 30rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 0.9rem;
+    background: #fff;
+    object-fit: contain;
+}
+
 .pmc-resource-spotlight h2 {
     margin: 0;
     font-size: clamp(1.35rem, 3vw, 2rem);

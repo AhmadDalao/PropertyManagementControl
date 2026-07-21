@@ -263,7 +263,7 @@
 }
 
 .pmc-section-language > header span {
-    color: #7a7a82;
+    color: var(--pmc-muted);
     font-size: 0.7rem;
 }
 
@@ -306,7 +306,7 @@
 }
 
 .pmc-section-collection > header span {
-    color: #7d7d84;
+    color: var(--pmc-muted);
     font-size: 0.68rem;
 }
 

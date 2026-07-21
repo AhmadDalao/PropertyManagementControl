@@ -36,6 +36,8 @@ export function sectionContentSchema(
                     },
                     { key: 'ctaPrimary', label: 'Primary action' },
                     { key: 'ctaSecondary', label: 'Secondary action' },
+                    { key: 'image', label: 'Image', type: 'media' },
+                    { key: 'imageAlt', label: 'Image description' },
                 ],
                 collections: [
                     labelValueCollection('stats', 'Stat chips', 'Stat'),

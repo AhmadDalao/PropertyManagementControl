@@ -10,6 +10,7 @@ use App\Modules\Cms\Actions\ManageCmsPages;
 use App\Modules\Cms\Actions\ManageCmsSections;
 use App\Modules\Cms\Presenters\CmsBuilderPresenter;
 use App\Modules\Cms\Presenters\CmsPageFormPresenter;
+use App\Modules\Cms\Presenters\CmsSectionFormPresenter;
 use App\Modules\Cms\Queries\CmsWorkspaceQuery;
 use App\Modules\Cms\Queries\PublicCmsPageQuery;
 use App\Modules\Cms\Requests\AttachCmsSectionRequest;
@@ -18,8 +19,6 @@ use App\Modules\Cms\Requests\SaveCmsSectionRequest;
 use App\Modules\Cms\Requests\StoreCmsPageRequest;
 use App\Modules\Cms\Requests\UpdateCmsPageRequest;
 use App\Modules\Cms\Requests\UpdateCmsPageSectionRequest;
-use App\Modules\Cms\Support\CmsAccess;
-use App\Modules\Cms\Support\CmsOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,11 +30,11 @@ class CmsPageController extends Controller
         private readonly PublicCmsPageQuery $publicPages,
         private readonly CmsWorkspaceQuery $workspace,
         private readonly CmsPageFormPresenter $pageForms,
+        private readonly CmsSectionFormPresenter $sectionForms,
         private readonly CmsBuilderPresenter $builder,
         private readonly ManageCmsPages $pages,
         private readonly ManageCmsSections $sections,
         private readonly ComposeCmsPage $composition,
-        private readonly CmsAccess $access,
     ) {}
 
     public function home(): Response
@@ -80,22 +79,18 @@ class CmsPageController extends Controller
 
     public function createSection(Request $request): Response
     {
-        $this->access->ensureAdmin($this->actor($request));
-
-        return Inertia::render('admin/cms/section-form', [
-            'section' => null,
-            'sectionTypes' => CmsOptions::sectionTypes(),
-        ]);
+        return Inertia::render(
+            'admin/cms/section-form',
+            $this->sectionForms->present($this->actor($request)),
+        );
     }
 
     public function editSection(Request $request, CmsSection $cmsSection): Response
     {
-        $this->access->ensureAdmin($this->actor($request));
-
-        return Inertia::render('admin/cms/section-form', [
-            'section' => $cmsSection,
-            'sectionTypes' => CmsOptions::sectionTypes(),
-        ]);
+        return Inertia::render(
+            'admin/cms/section-form',
+            $this->sectionForms->present($this->actor($request), $cmsSection),
+        );
     }
 
     public function store(StoreCmsPageRequest $request): RedirectResponse

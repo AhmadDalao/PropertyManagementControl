@@ -405,6 +405,56 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('media workspace, upload form, detail, and CMS picker stay responsive and localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/media-files?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'مكتبة الوسائط' }),
+        ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText('media.');
+        const mediaCards = page.locator('.pmc-mobile-record-card');
+        expect(await mediaCards.count()).toBeGreaterThan(0);
+        await expect(mediaCards.first()).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const mediaDetailHref = await mediaCards
+            .first()
+            .locator('a[href^="/media-files/"]')
+            .first()
+            .getAttribute('href');
+        expect(mediaDetailHref).toBeTruthy();
+        await page.goto(`${mediaDetailHref}?locale=ar`);
+        await expect(page.getByText('سجل الوسائط')).toBeVisible();
+        await expect(page.locator('body')).not.toContainText('media.');
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/media-files/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'رفع صورة' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        await expect(page.getByLabel(/^المجموعة/)).toBeVisible();
+        await expect(page.getByLabel(/^ملف الصورة/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/cms/sections/create?locale=ar');
+        const picker = page.locator('details.pmc-media-picker').first();
+        await expect(picker).toHaveAttribute('dir', 'rtl');
+        await picker.locator('summary').click();
+        await expect(
+            picker.getByText('اختر صورة عامة من مكتبة الوسائط العامة.'),
+        ).toBeVisible();
+        await expect(picker.locator('.pmc-media-picker-panel')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+        await page.keyboard.press('Escape');
+        await expect(picker.locator('.pmc-media-picker-panel')).toBeHidden();
+        await expect(picker.locator('summary')).toBeFocused();
+    });
+
     test('language buttons persist Arabic and English after reload', async ({
         page,
     }) => {
@@ -528,7 +578,10 @@ test.describe('authenticated administration', () => {
                 '/assets',
                 '/property-map',
                 '/reports',
+                '/media-files',
+                '/media-files/create',
                 '/cms',
+                '/cms/sections/create',
                 '/wording',
                 '/system/showcase-data',
             ]) {

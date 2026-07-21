@@ -192,6 +192,37 @@
     transform: rotate(1.2deg);
 }
 
+.pmc-hero-visual {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-managed-hero-image,
+.pmc-managed-section-image {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--pmc-line);
+    object-fit: cover;
+}
+
+.pmc-managed-hero-image {
+    max-height: 28rem;
+    border-radius: 1.4rem;
+    box-shadow: 0 28px 80px rgba(17, 17, 15, 0.16);
+}
+
+.pmc-hero-visual.has-image .pmc-dashboard-preview {
+    position: relative;
+    margin: -4.5rem 1rem 0;
+    transform: none;
+}
+
+.pmc-managed-section-image {
+    max-height: 34rem;
+    margin-bottom: 1.5rem;
+    border-radius: 1.15rem;
+}
+
 .pmc-preview-topbar {
     display: flex;
     min-height: 2.5rem;
@@ -604,6 +635,10 @@
 
     .pmc-dashboard-preview {
         transform: none;
+    }
+
+    .pmc-hero-visual.has-image .pmc-dashboard-preview {
+        margin: -2rem 0.65rem 0;
     }
 }
 

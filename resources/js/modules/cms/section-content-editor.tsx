@@ -1,4 +1,5 @@
 import { useTranslator } from '@/lib/i18n';
+import type { MediaPickerOption } from '@/modules/media/types';
 
 import { sectionContentSchema } from './section-content-schema-definition';
 import { defaultSectionContent } from './section-content-templates';
@@ -9,12 +10,14 @@ export function SectionContentEditor({
     sectionType,
     contentEnJson,
     contentArJson,
+    mediaOptions,
     onContentEnChange,
     onContentArChange,
 }: {
     sectionType: string;
     contentEnJson: string;
     contentArJson: string;
+    mediaOptions: MediaPickerOption[];
     onContentEnChange: (value: string) => void;
     onContentArChange: (value: string) => void;
 }) {
@@ -59,6 +62,7 @@ export function SectionContentEditor({
                     fields={schema.fields}
                     collections={schema.collections}
                     contentJson={contentEnJson}
+                    mediaOptions={mediaOptions}
                     onChange={onContentEnChange}
                 />
                 <SectionLanguageEditor
@@ -66,6 +70,7 @@ export function SectionContentEditor({
                     fields={schema.fields}
                     collections={schema.collections}
                     contentJson={contentArJson}
+                    mediaOptions={mediaOptions}
                     onChange={onContentArChange}
                 />
             </div>

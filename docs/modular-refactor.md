@@ -50,6 +50,11 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Expenses are the seventh complete vertical module. `ExpenseEntryController` fell from 412 lines to an 81-line adapter; scoped reads, strict validation, locked mutations, form references, financial summaries, access rules, and detail payloads now live under `app/Modules/Expenses`.
 - The Expense React workspace is a 45-line composer with module-owned filters, metrics, table, and contracts. Index payloads no longer preload unbounded asset and maintenance collections, and mixed-currency scopes no longer display a false combined total.
 - `ExpenseModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation across pages and XLSX exports, active-portfolio creation, portfolio-derived currency, reference consistency, terminal voiding, legacy/showcase category compatibility, tenant denial, and Arabic forms/details.
+- Users are the eighth complete vertical module. Directory scope, role rules, account mutations, forms, details, exports, and global-search links share the same `Users` access boundary; its controller is an 85-line adapter and its React index is a 37-line composer.
+- Portfolios are the ninth complete vertical module. Account ownership, module visibility, archive rules, mixed-currency summaries, forms, details, queries, and mutations live under `app/Modules/Portfolios`; its controller is a 91-line adapter and its React index is a 44-line composer.
+- CMS is the tenth complete vertical module. Page, section, composition, navigation, public rendering, form, and workspace responsibilities live under `app/Modules/Cms`; the page controller is a 166-line route adapter and the builder entry is a 60-line composer.
+- Media is the eleventh complete vertical module. Scoped directory queries, image validation, safe storage transitions, authorized responses, CMS usage detection, forms, details, and the reusable CMS picker live under `app/Modules/Media` and `resources/js/modules/media`; its controller is an 86-line adapter and its index is a 37-line composer.
+- `MediaModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation, private storage, real image validation, public/private disk transitions, CMS usage locks, portable public URLs, safe picker scope, and physical file deletion.
 
 ## Resource Refactor Checklist
 
@@ -61,7 +66,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend targets by risk are Users and Portfolios.
+The next backend targets by risk are Reports and Audit, followed by consolidation of shared search and export contracts.
 
 ## Local Verification
 

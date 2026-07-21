@@ -107,6 +107,7 @@ function HeroSection({ content }: { content: CmsContent }) {
     const { t } = useTranslator();
     const stats = items(content, 'stats');
     const preview = items(content, 'preview');
+    const image = text(content, 'image');
 
     return (
         <section className="pmc-landing-hero" id="top">
@@ -143,39 +144,48 @@ function HeroSection({ content }: { content: CmsContent }) {
                 </div>
             </div>
 
-            <div
-                className="pmc-dashboard-preview"
-                aria-label={t('public.dashboard_preview')}
-            >
-                <div className="pmc-preview-topbar">
-                    <span />
-                    <span />
-                    <span />
-                    <strong>{t('public.portfolio_control')}</strong>
-                </div>
-                <div className="pmc-preview-grid">
-                    {preview.map((item) => (
-                        <div
-                            key={String(item.label)}
-                            className="pmc-preview-tile"
-                        >
-                            <span>{String(item.label ?? '')}</span>
-                            <strong>{String(item.value ?? '')}</strong>
+            <div className={`pmc-hero-visual ${image ? 'has-image' : ''}`}>
+                {image ? (
+                    <img
+                        className="pmc-managed-hero-image"
+                        src={image}
+                        alt={text(content, 'imageAlt')}
+                    />
+                ) : null}
+                <div
+                    className="pmc-dashboard-preview"
+                    aria-label={t('public.dashboard_preview')}
+                >
+                    <div className="pmc-preview-topbar">
+                        <span />
+                        <span />
+                        <span />
+                        <strong>{t('public.portfolio_control')}</strong>
+                    </div>
+                    <div className="pmc-preview-grid">
+                        {preview.map((item) => (
+                            <div
+                                key={String(item.label)}
+                                className="pmc-preview-tile"
+                            >
+                                <span>{String(item.label ?? '')}</span>
+                                <strong>{String(item.value ?? '')}</strong>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="pmc-preview-table">
+                        <div>
+                            <span>{t('public.preview_property')}</span>
+                            <strong>{t('status.occupied')}</strong>
                         </div>
-                    ))}
-                </div>
-                <div className="pmc-preview-table">
-                    <div>
-                        <span>{t('public.preview_property')}</span>
-                        <strong>{t('status.occupied')}</strong>
-                    </div>
-                    <div>
-                        <span>{t('public.lease_balance')}</span>
-                        <strong>{t('public.tracked')}</strong>
-                    </div>
-                    <div>
-                        <span>{t('nav.maintenance')}</span>
-                        <strong>{t('status.open')}</strong>
+                        <div>
+                            <span>{t('public.lease_balance')}</span>
+                            <strong>{t('public.tracked')}</strong>
+                        </div>
+                        <div>
+                            <span>{t('nav.maintenance')}</span>
+                            <strong>{t('status.open')}</strong>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -331,8 +341,17 @@ function FinalCtaSection({ content }: { content: CmsContent }) {
 }
 
 function GenericSection({ content }: { content: CmsContent }) {
+    const image = text(content, 'image');
+
     return (
         <section className="pmc-section-band">
+            {image ? (
+                <img
+                    className="pmc-managed-section-image"
+                    src={image}
+                    alt={text(content, 'imageAlt')}
+                />
+            ) : null}
             <h2>{text(content, 'headline', text(content, 'title'))}</h2>
             <p className="pmc-section-copy">{text(content, 'body')}</p>
         </section>

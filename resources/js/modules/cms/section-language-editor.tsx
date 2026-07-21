@@ -1,4 +1,6 @@
 import { useTranslator } from '@/lib/i18n';
+import { MediaPicker } from '@/modules/media/media-picker';
+import type { MediaPickerOption } from '@/modules/media/types';
 
 import {
     addContentRow,
@@ -14,12 +16,14 @@ export function SectionLanguageEditor({
     fields,
     collections,
     contentJson,
+    mediaOptions,
     onChange,
 }: {
     language: 'en' | 'ar';
     fields: ContentField[];
     collections: ContentCollection[];
     contentJson: string;
+    mediaOptions: MediaPickerOption[];
     onChange: (value: string) => void;
 }) {
     const { t } = useTranslator();
@@ -47,6 +51,7 @@ export function SectionLanguageEditor({
                         key={field.key}
                         field={field}
                         value={stringValue(content[field.key])}
+                        mediaOptions={mediaOptions}
                         onChange={(value) =>
                             updateContentField(
                                 contentJson,
@@ -65,6 +70,7 @@ export function SectionLanguageEditor({
                     collection={collection}
                     content={content}
                     contentJson={contentJson}
+                    mediaOptions={mediaOptions}
                     onChange={onChange}
                 />
             ))}
@@ -75,13 +81,28 @@ export function SectionLanguageEditor({
 function FieldControl({
     field,
     value,
+    mediaOptions,
     onChange,
 }: {
     field: ContentField;
     value: string;
+    mediaOptions: MediaPickerOption[];
     onChange: (value: string) => void;
 }) {
     const { t } = useTranslator();
+
+    if (field.type === 'media') {
+        return (
+            <div className="pmc-resource-field">
+                <span>{t(`cms.fields.${field.key}`, field.label)}</span>
+                <MediaPicker
+                    value={value}
+                    options={mediaOptions}
+                    onChange={onChange}
+                />
+            </div>
+        );
+    }
 
     return (
         <label className="pmc-resource-field">
@@ -108,11 +129,13 @@ function CollectionEditor({
     collection,
     content,
     contentJson,
+    mediaOptions,
     onChange,
 }: {
     collection: ContentCollection;
     content: Record<string, unknown>;
     contentJson: string;
+    mediaOptions: MediaPickerOption[];
     onChange: (value: string) => void;
 }) {
     const { t } = useTranslator();
@@ -189,6 +212,7 @@ function CollectionEditor({
                                             value={stringValue(
                                                 values[field.key],
                                             )}
+                                            mediaOptions={mediaOptions}
                                             onChange={(value) =>
                                                 updateContentRowField(
                                                     contentJson,

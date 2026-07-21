@@ -16,6 +16,8 @@ export function defaultSectionContent(
                     : 'Track buildings, units, tenants, contracts, payments, and maintenance from one portal.',
                 ctaPrimary: ar ? 'فتح البوابة' : 'Open Portal',
                 ctaSecondary: ar ? 'استعراض المزايا' : 'Explore Features',
+                image: '',
+                imageAlt: '',
                 stats: [
                     {
                         label: ar ? 'الأصول' : 'Assets',

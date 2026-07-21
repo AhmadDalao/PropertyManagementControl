@@ -10,6 +10,7 @@ export type ResourceAction = {
     method?: 'get' | 'post' | 'put' | 'delete';
     variant?: 'primary' | 'secondary' | 'danger' | 'light';
     confirm?: string;
+    external?: boolean;
 };
 
 export type ResourceHeaderProps = {
@@ -81,6 +82,7 @@ export type ResourceSpotlight = {
     status?: string;
     items?: DetailItem[];
     actions?: ResourceAction[];
+    image?: { src: string; alt: string };
 };
 
 export type RelatedTable = {
@@ -605,6 +607,13 @@ function ResourceSpotlightPanel({
 
     return (
         <section className="pmc-resource-spotlight">
+            {spotlight.image ? (
+                <img
+                    className="pmc-resource-spotlight-image"
+                    src={spotlight.image.src}
+                    alt={spotlight.image.alt}
+                />
+            ) : null}
             <div className="pmc-resource-spotlight-main">
                 <div>
                     <div className="pmc-kicker mb-2">
@@ -983,6 +992,19 @@ function HistoryTimeline({
 function ActionLink({ action }: { action: ResourceAction }) {
     const { text } = useTranslator();
     const className = `btn btn-${action.variant === 'danger' ? 'outline-danger' : action.variant === 'primary' ? 'primary' : action.variant === 'light' ? 'light' : 'outline-secondary'}`;
+
+    if (action.external) {
+        return (
+            <a
+                href={action.href}
+                className={className}
+                target="_blank"
+                rel="noreferrer"
+            >
+                {text(action.label)}
+            </a>
+        );
+    }
 
     if (!action.method || action.method === 'get') {
         return (

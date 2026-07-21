@@ -51,10 +51,16 @@ export type LocalizedCopy = {
 
 export type CopyValue = LocalizedCopy | string;
 
+export type Translator = (
+    key: UiTranslationKey,
+    fallback?: string,
+    replacements?: Record<string, string | number>,
+) => string;
+
 export function useTranslator() {
     const { app } = usePage<SharedProps>().props;
 
-    const t = (
+    const t: Translator = (
         key: UiTranslationKey,
         fallback?: string,
         replacements: Record<string, string | number> = {},

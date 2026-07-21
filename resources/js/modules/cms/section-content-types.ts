@@ -1,7 +1,7 @@
 export type ContentField = {
     key: string;
     label: string;
-    type?: 'text' | 'textarea';
+    type?: 'text' | 'textarea' | 'media';
 };
 
 export type ContentCollection = {

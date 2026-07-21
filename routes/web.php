@@ -108,5 +108,9 @@ Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::delete('/cms/page-sections/{cmsPageSection}', [CmsPageController::class, 'destroyPageSection'])->name('cms.page-sections.destroy');
 
     Route::resource('navigation-items', NavigationItemController::class)->only(['store', 'update', 'destroy']);
-    Route::resource('media-files', MediaFileController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:media');
+    Route::get('/media-files/{mediaFile}/file', [MediaFileController::class, 'file'])->name('media-files.file')->middleware('portfolio.module:media');
+    Route::resource('media-files', MediaFileController::class)
+        ->parameters(['media-files' => 'mediaFile'])
+        ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
+        ->middleware('portfolio.module:media');
 });

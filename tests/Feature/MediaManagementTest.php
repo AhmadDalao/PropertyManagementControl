@@ -15,6 +15,7 @@ class MediaManagementTest extends TestCase
     public function test_superadmin_can_upload_and_update_global_website_media(): void
     {
         Storage::fake('public');
+        Storage::fake('local');
 
         $superadmin = $this->createUserWithRole('superadmin');
 
@@ -100,8 +101,13 @@ class MediaManagementTest extends TestCase
 
     public function test_owner_can_update_their_own_portfolio_media_but_not_move_it_global(): void
     {
+        Storage::fake('public');
+        Storage::fake('local');
+
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
+        $storedImage = UploadedFile::fake()->image('unit.jpg');
+        Storage::disk('public')->put('media/unit.jpg', (string) file_get_contents($storedImage->getRealPath()));
         $media = MediaFile::query()->create([
             'uploaded_by_user_id' => $owner->id,
             'portfolio_id' => $portfolio->id,

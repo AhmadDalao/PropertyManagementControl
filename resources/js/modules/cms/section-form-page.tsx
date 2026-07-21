@@ -5,6 +5,7 @@ import type { FormEvent } from 'react';
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
+import type { MediaPickerOption } from '@/modules/media/types';
 import type { SharedProps } from '@/types';
 
 import { SectionContentEditor } from './section-content-editor';
@@ -18,6 +19,7 @@ import type { CmsSectionRecord } from './types';
 type PageProps = SharedProps & {
     section: CmsSectionRecord | null;
     sectionTypes: Array<{ label: string; value: string }>;
+    mediaOptions: MediaPickerOption[];
 };
 
 export default function CmsSectionFormPage() {
@@ -196,6 +198,7 @@ export default function CmsSectionFormPage() {
                     sectionType={form.data.section_type}
                     contentEnJson={form.data.content_en_json}
                     contentArJson={form.data.content_ar_json}
+                    mediaOptions={props.mediaOptions}
                     onContentEnChange={(value) =>
                         form.setData('content_en_json', value)
                     }
