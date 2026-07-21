@@ -25,6 +25,7 @@ const localAccounts = [
 
 const primaryAdminRoutes = [
     '/dashboard',
+    '/profile',
     '/property-map',
     '/portfolios',
     '/users',
@@ -328,6 +329,68 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('profile settings are focused, responsive, and fully localized', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/profile?locale=en');
+
+            await expect(
+                page.getByRole('heading', { level: 1, name: 'Profile' }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-profile-summary')).toBeVisible();
+            await expect(
+                page.getByLabel('Name', { exact: true }),
+            ).toBeVisible();
+            await expect(
+                page.getByLabel('Current password', { exact: true }),
+            ).toBeVisible();
+
+            const cardIcons = page.locator('.pmc-profile-card-icon i');
+            await expect(cardIcons).toHaveCount(2);
+
+            for (const icon of await cardIcons.all()) {
+                await expect
+                    .poll(() =>
+                        icon.evaluate(
+                            (node) =>
+                                window.getComputedStyle(node, '::before')
+                                    .content,
+                        ),
+                    )
+                    .not.toBe('none');
+            }
+
+            const formColumns = await page
+                .locator('.pmc-profile-form-grid')
+                .evaluate(
+                    (node) =>
+                        window
+                            .getComputedStyle(node)
+                            .gridTemplateColumns.split(' ').length,
+                );
+            expect(formColumns).toBe(viewport.width < 1200 ? 1 : 2);
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/profile?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'الملف الشخصي',
+            }),
+        ).toBeVisible();
+        await expect(page.getByLabel('الاسم', { exact: true })).toBeVisible();
+        await expect(
+            page.getByText('بيانات الملف الشخصي', { exact: true }),
+        ).toBeVisible();
+        await expect(page.getByText('Profile details')).toHaveCount(0);
         await expectNoHorizontalOverflow(page);
     });
 
@@ -764,6 +827,7 @@ test.describe('authenticated administration', () => {
 
             for (const path of [
                 '/dashboard',
+                '/profile',
                 '/assets',
                 '/property-map',
                 '/reports',

@@ -1,0 +1,119 @@
+.pmc-profile-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-profile-form-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    padding: clamp(1rem, 2vw, 1.35rem);
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-profile-form-card > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-profile-card-icon {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.pmc-profile-card-icon.is-amber {
+    background: #fff3b2;
+    color: #6e5600;
+}
+
+.pmc-profile-card-icon.is-teal {
+    background: #dff5ef;
+    color: #0a6555;
+}
+
+.pmc-profile-form-card header > div {
+    min-width: 0;
+}
+
+.pmc-profile-form-card header span {
+    color: #806600;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-profile-form-card h2 {
+    margin: 0.12rem 0 0;
+    color: var(--pmc-ink);
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.pmc-profile-form-card header p {
+    margin: 0.3rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
+.pmc-profile-form-card form {
+    display: grid;
+    flex: 1 1 auto;
+    align-content: start;
+    gap: 0.9rem;
+}
+
+.pmc-profile-field {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.pmc-profile-field > label {
+    color: #4d4942;
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.pmc-profile-field > small {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    line-height: 1.45;
+}
+
+.pmc-profile-field > small.is-error {
+    color: #b42318;
+    font-weight: 700;
+}
+
+.pmc-profile-field .form-control,
+.pmc-profile-field .form-select {
+    min-width: 0;
+    min-height: 2.8rem;
+}
+
+.pmc-profile-field .form-control:disabled {
+    background: #f4f2ed;
+    color: #68635b;
+    opacity: 1;
+}
+
+.pmc-profile-form-action {
+    width: 100%;
+    margin-top: 0.25rem;
+}

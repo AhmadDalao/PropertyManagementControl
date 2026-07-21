@@ -86,6 +86,26 @@ class SharedFrontendArchitectureTest extends TestCase
         $this->assertStringNotContainsString('<table', $mobile);
     }
 
+    #[Test]
+    public function every_used_bootstrap_icon_exists_in_the_local_subset(): void
+    {
+        $usedIcons = $this->iconNamesFromDirectories([
+            'resources/js',
+            'resources/views',
+        ]);
+        $iconStyles = $this->source('resources/css/styles/icons.css');
+        preg_match_all('/\.bi-([a-z0-9-]+)::before/', $iconStyles, $matches);
+        $definedIcons = array_values(array_unique($matches[1]));
+
+        $missingIcons = array_values(array_diff($usedIcons, $definedIcons));
+
+        $this->assertSame(
+            [],
+            $missingIcons,
+            'Add missing Bootstrap Icon definitions to resources/css/styles/icons.css.',
+        );
+    }
+
     /**
      * @param  list<string>  $paths
      */
@@ -105,6 +125,38 @@ class SharedFrontendArchitectureTest extends TestCase
                 "{$module}/{$path} is becoming a monolith.",
             );
         }
+    }
+
+    /**
+     * @param  list<string>  $directories
+     * @return list<string>
+     */
+    private function iconNamesFromDirectories(array $directories): array
+    {
+        $icons = [];
+
+        foreach ($directories as $directory) {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($this->path($directory)),
+            );
+
+            foreach ($iterator as $file) {
+                if (! $file->isFile()) {
+                    continue;
+                }
+
+                $source = file_get_contents($file->getPathname());
+
+                if ($source !== false && preg_match_all('/\bbi-([a-z0-9-]+)\b/', $source, $matches)) {
+                    array_push($icons, ...$matches[1]);
+                }
+            }
+        }
+
+        $icons = array_values(array_unique($icons));
+        sort($icons);
+
+        return $icons;
     }
 
     private function source(string $relativePath): string

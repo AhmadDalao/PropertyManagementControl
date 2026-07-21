@@ -1,0 +1,101 @@
+.pmc-profile-summary {
+    display: grid;
+    grid-template-columns: minmax(16rem, 0.8fr) minmax(0, 1.35fr);
+    min-width: 0;
+    gap: 1.25rem;
+    padding: clamp(1rem, 2vw, 1.4rem);
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: linear-gradient(135deg, #fffdf6 0%, #f7fbf9 100%);
+}
+
+.pmc-profile-identity {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.9rem;
+}
+
+.pmc-profile-avatar {
+    display: grid;
+    width: 4rem;
+    height: 4rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 3px solid #ffd735;
+    border-radius: 1rem;
+    background: #111;
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.pmc-profile-identity > div:last-child {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-profile-identity span {
+    color: #806600;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-profile-identity h2 {
+    margin: 0;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-profile-identity p {
+    margin: 0;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-profile-facts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    min-width: 0;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.82);
+}
+
+.pmc-profile-facts article {
+    display: grid;
+    min-width: 0;
+    align-content: center;
+    gap: 0.3rem;
+    padding: 0.8rem;
+    border-inline-end: 1px solid var(--pmc-line);
+}
+
+.pmc-profile-facts article:last-child {
+    border-inline-end: 0;
+}
+
+.pmc-profile-facts span {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 700;
+}
+
+.pmc-profile-facts strong {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

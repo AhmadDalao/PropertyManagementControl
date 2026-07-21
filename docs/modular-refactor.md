@@ -75,6 +75,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - The shared admin shell is modular. Its former 349-line layout is a 38-line composer over focused drawer state, permission-aware navigation, sidebar, topbar, account menu, and password-notice modules under `resources/js/modules/shell`.
 - The former 658-line shell stylesheet is a six-line import facade over bounded layout, sidebar, topbar, search, account, and responsive layers. Closed mobile navigation is removed from the keyboard order, desktop collapse preference persists safely, resize clears stale drawer state, active routes expose `aria-current`, RTL collapse direction is correct, and the account menu closes on Escape or outside interaction.
 - `ShellModuleArchitectureTest` prevents state, access rules, rendering, and CSS from merging again. Browser coverage verifies the 64px topbar, body scroll lock, focus restoration, mobile-only drawer actions, desktop collapse persistence, role-specific menus, Arabic RTL, accessibility, and zero overflow.
+- Profile is the fourteenth complete vertical slice. `ProfileController` is a 49-line route adapter over dedicated requests, actions, and a safe presenter; its former 529-line React page is a one-line route entry over focused identity, account-details, password, and access-context modules.
+- `ProfileModuleArchitectureTest` protects the split. Feature coverage enforces field allowlists, trimming, localized language-transition feedback, current-password verification, temporary-password completion, and omission of password internals. Browser coverage verifies EN/AR content, one-column tablet/mobile forms, zero overflow, and rendered icons.
+- The local Bootstrap Icon subset is now contract-tested against every icon used by React and Blade. A missing glyph fails architecture tests instead of shipping as a blank control.
 
 ## Resource Refactor Checklist
 
@@ -86,7 +89,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is account profile management. Split the 529-line profile route page into focused identity, account details, password, and access-context modules; move validation and mutations out of `ProfileController`; preserve all role behavior, temporary-password rules, EN/AR wording, and mobile layout.
+The next refactor target by risk is Documentation. Move guide definitions and presentation out of its 133-line controller, split the 332-line index into search, role-guide, workflow, and guide-card modules, and preserve bilingual direct links, mobile accessibility, and the existing guide URLs.
 
 ## Local Verification
 

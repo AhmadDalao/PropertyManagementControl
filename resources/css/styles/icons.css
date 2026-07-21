@@ -32,6 +32,12 @@
 .bi-arrow-counterclockwise::before {
     content: '\f117';
 }
+.bi-archive::before {
+    content: '\f10d';
+}
+.bi-arrow-clockwise::before {
+    content: '\f116';
+}
 .bi-arrow-down::before {
     content: '\f128';
 }
@@ -47,11 +53,17 @@
 .bi-arrow-right-short::before {
     content: '\f135';
 }
+.bi-arrow-return-right::before {
+    content: '\f132';
+}
 .bi-arrow-up::before {
     content: '\f148';
 }
 .bi-arrow-up-right::before {
     content: '\f144';
+}
+.bi-arrows-fullscreen::before {
+    content: '\f14d';
 }
 .bi-bank::before {
     content: '\f62e';
@@ -101,6 +113,9 @@
 .bi-check-circle::before {
     content: '\f26b';
 }
+.bi-check2::before {
+    content: '\f272';
+}
 .bi-check2-circle::before {
     content: '\f270';
 }
@@ -113,6 +128,12 @@
 .bi-chevron-down::before {
     content: '\f282';
 }
+.bi-chevron-left::before {
+    content: '\f284';
+}
+.bi-chevron-right::before {
+    content: '\f285';
+}
 .bi-clock-history::before {
     content: '\f292';
 }
@@ -121,6 +142,21 @@
 }
 .bi-compass::before {
     content: '\f2d1';
+}
+.bi-cursor::before {
+    content: '\f2e3';
+}
+.bi-database::before {
+    content: '\f8c4';
+}
+.bi-database-add::before {
+    content: '\f8af';
+}
+.bi-database-gear::before {
+    content: '\f8bf';
+}
+.bi-device-ssd::before {
+    content: '\f6fb';
 }
 .bi-diagram-3::before {
     content: '\f2ee';
@@ -209,6 +245,9 @@
 .bi-layout-sidebar-inset::before {
     content: '\f45d';
 }
+.bi-layout-text-sidebar::before {
+    content: '\f462';
+}
 .bi-layout-text-window::before {
     content: '\f464';
 }
@@ -251,6 +290,9 @@
 .bi-person-lock::before {
     content: '\f8a8';
 }
+.bi-person-lines-fill::before {
+    content: '\f4db';
+}
 .bi-person-plus::before {
     content: '\f4dd';
 }
@@ -262,6 +304,9 @@
 }
 .bi-phone::before {
     content: '\f4e7';
+}
+.bi-plus-circle::before {
+    content: '\f4fa';
 }
 .bi-plus-lg::before {
     content: '\f64d';
@@ -280,6 +325,9 @@
 }
 .bi-shield-check::before {
     content: '\f52f';
+}
+.bi-shield-exclamation::before {
+    content: '\f530';
 }
 .bi-shield-lock::before {
     content: '\f538';
@@ -302,11 +350,17 @@
 .bi-three-dots::before {
     content: '\f5d4';
 }
+.bi-text-paragraph::before {
+    content: '\f5c8';
+}
 .bi-tools::before {
     content: '\f5db';
 }
 .bi-translate::before {
     content: '\f658';
+}
+.bi-type::before {
+    content: '\f5f7';
 }
 .bi-view-list::before {
     content: '\f605';
@@ -319,6 +373,9 @@
 }
 .bi-window-stack::before {
     content: '\f6d2';
+}
+.bi-wifi-off::before {
+    content: '\f61b';
 }
 .bi-x::before {
     content: '\f62a';

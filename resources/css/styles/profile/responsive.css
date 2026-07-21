@@ -1,0 +1,39 @@
+@media (max-width: 1199.98px) {
+    .pmc-profile-summary,
+    .pmc-profile-form-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-profile-facts {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-profile-facts article:nth-child(2) {
+        border-inline-end: 0;
+    }
+
+    .pmc-profile-facts article:nth-child(-n + 2) {
+        border-bottom: 1px solid var(--pmc-line);
+    }
+
+    .pmc-profile-context-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-profile-summary {
+        gap: 1rem;
+    }
+
+    .pmc-profile-identity {
+        align-items: flex-start;
+    }
+
+    .pmc-profile-avatar {
+        width: 3.35rem;
+        height: 3.35rem;
+    }
+}

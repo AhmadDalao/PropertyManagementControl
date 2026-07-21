@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Lang;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -34,20 +35,50 @@ class AccountProfileManagementTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/profile/index')
                 ->where('profile.email', $owner->email)
+                ->missing('profile.password')
+                ->missing('profile.remember_token')
             );
 
         $this->actingAs($owner)
             ->put(route('profile.update'), [
-                'name' => 'Updated Owner',
-                'phone' => '+966500000002',
+                'name' => '  Updated Owner  ',
+                'phone' => '  +966500000002  ',
                 'preferred_locale' => 'ar',
             ])
-            ->assertRedirect(route('profile.index'));
+            ->assertRedirect(route('profile.index'))
+            ->assertSessionHas(
+                'success',
+                Lang::get('app.messages.profile_updated', [], 'ar'),
+            );
 
         $owner->refresh();
         $this->assertSame('Updated Owner', $owner->name);
         $this->assertSame('+966500000002', $owner->phone);
         $this->assertSame('ar', $owner->preferred_locale);
+    }
+
+    public function test_profile_update_rejects_invalid_account_fields(): void
+    {
+        $owner = $this->createUserWithRole('owner', $this->createPortfolio(), [
+            'name' => 'Stable Owner',
+            'preferred_locale' => 'en',
+        ]);
+
+        $this->actingAs($owner)
+            ->from(route('profile.index'))
+            ->put(route('profile.update'), [
+                'name' => '   ',
+                'phone' => str_repeat('1', 31),
+                'preferred_locale' => 'fr',
+                'email' => 'hijack@example.test',
+            ])
+            ->assertRedirect(route('profile.index'))
+            ->assertSessionHasErrors(['name', 'phone', 'preferred_locale']);
+
+        $owner->refresh();
+        $this->assertSame('Stable Owner', $owner->name);
+        $this->assertSame('en', $owner->preferred_locale);
+        $this->assertNotSame('hijack@example.test', $owner->email);
     }
 
     public function test_forced_password_user_can_change_password_without_current_password(): void

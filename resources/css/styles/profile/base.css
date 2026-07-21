@@ -1,0 +1,48 @@
+.pmc-profile-page {
+    display: grid;
+    min-width: 0;
+    gap: 1.25rem;
+}
+
+.pmc-profile-page .pmc-page-head {
+    margin-bottom: 0;
+}
+
+.pmc-profile-alert {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid #edc84d;
+    border-radius: var(--pmc-radius-sm);
+    background: #fff8d8;
+    color: #4b3900;
+}
+
+.pmc-profile-alert > i {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: #111;
+    color: #ffd83d;
+    font-size: 1rem;
+}
+
+.pmc-profile-alert > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.pmc-profile-alert strong {
+    font-size: 0.8rem;
+}
+
+.pmc-profile-alert span {
+    font-size: 0.72rem;
+    line-height: 1.5;
+}

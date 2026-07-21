@@ -22,9 +22,9 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, removes the closed drawer from keyboard navigation, restores focus, and keeps the topbar at 64px. Desktop collapse preference persists, while resize recovery clears stale drawer state.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 298 PHP tests with 13,242 assertions and 29 Playwright/axe scenarios pass.
+- Automated status: 303 PHP tests with 13,439 assertions and 30 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
-- The main CSS bundle is 322.99 KB before gzip, with Media styles loaded as a separate 3.18 KB route chunk. Further CSS reduction is useful, but it is not a launch blocker.
+- The main CSS bundle is 323.71 KB before gzip, with Profile and Media styles loaded as separate 5.77 KB and 3.18 KB route chunks. Further CSS reduction is useful, but it is not a launch blocker.
 - PHPStan has 49 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, Wording, Dashboard, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
@@ -46,6 +46,8 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Dashboard is a complete role-owned slice. Its former 405-line presenter is a 23-line role selector; the operations and tenant React views are 34-line and 28-line composers over focused modules. Arrears are calculated with a scoped database aggregate, all-lease payloads are gone, CMS status is superadmin-only, tenant payments are posted-only, Arabic document titles reach the portal, and dedicated architecture/feature tests protect the split.
 - The admin shell is modular. Its former 349-line layout is now a 38-line composer over focused state, navigation, sidebar, topbar, account, and password-notice units. Its former 658-line stylesheet is a six-line facade over six bounded layers. Role menus, desktop collapse persistence, tablet resize recovery, RTL direction, keyboard focus, account-menu dismissal, the 64px mobile topbar, and zero overflow are covered by architecture and browser tests.
 - Shared frontend infrastructure is modular. The former 1,047-line resource cycle and 660-line data table are now one-line compatibility barrels backed by focused modules for forms, fields, actions, detail tabs, documents, history, query state, toolbars, desktop tables, mobile cards, and pagination. Every extracted unit is capped by architecture tests; existing feature imports and route payload contracts remain unchanged.
+- Profile management is modular. Its controller is a 49-line adapter over allowlisted requests, focused update actions, and a presenter that omits credential internals. Its former 529-line route page is now a one-line adapter over focused identity, account, password, and access-context components, with localized language-transition feedback, password throttling, responsive EN/AR rendering, and zero horizontal overflow.
+- Every Bootstrap Icon referenced by React or Blade must now exist in the local optimized subset. Architecture and browser tests prevent blank menu, form, CMS, or Data Lab controls from returning.
 
 ## Required before real tenant onboarding
 
@@ -67,4 +69,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Modularize profile management next: split the 529-line account page and move validation and password mutations out of its controller while preserving temporary-password security, EN/AR behavior, and every role. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Modularize Documentation next: split its controller and 332-line index into focused bilingual guide, search, workflow, and role components while preserving direct guide URLs and mobile accessibility. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
