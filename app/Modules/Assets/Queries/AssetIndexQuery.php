@@ -74,11 +74,6 @@ class AssetIndexQuery
             ),
         ]);
 
-        $userOptions = $this->portfolios->apply(
-            User::query()->whereDoesntHave('roles', fn ($query) => $query->where('name', 'tenant'))->orderBy('name'),
-            $actor
-        )->get(['id', 'name', 'portfolio_id']);
-
         return [
             'assets' => $this->tables->paginate($assets, $filters, [
                 'created_at',
@@ -95,14 +90,6 @@ class AssetIndexQuery
             'insights' => $this->insights($baseQuery, $filters),
             'propertyMap' => $this->propertyMap->forQuery($mapQuery),
             'portfolioOptions' => $this->portfolios->options($actor),
-            'parentOptions' => (clone $baseQuery)->orderBy('title_en')->get()->map(fn (Asset $asset) => [
-                'id' => $asset->id,
-                'name' => $this->portfolios->localized($asset->title_en, $asset->title_ar),
-                'code' => $asset->code,
-                'asset_type' => $asset->asset_type,
-                'portfolio_id' => $asset->portfolio_id,
-            ])->all(),
-            'userOptions' => $userOptions,
         ];
     }
 

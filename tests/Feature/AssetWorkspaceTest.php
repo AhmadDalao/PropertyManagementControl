@@ -74,9 +74,8 @@ class AssetWorkspaceTest extends TestCase
                 ->where('insights.rentable_assets', 1)
                 ->where('insights.vacant_rentable_assets', 1)
                 ->where('insights.total_value', fn (int|float $value) => (float) $value === 1_300_000.0)
-                ->where('parentOptions.0.code', 'NORTH-TOWER')
-                ->where('parentOptions.0.asset_type', 'building')
-                ->where('userOptions.0.name', 'Manager One'));
+                ->missing('parentOptions')
+                ->missing('userOptions'));
     }
 
     public function test_asset_archive_blocks_active_leases_stored_with_morph_alias(): void

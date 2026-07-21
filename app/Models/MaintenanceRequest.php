@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,10 +21,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read User|null $assignedTo
  * @property-read Collection<int, MaintenanceUpdate> $updates
  * @property-read Collection<int, ExpenseEntry> $expenses
+ * @property CarbonInterface|null $requested_at
+ * @property CarbonInterface|null $due_at
+ * @property CarbonInterface|null $resolved_at
  */
 class MaintenanceRequest extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use HasShowcaseBadge;
     use LogsModelActivity;
 

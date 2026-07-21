@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
+use App\Modules\Maintenance\Actions\ManageMaintenance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class MaintenanceServiceWorkspaceTest extends TestCase
@@ -104,6 +107,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         $secondAsset = $this->createAsset($portfolio, ['title_en' => 'Second rented unit']);
         $this->createLease($portfolio, $tenant, $firstAsset, $owner, ['code' => 'LEASE-FIRST']);
         $secondLease = $this->createLease($portfolio, $tenant, $secondAsset, $owner, ['code' => 'LEASE-SECOND']);
+        $secondLease->update(['leaseable_type' => (new Asset)->getMorphClass()]);
 
         $response = $this->actingAs($tenantUser)
             ->post(route('maintenance-requests.store'), [
@@ -251,6 +255,18 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             'is_public_comment' => true,
             'comment' => 'We will visit tomorrow.',
         ]);
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'maintenance_request_id' => $requestItem->id,
+            'created_by_user_id' => $owner->id,
+            'category' => 'electricity',
+            'title' => 'Private repair cost',
+            'incurred_on' => now()->toDateString(),
+            'amount' => 900,
+            'currency' => 'SAR',
+            'status' => 'posted',
+        ]);
 
         $this->actingAs($tenantUser)
             ->get(route('maintenance-requests.index', ['search' => 'Breaker']))
@@ -260,8 +276,23 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('mode', 'tenant')
                 ->where('requests.total', 1)
                 ->where('requests.data.0.internal_notes', null)
+                ->where('requests.data.0.expense_total', 0)
+                ->where('requests.data.0.expense_count', 0)
+                ->where('maintenanceInsights.posted_expenses', 0)
                 ->has('requests.data.0.updates', 1)
                 ->where('requests.data.0.updates.0.comment', 'We will visit tomorrow.'));
+
+        $this->actingAs($tenantUser)
+            ->get(route('maintenance-requests.show', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.stats', fn ($stats) => ! collect($stats)->contains('label', 'Cost'))
+                ->where('detailPage.related', fn ($related) => collect($related)->count() === 1
+                    && collect($related)->first()['title'] === 'Updates'
+                    && count(collect($related)->first()['rows']) === 1
+                    && collect($related)->first()['rows'][0]['Comment'] === 'We will visit tomorrow.')
+                ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Internal notes')));
 
         $this->actingAs($tenantUser)
             ->put(route('maintenance-requests.update', $requestItem), [
@@ -324,5 +355,36 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('requests.data.0.updates.0.comment', 'Technician is scheduled for today.'));
+    }
+
+    public function test_maintenance_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
+    {
+        $ownerPortfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $ownerPortfolio);
+        $foreignTenantUser = $this->createUserWithRole('tenant', $foreignPortfolio);
+        $foreignTenant = $this->createTenantProfile($foreignPortfolio, $foreignTenantUser);
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+        $foreignRequest = MaintenanceRequest::query()->create([
+            'portfolio_id' => $foreignPortfolio->id,
+            'asset_id' => $foreignAsset->id,
+            'tenant_profile_id' => $foreignTenant->id,
+            'submitted_by_user_id' => $foreignTenantUser->id,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Foreign request',
+            'description' => 'Must remain isolated.',
+            'requested_at' => now(),
+        ]);
+
+        try {
+            app(ManageMaintenance::class)->cancel($owner, $foreignRequest);
+            $this->fail('Cross-portfolio maintenance mutation was not rejected.');
+        } catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+
+        $this->assertSame('open', $foreignRequest->fresh()->status);
     }
 }

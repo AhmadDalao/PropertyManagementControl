@@ -2,10 +2,10 @@
 
 namespace App\Modules\Shared;
 
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class TableQuery
 {
@@ -81,6 +81,26 @@ class TableQuery
         return $value === null || $value === '' || $value === 'all'
             ? $query
             : $query->where($column ?? $key, $value);
+    }
+
+    /**
+     * @template TModel of Model
+     *
+     * @param  Builder<TModel>  $query
+     * @param  array<string, mixed>  $filters
+     * @return Builder<TModel>
+     */
+    public function dateRange(Builder $query, array $filters, string $column): Builder
+    {
+        if (! empty($filters['date_from'])) {
+            $query->whereDate($column, '>=', $filters['date_from']);
+        }
+
+        if (! empty($filters['date_to'])) {
+            $query->whereDate($column, '<=', $filters['date_to']);
+        }
+
+        return $query;
     }
 
     /**

@@ -3,17 +3,18 @@
 namespace App\Modules\Assets\Support;
 
 use App\Models\Asset;
+use App\Modules\Shared\MorphTypes;
 
 class AssetHierarchy
 {
+    public function __construct(private readonly MorphTypes $morphTypes) {}
+
     /**
      * @return array<int, string>
      */
     public function leaseableTypes(): array
     {
-        $asset = new Asset;
-
-        return array_values(array_unique([Asset::class, $asset->getMorphClass()]));
+        return $this->morphTypes->for(new Asset);
     }
 
     /**
