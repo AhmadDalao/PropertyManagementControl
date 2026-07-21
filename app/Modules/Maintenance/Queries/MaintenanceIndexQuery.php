@@ -27,17 +27,38 @@ class MaintenanceIndexQuery
      */
     public function handle(Request $request, User $actor): array
     {
-        $filters = $this->tables->filters($request, [
+        $filters = $this->filters($request);
+
+        return $actor->hasRole('tenant')
+            ? $this->tenantPayload($actor, $filters)
+            : $this->managerPayload($actor, $filters);
+    }
+
+    /** @return Builder<MaintenanceRequest> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $this->access->ensureManager($actor);
+        $filters = $this->filters($request);
+        $requests = $this->portfolios
+            ->apply(MaintenanceRequest::query(), $actor)
+            ->with(['asset', 'tenantProfile.user', 'assignedTo']);
+        $this->tables->exact($requests, $filters, 'portfolio_id');
+        $this->applyFilters($requests, $filters);
+        $this->applyManagerSearch($requests, (string) $filters['search']);
+
+        return $requests;
+    }
+
+    /** @return array<string, mixed> */
+    private function filters(Request $request): array
+    {
+        return $this->tables->filters($request, [
             'status' => 'all',
             'category' => 'all',
             'priority' => 'all',
             'date_from' => '',
             'date_to' => '',
         ]);
-
-        return $actor->hasRole('tenant')
-            ? $this->tenantPayload($actor, $filters)
-            : $this->managerPayload($actor, $filters);
     }
 
     /**
@@ -100,7 +121,19 @@ class MaintenanceIndexQuery
 
         $this->tables->exact($requests, $filters, 'portfolio_id');
         $this->applyFilters($requests, $filters);
-        $this->tables->search($requests, $filters['search'], [
+        $this->applyManagerSearch($requests, (string) $filters['search']);
+
+        return [
+            ...$this->commonPayload($baseQuery, $filters, includeFinancials: true),
+            'mode' => 'manager',
+            'requests' => $this->paginate($requests, $filters, publicOnly: false),
+        ];
+    }
+
+    /** @param Builder<MaintenanceRequest> $requests */
+    private function applyManagerSearch(Builder $requests, string $search): void
+    {
+        $this->tables->search($requests, $search, [
             'title',
             'description',
             'category',
@@ -124,12 +157,6 @@ class MaintenanceIndexQuery
                     ->orWhere('email', 'like', $like)
             ),
         ]);
-
-        return [
-            ...$this->commonPayload($baseQuery, $filters, includeFinancials: true),
-            'mode' => 'manager',
-            'requests' => $this->paginate($requests, $filters, publicOnly: false),
-        ];
     }
 
     /**

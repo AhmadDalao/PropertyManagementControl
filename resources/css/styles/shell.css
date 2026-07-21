@@ -616,7 +616,7 @@
         flex-direction: column;
         gap: 1rem;
         padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem;
-        background: rgba(250, 248, 243, 0.98);
+        background: #faf8f3;
     }
 
     .pmc-mobile-search-head {

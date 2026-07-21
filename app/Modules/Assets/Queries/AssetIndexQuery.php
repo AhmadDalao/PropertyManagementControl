@@ -5,6 +5,7 @@ namespace App\Modules\Assets\Queries;
 use App\Models\Asset;
 use App\Models\User;
 use App\Modules\Assets\PropertyMapPresenter;
+use App\Modules\Assets\Support\AssetAccess;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -13,6 +14,7 @@ use Illuminate\Http\Request;
 class AssetIndexQuery
 {
     public function __construct(
+        private readonly AssetAccess $access,
         private readonly PortfolioScope $portfolios,
         private readonly TableQuery $tables,
         private readonly PropertyMapPresenter $propertyMap,
@@ -23,14 +25,8 @@ class AssetIndexQuery
      */
     public function handle(Request $request, User $actor): array
     {
-        $filters = $this->tables->filters($request, [
-            'status' => 'all',
-            'asset_type' => 'all',
-            'usage_type' => 'all',
-            'occupancy_status' => 'all',
-            'rentable' => 'all',
-        ]);
-        $baseQuery = $this->portfolios->apply(Asset::query(), $actor);
+        $filters = $this->filters($request);
+        $baseQuery = $this->access->directoryScope(Asset::query(), $actor);
         $assets = (clone $baseQuery)
             ->with(['portfolio', 'parent', 'stakeholders.user'])
             ->withCount([
@@ -38,41 +34,12 @@ class AssetIndexQuery
                 'leases as active_leases_count' => fn ($query) => $query->where('status', 'active'),
             ]);
 
-        foreach (['portfolio_id', 'status', 'asset_type', 'usage_type', 'occupancy_status'] as $filter) {
-            $this->tables->exact($assets, $filters, $filter);
-        }
-
-        if (($filters['rentable'] ?? 'all') !== 'all') {
-            $assets->where('rentable', $filters['rentable'] === 'yes');
-        }
+        $this->applyFilters($assets, $filters);
 
         $mapQuery = clone $baseQuery;
         $this->tables->exact($mapQuery, $filters, 'portfolio_id');
-        $this->tables->search($assets, $filters['search'], [
-            'title_en',
-            'title_ar',
-            'code',
-            'level_label',
-            'unit_label',
-            'address',
-            'address_ar',
-            fn ($query, $search, $like) => $query
-                ->orWhere('meta_json->map->zone', 'like', $like)
-                ->orWhere('meta_json->map->zone_en', 'like', $like)
-                ->orWhere('meta_json->map->zone_ar', 'like', $like)
-                ->orWhere('meta_json->map->land_number', 'like', $like),
-            fn ($query, $search, $like) => $query->orWhereHas(
-                'parent',
-                fn ($parentQuery) => $parentQuery
-                    ->where('title_en', 'like', $like)
-                    ->orWhere('title_ar', 'like', $like)
-                    ->orWhere('code', 'like', $like)
-            ),
-            fn ($query, $search, $like) => $query->orWhereHas(
-                'stakeholders.user',
-                fn ($userQuery) => $userQuery->where('name', 'like', $like)->orWhere('email', 'like', $like)
-            ),
-        ]);
+        $countScope = clone $baseQuery;
+        $this->tables->exact($countScope, $filters, 'portfolio_id');
 
         return [
             'assets' => $this->tables->paginate($assets, $filters, [
@@ -86,11 +53,78 @@ class AssetIndexQuery
                 'valuation_amount',
             ]),
             'filters' => $filters,
-            'counts' => $this->tables->statusCounts($baseQuery, ['active', 'inactive', 'archived'], $filters),
+            'counts' => $this->tables->statusCounts($countScope, ['active', 'inactive', 'archived'], $filters),
             'insights' => $this->insights($baseQuery, $filters),
             'propertyMap' => $this->propertyMap->forQuery($mapQuery),
             'portfolioOptions' => $this->portfolios->options($actor),
         ];
+    }
+
+    /** @return Builder<Asset> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $filters = $this->filters($request);
+        $assets = $this->access
+            ->directoryScope(Asset::query(), $actor)
+            ->with(['portfolio', 'parent']);
+        $this->applyFilters($assets, $filters);
+
+        return $assets;
+    }
+
+    /** @return array<string, mixed> */
+    private function filters(Request $request): array
+    {
+        return $this->tables->filters($request, [
+            'status' => 'all',
+            'asset_type' => 'all',
+            'usage_type' => 'all',
+            'occupancy_status' => 'all',
+            'rentable' => 'all',
+        ]);
+    }
+
+    /**
+     * @param  Builder<Asset>  $assets
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFilters(Builder $assets, array $filters): void
+    {
+        foreach (['portfolio_id', 'status', 'asset_type', 'usage_type', 'occupancy_status'] as $filter) {
+            $this->tables->exact($assets, $filters, $filter);
+        }
+
+        if (($filters['rentable'] ?? 'all') !== 'all') {
+            $assets->where('rentable', $filters['rentable'] === 'yes');
+        }
+
+        $this->tables->search($assets, (string) $filters['search'], [
+            'title_en',
+            'title_ar',
+            'code',
+            'level_label',
+            'unit_label',
+            'address',
+            'address_ar',
+            fn (Builder $query, string $search, string $like) => $query
+                ->orWhere('meta_json->map->zone', 'like', $like)
+                ->orWhere('meta_json->map->zone_en', 'like', $like)
+                ->orWhere('meta_json->map->zone_ar', 'like', $like)
+                ->orWhere('meta_json->map->land_number', 'like', $like),
+            fn (Builder $query, string $search, string $like) => $query->orWhereHas(
+                'parent',
+                fn (Builder $parents) => $parents
+                    ->where('title_en', 'like', $like)
+                    ->orWhere('title_ar', 'like', $like)
+                    ->orWhere('code', 'like', $like),
+            ),
+            fn (Builder $query, string $search, string $like) => $query->orWhereHas(
+                'stakeholders.user',
+                fn (Builder $users) => $users
+                    ->where('name', 'like', $like)
+                    ->orWhere('email', 'like', $like),
+            ),
+        ]);
     }
 
     /**

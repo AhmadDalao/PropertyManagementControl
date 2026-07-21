@@ -30,21 +30,64 @@ class LeaseIndexQuery
     public function handle(Request $request, User $actor): array
     {
         $this->access->ensureManager($actor);
-        $filters = $this->tables->filters($request, [
+        $filters = $this->filters($request);
+        $baseQuery = $this->portfolios->apply(Lease::query(), $actor);
+        $leases = (clone $baseQuery)->with(['tenantProfile.user', 'leaseable', 'installments']);
+        $this->applyFilters($leases, $filters);
+        $metricScope = clone $baseQuery;
+        $this->tables->exact($metricScope, $filters, 'portfolio_id');
+
+        return [
+            'leases' => $this->paginate($leases, $filters),
+            'leaseInsights' => $this->insights($metricScope),
+            'filters' => $filters,
+            'counts' => $this->tables->statusCounts(
+                $metricScope,
+                LeaseOptions::STATUSES,
+                $filters,
+            ),
+            'portfolioOptions' => $this->portfolios->options($actor),
+            'statusOptions' => LeaseOptions::STATUSES,
+            'frequencyOptions' => LeaseOptions::PAYMENT_FREQUENCIES,
+        ];
+    }
+
+    /** @return Builder<Lease> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $this->access->ensureManager($actor);
+        $filters = $this->filters($request);
+        $leases = $this->portfolios
+            ->apply(Lease::query(), $actor)
+            ->with(['tenantProfile.user', 'leaseable', 'installments']);
+        $this->applyFilters($leases, $filters);
+
+        return $leases;
+    }
+
+    /** @return array<string, mixed> */
+    private function filters(Request $request): array
+    {
+        return $this->tables->filters($request, [
             'status' => 'all',
             'payment_frequency' => 'all',
             'date_from' => '',
             'date_to' => '',
         ]);
-        $baseQuery = $this->portfolios->apply(Lease::query(), $actor);
-        $leases = (clone $baseQuery)->with(['tenantProfile.user', 'leaseable', 'installments']);
+    }
 
+    /**
+     * @param  Builder<Lease>  $leases
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFilters(Builder $leases, array $filters): void
+    {
         foreach (['portfolio_id', 'status', 'payment_frequency'] as $filter) {
             $this->tables->exact($leases, $filters, $filter);
         }
 
         $this->tables->dateRange($leases, $filters, 'started_at');
-        $this->tables->search($leases, $filters['search'], [
+        $this->tables->search($leases, (string) $filters['search'], [
             'code',
             'notes',
             fn ($query, $search, $like) => $query->orWhereHas(
@@ -63,22 +106,6 @@ class LeaseIndexQuery
                         ->orWhere('code', 'like', $like));
             }),
         ]);
-        $metricScope = clone $baseQuery;
-        $this->tables->exact($metricScope, $filters, 'portfolio_id');
-
-        return [
-            'leases' => $this->paginate($leases, $filters),
-            'leaseInsights' => $this->insights($metricScope),
-            'filters' => $filters,
-            'counts' => $this->tables->statusCounts(
-                $metricScope,
-                LeaseOptions::STATUSES,
-                $filters,
-            ),
-            'portfolioOptions' => $this->portfolios->options($actor),
-            'statusOptions' => LeaseOptions::STATUSES,
-            'frequencyOptions' => LeaseOptions::PAYMENT_FREQUENCIES,
-        ];
     }
 
     /**

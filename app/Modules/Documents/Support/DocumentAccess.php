@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Shared\PortfolioScope;
+use Illuminate\Database\Eloquent\Builder;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class DocumentAccess
@@ -29,6 +30,56 @@ class DocumentAccess
     {
         $this->ensureManager($actor);
         $this->portfolios->ensureAccess($actor, $document->portfolio_id);
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    public function directoryScope(Builder $query, User $actor): Builder
+    {
+        $this->ensureManager($actor);
+
+        return $this->portfolios->apply($query, $actor);
+    }
+
+    /**
+     * @param  Builder<Document>  $query
+     * @return Builder<Document>
+     */
+    public function tenantPortalScope(Builder $query, User $actor): Builder
+    {
+        if (! $actor->hasRole('tenant')) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query
+            ->where('is_public', true)
+            ->where(function (Builder $documents) use ($actor): void {
+                $documents
+                    ->where(function (Builder $leaseDocuments) use ($actor): void {
+                        $leaseDocuments
+                            ->whereIn('documentable_type', $this->attachments->typesFor('lease'))
+                            ->whereIn('type', DocumentOptions::portalTypes('lease'))
+                            ->whereIn('documentable_id', Lease::query()
+                                ->select('id')
+                                ->whereHas(
+                                    'tenantProfile',
+                                    fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
+                                ));
+                    })
+                    ->orWhere(function (Builder $paymentDocuments) use ($actor): void {
+                        $paymentDocuments
+                            ->whereIn('documentable_type', $this->attachments->typesFor('payment'))
+                            ->whereIn('type', DocumentOptions::portalTypes('payment'))
+                            ->whereIn('documentable_id', Payment::query()
+                                ->select('id')
+                                ->whereHas(
+                                    'tenantProfile',
+                                    fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
+                                ));
+                    });
+            });
     }
 
     public function ensureCanDownload(User $actor, Document $document): void

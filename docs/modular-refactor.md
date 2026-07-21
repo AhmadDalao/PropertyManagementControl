@@ -59,6 +59,10 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - The Report React workspace fell from an 838-line monolith to a 131-line composer with module-owned filters, tabs, KPI cards, collection/cost/operations panels, visuals, saved views, and contracts. Feature coverage rejects malformed dates and foreign portfolio filters, strips unsupported saved filters, enforces one personal default view, hides unauthorized delete actions, and verifies Arabic workbook output.
 - Audit is the thirteenth complete vertical module. `AuditLogController` fell from 371 lines to a 34-line adapter; validated filters, portfolio/actor access, polymorphic subject mapping, activity presentation, scoped queries, and `.xlsx` generation now live under `app/Modules/Audit`.
 - The Audit React workspace fell from a 271-line route page to a 35-line composer with module-owned metrics, filters, formatting, mobile cards, table columns, and contracts. Feature coverage enforces owner isolation, malformed-date rejection, accurate event facets, Arabic record labels, direct subject links, sensitive-key suppression, real XLSX output, zero horizontal overflow, and WCAG AA contrast.
+- Global search and resource exports are cross-cutting infrastructure modules. `GlobalSearchController` fell from 389 lines to a 22-line adapter and `AdminExportController` fell from 479 lines to a 21-line adapter. Each feature owns its search source and workbook exporter, while the shared orchestrators only enforce limits, module availability, and response/file contracts.
+- Index pages and exports now call the same module-owned filter query. This removes duplicate scope logic, makes relational searches consistent, and deleted the obsolete `BuildsAdminTables` controller trait.
+- The global-search frontend is now a 48-line composer under `resources/js/modules/search`; request state, result grouping, desktop input, and the accessible mobile search sheet are separate focused units. The old shared component remains a one-line compatibility export.
+- `SearchExportArchitectureTest` prevents the shared controllers and frontend entry from becoming monoliths again. Feature coverage enforces malformed-query rejection, Arabic expense search, portfolio isolation, tenant export denial, unknown-resource handling, relational-filter parity, and valid scoped XLSX output.
 
 ## Resource Refactor Checklist
 
@@ -70,7 +74,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend target by risk is consolidation of shared global-search and export contracts, followed by removal of the remaining controller table/resource traits once their last consumers have moved into modules.
+The next refactor target by risk is the shared frontend resource cycle. Split `resource-cycle.tsx` and `data-table.tsx` into stable form, detail, table, pagination, action-menu, and mobile-card primitives without changing route payloads or feature-module ownership.
 
 ## Local Verification
 

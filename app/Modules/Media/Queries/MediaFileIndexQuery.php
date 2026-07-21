@@ -45,6 +45,18 @@ class MediaFileIndexQuery
         ];
     }
 
+    /** @return Builder<MediaFile> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $filters = $this->filters($request);
+        $media = $this->access
+            ->directoryScope(MediaFile::query(), $actor)
+            ->with('portfolio');
+        $this->applyFilters($media, $filters);
+
+        return $media;
+    }
+
     /** @return array<string, mixed> */
     private function filters(Request $request): array
     {

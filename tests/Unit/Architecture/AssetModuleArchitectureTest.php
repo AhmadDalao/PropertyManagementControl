@@ -42,6 +42,8 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/AssetDetailPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetFormPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetIndexQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyMapQuery.php'),
+            $this->path('app/Modules/Assets/Requests/PropertyMapRequest.php'),
             $this->path('app/Modules/Assets/Requests/StoreAssetRequest.php'),
             $this->path('app/Modules/Assets/Requests/UpdateAssetRequest.php'),
             $this->path('resources/js/modules/assets/asset-filters.ts'),
@@ -51,6 +53,18 @@ class AssetModuleArchitectureTest extends TestCase
         ] as $path) {
             $this->assertFileExists($path);
         }
+    }
+
+    #[Test]
+    public function property_map_controller_is_a_thin_asset_module_adapter(): void
+    {
+        $source = $this->source($this->path('app/Http/Controllers/PropertyMapController.php'));
+
+        $this->assertLessThanOrEqual(35, substr_count($source, "\n") + 1);
+        $this->assertStringContainsString('PropertyMapRequest', $source);
+        $this->assertStringContainsString('PropertyMapQuery', $source);
+        $this->assertStringNotContainsString('Asset::query()', $source);
+        $this->assertStringNotContainsString('nullableInteger', $source);
     }
 
     private function source(string $path): string

@@ -29,17 +29,10 @@ class CmsWorkspaceQuery
         $this->access->ensureAdmin($actor);
         $view = (string) $request->query('view', 'pages');
         $view = in_array($view, CmsOptions::WORKSPACE_VIEWS, true) ? $view : 'pages';
-        $filters = $this->tables->filters($request, ['status' => 'all']);
+        $filters = $this->filters($request);
         $basePages = CmsPage::query();
         $pages = $this->pageIndexQuery(clone $basePages);
-        $this->tables->exact($pages, $filters, 'status');
-        $this->tables->search($pages, (string) $filters['search'], [
-            'title_en',
-            'title_ar',
-            'slug',
-            'excerpt_en',
-            'excerpt_ar',
-        ]);
+        $this->applyPageFilters($pages, $filters);
         $sectionCount = CmsSection::query()->count();
         $navigationCount = NavigationItem::query()->count();
 
@@ -82,6 +75,39 @@ class CmsWorkspaceQuery
                 ->get(),
             'navigationLimitReached' => $navigationCount > self::NAVIGATION_LIMIT,
         ];
+    }
+
+    /** @return Builder<CmsPage> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $this->access->ensureAdmin($actor);
+        $filters = $this->filters($request);
+        $pages = $this->pageIndexQuery(CmsPage::query());
+        $this->applyPageFilters($pages, $filters);
+
+        return $pages;
+    }
+
+    /** @return array<string, mixed> */
+    private function filters(Request $request): array
+    {
+        return $this->tables->filters($request, ['status' => 'all']);
+    }
+
+    /**
+     * @param  Builder<CmsPage>  $pages
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyPageFilters(Builder $pages, array $filters): void
+    {
+        $this->tables->exact($pages, $filters, 'status');
+        $this->tables->search($pages, (string) $filters['search'], [
+            'title_en',
+            'title_ar',
+            'slug',
+            'excerpt_en',
+            'excerpt_ar',
+        ]);
     }
 
     /**

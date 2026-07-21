@@ -81,19 +81,3 @@ export type TableCount = {
     filter?: Record<string, string | number | null>;
     active?: boolean;
 };
-
-export type GlobalSearchResult = {
-    group: string;
-    title: string;
-    subtitle: string;
-    badge: string;
-    url: string;
-};
-
-export type GlobalSearchResponse = {
-    ok: boolean;
-    query: string;
-    results: GlobalSearchResult[];
-    message: string;
-    direct_url: string;
-};

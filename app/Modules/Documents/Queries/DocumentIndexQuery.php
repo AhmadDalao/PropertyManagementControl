@@ -29,9 +29,8 @@ class DocumentIndexQuery
     /** @return array<string, mixed> */
     public function handle(Request $request, User $actor): array
     {
-        $this->access->ensureManager($actor);
         $filters = $this->filters($request);
-        $baseQuery = $this->portfolios->apply(Document::query(), $actor);
+        $baseQuery = $this->access->directoryScope(Document::query(), $actor);
         $documents = (clone $baseQuery)->with(['portfolio', 'uploadedBy', 'documentable']);
         $this->applyFilters($documents, $filters);
         $metricScope = clone $baseQuery;
@@ -47,6 +46,18 @@ class DocumentIndexQuery
             'attachmentOptions' => DocumentOptions::ATTACHMENTS,
             'visibilityOptions' => DocumentOptions::VISIBILITIES,
         ];
+    }
+
+    /** @return Builder<Document> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $filters = $this->filters($request);
+        $documents = $this->access
+            ->directoryScope(Document::query(), $actor)
+            ->with(['portfolio', 'uploadedBy', 'documentable']);
+        $this->applyFilters($documents, $filters);
+
+        return $documents;
     }
 
     /** @return array<string, mixed> */

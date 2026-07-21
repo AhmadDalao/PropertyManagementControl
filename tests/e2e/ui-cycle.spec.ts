@@ -108,6 +108,47 @@ test.describe('authenticated administration', () => {
         await expect(trigger).toBeFocused();
     });
 
+    test('global search is responsive, scoped, and localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard');
+
+        const trigger = page.locator('[data-search-trigger]');
+        await trigger.click();
+        await expect(page.locator('body')).toHaveClass(/pmc-search-open/);
+        await expect(
+            page.locator('.pmc-mobile-search-sheet[role="dialog"]'),
+        ).toBeVisible();
+
+        const input = page.locator('.pmc-global-search-mobile input');
+        await expect(input).toBeFocused();
+        await input.fill('CORAL');
+        await expect(
+            page
+                .locator('.pmc-global-search-mobile .pmc-global-search-group')
+                .filter({ hasText: 'Assets' })
+                .locator('a')
+                .first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.keyboard.press('Escape');
+        await expect(page.locator('body')).not.toHaveClass(/pmc-search-open/);
+        await expect(trigger).toBeFocused();
+
+        await page.goto('/dashboard?locale=ar');
+        await page.locator('[data-search-trigger]').click();
+        await page.locator('.pmc-global-search-mobile input').fill('CORAL');
+        await expect(
+            page
+                .locator('.pmc-global-search-mobile')
+                .getByText('الأصول', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('core workspaces switch from tables to compact cards', async ({
         page,
     }) => {

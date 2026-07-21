@@ -22,10 +22,10 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, restores focus, and keeps the topbar at 64px.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 259 PHP tests with 12,402 assertions and 26 Playwright/axe scenarios pass.
+- Automated status: 271 PHP tests with 12,580 assertions and 27 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
 - The main CSS bundle is 323.60 KB before gzip, with Media styles loaded as a separate 3.18 KB route chunk. Further CSS reduction is useful, but it is not a launch blocker.
-- PHPStan has 107 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, and shared-module extractions add zero findings in their touched slices.
+- PHPStan has 69 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
 - Leases are the third complete vertical feature module: its controller is now a 117-line adapter and its React index is a 42-line composer. Lease creation stores canonical morph aliases, alias records enforce exclusivity and occupancy, and tenant details omit internal notes, actions, documents, and history.
@@ -40,6 +40,8 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Media is the eleventh complete vertical feature module: its controller is now an 86-line adapter and its React index is a 37-line composer. Scoped queries, image validation, public/private storage moves, authorized file responses, forms, details, CMS usage guards, and the CMS picker live inside the module. CMS stores portable `/storage/...` image references, rejects executable formats, prevents hiding or deleting images in active use, and provides an overflow-free EN/AR picker at mobile and desktop sizes.
 - Reports are the twelfth complete vertical feature module: its controller is now a 57-line adapter and its React entry is a 131-line composer. Query validation prevents broken date ranges, report and preset portfolio filters share one access boundary, saved views expose only legal actions, default views are deterministic, top-asset cards open the actual asset, and the card-only EN/AR workspace plus real `.xlsx` export passes mobile and desktop accessibility checks.
 - Audit is the thirteenth complete vertical feature module: its controller is now a 34-line adapter and its React entry is a 35-line composer. Portfolio and actor filters share one access boundary, malformed dates are rejected, event facets respect the other active filters, all logged model types are registered, affected records open directly, sensitive keys remain suppressed, and the localized mobile-card/desktop-table workspace exports a real scoped `.xlsx` workbook.
+- Global search and resource export are now modular platform infrastructure. The search controller is 22 lines, the export controller is 21 lines, every result/export belongs to its feature module, and index screens share the exact same scoped filters as their workbooks. Search input validation, tenant export denial, module visibility, Arabic groups, direct exact-code links, and portfolio isolation are covered by feature and browser tests.
+- The property map no longer depends on controller table helpers. Its validated request and scoped query now belong to Assets, malformed portfolio filters are rejected, and the route controller is a 23-line adapter.
 
 ## Required before real tenant onboarding
 
@@ -61,4 +63,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Consolidate the shared global-search and export infrastructure next. Keep routes and schemas stable, make every search result and export use the owning module's access boundary, and do not delay production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Split the two remaining shared frontend monoliths: `resource-cycle.tsx` (1,047 lines) and `data-table.tsx` (660 lines). Preserve their public contracts while extracting focused form, detail, table, pagination, action-menu, and mobile-card primitives; then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.

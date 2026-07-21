@@ -28,25 +28,69 @@ class PaymentIndexQuery
     public function handle(Request $request, User $actor): array
     {
         $this->access->ensureManager($actor);
-        $filters = $this->tables->filters($request, [
+        $filters = $this->filters($request);
+        $baseQuery = $this->portfolios->apply(Payment::query(), $actor);
+        $payments = (clone $baseQuery)
+            ->with(['lease.leaseable', 'tenantProfile.user'])
+            ->withCount('allocations')
+            ->withSum('allocations', 'amount');
+        $this->applyFilters($payments, $filters);
+        $metricScope = clone $baseQuery;
+        $this->tables->exact($metricScope, $filters, 'portfolio_id');
+
+        return [
+            'payments' => $this->paginate($payments, $filters),
+            'paymentInsights' => $this->insights($metricScope),
+            'filters' => $filters,
+            'counts' => $this->tables->statusCounts(
+                $metricScope,
+                PaymentOptions::STATUSES,
+                $filters,
+            ),
+            'portfolioOptions' => $this->portfolios->options($actor),
+            'statusOptions' => PaymentOptions::STATUSES,
+            'typeOptions' => PaymentOptions::TYPES,
+            'methodOptions' => PaymentOptions::METHODS,
+        ];
+    }
+
+    /** @return Builder<Payment> */
+    public function forExport(Request $request, User $actor): Builder
+    {
+        $this->access->ensureManager($actor);
+        $filters = $this->filters($request);
+        $payments = $this->portfolios
+            ->apply(Payment::query(), $actor)
+            ->with(['lease.leaseable', 'tenantProfile.user']);
+        $this->applyFilters($payments, $filters);
+
+        return $payments;
+    }
+
+    /** @return array<string, mixed> */
+    private function filters(Request $request): array
+    {
+        return $this->tables->filters($request, [
             'status' => 'all',
             'type' => 'all',
             'method' => 'all',
             'date_from' => '',
             'date_to' => '',
         ]);
-        $baseQuery = $this->portfolios->apply(Payment::query(), $actor);
-        $payments = (clone $baseQuery)
-            ->with(['lease.leaseable', 'tenantProfile.user'])
-            ->withCount('allocations')
-            ->withSum('allocations', 'amount');
+    }
 
+    /**
+     * @param  Builder<Payment>  $payments
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyFilters(Builder $payments, array $filters): void
+    {
         foreach (['portfolio_id', 'status', 'type', 'method'] as $filter) {
             $this->tables->exact($payments, $filters, $filter);
         }
 
         $this->tables->dateRange($payments, $filters, 'received_on');
-        $this->tables->search($payments, $filters['search'], [
+        $this->tables->search($payments, (string) $filters['search'], [
             'reference',
             'notes',
             fn ($query, $search, $like) => $query->orWhereHas(
@@ -70,23 +114,6 @@ class PaymentIndexQuery
                         ->orWhere('code', 'like', $like))
             ),
         ]);
-        $metricScope = clone $baseQuery;
-        $this->tables->exact($metricScope, $filters, 'portfolio_id');
-
-        return [
-            'payments' => $this->paginate($payments, $filters),
-            'paymentInsights' => $this->insights($metricScope),
-            'filters' => $filters,
-            'counts' => $this->tables->statusCounts(
-                $metricScope,
-                PaymentOptions::STATUSES,
-                $filters,
-            ),
-            'portfolioOptions' => $this->portfolios->options($actor),
-            'statusOptions' => PaymentOptions::STATUSES,
-            'typeOptions' => PaymentOptions::TYPES,
-            'methodOptions' => PaymentOptions::METHODS,
-        ];
     }
 
     /**

@@ -94,6 +94,16 @@ class PropertyMapWorkspaceTest extends TestCase
                     && ! collect($assets)->contains('code', 'FILTERED-OUT')));
     }
 
+    public function test_property_map_rejects_malformed_portfolio_filters(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('property-map.index', ['portfolio_id' => 'not-an-id']))
+            ->assertRedirect()
+            ->assertSessionHasErrors('portfolio_id');
+    }
+
     public function test_property_map_exposes_zone_and_land_directory_records_with_detail_links(): void
     {
         $portfolio = $this->createPortfolio();

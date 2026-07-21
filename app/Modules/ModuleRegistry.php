@@ -26,4 +26,17 @@ final class ModuleRegistry
             'media' => ['label' => 'Media', 'area' => 'website'],
         ];
     }
+
+    /**
+     * Cross-cutting modules coordinate feature modules but never own their data rules.
+     *
+     * @return array<string, array{label:string, area:string}>
+     */
+    public static function infrastructureModules(): array
+    {
+        return [
+            'search' => ['label' => 'Global Search', 'area' => 'platform'],
+            'exports' => ['label' => 'Resource Exports', 'area' => 'platform'],
+        ];
+    }
 }
