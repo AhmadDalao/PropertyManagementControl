@@ -602,6 +602,43 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('audit history uses localized metrics, mobile cards, filters, and real XLSX export', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/audit-logs?locale=ar');
+
+        await expect(
+            page.getByRole('heading', { name: 'سجل التدقيق', exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        await expect(page.getByLabel('الحدث')).toBeVisible();
+        await expect(page.getByLabel('نوع السجل')).toBeVisible();
+        await expect(page.getByLabel('عدّله')).toBeVisible();
+        await expect(page.getByLabel('التاريخ من')).toBeVisible();
+        await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const workbook = await page.request.get('/audit-logs/export?locale=ar');
+        expect(workbook.ok()).toBeTruthy();
+        expect(workbook.headers()['content-type']).toContain(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/audit-logs');
+        await expect(page.locator('.pmc-table-scroll')).toBeVisible();
+        await expect(page.locator('.pmc-data-table')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('authenticated command-center routes have no serious accessibility violations', async ({
         page,
     }) => {
@@ -613,6 +650,7 @@ test.describe('authenticated administration', () => {
                 '/assets',
                 '/property-map',
                 '/reports',
+                '/audit-logs',
                 '/media-files',
                 '/media-files/create',
                 '/cms',

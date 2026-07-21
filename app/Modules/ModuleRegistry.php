@@ -21,6 +21,7 @@ final class ModuleRegistry
             'expenses' => ['label' => 'Expenses', 'area' => 'operations'],
             'documents' => ['label' => 'Documents', 'area' => 'operations'],
             'reports' => ['label' => 'Reports', 'area' => 'operations'],
+            'audit' => ['label' => 'Audit History', 'area' => 'system'],
             'cms' => ['label' => 'Website Control', 'area' => 'website'],
             'media' => ['label' => 'Media', 'area' => 'website'],
         ];

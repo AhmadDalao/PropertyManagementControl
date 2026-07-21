@@ -57,6 +57,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - `MediaModuleArchitectureTest` guards the split. Feature coverage enforces portfolio isolation, private storage, real image validation, public/private disk transitions, CMS usage locks, portable public URLs, safe picker scope, and physical file deletion.
 - Reports are the twelfth complete vertical module. `ReportController` fell from 493 lines to a 57-line adapter; validated filters, scoped calculations, saved-view permissions, page presentation, and `.xlsx` generation now live under `app/Modules/Reports`.
 - The Report React workspace fell from an 838-line monolith to a 131-line composer with module-owned filters, tabs, KPI cards, collection/cost/operations panels, visuals, saved views, and contracts. Feature coverage rejects malformed dates and foreign portfolio filters, strips unsupported saved filters, enforces one personal default view, hides unauthorized delete actions, and verifies Arabic workbook output.
+- Audit is the thirteenth complete vertical module. `AuditLogController` fell from 371 lines to a 34-line adapter; validated filters, portfolio/actor access, polymorphic subject mapping, activity presentation, scoped queries, and `.xlsx` generation now live under `app/Modules/Audit`.
+- The Audit React workspace fell from a 271-line route page to a 35-line composer with module-owned metrics, filters, formatting, mobile cards, table columns, and contracts. Feature coverage enforces owner isolation, malformed-date rejection, accurate event facets, Arabic record labels, direct subject links, sensitive-key suppression, real XLSX output, zero horizontal overflow, and WCAG AA contrast.
 
 ## Resource Refactor Checklist
 
@@ -68,7 +70,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend target by risk is Audit, followed by consolidation of shared global-search and export contracts.
+The next backend target by risk is consolidation of shared global-search and export contracts, followed by removal of the remaining controller table/resource traits once their last consumers have moved into modules.
 
 ## Local Verification
 
