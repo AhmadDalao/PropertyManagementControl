@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AdminExportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/AdminExportController.php
-
-		-
 			message: '#^Parameter \#3 \$query of method App\\Http\\Controllers\\AdminExportController\:\:xlsx\(\) expects Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>, Illuminate\\Database\\Eloquent\\Builder\<App\\Models\\CmsPage\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -645,7 +633,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/GlobalSearchController.php
 
 		-
@@ -797,138 +785,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 4
 			path: app/Http/Controllers/GlobalSearchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\>\:\:\$portfolio_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:through\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Cannot call method betweenIncluded\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Cannot call method lessThan\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Cannot call method toDateString\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 13
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\LeaseController\:\:leaseFormPage\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Method App\\Http\\Controllers\\LeaseController\:\:leaseInsights\(\) has parameter \$baseQuery with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$asset of method App\\Modules\\Leases\\LeaseLifecycle\:\:create\(\) expects App\\Models\\Asset, App\\Models\\Asset\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Asset\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\LeaseInstallment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: non\-falsy\-string\}, Closure\(App\\Models\\Asset\)\: array\{value\: int, label\: non\-falsy\-string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{value\: int, label\: string\}, Closure\(App\\Models\\TenantProfile\)\: array\{value\: int, label\: string\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Lease\)\: bool given\.$#'
-			identifier: argument.type
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:sum\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: float\)\|string\|null, Closure\(App\\Models\\Lease\)\: float given\.$#'
-			identifier: argument.type
-			count: 3
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\LeaseInstallment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 9
-			path: app/Http/Controllers/LeaseController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Http/Controllers/LeaseController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
@@ -1093,67 +949,31 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$allocation_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$balance_remaining\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$due_date\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
-			identifier: property.notFound
-			count: 3
+			count: 2
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseInstallment\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseable\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$label\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_ar\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name_en\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
@@ -1161,55 +981,19 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 3
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_due\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_paid\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
-			identifier: property.notFound
-			count: 1
+			count: 4
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Contracts\\Pagination\\LengthAwarePaginator\:\:through\(\)\.$#'
 			identifier: method.notFound
 			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Cannot call method isSameMonth\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Cannot call method toDateString\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 2
 			path: app/Http/Controllers/PaymentController.php
 
 		-
@@ -1225,9 +1009,15 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PaymentAllocation\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 2
+			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
@@ -1249,7 +1039,7 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Payment\)\: mixed given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:filter\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|null, Closure\(App\\Models\\Payment\)\: bool given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/PaymentController.php
@@ -1273,21 +1063,21 @@ parameters:
 			path: app/Http/Controllers/PaymentController.php
 
 		-
+			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\PaymentAllocation\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Http/Controllers/PaymentController.php
+
+		-
 			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 2
+			count: 1
 			path: app/Http/Controllers/PaymentController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, array\<string, mixed\>\|float\|int\|string\>\>\:\:values\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 1
-			path: app/Http/Controllers/PaymentController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 3
 			path: app/Http/Controllers/PaymentController.php
 
 		-
@@ -1429,57 +1219,27 @@ parameters:
 			path: app/Http/Controllers/ProfileController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$leaseable\.$#'
-			identifier: property.notFound
-			count: 4
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_ar\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Cannot call method betweenIncluded\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Cannot call method format\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Cannot call method lessThan\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
+			count: 2
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Cannot call method toDateString\(\) on string\.$#'
 			identifier: method.nonObject
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
@@ -1539,11 +1299,11 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 2
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, reference\: non\-falsy\-string, tenant\: mixed, lease\: mixed, amount\: float, currency\: string, received_on\: mixed\}, Closure\(App\\Models\\Payment\)\: array\{id\: int, reference\: non\-falsy\-string, tenant\: mixed, lease\: mixed, amount\: float, currency\: string, received_on\: mixed\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, reference\: non\-falsy\-string, tenant\: string\|null, lease\: string\|null, amount\: float, currency\: string, received_on\: string\|null\}, Closure\(App\\Models\\Payment\)\: array\{id\: int, reference\: non\-falsy\-string, tenant\: string\|null, lease\: string\|null, amount\: float, currency\: string, received_on\: string\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ReportController.php
@@ -1579,19 +1339,13 @@ parameters:
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, App\\Models\\Lease\|float\>\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Parameter \#1 \$groupBy of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: \(int\|string\|Stringable\|UnitEnum\)\)\|list\<Closure\|string\>\|string, Closure\(App\\Models\\Payment\)\: mixed given\.$#'
+			message: '#^Parameter \#1 \$groupBy of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: non\-falsy\-string\)\|list\<Closure\|string\>\|string, Closure\(App\\Models\\ExpenseEntry\)\: non\-falsy\-string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
-			message: '#^Parameter \#1 \$groupBy of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: non\-falsy\-string\)\|list\<Closure\|string\>\|string, Closure\(App\\Models\\ExpenseEntry\)\: non\-falsy\-string given\.$#'
+			message: '#^Parameter \#1 \$groupBy of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: non\-falsy\-string\)\|list\<Closure\|string\>\|string, Closure\(App\\Models\\Payment\)\: non\-falsy\-string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/ReportController.php
@@ -1599,37 +1353,25 @@ parameters:
 		-
 			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 2
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, App\\Models\\Lease\|float\>\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
 			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 3
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:values\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
-			count: 2
-			path: app/Http/Controllers/ReportController.php
-
-		-
-			message: '#^Unable to resolve the template type TGroupKey in call to method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:groupBy\(\)$#'
-			identifier: argument.templateType
 			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 6
+			count: 1
 			path: app/Http/Controllers/ReportController.php
 
 		-
@@ -1642,12 +1384,6 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title_en\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/TenantController.php
-
-		-
-			message: '#^Cannot call method toDateString\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
 			path: app/Http/Controllers/TenantController.php
 
 		-
@@ -2017,54 +1753,6 @@ parameters:
 			path: app/Models/LabelOverride.php
 
 		-
-			message: '#^Cannot call method lessThan\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Cannot call method lessThanOrEqualTo\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Class App\\Models\\Lease uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Method App\\Models\\Lease\:\:getDaysRemainingAttribute\(\) should return int\|null but returns float\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Models/Lease.php
-
-		-
-			message: '#^Class App\\Models\\LeaseInstallment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/LeaseInstallment.php
-
-		-
-			message: '#^Method App\\Models\\LeaseInstallment\:\:allocations\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/LeaseInstallment.php
-
-		-
-			message: '#^Method App\\Models\\LeaseInstallment\:\:lease\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/LeaseInstallment.php
-
-		-
 			message: '#^Class App\\Models\\MediaFile uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1
@@ -2105,48 +1793,6 @@ parameters:
 			identifier: missingType.generics
 			count: 1
 			path: app/Models/NavigationItem.php
-
-		-
-			message: '#^Class App\\Models\\Payment uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:allocations\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\HasMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:documents\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\MorphMany does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:lease\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:recordedBy\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
-
-		-
-			message: '#^Method App\\Models\\Payment\:\:tenantProfile\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/Payment.php
 
 		-
 			message: '#^Class App\\Models\\PaymentAllocation uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
@@ -2257,12 +1903,6 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Cannot call method toDateString\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 5
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
 			message: '#^Method App\\Modules\\Dashboard\\DashboardPresenter\:\:arrearsLeases\(\) has parameter \$leaseQuery with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
 			identifier: missingType.generics
 			count: 1
@@ -2293,12 +1933,6 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 2
@@ -2317,7 +1951,7 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: mixed, days_remaining\: int\|null, balance_remaining\: float, currency\: string\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: string\|null, days_remaining\: int\|null, balance_remaining\: float, currency\: string\}, Closure\(App\\Models\\Lease\)\: array\{id\: int, code\: string, tenant\: string\|null, asset\: mixed, ends_at\: string\|null, days_remaining\: int\|null, balance_remaining\: float, currency\: string\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Modules/Dashboard/DashboardPresenter.php
@@ -2341,12 +1975,6 @@ parameters:
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-
-			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Payment\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: method.unresolvableReturnType
-			count: 1
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
 			message: '#^Return type of call to method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 2
@@ -2356,12 +1984,6 @@ parameters:
 			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
 			identifier: method.unresolvableReturnType
 			count: 2
-			path: app/Modules/Dashboard/DashboardPresenter.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 4
 			path: app/Modules/Dashboard/DashboardPresenter.php
 
 		-

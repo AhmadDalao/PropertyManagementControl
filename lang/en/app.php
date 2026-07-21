@@ -790,6 +790,7 @@ return [
         'asset_portfolio_mismatch' => 'Selected asset does not belong to this portfolio.',
         'maintenance_portfolio_mismatch' => 'Selected maintenance request does not belong to this portfolio.',
         'lease_asset_portfolio_mismatch' => 'Asset does not belong to the selected portfolio.',
+        'asset_not_rentable' => 'Only active rentable assets can receive a lease.',
         'tenant_portfolio_mismatch' => 'Tenant does not belong to the selected portfolio.',
         'asset_already_leased' => 'This asset already has an active lease.',
         'lease_terminated_locked' => 'Terminated leases cannot be reopened. Create a new lease instead.',

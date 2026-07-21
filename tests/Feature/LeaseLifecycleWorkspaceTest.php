@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Payment;
+use App\Modules\Leases\Actions\ManageLeases;
 use App\Services\LeaseFinancialService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class LeaseLifecycleWorkspaceTest extends TestCase
@@ -86,8 +89,15 @@ class LeaseLifecycleWorkspaceTest extends TestCase
                 ->where('leaseInsights.total', 1)
                 ->where('leaseInsights.active', 1)
                 ->where('leaseInsights.balance_remaining', 4500)
-                ->where('leases.data.0.documents.0.download_url', route('documents.download', $document))
-                ->has('leases.data.0.installments', 4));
+                ->missing('leases.data.0.documents')
+                ->missing('leases.data.0.installments'));
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $lease))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('detailPage.related.0.rows', 4)
+                ->where('detailPage.documents.0.href', route('documents.download', $document)));
     }
 
     public function test_lease_workspace_exposes_frequency_aware_schedule_rows(): void
@@ -121,10 +131,16 @@ class LeaseLifecycleWorkspaceTest extends TestCase
                 ->where('leases.data.0.billing_day', 10)
                 ->where('leases.data.0.tax_amount', 500)
                 ->where('leases.data.0.discount_amount', 100)
-                ->where('leases.data.0.installments.1.label', 'Rent Jan 15-Apr 14 2026')
-                ->where('leases.data.0.installments.1.due_date', '2026-01-15')
-                ->where('leases.data.0.installments.2.label', 'Rent Apr 15-Jul 14 2026')
-                ->where('leases.data.0.installments.2.due_date', '2026-04-10'));
+                ->missing('leases.data.0.installments'));
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $lease))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.related.0.rows.1.Installment', 'Rent Jan 15-Apr 14 2026')
+                ->where('detailPage.related.0.rows.1.Due date', '2026-01-15')
+                ->where('detailPage.related.0.rows.2.Installment', 'Rent Apr 15-Jul 14 2026')
+                ->where('detailPage.related.0.rows.2.Due date', '2026-04-10'));
     }
 
     public function test_lease_detail_opens_a_prefilled_pdf_only_signed_contract_upload(): void
@@ -251,6 +267,184 @@ class LeaseLifecycleWorkspaceTest extends TestCase
         $this->assertSame('application/pdf', $document->mime_type);
         $this->assertStringEndsWith('.pdf', $document->original_name);
         Storage::disk('local')->assertExists($document->file_path);
+    }
+
+    public function test_tenant_lease_detail_hides_internal_notes_admin_actions_and_internal_documents(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+            ['notes' => 'Internal renewal negotiation.'],
+        );
+        Storage::disk('local')->put('documents/leases/visible.pdf', '%PDF-visible');
+        Storage::disk('local')->put('documents/leases/internal.pdf', '%PDF-internal');
+        $visible = Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'lease_contract',
+            'title_en' => 'Tenant contract',
+            'disk' => 'local',
+            'file_path' => 'documents/leases/visible.pdf',
+            'original_name' => 'visible.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 12,
+        ]);
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'owner_report',
+            'title_en' => 'Internal owner report',
+            'disk' => 'local',
+            'file_path' => 'documents/leases/internal.pdf',
+            'original_name' => 'internal.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 13,
+        ]);
+
+        $this->actingAs($tenantUser)
+            ->get(route('leases.show', $lease))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
+                    'Contract PDF',
+                    'Tenant statement',
+                ])
+                ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Notes')
+                    && collect($items)->every(fn ($item) => empty($item['href'])))
+                ->where('detailPage.related.1.actionHref', null)
+                ->where('detailPage.timeline', [])
+                ->has('detailPage.documents', 1)
+                ->where('detailPage.documents.0.href', route('documents.download', $visible)));
+    }
+
+    public function test_alias_leases_enforce_exclusivity_and_release_occupancy(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $firstTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $secondTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $asset = $this->createAsset($portfolio, ['occupancy_status' => 'occupied']);
+        $lease = $this->createLease($portfolio, $firstTenant, $asset, $owner);
+        $lease->update(['leaseable_type' => (new Asset)->getMorphClass()]);
+
+        $this->actingAs($owner)
+            ->from(route('leases.create'))
+            ->post(route('leases.store'), [
+                'tenant_profile_id' => $secondTenant->id,
+                'asset_id' => $asset->id,
+                'status' => 'active',
+                'payment_frequency' => 'monthly',
+                'started_at' => now()->toDateString(),
+                'ends_at' => now()->addYear()->toDateString(),
+                'rent_amount' => 2000,
+            ])
+            ->assertRedirect(route('leases.create'))
+            ->assertSessionHasErrors('asset_id');
+
+        $this->actingAs($owner)
+            ->delete(route('leases.destroy', $lease))
+            ->assertRedirect(route('leases.index'));
+
+        $this->assertSame('terminated', $lease->fresh()->status);
+        $this->assertSame('vacant', $asset->fresh()->occupancy_status);
+    }
+
+    public function test_non_rentable_assets_cannot_receive_a_lease(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $asset = $this->createAsset($portfolio, ['rentable' => false]);
+
+        $this->actingAs($owner)
+            ->from(route('leases.create'))
+            ->post(route('leases.store'), [
+                'tenant_profile_id' => $tenant->id,
+                'asset_id' => $asset->id,
+                'status' => 'active',
+                'payment_frequency' => 'monthly',
+                'started_at' => now()->toDateString(),
+                'ends_at' => now()->addYear()->toDateString(),
+                'rent_amount' => 2000,
+            ])
+            ->assertRedirect(route('leases.create'))
+            ->assertSessionHasErrors('asset_id');
+
+        $this->assertDatabaseMissing('leases', ['leaseable_id' => $asset->id]);
+    }
+
+    public function test_draft_lease_cannot_activate_after_its_asset_becomes_non_rentable(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $asset = $this->createAsset($portfolio);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, ['status' => 'draft']);
+        $asset->update(['rentable' => false]);
+
+        $this->actingAs($owner)
+            ->from(route('leases.edit', $lease))
+            ->put(route('leases.update', $lease), [
+                'status' => 'active',
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertRedirect(route('leases.edit', $lease))
+            ->assertSessionHasErrors('asset_id');
+
+        $this->assertSame('draft', $lease->fresh()->status);
+        $this->assertNotSame('occupied', $asset->fresh()->occupancy_status);
+    }
+
+    public function test_lease_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
+    {
+        $ownerPortfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $ownerPortfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $foreignTenant = $this->createTenantProfile(
+            $foreignPortfolio,
+            $this->createUserWithRole('tenant', $foreignPortfolio),
+        );
+        $foreignLease = $this->createLease(
+            $foreignPortfolio,
+            $foreignTenant,
+            $this->createAsset($foreignPortfolio),
+            $foreignOwner,
+        );
+
+        try {
+            app(ManageLeases::class)->terminate($owner, $foreignLease);
+            $this->fail('Cross-portfolio lease mutation was not rejected.');
+        } catch (HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
+
+        $this->assertSame('active', $foreignLease->fresh()->status);
     }
 
     public function test_tenant_dashboard_exposes_secure_contract_document_and_receipt_links(): void
@@ -400,6 +594,19 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             Storage::disk('local')->assertExists($document->file_path);
             $this->assertSame('%PDF-', substr(Storage::disk('local')->get($document->file_path), 0, 5));
         }
+
+        $contractDocument = Document::query()->where('type', 'lease_contract')->firstOrFail();
+        $firstContractPath = $contractDocument->file_path;
+
+        $this->actingAs($owner)
+            ->get(route('leases.contract', $lease))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $replacementPath = $contractDocument->fresh()->file_path;
+        $this->assertNotSame($firstContractPath, $replacementPath);
+        Storage::disk('local')->assertMissing($firstContractPath);
+        Storage::disk('local')->assertExists($replacementPath);
     }
 
     public function test_receipt_generation_rejects_non_posted_payments(): void

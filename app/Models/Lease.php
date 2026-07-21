@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,10 +22,22 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read Collection<int, LeaseInstallment> $installments
  * @property-read Collection<int, Payment> $payments
  * @property-read Collection<int, Document> $documents
+ * @property CarbonInterface|null $started_at
+ * @property CarbonInterface|null $ends_at
+ * @property CarbonInterface|null $signed_at
+ * @property-read float $total_due
+ * @property-read float $total_paid
+ * @property-read float $balance_remaining
+ * @property-read float $due_now_amount
+ * @property-read float $overdue_amount
+ * @property-read LeaseInstallment|null $next_due_installment
+ * @property-read int|null $days_remaining
  */
 class Lease extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use HasShowcaseBadge;
     use LogsModelActivity;
 
@@ -124,7 +138,7 @@ class Lease extends Model
             return null;
         }
 
-        return now()->startOfDay()->diffInDays($this->ends_at, false);
+        return (int) now()->startOfDay()->diffInDays($this->ends_at, false);
     }
 
     private function outstandingInstallmentAmount(callable $matches): float

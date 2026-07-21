@@ -33,6 +33,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Maintenance is the second complete vertical module. Its controller fell from 788 lines to a 106-line adapter; scoped reads, transactions, SLA scheduling, access rules, forms, details, and options now live under `app/Modules/Maintenance`.
 - The Maintenance React workspace is a 51-line composer with module-owned filters, metrics, table, and contracts. Tenant presenters explicitly remove internal comments and owner cost data.
 - `MaintenanceModuleArchitectureTest` guards the split, while feature tests exercise direct action access, morph-alias leases, and tenant-safe payloads.
+- Leases are the third complete vertical module. `LeaseController` fell from 693 lines to a 117-line adapter; scoped reads, validation, lifecycle transactions, PDF generation, forms, details, access rules, and options now live under `app/Modules/Leases`.
+- The Lease React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Index payloads no longer ship full installment or document collections, and tenant details omit internal notes, admin actions, internal documents, and audit history.
+- `LeaseModuleArchitectureTest` guards the split. Feature coverage enforces canonical morph aliases, active-lease exclusivity, asset occupancy synchronization, PDF-only signed contracts, and direct-action portfolio isolation.
 
 ## Resource Refactor Checklist
 
@@ -44,7 +47,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-Next backend targets by risk and size are Leases, Payments, and Documents.
+Next backend targets by risk and size are Payments and Documents.
 
 ## Local Verification
 

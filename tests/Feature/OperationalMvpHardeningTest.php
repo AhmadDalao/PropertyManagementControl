@@ -94,6 +94,7 @@ class OperationalMvpHardeningTest extends TestCase
             ->assertRedirect();
 
         $lease = Lease::query()->where('leaseable_id', $asset->id)->firstOrFail();
+        $this->assertSame($asset->getMorphClass(), $lease->leaseable_type);
         $this->assertSame('vacant', $asset->fresh()->occupancy_status);
 
         $this->actingAs($owner)

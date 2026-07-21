@@ -4,13 +4,17 @@ namespace App\Modules\Leases;
 
 use App\Models\Asset;
 use App\Models\Lease;
+use App\Modules\Shared\MorphTypes;
 use App\Services\LeaseFinancialService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class LeaseLifecycle
 {
-    public function __construct(private readonly LeaseFinancialService $financials) {}
+    public function __construct(
+        private readonly LeaseFinancialService $financials,
+        private readonly MorphTypes $morphTypes,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $attributes
@@ -43,7 +47,7 @@ class LeaseLifecycle
                 ]);
             }
 
-            $asset = $lockedLease->leaseable_type === Asset::class
+            $asset = in_array($lockedLease->leaseable_type, $this->assetTypes(), true)
                 ? Asset::query()->lockForUpdate()->findOrFail($lockedLease->leaseable_id)
                 : null;
 
@@ -100,8 +104,14 @@ class LeaseLifecycle
             return;
         }
 
+        if (! $asset->rentable || $asset->status !== 'active') {
+            throw ValidationException::withMessages([
+                'asset_id' => trans('app.errors.asset_not_rentable'),
+            ]);
+        }
+
         $query = Lease::query()
-            ->where('leaseable_type', Asset::class)
+            ->whereIn('leaseable_type', $this->assetTypes())
             ->where('leaseable_id', $asset->id)
             ->where('status', 'active');
 
@@ -123,7 +133,7 @@ class LeaseLifecycle
         }
 
         $occupied = Lease::query()
-            ->where('leaseable_type', Asset::class)
+            ->whereIn('leaseable_type', $this->assetTypes())
             ->where('leaseable_id', $asset->id)
             ->where('status', 'active')
             ->exists();
@@ -133,5 +143,11 @@ class LeaseLifecycle
         if ($asset->occupancy_status !== $occupancy) {
             $asset->update(['occupancy_status' => $occupancy]);
         }
+    }
+
+    /** @return array<int, string> */
+    private function assetTypes(): array
+    {
+        return $this->morphTypes->for(new Asset);
     }
 }

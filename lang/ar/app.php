@@ -790,6 +790,7 @@ return [
         'asset_portfolio_mismatch' => 'الأصل المحدد لا ينتمي إلى هذه المحفظة.',
         'maintenance_portfolio_mismatch' => 'طلب الصيانة المحدد لا ينتمي إلى هذه المحفظة.',
         'lease_asset_portfolio_mismatch' => 'الأصل لا ينتمي إلى المحفظة المختارة.',
+        'asset_not_rentable' => 'يمكن إنشاء عقد فقط للأصول النشطة والقابلة للتأجير.',
         'tenant_portfolio_mismatch' => 'المستأجر لا ينتمي إلى المحفظة المختارة.',
         'asset_already_leased' => 'يوجد عقد نشط لهذا الأصل بالفعل.',
         'lease_terminated_locked' => 'لا يمكن إعادة فتح عقد منتهي. أنشئ عقداً جديداً بدلاً منه.',
