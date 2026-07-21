@@ -66,7 +66,9 @@ class LeaseDetailPresenter
 
         $documents = $adminMode
             ? $lease->documents
-            : $lease->documents->whereIn('type', LeaseOptions::TENANT_DOCUMENT_TYPES);
+            : $lease->documents
+                ->where('is_public', true)
+                ->whereIn('type', LeaseOptions::TENANT_DOCUMENT_TYPES);
 
         return [
             'header' => [

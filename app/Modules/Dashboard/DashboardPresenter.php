@@ -12,6 +12,7 @@ use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Assets\PropertyMapPresenter;
+use App\Modules\Leases\Support\LeaseOptions;
 use Illuminate\Database\Eloquent\Builder;
 
 class DashboardPresenter
@@ -95,6 +96,8 @@ class DashboardPresenter
                     ]) ?? [],
                 'requests' => $tenantProfile?->maintenanceRequests()->latest()->limit(8)->get() ?? [],
                 'documents' => $activeLease?->documents()
+                    ->where('is_public', true)
+                    ->whereIn('type', LeaseOptions::TENANT_DOCUMENT_TYPES)
                     ->latest()
                     ->get()
                     ->map(fn ($document) => [

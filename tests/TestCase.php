@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Modules\Leases\Actions\InstallmentSchedule;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use ZipArchive;
@@ -133,5 +134,13 @@ abstract class TestCase extends BaseTestCase
         $zip->close();
 
         return $sheetXml;
+    }
+
+    protected function fakePdf(string $name = 'document.pdf'): UploadedFile
+    {
+        return UploadedFile::fake()->createWithContent(
+            $name,
+            "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF",
+        );
     }
 }

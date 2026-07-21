@@ -77,7 +77,9 @@ class ResourcePresenter
                 'id' => $document->id,
                 'title' => $this->localized($document->title_en, $document->title_ar) ?: $document->original_name,
                 'subtitle' => trim(($document->type ?: 'document').' · '.($document->original_name ?: 'file')),
-                'badge' => $document->is_public ? 'Public' : 'Private',
+                'badge' => $document->is_public
+                    ? trans('app.documents.portal_visible')
+                    : trans('app.documents.internal'),
                 'href' => route('documents.download', $document),
             ])
             ->values()

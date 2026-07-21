@@ -51,6 +51,7 @@ class PaymentReceipts
             "generated/payments/{$payment->id}",
             $fileName,
             $content,
+            true,
         );
 
         return response()->streamDownload(

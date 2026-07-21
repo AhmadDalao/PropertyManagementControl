@@ -371,7 +371,7 @@ class PaymentModuleSecurityTest extends TestCase
             'original_name' => basename($path),
             'mime_type' => 'application/pdf',
             'file_size' => 12,
-            'is_public' => false,
+            'is_public' => $type === 'receipt',
         ]);
     }
 }

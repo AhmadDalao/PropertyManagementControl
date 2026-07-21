@@ -115,11 +115,17 @@ test.describe('authenticated administration', () => {
 
         for (const path of [
             '/dashboard',
+            '/portfolios',
+            '/users',
             '/assets',
             '/tenants',
             '/leases',
             '/payments',
             '/maintenance-requests',
+            '/expenses',
+            '/documents',
+            '/media-files',
+            '/audit-logs',
             '/reports',
             '/documentation',
             '/cms',
@@ -134,15 +140,18 @@ test.describe('authenticated administration', () => {
                     (node) => node.getBoundingClientRect().height,
                 ),
             ).toBeLessThanOrEqual(64);
-        }
 
-        await page.goto('/assets');
+            const desktopTable = page.locator('.pmc-table-scroll');
 
-        if ((await page.locator('.pmc-mobile-record-card').count()) > 0) {
-            await expect(
-                page.locator('.pmc-mobile-record-card').first(),
-            ).toBeVisible();
-            await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+            if ((await desktopTable.count()) > 0) {
+                await expect(desktopTable).toBeHidden();
+            }
+
+            const mobileCards = page.locator('.pmc-mobile-record-card');
+
+            if ((await mobileCards.count()) > 0) {
+                await expect(mobileCards.first()).toBeVisible();
+            }
         }
     });
 

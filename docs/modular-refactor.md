@@ -40,6 +40,10 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - The Payment React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Payment portfolio, tenant, and currency values are derived from the selected lease, index payloads use SQL aggregates instead of full allocation collections, and tenant details omit notes, internal documents, admin links, and audit history.
 - `PaymentModuleArchitectureTest` guards the split. Feature coverage enforces direct-action portfolio isolation, locked void transitions, draft-lease rejection, safe receipt filenames, generated-file replacement, Arabic lease labels, and tenant-safe payloads.
 - Lease installment scheduling and payment allocation are separate actions. Shared private PDF replacement now lives in `app/Modules/Shared/PrivatePdfDocuments.php` for both contracts and receipts.
+- Documents are the fifth complete vertical module. `DocumentController` fell from 509 lines to a 95-line adapter; scoped reads, PDF validation, attachment resolution, visibility rules, downloads, forms, and details now live under `app/Modules/Documents`.
+- The Document React workspace is a 37-line composer with module-owned filters, metrics, table, and contracts. Index payloads expose a small attachment summary instead of full polymorphic records and no longer preload three unused option collections.
+- `DocumentModuleArchitectureTest` guards the split. Feature coverage enforces immutable attachments, portfolio isolation, real PDF signatures, tenant-safe lease and receipt downloads, missing-file handling, Arabic wording, supported page sizes, filtered XLSX exports, and the portal-visibility migration.
+- `documents.is_public` now means tenant-portal visibility, not unauthenticated public access. Only approved lease documents and payment receipts can use it; all files remain on private storage and every download is authorized.
 
 ## Resource Refactor Checklist
 
@@ -51,7 +55,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next backend target by risk is Documents, followed by Tenants and Expenses.
+The next backend targets by risk are Tenants and Expenses, followed by Users and Portfolios.
 
 ## Local Verification
 

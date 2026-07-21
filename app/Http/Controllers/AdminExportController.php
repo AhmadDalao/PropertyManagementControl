@@ -307,9 +307,9 @@ class AdminExportController extends Controller
         }
 
         $this->applyDateRange($query, $filters, 'created_at');
-        $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
+        $this->applySearch($query, $filters['search'], ['title_en', 'title_ar', 'original_name', 'type']);
 
-        return $this->xlsx('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', 'Public', 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
+        return $this->xlsx('documents', ['Title', 'Arabic Title', 'Type', 'Attachment', 'Original File', 'Mime Type', 'Size', trans('app.documents.portal_visible'), 'Portfolio', 'Uploaded By', 'Created'], $query, fn (Document $row) => [
             $row->title_en,
             $row->title_ar,
             $this->option($row->type),

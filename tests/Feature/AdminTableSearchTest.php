@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
+use App\Models\Document;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -138,7 +139,7 @@ class AdminTableSearchTest extends TestCase
         $lease = $this->createLease($portfolio, $tenantProfile, $asset, $manager, ['code' => 'LEASE-VISIBLE']);
         $otherLease = $this->createLease($portfolio, $otherTenantProfile, $otherAsset, $manager, ['code' => 'LEASE-HIDDEN']);
 
-        Payment::query()->create([
+        $payment = Payment::query()->create([
             'portfolio_id' => $portfolio->id,
             'lease_id' => $lease->id,
             'tenant_profile_id' => $tenantProfile->id,
@@ -152,7 +153,7 @@ class AdminTableSearchTest extends TestCase
             'currency' => 'SAR',
         ]);
 
-        Payment::query()->create([
+        $otherPayment = Payment::query()->create([
             'portfolio_id' => $portfolio->id,
             'lease_id' => $otherLease->id,
             'tenant_profile_id' => $otherTenantProfile->id,
@@ -180,13 +181,44 @@ class AdminTableSearchTest extends TestCase
             'requested_at' => now(),
         ]);
 
+        foreach ([
+            [$lease, 'lease_contract', 'Tenant visible contract', true],
+            [$lease, 'lease_contract', 'Tenant visible hidden contract', false],
+            [$lease, 'owner_report', 'Tenant visible internal report', true],
+            [$payment, 'receipt', 'Tenant visible receipt', true],
+            [$otherLease, 'lease_contract', 'Tenant visible foreign contract', true],
+            [$otherPayment, 'receipt', 'Tenant visible foreign receipt', true],
+        ] as [$record, $type, $title, $portalVisible]) {
+            Document::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'uploaded_by_user_id' => $manager->id,
+                'documentable_type' => $record->getMorphClass(),
+                'documentable_id' => $record->id,
+                'type' => $type,
+                'title_en' => $title,
+                'title_ar' => 'مستند بحث',
+                'disk' => 'local',
+                'file_path' => 'documents/'.str($title)->slug().'.pdf',
+                'original_name' => str($title)->slug().'.pdf',
+                'mime_type' => 'application/pdf',
+                'file_size' => 100,
+                'is_public' => $portalVisible,
+            ]);
+        }
+
         $this->actingAs($tenantUser)
             ->getJson(route('global-search', ['q' => 'VISIBLE']))
             ->assertOk()
             ->assertJsonFragment(['title' => 'LEASE-VISIBLE'])
             ->assertJsonFragment(['title' => 'PAY-VISIBLE'])
+            ->assertJsonFragment(['title' => 'Tenant visible contract'])
+            ->assertJsonFragment(['title' => 'Tenant visible receipt'])
             ->assertJsonMissing(['title' => 'LEASE-HIDDEN'])
-            ->assertJsonMissing(['title' => 'PAY-HIDDEN']);
+            ->assertJsonMissing(['title' => 'PAY-HIDDEN'])
+            ->assertJsonMissing(['title' => 'Tenant visible hidden contract'])
+            ->assertJsonMissing(['title' => 'Tenant visible internal report'])
+            ->assertJsonMissing(['title' => 'Tenant visible foreign contract'])
+            ->assertJsonMissing(['title' => 'Tenant visible foreign receipt']);
     }
 
     public function test_asset_table_handles_every_supported_page_size_sorting_arabic_search_and_xlsx(): void

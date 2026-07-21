@@ -49,7 +49,9 @@ class PaymentDetailPresenter
 
         $documents = $adminMode
             ? $payment->documents
-            : $payment->documents->whereIn('type', PaymentOptions::TENANT_DOCUMENT_TYPES);
+            : $payment->documents
+                ->where('is_public', true)
+                ->whereIn('type', PaymentOptions::TENANT_DOCUMENT_TYPES);
 
         return [
             'header' => [

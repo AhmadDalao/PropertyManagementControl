@@ -12,6 +12,8 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Documents\Support\DocumentAttachments;
+use App\Modules\Documents\Support\DocumentOptions;
 use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +21,8 @@ use Illuminate\Http\Request;
 
 class GlobalSearchController extends Controller
 {
+    public function __construct(private readonly DocumentAttachments $documentAttachments) {}
+
     public function __invoke(Request $request): JsonResponse
     {
         $actor = $this->actor($request);
@@ -153,7 +157,7 @@ class GlobalSearchController extends Controller
 
         if ($this->moduleEnabled($actor, 'documents')) {
             $documentQuery = $this->scopeByPortfolio(Document::query(), $actor);
-            $this->applySearch($documentQuery, $search, ['title_en', 'title_ar', 'original_name', 'type', 'file_path']);
+            $this->applySearch($documentQuery, $search, ['title_en', 'title_ar', 'original_name', 'type']);
             foreach ($documentQuery->limit(5)->get() as $document) {
                 $results[] = $this->result(trans('app.nav.documents'), $this->localized($document->title_en, $document->title_ar), $document->original_name, $document->type, route('documents.show', $document));
             }
@@ -216,7 +220,26 @@ class GlobalSearchController extends Controller
 
         if ($this->moduleEnabled($actor, 'documents')) {
             $documentQuery = Document::query()
-                ->whereHasMorph('documentable', [Lease::class], fn ($leaseQuery) => $leaseQuery->where('tenant_profile_id', $tenantProfile->id));
+                ->where('is_public', true)
+                ->where(function (Builder $query) use ($tenantProfile): void {
+                    $query
+                        ->where(function (Builder $leaseDocuments) use ($tenantProfile): void {
+                            $leaseDocuments
+                                ->whereIn('documentable_type', $this->documentAttachments->typesFor('lease'))
+                                ->whereIn('type', DocumentOptions::portalTypes('lease'))
+                                ->whereIn('documentable_id', Lease::query()
+                                    ->select('id')
+                                    ->where('tenant_profile_id', $tenantProfile->id));
+                        })
+                        ->orWhere(function (Builder $paymentDocuments) use ($tenantProfile): void {
+                            $paymentDocuments
+                                ->whereIn('documentable_type', $this->documentAttachments->typesFor('payment'))
+                                ->whereIn('type', DocumentOptions::portalTypes('payment'))
+                                ->whereIn('documentable_id', Payment::query()
+                                    ->select('id')
+                                    ->where('tenant_profile_id', $tenantProfile->id));
+                        });
+                });
             $this->applySearch($documentQuery, $search, ['title_en', 'title_ar', 'original_name', 'type']);
             foreach ($documentQuery->limit(5)->get() as $document) {
                 $results[] = $this->result(trans('app.search.my_documents'), $this->localized($document->title_en, $document->title_ar), $document->original_name, $document->type, route('documents.download', $document));

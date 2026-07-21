@@ -3,6 +3,7 @@
 namespace App\Modules\Leases\Requests;
 
 use App\Models\Lease;
+use App\Modules\Shared\Rules\ValidPdf;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UploadSignedContractRequest extends FormRequest
@@ -19,7 +20,7 @@ class UploadSignedContractRequest extends FormRequest
     }
 
     /**
-     * @return array<string, array<int, string>>
+     * @return array<string, array<int, mixed>>
      */
     public function rules(): array
     {
@@ -31,6 +32,7 @@ class UploadSignedContractRequest extends FormRequest
                 'mimes:pdf',
                 'mimetypes:application/pdf',
                 'max:10240',
+                new ValidPdf,
             ],
         ];
     }

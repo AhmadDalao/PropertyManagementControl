@@ -12,6 +12,7 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Leases\Actions\InstallmentSchedule;
 use App\Modules\Payments\Actions\PaymentAllocator;
 use App\Services\LandingContentSeeder;
@@ -480,7 +481,7 @@ class DemoDataSeeder extends Seeder
             'original_name' => basename($path),
             'mime_type' => 'application/pdf',
             'file_size' => strlen($content),
-            'is_public' => false,
+            'is_public' => DocumentOptions::canShowInPortal('lease', $type),
         ]);
     }
 

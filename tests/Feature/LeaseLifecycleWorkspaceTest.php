@@ -255,7 +255,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
 
         $this->actingAs($owner)
             ->post(route('leases.signed-contract', $lease), [
-                'signed_contract' => UploadedFile::fake()->create('signed-contract.pdf', 64, 'application/pdf'),
+                'signed_contract' => $this->fakePdf('signed-contract.pdf'),
             ])
             ->assertRedirect(route('leases.show', $lease));
 
@@ -298,6 +298,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             'original_name' => 'visible.pdf',
             'mime_type' => 'application/pdf',
             'file_size' => 12,
+            'is_public' => true,
         ]);
         Document::query()->create([
             'portfolio_id' => $portfolio->id,
@@ -483,6 +484,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             'original_name' => 'tenant-contract.pdf',
             'mime_type' => 'application/pdf',
             'file_size' => 8,
+            'is_public' => true,
         ]);
 
         $this->actingAs($tenantUser)
@@ -588,7 +590,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
         foreach (['lease_contract', 'tenant_statement', 'receipt'] as $type) {
             $document = Document::query()->where('type', $type)->firstOrFail();
 
-            $this->assertFalse($document->is_public);
+            $this->assertTrue($document->is_public);
             $this->assertSame('application/pdf', $document->mime_type);
             $this->assertStringEndsWith('.pdf', $document->original_name);
             Storage::disk('local')->assertExists($document->file_path);

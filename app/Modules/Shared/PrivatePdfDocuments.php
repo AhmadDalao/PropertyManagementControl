@@ -24,6 +24,7 @@ class PrivatePdfDocuments
         string $directory,
         string $fileName,
         string $content,
+        bool $portalVisible = false,
     ): Document {
         $disk = 'local';
         $path = trim($directory, '/').'/'.Str::uuid().'-'.$fileName;
@@ -58,7 +59,7 @@ class PrivatePdfDocuments
                 'original_name' => $fileName,
                 'mime_type' => 'application/pdf',
                 'file_size' => strlen($content),
-                'is_public' => false,
+                'is_public' => $portalVisible,
             ])->save();
         } catch (Throwable $exception) {
             Storage::disk($disk)->delete($path);

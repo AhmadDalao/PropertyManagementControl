@@ -14,6 +14,7 @@ use App\Models\Portfolio;
 use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Documents\Support\DocumentOptions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -668,7 +669,7 @@ class ShowcaseDatasetService
                         'original_name' => basename($path),
                         'mime_type' => 'application/pdf',
                         'file_size' => strlen($content),
-                        'is_public' => $type === 'lease_contract',
+                        'is_public' => DocumentOptions::canShowInPortal('lease', $type),
                         'meta_json' => ['showcase' => true, 'dataset_key' => $dataset->key],
                     ],
                 );

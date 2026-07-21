@@ -45,7 +45,7 @@ class LeaseDocuments
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType() ?: 'application/pdf',
                 'file_size' => $file->getSize(),
-                'is_public' => false,
+                'is_public' => true,
             ]);
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($path);
@@ -109,6 +109,7 @@ class LeaseDocuments
             "generated/leases/{$lease->id}",
             $fileName,
             $content,
+            true,
         );
 
         return response()->streamDownload(static fn () => print ($content), $fileName, [
