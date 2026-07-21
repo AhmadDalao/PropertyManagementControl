@@ -15,6 +15,7 @@ use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentOptions;
+use App\Modules\Expenses\Support\ExpenseOptions;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -613,7 +614,7 @@ class ShowcaseDatasetService
         array $maintenance,
         int $buildingIndex,
     ): void {
-        $categories = ['maintenance', 'utilities', 'cleaning', 'security', 'insurance', 'management'];
+        $categories = ExpenseOptions::SHOWCASE_CATEGORIES;
 
         for ($index = 0; $index < 6; $index++) {
             ExpenseEntry::query()->updateOrCreate(

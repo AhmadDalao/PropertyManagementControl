@@ -1,6 +1,10 @@
 import { ArchiveAction } from '@/components/archive-action';
 import { DataTable, exportUrl } from '@/components/data-table';
-import { RecordActions, StatusBadge } from '@/components/operations';
+import {
+    humanLabel,
+    RecordActions,
+    StatusBadge,
+} from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 
@@ -29,7 +33,10 @@ export function ExpenseTable(props: ExpenseTableProps) {
             props.auth.user?.roles.includes('superadmin') ?? false,
     });
     const categoryLabel = (expense: ExpenseRecord) =>
-        t(`expenses.category_${expense.category}`);
+        t(
+            `expenses.category_${expense.category}`,
+            humanLabel(expense.category),
+        );
     const assetLabel = (expense: ExpenseRecord) =>
         (locale === 'ar'
             ? expense.asset?.title_ar || expense.asset?.title_en

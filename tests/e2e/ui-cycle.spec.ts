@@ -298,6 +298,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'المصاريف' }),
         ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(
+            'expenses.category_',
+        );
         await expect(page.locator('.pmc-mobile-record-card')).toHaveCount(10);
         await page.locator('.pmc-mobile-action-menu summary').first().click();
         await expect(

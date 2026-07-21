@@ -5,6 +5,7 @@ namespace App\Modules\Expenses\Presenters;
 use App\Models\ExpenseEntry;
 use App\Models\User;
 use App\Modules\Expenses\Support\ExpenseAccess;
+use App\Modules\Expenses\Support\ExpenseOptions;
 use App\Modules\Shared\ResourcePresenter;
 
 class ExpenseDetailPresenter
@@ -19,7 +20,7 @@ class ExpenseDetailPresenter
     {
         $this->access->ensureCanManage($actor, $expense);
         $expense->loadMissing(['portfolio', 'asset', 'lease', 'maintenanceRequest', 'createdBy']);
-        $category = trans("app.expenses.category_{$expense->category}");
+        $category = ExpenseOptions::label($expense->category);
         $status = trans("app.status.{$expense->status}");
         $amount = number_format((float) $expense->amount, 2).' '.$expense->currency;
         $maintenanceRequest = $expense->maintenanceRequest;

@@ -78,7 +78,7 @@ class ExpenseFormPresenter
                 'options' => collect(ExpenseOptions::CATEGORIES)
                     ->map(fn (string $category): array => [
                         'value' => $category,
-                        'label' => trans("app.expenses.category_{$category}"),
+                        'label' => ExpenseOptions::label($category),
                     ])
                     ->all(),
             ],

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
+use App\Modules\Expenses\Support\ExpenseOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -284,6 +285,43 @@ class ExpenseModuleSecurityTest extends TestCase
                 ->where('detailPage.header.eyebrow', 'سجل المصروف')
                 ->where('detailPage.sections.0.title', 'سياق التكلفة')
                 ->where('detailPage.sections.1.tab', 'financial'));
+    }
+
+    public function test_every_stored_category_remains_editable_and_has_arabic_wording(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $expense = $this->createExpense($portfolio->id, $owner->id);
+
+        foreach (['cleaning', 'security', 'management', 'compliance'] as $category) {
+            $this->actingAs($owner)
+                ->put(route('expenses.update', $expense), $this->expensePayload([
+                    'category' => $category,
+                    'title' => "{$category} expense",
+                ]))
+                ->assertRedirect(route('expenses.show', $expense));
+
+            $this->assertDatabaseHas('expense_entries', [
+                'id' => $expense->id,
+                'category' => $category,
+            ]);
+        }
+
+        $this->assertEmpty(array_diff(ExpenseOptions::SHOWCASE_CATEGORIES, ExpenseOptions::CATEGORIES));
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('expenses.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.fields.2.options', function ($options): bool {
+                    $labels = collect($options)->pluck('label', 'value');
+
+                    return $labels->get('cleaning') === 'التنظيف'
+                        && $labels->get('security') === 'الأمن'
+                        && $labels->get('management') === 'إدارة العقار'
+                        && $labels->get('compliance') === 'الامتثال'
+                        && $labels->every(fn (string $label): bool => ! str_starts_with($label, 'app.'));
+                }));
     }
 
     /** @param array<string, mixed> $overrides */
