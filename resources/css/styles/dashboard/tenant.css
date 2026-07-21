@@ -1,0 +1,86 @@
+.pmc-tenant-lease-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-tenant-lease-summary > div {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.8rem;
+    border-radius: 0.72rem;
+    background: #f6f6f7;
+}
+
+.pmc-tenant-lease-summary span,
+.pmc-tenant-document-list span {
+    color: #6f6f76;
+    font-size: 0.68rem;
+}
+
+.pmc-tenant-lease-summary strong {
+    font-size: 0.82rem;
+}
+
+.pmc-tenant-document-actions {
+    display: flex;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.pmc-tenant-document-actions a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #ddd9d2;
+    border-radius: 0.62rem;
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-tenant-document-list {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+}
+
+.pmc-tenant-document-list > a {
+    display: grid;
+    min-height: 2.75rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: #fbfaf7;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-tenant-document-list > a > div {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-tenant-document-list strong {
+    overflow: hidden;
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-tenant-lease-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-tenant-document-actions a {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+}

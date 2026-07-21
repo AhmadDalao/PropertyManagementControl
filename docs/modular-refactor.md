@@ -21,9 +21,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 
 ## Current Slices
 
-- Dashboard backend data aggregation now lives in `app/Modules/Dashboard/DashboardPresenter.php`.
-- Dashboard frontend implementation now lives in `resources/js/modules/dashboard`.
-- `resources/js/pages/dashboard.tsx` remains as the stable Inertia page adapter.
+- Dashboard role selection lives in a 23-line `DashboardPresenter`; role-owned queries and presenters under `app/Modules/Dashboard` own scoped KPIs, activity, lease risk, setup guidance, CMS status, and tenant portal data.
+- Dashboard frontend implementation lives in focused `operations`, `tenant`, and `shared` modules under `resources/js/modules/dashboard`; both role composers are under 35 lines.
+- `resources/js/pages/dashboard.tsx` remains the stable Inertia page adapter, while a discriminated TypeScript contract prevents tenant and operations payloads from bleeding into each other.
 - Admin navigation metadata now lives in `resources/js/modules/registry.ts`.
 - Backend module names are documented in `app/Modules/ModuleRegistry.php`.
 - Assets are the reference full-cycle module. `AssetController` is a 103-line HTTP adapter; queries, requests, transactions, forms, details, metadata, and hierarchy rules live under `app/Modules/Assets`.
@@ -70,6 +70,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - `PropertyMapModuleArchitectureTest` caps the backend orchestrator at 70 lines, focused backend units at 160, the frontend composer at 100, and focused frontend units at 250. It also keeps querying out of presenters, Leaflet out of the composer, and map state inside its dedicated hook.
 - Page Wording is now a complete vertical control surface. Its controller fell from 127 lines to a 49-line adapter, the public catalog from 445 lines to a 73-line compatibility facade, the completeness service from 231 lines to an 85-line orchestrator, and the React entry from 568 lines to a 79-line composer.
 - Translation defaults, documentation copy, override reads, transactional writes, placeholder protection, resolved dictionaries, cache invalidation, entry pagination, and four content-translation domains now have separate owners. `WordingModuleArchitectureTest` caps those boundaries, and the wording cache is versioned so new EN/AR keys cannot be hidden by an older resolved dictionary.
+- The role dashboard is now a complete vertical slice. Its 405-line backend presenter is a 23-line role selector over focused operations and tenant presenters plus seven scoped queries. The 406-line operations view and 299-line tenant view are now 34-line and 28-line composers over role-owned headers, metrics, action queues, financial panels, lease/documents, payment history, maintenance, and shared record components.
+- Dashboard arrears now use a database aggregate instead of loading every lease installment into PHP. Unused all-lease chart payloads and the dead 246-line widget bundle are gone, owner/manager responses no longer receive global CMS status, tenant activity includes posted payments only, and tenant PDF metadata includes Arabic titles. `DashboardModuleArchitectureTest` protects every boundary.
 
 ## Resource Refactor Checklist
 
@@ -81,7 +83,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is the role dashboard slice. Split the 405-line backend presenter, 406-line owner/manager operations view, and 299-line tenant view into role-owned queries, widget payloads, action queues, financial/occupancy panels, and focused view composers without changing KPI definitions or portfolio and tenant scoping.
+The next refactor target by risk is the admin shell. Split the 349-line layout and shell stylesheet into role navigation, drawer state, topbar search, account controls, and focused responsive style layers without changing permissions, keyboard behavior, RTL layout, or the 64px mobile topbar contract.
 
 ## Local Verification
 

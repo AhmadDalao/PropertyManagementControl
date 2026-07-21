@@ -1,0 +1,105 @@
+.pmc-action-queue {
+    display: grid;
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 1rem;
+    background: #fbfaf7;
+}
+
+.pmc-action-queue-label {
+    display: grid;
+    align-content: start;
+    gap: 0.15rem;
+    padding: 0.35rem;
+}
+
+.pmc-action-queue-label span {
+    color: #8a6f00;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-action-queue-label strong {
+    color: #111;
+    font-size: 1rem;
+}
+
+.pmc-action-queue-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-action-queue-grid > a {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.8rem;
+    border: 1px solid #e3e0da;
+    border-radius: 0.78rem;
+    background: #fff;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-action-queue-grid > a:hover {
+    border-color: #d3b65f;
+}
+
+.pmc-action-queue-grid > a > span {
+    color: #696970;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+.pmc-action-queue-grid > a > i:first-of-type {
+    color: #a67d00;
+}
+
+.pmc-action-queue-grid > a > i:last-of-type {
+    color: #696970;
+    font-size: 0.72rem;
+}
+
+.pmc-action-queue-grid > a div {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+}
+
+.pmc-action-queue-grid strong {
+    font-size: 0.82rem;
+    line-height: 1.25;
+}
+
+.pmc-action-queue-grid small {
+    display: -webkit-box;
+    overflow: hidden;
+    color: #6f6f76;
+    font-size: 0.7rem;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-action-queue {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-action-queue-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-action-queue-grid {
+        grid-template-columns: 1fr;
+    }
+}

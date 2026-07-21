@@ -22,10 +22,10 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, restores focus, and keeps the topbar at 64px.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 288 PHP tests with 13,003 assertions and 28 Playwright/axe scenarios pass.
+- Automated status: 295 PHP tests with 13,168 assertions and 28 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
-- The main CSS bundle is 323.60 KB before gzip, with Media styles loaded as a separate 3.18 KB route chunk. Further CSS reduction is useful, but it is not a launch blocker.
-- PHPStan has 68 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, Wording, and shared-module extractions add zero findings in their touched slices.
+- The main CSS bundle is 322.51 KB before gzip, with Media styles loaded as a separate 3.18 KB route chunk. Further CSS reduction is useful, but it is not a launch blocker.
+- PHPStan has 49 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, Wording, Dashboard, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
 - Leases are the third complete vertical feature module: its controller is now a 117-line adapter and its React index is a 42-line composer. Lease creation stores canonical morph aliases, alias records enforce exclusivity and occupancy, and tenant details omit internal notes, actions, documents, and history.
@@ -43,6 +43,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Global search and resource export are now modular platform infrastructure. The search controller is 22 lines, the export controller is 21 lines, every result/export belongs to its feature module, and index screens share the exact same scoped filters as their workbooks. Search input validation, tenant export denial, module visibility, Arabic groups, direct exact-code links, and portfolio isolation are covered by feature and browser tests.
 - The property map is a complete Assets-owned slice. Its route controller remains a 23-line adapter, the former 406-line presenter is a 57-line orchestrator over focused source/activity queries and payload presenters, and the former 825-line React workspace is an 87-line composer. Malformed portfolio filters are rejected, the payload remains capped at 40 top-level markers, and architecture plus EN/AR browser tests protect Leaflet behavior, clustering, filtering, selection, and the paginated directory.
 - Page Wording is a complete modular control surface. Its controller is a 49-line adapter, its public catalog is a 73-line compatibility facade, its completeness service is an 85-line orchestrator over four content domains, and its React entry is a 79-line composer. Invalid filters and unauthorized writes are rejected, required placeholders cannot be removed, same-request cache invalidation is covered, and the mobile editor restores focus while the Arabic queue uses translated module and field labels.
+- Dashboard is a complete role-owned slice. Its former 405-line presenter is a 23-line role selector; the operations and tenant React views are 34-line and 28-line composers over focused modules. Arrears are calculated with a scoped database aggregate, all-lease payloads are gone, CMS status is superadmin-only, tenant payments are posted-only, Arabic document titles reach the portal, and dedicated architecture/feature tests protect the split.
 - Shared frontend infrastructure is modular. The former 1,047-line resource cycle and 660-line data table are now one-line compatibility barrels backed by focused modules for forms, fields, actions, detail tabs, documents, history, query state, toolbars, desktop tables, mobile cards, and pagination. Every extracted unit is capped by architecture tests; existing feature imports and route payload contracts remain unchanged.
 
 ## Required before real tenant onboarding
@@ -65,4 +66,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Modularize the role dashboard slice next: split its 405-line backend presenter, 406-line owner/manager view, and 299-line tenant view while preserving KPI definitions and access scoping. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Modularize the admin shell next: split navigation, drawer state, topbar search, account controls, and responsive styles while preserving role permissions, RTL, keyboard focus, and the 64px mobile contract. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.

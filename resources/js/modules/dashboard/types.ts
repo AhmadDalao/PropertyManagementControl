@@ -4,18 +4,6 @@ import type {
 } from '@/modules/property-map/types';
 import type { SharedProps } from '@/types';
 
-export type LeaseBalance = {
-    id: number;
-    code: string;
-    tenant?: string | null;
-    asset?: string | null;
-    ends_at?: string | null;
-    days_remaining?: number | null;
-    balance_remaining: number;
-    arrears_amount?: number;
-    currency: string;
-};
-
 export type NextAction = {
     label: string;
     description: string;
@@ -23,95 +11,139 @@ export type NextAction = {
     icon: string;
 };
 
-export type DashboardPageProps = SharedProps & {
-    mode: 'tenant' | 'portfolio' | 'superadmin';
-    stats: Record<string, number | string | null>;
-    nextActions?: NextAction[];
-    charts?: {
-        occupancy?: Record<string, number>;
-        paymentHealth?: Array<{
-            code: string;
-            tenant?: string | null;
-            due: number;
-            paid: number;
-            remaining: number;
-        }>;
-        assetMix?: Record<string, number>;
-        maintenanceByStatus?: Record<string, number>;
-    };
-    setupChecklist?: Array<{
-        label: string;
-        done: boolean;
-        href: string;
-    }>;
-    cmsStatus?: {
+export type SetupItem = {
+    label: string;
+    done: boolean;
+    href: string;
+};
+
+export type ExpiringLease = {
+    id: number;
+    code: string;
+    tenant?: string | null;
+    asset?: string | null;
+    ends_at?: string | null;
+    days_remaining?: number | null;
+    balance_remaining: number;
+    currency: string;
+};
+
+export type ArrearsLease = {
+    id: number;
+    code: string;
+    tenant?: string | null;
+    asset?: string | null;
+    arrears_amount: number;
+    currency: string;
+};
+
+export type OperationsStats = {
+    totalUsers: number;
+    totalPortfolios: number;
+    totalAssets: number;
+    totalValue: number;
+    activeLeases: number;
+    monthlyRevenue: number;
+    monthlyExpenses: number;
+    openRequests: number;
+    arrears: number;
+    vacantUnits: number;
+};
+
+export type OperationsDashboardProps = SharedProps & {
+    mode: 'portfolio' | 'superadmin';
+    stats: OperationsStats;
+    nextActions: NextAction[];
+    charts: { occupancy: Record<string, number> };
+    setupChecklist: SetupItem[];
+    cmsStatus: {
         published: number;
         draft: number;
         homepage?: string | null;
-    };
-    propertyMap?: {
+    } | null;
+    propertyMap: {
         assets: PropertyMapAsset[];
         summary: PropertyMapSummary;
     };
-    expiringLeases?: LeaseBalance[];
-    arrearsLeases?: LeaseBalance[];
-    recentPayments?: Array<{
+    expiringLeases: ExpiringLease[];
+    arrearsLeases: ArrearsLease[];
+    recentPayments: Array<{
         id: number;
         amount: number;
         currency: string;
-        received_on: string;
-        tenant_profile?: { user?: { name: string } };
+        received_on: string | null;
+        tenant_profile?: { user?: { name?: string | null } };
     }>;
-    recentMaintenance?: Array<{
+    recentMaintenance: Array<{
         id: number;
         title: string;
         status: string;
         priority?: string;
-        created_at: string;
-        asset?: { title_en: string; title_ar?: string | null };
+        created_at: string | null;
+        asset?: {
+            title_en: string;
+            title_ar?: string | null;
+        } | null;
     }>;
-    tenantPortal?: {
-        lease?: {
+};
+
+export type TenantDashboardProps = SharedProps & {
+    mode: 'tenant';
+    stats: {
+        leaseCode: string | null;
+        daysLeft: number | null;
+        amountLeft: number;
+        dueNow: number;
+        overdue: number;
+        paidAmount: number;
+        maintenanceRequests: number;
+    };
+    nextActions: NextAction[];
+    tenantPortal: {
+        lease: {
             id: number;
             code: string;
-            days_remaining: number;
+            days_remaining: number | null;
             balance_remaining: number;
             due_now: number;
             overdue: number;
             next_due_date?: string | null;
-            total_paid?: number;
-            rent_amount?: number;
-            currency?: string;
-            started_at?: string;
-            ends_at?: string;
+            total_paid: number;
+            rent_amount: number;
+            currency: string;
+            started_at?: string | null;
+            ends_at?: string | null;
             leaseable?: {
                 title_en?: string;
                 title_ar?: string;
                 code?: string;
             } | null;
-            contract_url?: string;
-            statement_url?: string;
+            contract_url: string;
+            statement_url: string;
         } | null;
-        documents?: Array<{
+        documents: Array<{
             id: number;
             title_en: string;
-            title_ar?: string;
+            title_ar?: string | null;
             type: string;
             download_url: string;
         }>;
-        payments?: Array<{
+        payments: Array<{
             id: number;
             amount: number;
             currency: string;
-            received_on: string;
-            reference?: string;
-            receipt_url?: string;
+            received_on: string | null;
+            reference?: string | null;
+            receipt_url: string;
         }>;
-        requests?: Array<{
+        requests: Array<{
             id: number;
             title: string;
             status: string;
-            created_at: string;
+            created_at: string | null;
         }>;
     };
 };
+
+export type DashboardPageProps =
+    OperationsDashboardProps | TenantDashboardProps;

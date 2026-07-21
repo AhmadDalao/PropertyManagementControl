@@ -1,0 +1,178 @@
+.pmc-command-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-command-grid.is-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pmc-command-list {
+    display: grid;
+}
+
+.pmc-command-list > a {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.78rem 0;
+    border-bottom: 1px solid #eeeeef;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-command-list > a:first-child {
+    padding-top: 0;
+}
+
+.pmc-command-list > a:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.pmc-command-list > a:hover strong {
+    color: #8a6f00;
+}
+
+.pmc-command-list > a > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+}
+
+.pmc-command-list strong,
+.pmc-command-list span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-command-list strong {
+    font-size: 0.82rem;
+    line-height: 1.25;
+}
+
+.pmc-command-list span {
+    color: #6f6f76;
+    font-size: 0.72rem;
+}
+
+.pmc-command-list em {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.pmc-command-list em.is-success {
+    color: #08786e;
+}
+
+.pmc-command-list em.is-warning {
+    color: #856a00;
+}
+
+.pmc-command-list em.is-danger {
+    color: #b23d29;
+}
+
+.pmc-command-empty {
+    display: grid;
+    min-height: 7rem;
+    place-items: center;
+    padding: 1rem;
+    border: 1px dashed #d9d5ce;
+    border-radius: 0.78rem;
+    background: #fbfaf7;
+    color: #6f6f76;
+    font-size: 0.8rem;
+    text-align: center;
+}
+
+.pmc-health-signals {
+    display: grid;
+    gap: 1rem;
+}
+
+.pmc-health-signals > a {
+    display: grid;
+    gap: 0.4rem;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-health-signals > a > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pmc-health-signals span,
+.pmc-health-signals strong {
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
+.pmc-health-track {
+    height: 0.44rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #ececef;
+}
+
+.pmc-health-track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #121212, #ffc107);
+}
+
+.pmc-dashboard-status-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-dashboard-status-grid > a {
+    display: grid;
+    min-width: 0;
+    gap: 0.45rem;
+    padding: 1rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.8rem;
+    background: #fbfaf7;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-dashboard-status-grid span {
+    color: #6f6f76;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-dashboard-status-grid strong {
+    overflow: hidden;
+    font-size: 1.15rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-command-grid.is-three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-command-grid,
+    .pmc-command-grid.is-three,
+    .pmc-dashboard-status-grid {
+        grid-template-columns: 1fr;
+    }
+}
