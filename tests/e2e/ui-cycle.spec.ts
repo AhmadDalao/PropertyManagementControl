@@ -99,13 +99,58 @@ test.describe('authenticated administration', () => {
         ).toBeLessThanOrEqual(64);
 
         const trigger = page.locator('.pmc-menu-trigger');
+        const sidebar = page.locator('.pmc-console-sidebar');
+        await expect(sidebar).toHaveAttribute('inert', '');
         await trigger.click();
         await expect(page.locator('body')).toHaveClass(/pmc-drawer-open/);
         await expect(page.locator('.pmc-console-shell')).toHaveClass(/is-open/);
+        await expect(sidebar).not.toHaveAttribute('inert');
+        await expect(sidebar.locator('.pmc-sidebar-collapse')).toBeHidden();
 
         await page.keyboard.press('Escape');
         await expect(page.locator('body')).not.toHaveClass(/pmc-drawer-open/);
         await expect(trigger).toBeFocused();
+
+        await trigger.click();
+        await page.setViewportSize(viewports.desktop);
+        await expect(page.locator('body')).not.toHaveClass(/pmc-drawer-open/);
+        await expect(page.locator('.pmc-console-shell')).not.toHaveClass(
+            /is-open/,
+        );
+    });
+
+    test('desktop sidebar preference and account menu keyboard behavior persist', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/dashboard');
+        await page.evaluate(() =>
+            window.localStorage.removeItem('property-sidebar-collapsed'),
+        );
+        await page.reload();
+
+        const shell = page.locator('.pmc-console-shell');
+        const navigationTrigger = page.locator('.pmc-menu-trigger');
+        await expect(shell).not.toHaveClass(/is-collapsed/);
+        await navigationTrigger.click();
+        await expect(shell).toHaveClass(/is-collapsed/);
+        expect(
+            await page.evaluate(() =>
+                window.localStorage.getItem('property-sidebar-collapsed'),
+            ),
+        ).toBe('1');
+
+        await page.reload();
+        await expect(shell).toHaveClass(/is-collapsed/);
+        await navigationTrigger.click();
+        await expect(shell).not.toHaveClass(/is-collapsed/);
+
+        const accountTrigger = page.locator('.pmc-account-trigger');
+        await accountTrigger.click();
+        await expect(page.locator('.pmc-account-panel')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.pmc-account-panel')).toHaveCount(0);
+        await expect(accountTrigger).toBeFocused();
     });
 
     test('global search is responsive, scoped, and localized', async ({
@@ -742,6 +787,25 @@ test.describe('authenticated administration', () => {
 });
 
 test.describe('local role dashboards', () => {
+    const roleNavigation = {
+        superadmin: {
+            visible: ['/assets', '/cms', '/wording', '/system/showcase-data'],
+            hidden: [] as string[],
+        },
+        owner: {
+            visible: ['/assets', '/payments', '/users'],
+            hidden: ['/cms', '/wording', '/system/showcase-data'],
+        },
+        manager: {
+            visible: ['/assets', '/payments', '/users'],
+            hidden: ['/cms', '/wording', '/system/showcase-data'],
+        },
+        tenant: {
+            visible: ['/dashboard', '/maintenance-requests', '/documentation'],
+            hidden: ['/assets', '/payments', '/users', '/cms'],
+        },
+    } as const;
+
     for (const account of localAccounts) {
         test(`${account.role} dashboard is scoped and responsive`, async ({
             page,
@@ -756,6 +820,25 @@ test.describe('local role dashboards', () => {
             await page.goto('/dashboard');
 
             await expect(page.locator('.pmc-console-main')).toBeVisible();
+            await page.locator('.pmc-menu-trigger').click();
+
+            const navigation = page.locator('.pmc-console-nav');
+
+            for (const href of roleNavigation[account.role].visible) {
+                await expect(
+                    navigation.locator(`a[href="${href}"]`),
+                ).toBeVisible();
+            }
+
+            for (const href of roleNavigation[account.role].hidden) {
+                await expect(
+                    navigation.locator(`a[href="${href}"]`),
+                ).toHaveCount(0);
+            }
+
+            await expect(
+                navigation.locator('a[href="/dashboard"]'),
+            ).toHaveAttribute('aria-current', 'page');
             await expectNoHorizontalOverflow(page);
         });
     }

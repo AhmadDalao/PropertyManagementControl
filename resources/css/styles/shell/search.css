@@ -1,0 +1,125 @@
+.pmc-global-search {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.pmc-global-search > label {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 2.75rem;
+    align-items: center;
+    border: 1px solid var(--pmc-line);
+    border-radius: 999px;
+    background: #fff;
+}
+
+.pmc-global-search > label:focus-within {
+    border-color: #bba000;
+    box-shadow: 0 0 0 3px rgba(255, 196, 0, 0.18);
+}
+
+.pmc-global-search > label i {
+    position: absolute;
+    inset-inline-start: 1rem;
+    color: #777168;
+}
+
+.pmc-global-search input {
+    width: 100%;
+    min-width: 0;
+    height: 2.65rem;
+    padding: 0.6rem 1rem 0.6rem 2.65rem;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #111;
+    font-size: 0.78rem;
+}
+
+[dir='rtl'] .pmc-global-search input {
+    padding: 0.6rem 2.65rem 0.6rem 1rem;
+}
+
+.pmc-global-search-panel {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 0.5rem);
+    inset-inline: 0;
+    max-height: min(32rem, calc(100dvh - 6rem));
+    padding: 0.55rem;
+    overflow-y: auto;
+    border: 1px solid var(--pmc-line);
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: var(--pmc-shadow-float);
+}
+
+.pmc-global-search-hint {
+    margin: 0;
+    padding: 0.55rem 0.7rem;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-global-search-group {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.35rem;
+}
+
+.pmc-global-search-group > span {
+    padding: 0.35rem;
+    color: #8b6f00;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-global-search-group > a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.12rem 0.65rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-global-search-group > a:hover {
+    background: #fff7d2;
+}
+
+.pmc-global-search-group strong,
+.pmc-global-search-group small {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-global-search-group strong {
+    font-size: 0.78rem;
+}
+
+.pmc-global-search-group small {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+}
+
+.pmc-global-search-group em {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    align-self: center;
+    color: var(--pmc-teal);
+    font-size: 0.65rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-mobile-search-trigger,
+.pmc-mobile-search-sheet {
+    display: none;
+}

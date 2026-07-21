@@ -72,6 +72,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Translation defaults, documentation copy, override reads, transactional writes, placeholder protection, resolved dictionaries, cache invalidation, entry pagination, and four content-translation domains now have separate owners. `WordingModuleArchitectureTest` caps those boundaries, and the wording cache is versioned so new EN/AR keys cannot be hidden by an older resolved dictionary.
 - The role dashboard is now a complete vertical slice. Its 405-line backend presenter is a 23-line role selector over focused operations and tenant presenters plus seven scoped queries. The 406-line operations view and 299-line tenant view are now 34-line and 28-line composers over role-owned headers, metrics, action queues, financial panels, lease/documents, payment history, maintenance, and shared record components.
 - Dashboard arrears now use a database aggregate instead of loading every lease installment into PHP. Unused all-lease chart payloads and the dead 246-line widget bundle are gone, owner/manager responses no longer receive global CMS status, tenant activity includes posted payments only, and tenant PDF metadata includes Arabic titles. `DashboardModuleArchitectureTest` protects every boundary.
+- The shared admin shell is modular. Its former 349-line layout is a 38-line composer over focused drawer state, permission-aware navigation, sidebar, topbar, account menu, and password-notice modules under `resources/js/modules/shell`.
+- The former 658-line shell stylesheet is a six-line import facade over bounded layout, sidebar, topbar, search, account, and responsive layers. Closed mobile navigation is removed from the keyboard order, desktop collapse preference persists safely, resize clears stale drawer state, active routes expose `aria-current`, RTL collapse direction is correct, and the account menu closes on Escape or outside interaction.
+- `ShellModuleArchitectureTest` prevents state, access rules, rendering, and CSS from merging again. Browser coverage verifies the 64px topbar, body scroll lock, focus restoration, mobile-only drawer actions, desktop collapse persistence, role-specific menus, Arabic RTL, accessibility, and zero overflow.
 
 ## Resource Refactor Checklist
 
@@ -83,7 +86,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is the admin shell. Split the 349-line layout and shell stylesheet into role navigation, drawer state, topbar search, account controls, and focused responsive style layers without changing permissions, keyboard behavior, RTL layout, or the 64px mobile topbar contract.
+The next refactor target by risk is account profile management. Split the 529-line profile route page into focused identity, account details, password, and access-context modules; move validation and mutations out of `ProfileController`; preserve all role behavior, temporary-password rules, EN/AR wording, and mobile layout.
 
 ## Local Verification
 

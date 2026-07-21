@@ -1,0 +1,121 @@
+.pmc-account-menu {
+    position: relative;
+    min-width: 0;
+}
+
+.pmc-account-trigger {
+    display: flex;
+    min-width: 0;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.25rem 0.45rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: transparent;
+    color: var(--pmc-ink);
+    text-align: start;
+}
+
+.pmc-account-trigger:hover,
+.pmc-account-trigger[aria-expanded='true'] {
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-account-trigger > span {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 2px solid #f2c300;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-account-trigger > div {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-account-trigger strong,
+.pmc-account-trigger small {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-account-trigger strong {
+    font-size: 0.72rem;
+}
+
+.pmc-account-trigger small {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+}
+
+.pmc-account-trigger > i {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+}
+
+.pmc-account-panel {
+    position: absolute;
+    z-index: 60;
+    top: calc(100% + 0.55rem);
+    inset-inline-end: 0;
+    display: grid;
+    width: 14rem;
+    padding: 0.45rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+    box-shadow: var(--pmc-shadow-float);
+}
+
+.pmc-account-panel-head {
+    display: grid;
+    gap: 0.1rem;
+    margin-bottom: 0.35rem;
+    padding: 0.55rem 0.75rem 0.7rem;
+    overflow: hidden;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-account-panel-head strong,
+.pmc-account-panel-head small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-account-panel-head strong {
+    font-size: 0.76rem;
+}
+
+.pmc-account-panel-head small {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+}
+
+.pmc-account-panel a,
+.pmc-account-panel button {
+    padding: 0.65rem 0.75rem;
+    border: 0;
+    border-radius: 0.55rem;
+    background: transparent;
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-align: start;
+    text-decoration: none;
+}
+
+.pmc-account-panel a:hover,
+.pmc-account-panel button:hover {
+    background: #fff7d2;
+}
