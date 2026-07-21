@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
-use App\Services\LeaseFinancialService;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -92,7 +92,7 @@ class OperationalArchiveTest extends TestCase
             'currency' => 'SAR',
         ]);
 
-        app(LeaseFinancialService::class)->allocatePayment($payment);
+        app(PaymentAllocator::class)->allocate($payment);
         $installment = $lease->installments()->orderBy('due_date')->firstOrFail();
 
         $this->assertSame(1000.0, (float) $installment->fresh()->amount_paid);

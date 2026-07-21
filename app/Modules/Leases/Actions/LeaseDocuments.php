@@ -6,10 +6,10 @@ use App\Models\Document;
 use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Leases\Support\LeaseAccess;
+use App\Modules\Shared\PrivatePdfDocuments;
 use App\Support\BilingualPdf;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
@@ -19,6 +19,7 @@ class LeaseDocuments
     public function __construct(
         private readonly LeaseAccess $access,
         private readonly BilingualPdf $pdf,
+        private readonly PrivatePdfDocuments $documents,
     ) {}
 
     public function uploadSigned(User $actor, Lease $lease, UploadedFile $file): Document
@@ -98,44 +99,17 @@ class LeaseDocuments
         string $titleAr,
     ): StreamedResponse {
         $content = $this->pdf->loadView($view, ['lease' => $lease])->setPaper('a4')->output();
-        $path = "generated/leases/{$lease->id}/".Str::uuid()."-{$fileName}";
-
-        if (! Storage::disk('local')->put($path, $content)) {
-            throw new RuntimeException('The generated lease PDF could not be stored.');
-        }
-
-        $document = Document::query()->firstOrNew([
-            'documentable_type' => $lease->getMorphClass(),
-            'documentable_id' => $lease->id,
-            'type' => $type,
-        ]);
-        $previousPath = $document->exists ? $document->file_path : null;
-
-        if (! $document->exists) {
-            $document->uploadedBy()->associate($actor);
-        }
-
-        try {
-            $document->fill([
-                'portfolio_id' => $lease->portfolio_id,
-                'title_en' => $titleEn,
-                'title_ar' => $titleAr,
-                'disk' => 'local',
-                'file_path' => $path,
-                'original_name' => $fileName,
-                'mime_type' => 'application/pdf',
-                'file_size' => strlen($content),
-                'is_public' => false,
-            ])->save();
-        } catch (Throwable $exception) {
-            Storage::disk('local')->delete($path);
-
-            throw $exception;
-        }
-
-        if ($previousPath && $previousPath !== $path) {
-            Storage::disk('local')->delete($previousPath);
-        }
+        $this->documents->replace(
+            $lease,
+            $actor,
+            $lease->portfolio_id,
+            $type,
+            $titleEn,
+            $titleAr,
+            "generated/leases/{$lease->id}",
+            $fileName,
+            $content,
+        );
 
         return response()->streamDownload(static fn () => print ($content), $fileName, [
             'Content-Type' => 'application/pdf',

@@ -36,6 +36,10 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Leases are the third complete vertical module. `LeaseController` fell from 693 lines to a 117-line adapter; scoped reads, validation, lifecycle transactions, PDF generation, forms, details, access rules, and options now live under `app/Modules/Leases`.
 - The Lease React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Index payloads no longer ship full installment or document collections, and tenant details omit internal notes, admin actions, internal documents, and audit history.
 - `LeaseModuleArchitectureTest` guards the split. Feature coverage enforces canonical morph aliases, active-lease exclusivity, asset occupancy synchronization, PDF-only signed contracts, and direct-action portfolio isolation.
+- Payments are the fourth complete vertical module. `PaymentController` fell from 562 lines to a 98-line adapter; scoped reads, validation, allocation transactions, receipt generation, forms, details, access rules, and options now live under `app/Modules/Payments`.
+- The Payment React workspace is a 42-line composer with module-owned filters, metrics, table, and contracts. Payment portfolio, tenant, and currency values are derived from the selected lease, index payloads use SQL aggregates instead of full allocation collections, and tenant details omit notes, internal documents, admin links, and audit history.
+- `PaymentModuleArchitectureTest` guards the split. Feature coverage enforces direct-action portfolio isolation, locked void transitions, draft-lease rejection, safe receipt filenames, generated-file replacement, Arabic lease labels, and tenant-safe payloads.
+- Lease installment scheduling and payment allocation are separate actions. Shared private PDF replacement now lives in `app/Modules/Shared/PrivatePdfDocuments.php` for both contracts and receipts.
 
 ## Resource Refactor Checklist
 
@@ -47,7 +51,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-Next backend targets by risk and size are Payments and Documents.
+The next backend target by risk is Documents, followed by Tenants and Expenses.
 
 ## Local Verification
 

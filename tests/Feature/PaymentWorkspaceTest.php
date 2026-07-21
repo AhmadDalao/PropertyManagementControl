@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Payment;
-use App\Services\LeaseFinancialService;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -44,7 +44,7 @@ class PaymentWorkspaceTest extends TestCase
             'amount' => 2500,
             'currency' => 'SAR',
         ]);
-        app(LeaseFinancialService::class)->allocatePayment($postedPayment);
+        app(PaymentAllocator::class)->allocate($postedPayment);
 
         Payment::query()->create([
             'portfolio_id' => $portfolio->id,
@@ -85,13 +85,13 @@ class PaymentWorkspaceTest extends TestCase
                 ->where('payments.data.0.unallocated_amount', 0)
                 ->where('payments.data.0.allocation_count', 2)
                 ->where('payments.data.0.receipt_url', route('payments.receipt', $postedPayment))
-                ->where('payments.data.0.lease.balance_remaining', 2500)
                 ->where('paymentInsights.posted_amount', 2500)
                 ->where('paymentInsights.pending_amount', 700)
                 ->where('paymentInsights.void_amount', 300)
                 ->where('paymentInsights.allocated_amount', 2500)
-                ->where('leaseOptions.0.tenant_profile_id', $tenant->id)
-                ->where('leaseOptions.0.balance_remaining', 2500));
+                ->missing('payments.data.0.allocations')
+                ->missing('leaseOptions')
+                ->missing('tenantOptions'));
     }
 
     public function test_pending_payments_do_not_allocate_until_posted_and_can_return_to_pending(): void
@@ -107,14 +107,12 @@ class PaymentWorkspaceTest extends TestCase
         $response = $this->actingAs($owner)
             ->post(route('payments.store'), [
                 'lease_id' => $lease->id,
-                'tenant_profile_id' => $tenant->id,
                 'type' => 'rent',
                 'method' => 'cash',
                 'status' => 'pending',
                 'reference' => 'PENDING-NO-ALLOC',
                 'received_on' => now()->toDateString(),
                 'amount' => 1000,
-                'currency' => 'SAR',
             ]);
 
         $payment = Payment::query()->where('reference', 'PENDING-NO-ALLOC')->firstOrFail();

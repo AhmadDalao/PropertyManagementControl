@@ -127,6 +127,7 @@ return [
         'payment_number' => 'Payment #:id',
         'installments' => ':count installments',
         'unallocated_amount' => ':amount unallocated',
+        'balance_remaining' => ':amount :currency remaining',
         'void_confirm' => 'Void payment :reference? This reverses installment allocations.',
     ],
     'maintenance' => [
@@ -797,6 +798,8 @@ return [
         'lease_access_denied' => 'You are not allowed to access this lease.',
         'lease_portfolio_mismatch' => 'Lease does not belong to the selected portfolio.',
         'payment_tenant_mismatch' => 'Payment tenant must match the selected lease tenant.',
+        'payment_currency_mismatch' => 'Payment currency must match the selected lease currency.',
+        'payment_lease_not_payable' => 'Payments can only be recorded against active, expired, or terminated leases.',
         'receipt_access_denied' => 'You are not allowed to access this receipt.',
         'asset_self_parent' => 'An asset cannot be its own parent.',
         'asset_descendant_parent' => 'An asset cannot be moved under one of its descendants.',

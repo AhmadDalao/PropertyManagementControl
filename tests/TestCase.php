@@ -7,7 +7,7 @@ use App\Models\Lease;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
-use App\Services\LeaseFinancialService;
+use App\Modules\Leases\Actions\InstallmentSchedule;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Support\Str;
@@ -110,7 +110,7 @@ abstract class TestCase extends BaseTestCase
         ], $attributes));
 
         if ($syncInstallments) {
-            app(LeaseFinancialService::class)->syncInstallments($lease);
+            app(InstallmentSchedule::class)->sync($lease);
         }
 
         return $lease->fresh(['installments', 'tenantProfile.user', 'leaseable']);

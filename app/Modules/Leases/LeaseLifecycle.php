@@ -4,15 +4,15 @@ namespace App\Modules\Leases;
 
 use App\Models\Asset;
 use App\Models\Lease;
+use App\Modules\Leases\Actions\InstallmentSchedule;
 use App\Modules\Shared\MorphTypes;
-use App\Services\LeaseFinancialService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class LeaseLifecycle
 {
     public function __construct(
-        private readonly LeaseFinancialService $financials,
+        private readonly InstallmentSchedule $installments,
         private readonly MorphTypes $morphTypes,
     ) {}
 
@@ -26,7 +26,7 @@ class LeaseLifecycle
             $this->guardActiveLeaseAvailability($lockedAsset, (string) $attributes['status']);
 
             $lease = Lease::query()->create($attributes);
-            $this->financials->syncInstallments($lease);
+            $this->installments->sync($lease);
             $this->syncAssetOccupancy($lockedAsset);
 
             return $lease->fresh(['installments']);
@@ -62,7 +62,7 @@ class LeaseLifecycle
             $lockedLease->update($attributes);
 
             if ($resyncInstallments && $lockedLease->payments()->doesntExist()) {
-                $this->financials->syncInstallments($lockedLease);
+                $this->installments->sync($lockedLease);
             }
 
             if ($asset) {
@@ -94,7 +94,7 @@ class LeaseLifecycle
 
         return [
             'expired_leases' => $expiredLeases,
-            'installment_statuses' => $this->financials->refreshInstallmentStatuses(),
+            'installment_statuses' => $this->installments->refreshStatuses(),
         ];
     }
 

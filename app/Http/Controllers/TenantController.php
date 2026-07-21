@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Lease;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Payments\Support\PaymentOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,6 +94,21 @@ class TenantController extends Controller
         ]);
 
         $activeLease = $tenant->leases->firstWhere('status', 'active');
+        $payableLease = $activeLease ?? $tenant->leases->first(
+            fn (Lease $lease) => in_array($lease->status, PaymentOptions::PAYABLE_LEASE_STATUSES, true),
+        );
+        $headerActions = [
+            ['label' => 'Edit tenant', 'href' => route('tenants.edit', $tenant), 'variant' => 'primary'],
+            ['label' => 'Create lease', 'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]), 'variant' => 'secondary'],
+        ];
+
+        if ($payableLease) {
+            $headerActions[] = [
+                'label' => 'Record payment',
+                'href' => route('payments.create', ['lease_id' => $payableLease->id]),
+                'variant' => 'secondary',
+            ];
+        }
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => [
@@ -101,11 +118,7 @@ class TenantController extends Controller
                     'description' => trim(($tenant->user?->email ?? '').' · '.$tenant->profile_type.' · '.$tenant->status),
                     'backHref' => route('tenants.index'),
                     'backLabel' => 'All tenants',
-                    'actions' => [
-                        ['label' => 'Edit tenant', 'href' => route('tenants.edit', $tenant), 'variant' => 'primary'],
-                        ['label' => 'Create lease', 'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]), 'variant' => 'secondary'],
-                        ['label' => 'Record payment', 'href' => route('payments.create', ['tenant_profile_id' => $tenant->id]), 'variant' => 'secondary'],
-                    ],
+                    'actions' => $headerActions,
                 ],
                 'stats' => $this->detailItems([
                     ['label' => 'Status', 'value' => $tenant->status, 'tone' => $tenant->status === 'active' ? 'teal' : 'muted'],

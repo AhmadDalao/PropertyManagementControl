@@ -45,9 +45,7 @@ class PortfolioScopeGuardTest extends TestCase
 
         $this->actingAs($owner)
             ->post(route('payments.store'), [
-                'portfolio_id' => $portfolio->id,
                 'lease_id' => $lease->id,
-                'tenant_profile_id' => $tenant->id,
                 'type' => 'rent',
                 'method' => 'cash',
                 'status' => 'posted',
@@ -55,7 +53,7 @@ class PortfolioScopeGuardTest extends TestCase
                 'received_on' => now()->toDateString(),
                 'amount' => 1000,
             ])
-            ->assertStatus(422);
+            ->assertForbidden();
     }
 
     public function test_tenant_maintenance_creation_rejects_unrented_asset(): void

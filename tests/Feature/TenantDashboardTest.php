@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Payment;
-use App\Services\LeaseFinancialService;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -41,7 +41,7 @@ class TenantDashboardTest extends TestCase
             'currency' => 'SAR',
         ]);
 
-        app(LeaseFinancialService::class)->allocatePayment($payment);
+        app(PaymentAllocator::class)->allocate($payment);
 
         $this->actingAs($tenantUser)
             ->get(route('dashboard'))

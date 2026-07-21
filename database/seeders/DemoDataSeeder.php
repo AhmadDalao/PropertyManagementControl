@@ -12,8 +12,9 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Leases\Actions\InstallmentSchedule;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use App\Services\LandingContentSeeder;
-use App\Services\LeaseFinancialService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,7 +23,9 @@ use Illuminate\Support\Str;
 
 class DemoDataSeeder extends Seeder
 {
-    private LeaseFinancialService $leaseFinancials;
+    private InstallmentSchedule $installments;
+
+    private PaymentAllocator $payments;
 
     public function run(): void
     {
@@ -30,7 +33,8 @@ class DemoDataSeeder extends Seeder
             return;
         }
 
-        $this->leaseFinancials = app(LeaseFinancialService::class);
+        $this->installments = app(InstallmentSchedule::class);
+        $this->payments = app(PaymentAllocator::class);
 
         DB::transaction(function (): void {
             $superadmin = $this->user('System Owner', 'superadmin@propertycontrol.test', 'superadmin', null, '+966500000001');
@@ -403,7 +407,7 @@ class DemoDataSeeder extends Seeder
         ]);
 
         if ($syncInstallments) {
-            $this->leaseFinancials->syncInstallments($lease);
+            $this->installments->sync($lease);
         }
 
         return $lease->fresh(['installments']);
@@ -426,7 +430,7 @@ class DemoDataSeeder extends Seeder
             'notes' => $notes,
         ]);
 
-        $this->leaseFinancials->allocatePayment($payment);
+        $this->payments->allocate($payment);
     }
 
     /**

@@ -6,7 +6,7 @@ use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Payment;
 use App\Modules\Leases\Actions\ManageLeases;
-use App\Services\LeaseFinancialService;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -54,7 +54,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             'amount' => 2500,
             'currency' => 'SAR',
         ]);
-        app(LeaseFinancialService::class)->allocatePayment($payment);
+        app(PaymentAllocator::class)->allocate($payment);
 
         Storage::disk('local')->put('documents/leases/signed.pdf', 'signed');
         $document = Document::query()->create([
@@ -574,7 +574,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             'amount' => 1000,
             'currency' => 'SAR',
         ]);
-        app(LeaseFinancialService::class)->allocatePayment($payment);
+        app(PaymentAllocator::class)->allocate($payment);
 
         $contract = $this->actingAs($owner)->get(route('leases.contract', $lease));
         $statement = $this->actingAs($owner)->get(route('leases.statement', $lease));

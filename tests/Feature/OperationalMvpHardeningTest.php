@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Lease;
 use App\Models\Payment;
-use App\Services\LeaseFinancialService;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -234,8 +234,8 @@ class OperationalMvpHardeningTest extends TestCase
             $owner,
         );
 
-        $financials = $this->mock(LeaseFinancialService::class);
-        $financials->shouldReceive('allocatePayment')->once()->andThrow(new RuntimeException('Allocation failed'));
+        $allocator = $this->mock(PaymentAllocator::class);
+        $allocator->shouldReceive('allocate')->once()->andThrow(new RuntimeException('Allocation failed'));
 
         $this->withoutExceptionHandling();
 

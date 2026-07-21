@@ -3,11 +3,12 @@
 namespace Tests\Unit;
 
 use App\Models\Payment;
-use App\Services\LeaseFinancialService;
+use App\Modules\Leases\Actions\InstallmentSchedule;
+use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-class LeaseFinancialServiceTest extends TestCase
+class LeaseFinancialWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -33,7 +34,7 @@ class LeaseFinancialServiceTest extends TestCase
             false
         );
 
-        app(LeaseFinancialService::class)->syncInstallments($lease);
+        app(InstallmentSchedule::class)->sync($lease);
 
         $installments = $lease->fresh('installments')->installments;
 
@@ -70,7 +71,7 @@ class LeaseFinancialServiceTest extends TestCase
             false
         );
 
-        app(LeaseFinancialService::class)->syncInstallments($quarterlyLease);
+        app(InstallmentSchedule::class)->sync($quarterlyLease);
 
         $quarterlyInstallments = $quarterlyLease->fresh('installments')->installments->values();
 
@@ -97,7 +98,7 @@ class LeaseFinancialServiceTest extends TestCase
             false
         );
 
-        app(LeaseFinancialService::class)->syncInstallments($yearlyLease);
+        app(InstallmentSchedule::class)->sync($yearlyLease);
 
         $yearlyInstallments = $yearlyLease->fresh('installments')->installments->values();
 
@@ -141,7 +142,7 @@ class LeaseFinancialServiceTest extends TestCase
             'currency' => 'SAR',
         ]);
 
-        app(LeaseFinancialService::class)->allocatePayment($payment);
+        app(PaymentAllocator::class)->allocate($payment);
 
         $installments = $lease->fresh('installments')->installments->values();
 
