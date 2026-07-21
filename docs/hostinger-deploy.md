@@ -17,7 +17,7 @@ Best option:
 1. Deploy the Laravel app to a non-public directory on the hosting account.
 2. Point the website document root to the app's `public/` directory.
 
-If you must keep the current website root at `/home/u867436826/domains/ahmaddalao.com/public_html/property`, use Hostinger's Git deployment or FTP upload for the app files and make sure the web-facing directory serves Laravel's `public/` entrypoint. Do not dump the whole app into a public web root without accounting for the `public/` folder, because that is how you leak framework files.
+If you must keep the current website root at `/home/u867436826/domains/ahmaddalao.com/public_html/property`, use Hostinger's Git deployment or FTP upload for the app files. The tracked root `index.php` and `.htaccess` are the shared-hosting compatibility shim: public assets are served from `public/`, application paths are denied, and all other requests enter Laravel. Keep both files synchronized with production.
 
 ## Production `.env`
 

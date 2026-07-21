@@ -1,0 +1,36 @@
+<FilesMatch "\.(php4|php5|php3|php2|php|phtml)$">
+    SetHandler application/x-lsphp84
+</FilesMatch>
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -f [OR]
+    RewriteCond %{DOCUMENT_ROOT}/public%{REQUEST_URI} -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    RewriteRule ^(?:app|bootstrap|config|database|docs|lang|resources|routes|storage|tests|vendor)(?:/.*)?$ - [F,L,NC]
+    RewriteRule ^(?:composer\.(json|lock)|package\.json|package-lock\.json|pnpm-lock\.yaml|pnpm-workspace\.yaml|vite\.config\.(js|ts)|phpunit\.xml|artisan|README\.md|AGENTS\.md|pint\.json|phpstan(?:-baseline)?\.neon|eslint\.config\.js|playwright\.config\.ts|tsconfig\.json)$ - [F,L,NC]
+    RewriteRule ^(?:\.env.*|\.git.*|\.editorconfig|\.prettier.*|\.npmrc)$ - [F,L,NC]
+
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
