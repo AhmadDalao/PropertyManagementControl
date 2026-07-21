@@ -9,11 +9,11 @@ use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\MediaFile;
 use App\Models\Payment;
-use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentAttachments;
 use App\Modules\Documents\Support\DocumentOptions;
+use App\Modules\Portfolios\Queries\PortfolioIndexQuery;
 use App\Modules\Users\Support\UserAccess;
 use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
@@ -25,6 +25,7 @@ class GlobalSearchController extends Controller
     public function __construct(
         private readonly DocumentAttachments $documentAttachments,
         private readonly UserAccess $userAccess,
+        private readonly PortfolioIndexQuery $portfolioIndex,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -71,12 +72,8 @@ class GlobalSearchController extends Controller
         $actor = $this->actor($request);
         $results = [];
 
-        if ($actor->hasRole('superadmin')) {
-            $portfolioQuery = Portfolio::query();
-            $this->applySearch($portfolioQuery, $search, ['name_en', 'name_ar', 'code', 'contact_email', 'address', 'address_ar']);
-            foreach ($portfolioQuery->limit(5)->get() as $portfolio) {
-                $results[] = $this->result(trans('app.nav.portfolios'), $this->localized($portfolio->name_en, $portfolio->name_ar), $portfolio->code, $this->status($portfolio->status), route('portfolios.show', $portfolio));
-            }
+        foreach ($this->portfolioIndex->search($actor, $search) as $portfolio) {
+            $results[] = $this->result(trans('app.nav.portfolios'), $this->localized($portfolio->name_en, $portfolio->name_ar), $portfolio->code, $this->status($portfolio->status), route('portfolios.show', $portfolio));
         }
 
         if ($this->moduleEnabled($actor, 'assets')) {
@@ -262,6 +259,12 @@ class GlobalSearchController extends Controller
     private function adminDirectUrl(Request $request, string $search): string
     {
         $actor = $this->actor($request);
+
+        $portfolio = $this->portfolioIndex->exactCode($actor, $search);
+
+        if ($portfolio) {
+            return route('portfolios.show', $portfolio);
+        }
 
         if ($this->moduleEnabled($actor, 'assets')) {
             $asset = $this->scopeByPortfolio(Asset::query(), $actor)

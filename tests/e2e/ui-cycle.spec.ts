@@ -366,6 +366,45 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic portfolio workspace, form, and detail stay localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/portfolios?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'المحافظ' }),
+        ).toBeVisible();
+        const portfolioCards = page.locator('.pmc-mobile-record-card');
+        const portfolioCardCount = await portfolioCards.count();
+        expect(portfolioCardCount).toBeGreaterThan(0);
+        expect(portfolioCardCount).toBeLessThanOrEqual(10);
+        await expect(page.locator('body')).not.toContainText('portfolios.');
+        await expectNoHorizontalOverflow(page);
+
+        const portfolioDetailLink = page
+            .locator('.pmc-mobile-record-card a[href^="/portfolios/"]')
+            .first();
+        await expect(portfolioDetailLink).toBeVisible();
+        const portfolioHref = await portfolioDetailLink.getAttribute('href');
+        expect(portfolioHref).toBeTruthy();
+
+        await page.goto(`${portfolioHref}?locale=ar`);
+        await expect(page.getByText('حساب المحفظة')).toBeVisible();
+        await expect(page.getByText('ملف النشاط')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/portfolios/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء محفظة' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^الاسم بالإنجليزية/)).toBeVisible();
+        await expect(page.getByLabel(/^الاسم بالعربية/)).toBeVisible();
+        await expect(page.locator('input[type="checkbox"]')).toHaveCount(10);
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('language buttons persist Arabic and English after reload', async ({
         page,
     }) => {

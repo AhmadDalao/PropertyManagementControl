@@ -14,6 +14,7 @@ use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Expenses\Queries\ExpenseIndexQuery;
+use App\Modules\Portfolios\Queries\PortfolioIndexQuery;
 use App\Modules\Tenants\Queries\TenantIndexQuery;
 use App\Modules\Users\Queries\UserIndexQuery;
 use App\Modules\Wording\UiTranslationCatalog;
@@ -34,6 +35,7 @@ class AdminExportController extends Controller
         private readonly TenantIndexQuery $tenantIndex,
         private readonly ExpenseIndexQuery $expenseIndex,
         private readonly UserIndexQuery $userIndex,
+        private readonly PortfolioIndexQuery $portfolioIndex,
     ) {}
 
     public function __invoke(Request $request, string $resource): BinaryFileResponse
@@ -68,22 +70,38 @@ class AdminExportController extends Controller
 
     private function exportPortfolios(Request $request): BinaryFileResponse
     {
-        $actor = $this->actor($request);
-        $filters = $this->tableFilters($request, ['status' => 'all']);
-        $query = $this->scopeByPortfolio(Portfolio::query(), $actor, 'id')->withCount(['assets', 'users', 'leases']);
-        $this->applyExactFilter($query, $filters, 'status');
-        $this->applySearch($query, $filters['search'], ['name_en', 'name_ar', 'code', 'contact_email', 'city', 'country', 'address', 'address_ar']);
+        $query = $this->portfolioIndex->forExport($request, $this->actor($request));
 
-        return $this->xlsx('portfolios', ['Code', 'Name', 'Arabic Name', 'Status', 'City', 'Country', 'Users', 'Assets', 'Leases'], $query, fn (Portfolio $row) => [
+        return $this->xlsx('portfolios', [
+            trans('app.portfolios.code'),
+            trans('app.portfolios.name_en'),
+            trans('app.portfolios.name_ar'),
+            trans('app.portfolios.owner'),
+            trans('app.portfolios.status'),
+            trans('app.portfolios.city'),
+            trans('app.portfolios.country'),
+            trans('app.portfolios.users'),
+            trans('app.portfolios.assets'),
+            trans('app.portfolios.leases'),
+            trans('app.portfolios.recorded_valuation'),
+            trans('app.portfolios.posted_revenue'),
+            trans('app.portfolios.posted_expenses'),
+            trans('app.portfolios.default_currency'),
+        ], $query, fn (Portfolio $row) => [
             $row->code,
             $row->name_en,
             $row->name_ar,
+            $row->owner?->name,
             $this->option($row->status),
             $row->city,
             $row->country,
             $row->users_count,
             $row->assets_count,
             $row->leases_count,
+            $row->valuation_total,
+            $row->posted_revenue_total,
+            $row->posted_expense_total,
+            $row->default_currency,
         ]);
     }
 
