@@ -123,6 +123,29 @@ function smoke_component(string $html): string
     return '';
 }
 
+function smoke_page_payload(string $html): array
+{
+    if (! preg_match('/<script data-page="app" type="application\/json">(.*?)<\/script>/s', $html, $matches)) {
+        smoke_fail('Could not find the Inertia page payload.');
+    }
+
+    try {
+        $payload = json_decode(
+            $matches[1],
+            true,
+            flags: JSON_THROW_ON_ERROR,
+        );
+    } catch (JsonException) {
+        smoke_fail('The Inertia page payload could not be decoded.');
+    }
+
+    if (! is_array($payload)) {
+        smoke_fail('The Inertia page payload was invalid.');
+    }
+
+    return $payload;
+}
+
 $publicChecks = [
     '/' => 'public/home',
     '/login' => 'auth/login',
@@ -199,6 +222,9 @@ $authChecks = [
     '/assets/create' => 'admin/resource-form',
     '/tenants' => 'admin/tenants/index',
     '/leases' => 'admin/leases/index',
+    '/leases?locale=ar' => 'admin/leases/index',
+    '/leases/create' => 'admin/resource-form',
+    '/leases/create?locale=ar' => 'admin/resource-form',
     '/payments' => 'admin/payments/index',
     '/maintenance-requests' => 'admin/maintenance/index',
     '/expenses' => 'admin/expenses/index',
@@ -230,6 +256,55 @@ foreach ($authChecks as $path => $expectedComponent) {
 
     smoke_note("{$path} {$component}");
 }
+
+$leaseIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/leases');
+$leasePayload = smoke_page_payload($leaseIndex['body']);
+$leaseRows = $leasePayload['props']['leases']['data'] ?? [];
+
+if (is_array($leaseRows) && isset($leaseRows[0]['id'])) {
+    $leaseId = (int) $leaseRows[0]['id'];
+    $leaseDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/leases/'.$leaseId);
+
+    if ($leaseDetail['status'] !== 200 || smoke_component($leaseDetail['body']) !== 'admin/resource-show') {
+        smoke_fail("Lease {$leaseId} detail did not load.");
+    }
+
+    smoke_note("/leases/{$leaseId} admin/resource-show");
+
+    foreach (['contract', 'statement'] as $document) {
+        $pdf = smoke_request($baseUrl, $cookieFile, 'GET', "/leases/{$leaseId}/{$document}");
+        $pdfHeaders = strtolower((string) $pdf['headers']);
+
+        if ($pdf['status'] !== 200 || ! str_contains($pdfHeaders, 'application/pdf')) {
+            smoke_fail("Lease {$document} PDF returned an invalid response.");
+        }
+
+        if (! str_starts_with((string) $pdf['body'], '%PDF-')) {
+            smoke_fail("Lease {$document} download was not a valid PDF.");
+        }
+
+        smoke_note("/leases/{$leaseId}/{$document} PDF");
+    }
+} else {
+    smoke_note('No lease record available for non-destructive detail and PDF checks.');
+}
+
+$leaseExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/leases');
+$leaseExportHeaders = strtolower((string) $leaseExport['headers']);
+
+if ($leaseExport['status'] !== 200) {
+    smoke_fail("Lease export returned {$leaseExport['status']}.");
+}
+
+if (! str_contains($leaseExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Lease export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($leaseExportHeaders, '.xlsx') || ! str_starts_with((string) $leaseExport['body'], 'PK')) {
+    smoke_fail('Lease export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/leases Excel .xlsx');
 
 $reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
 $reportHeaders = strtolower((string) $reportExport['headers']);

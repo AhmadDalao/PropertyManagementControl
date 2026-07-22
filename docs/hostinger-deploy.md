@@ -59,22 +59,23 @@ Configure a working Hostinger SMTP mailbox before enabling password recovery for
 
 ## Deploy steps
 
-1. Upload or deploy the repository contents, including `vendor/` and `public/build/` if the target environment is not building dependencies itself. Run `composer install --no-dev --classmap-authoritative` on Hostinger whenever `composer.lock` changes.
-2. Set correct file permissions for `storage/` and `bootstrap/cache/`.
-3. Generate or copy the production `.env`.
-4. Run:
+1. Upload or deploy the repository contents, including `vendor/` and `public/build/` if the target environment is not building dependencies itself.
+2. Rebuild Composer's production autoloader after every PHP source deployment, even when `composer.lock` did not change. The production autoloader is authoritative, so newly added application classes otherwise remain invisible and cause HTTP 500 responses.
+3. Set correct file permissions for `storage/` and `bootstrap/cache/`.
+4. Create the production `.env` and run `php artisan key:generate --force` only on the first deployment. Never rotate `APP_KEY` during a routine release.
+5. Run on every deployment:
 
 ```bash
-php artisan key:generate --force
+composer install --no-dev --classmap-authoritative --no-interaction
 php artisan migrate --force
-php artisan db:seed --class=Database\\Seeders\\RolesAndPermissionsSeeder --force
-php artisan storage:link || php artisan property:sync-public-storage
 php artisan optimize:clear
 php artisan optimize
 php artisan property:sync-operational-statuses
 ```
 
-5. Verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
+If dependencies are uploaded instead of installed on Hostinger, run `composer dump-autoload --no-dev --classmap-authoritative --no-interaction` after the upload. Run the permissions seeder and storage-link command only during initial setup or when their configuration changes.
+
+6. Verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
 
 ## Cron
 
