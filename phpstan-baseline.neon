@@ -97,24 +97,6 @@ parameters:
 			path: app/Http/Controllers/Controller.php
 
 		-
-			message: '#^Method App\\Http\\Controllers\\DocumentationController\:\:documentationItems\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Http/Controllers/DocumentationController.php
-
-		-
-			message: '#^Unable to resolve the template type TKey in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Http/Controllers/DocumentationController.php
-
-		-
-			message: '#^Unable to resolve the template type TValue in call to function collect$#'
-			identifier: argument.templateType
-			count: 1
-			path: app/Http/Controllers/DocumentationController.php
-
-		-
 			message: '#^Using nullsafe method call on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1

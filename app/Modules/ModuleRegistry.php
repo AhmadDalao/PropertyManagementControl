@@ -12,6 +12,7 @@ final class ModuleRegistry
         return [
             'dashboard' => ['label' => 'Dashboard', 'area' => 'command'],
             'profile' => ['label' => 'Profile', 'area' => 'account'],
+            'documentation' => ['label' => 'Documentation', 'area' => 'support'],
             'portfolios' => ['label' => 'Portfolios', 'area' => 'portfolio'],
             'users' => ['label' => 'Users', 'area' => 'portfolio'],
             'assets' => ['label' => 'Assets', 'area' => 'portfolio'],

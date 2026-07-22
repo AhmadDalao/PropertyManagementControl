@@ -1,0 +1,119 @@
+.pmc-doc-controls {
+    min-width: 0;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-controls > summary {
+    display: flex;
+    min-height: 3.5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-doc-controls > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-doc-controls > summary > div {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.pmc-doc-controls > summary strong {
+    display: grid;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.6rem;
+}
+
+.pmc-doc-controls[open] > summary > i {
+    transform: rotate(180deg);
+}
+
+.pmc-doc-controls > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0 1rem 1rem;
+}
+
+.pmc-doc-controls article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.8rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-doc-controls article > .btn {
+    grid-column: 1 / -1;
+}
+
+.pmc-doc-controls article div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-doc-controls article span,
+.pmc-doc-controls article li {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+}
+
+.pmc-doc-controls article ul {
+    margin: 0.35rem 0 0;
+    padding-inline-start: 1rem;
+}
+
+.pmc-doc-empty {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 1rem;
+    border: 1px dashed #ceb958;
+    border-radius: var(--pmc-radius);
+    background: #fffdf4;
+}
+
+.pmc-doc-empty > i {
+    display: grid;
+    width: 2.7rem;
+    height: 2.7rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #111;
+    color: #ffd735;
+}
+
+.pmc-doc-empty > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-doc-empty strong {
+    font-size: 0.8rem;
+}
+
+.pmc-doc-empty span {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+}

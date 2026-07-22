@@ -1,0 +1,76 @@
+@media (max-width: 1199.98px) {
+    .pmc-doc-detail-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-doc-detail-layout > aside {
+        position: static;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-doc-detail-layout > aside .pmc-doc-guide-icon,
+    .pmc-doc-detail-layout > aside > span {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pmc-doc-command,
+    .pmc-doc-related {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-doc-discovery nav > div,
+    .pmc-doc-workflow-grid,
+    .pmc-doc-guide-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-doc-detail-layout > aside {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        padding: 0.5rem;
+    }
+
+    .pmc-doc-detail-layout > aside .pmc-doc-guide-icon,
+    .pmc-doc-detail-layout > aside > span {
+        display: none;
+    }
+
+    .pmc-doc-detail-layout > aside > a {
+        display: grid;
+        min-width: 0;
+        min-height: 2.75rem;
+        place-items: center;
+        padding: 0.45rem;
+        text-align: center;
+        line-height: 1.25;
+    }
+
+    .pmc-doc-empty {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-doc-empty .btn {
+        grid-column: 1 / -1;
+        width: 100%;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-doc-command,
+    .pmc-doc-role-card,
+    .pmc-doc-detail-content > section,
+    .pmc-doc-related {
+        padding: 0.85rem;
+    }
+
+    .pmc-doc-role-responsibilities span {
+        flex: 1 1 100%;
+    }
+
+    .pmc-doc-controls > div {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

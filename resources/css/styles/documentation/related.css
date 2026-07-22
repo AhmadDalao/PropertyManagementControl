@@ -1,0 +1,56 @@
+.pmc-doc-related {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #111;
+    border-radius: var(--pmc-radius);
+    background: #111;
+    color: #fff;
+}
+
+.pmc-doc-related > div:first-child span {
+    color: #ffd735;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-doc-related h2 {
+    margin: 0.15rem 0 0;
+    font-size: 1rem;
+}
+
+.pmc-doc-related > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    min-width: 0;
+    gap: 0.55rem;
+}
+
+.pmc-doc-related a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: rgba(255, 255, 255, 0.09);
+    color: #fff;
+    font-size: 0.7rem;
+    text-decoration: none;
+}
+
+.pmc-doc-related a:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.pmc-doc-related a strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

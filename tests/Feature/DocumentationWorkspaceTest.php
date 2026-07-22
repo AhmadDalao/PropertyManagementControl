@@ -22,6 +22,7 @@ class DocumentationWorkspaceTest extends TestCase
         $portfolio = $this->createPortfolio([
             'module_settings' => [
                 'assets' => true,
+                'users' => false,
                 'payments' => false,
                 'reports' => true,
             ],
@@ -34,13 +35,27 @@ class DocumentationWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/documentation/index')
                 ->where('audience', 'owner')
+                ->where('roleGuide.role', 'owner')
+                ->where('roleGuide.routes', fn ($routes) => ! collect($routes)->contains('/payments'))
+                ->missing('roleGuides')
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/assets')
+                    && ! collect($shortcuts)->contains('route', '/users')
                     && ! collect($shortcuts)->contains('route', '/payments')
                     && ! collect($shortcuts)->contains('route', '/cms'))
+                ->where('quickStarts', fn ($quickStarts) => ! collect($quickStarts)->contains('route', '/payments'))
+                ->where('guides', fn ($guides) => ! collect($guides)->contains('route', '/payments'))
                 ->where('workflowTracks', fn ($workflows) => collect($workflows)->contains('key', 'asset_to_lease')
-                    && ! collect($workflows)->contains('key', 'website_publish'))
+                    && ! collect($workflows)->contains('key', 'rent_collection')
+                    && ! collect($workflows)->contains('key', 'website_publish')
+                    && ! collect(collect($workflows)->firstWhere('key', 'portfolio_launch')['steps'])->contains('route', '/users'))
                 ->where('moduleStatus', fn ($modules) => collect($modules)->firstWhere('key', 'payments')['enabled'] === false)
+                ->missing('guides.0.roles')
+                ->missing('workflowTracks.0.steps.0.module')
             );
+
+        $this->actingAs($owner)
+            ->get(route('documentation.show', 'payments-and-receipts'))
+            ->assertNotFound();
     }
 
     public function test_tenant_documentation_only_exposes_tenant_safe_workflows(): void
@@ -54,6 +69,7 @@ class DocumentationWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/documentation/index')
                 ->where('audience', 'tenant')
+                ->where('roleGuide.role', 'tenant')
                 ->where('quickStarts', fn ($quickStarts) => collect($quickStarts)->contains('title', 'Use the tenant portal')
                     && ! collect($quickStarts)->contains('title', 'Set up a portfolio'))
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/maintenance-requests')

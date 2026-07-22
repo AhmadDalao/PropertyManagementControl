@@ -707,13 +707,65 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
-    test('documentation uses focused guide pages', async ({ page }) => {
-        await page.goto('/documentation');
-        const guide = page.locator('a[href^="/documentation/"]').first();
-        await expect(guide).toBeVisible();
-        await guide.click();
-        await expect(page).toHaveURL(/\/documentation\/[^/?]+/);
-        await expect(page.locator('.pmc-doc-detail-layout')).toBeVisible();
+    test('documentation search and guide pages stay focused, responsive, and Arabic', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/documentation?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Documentation',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-doc-role-card')).toBeVisible();
+            await page.getByLabel('Search guides').fill('no-such-guide');
+            await expect(
+                page.getByText('No guides match this search'),
+            ).toBeVisible();
+            await page.getByRole('button', { name: 'Clear search' }).click();
+
+            const guide = page
+                .locator('a[href^="/documentation/"]')
+                .first();
+            await expect(guide).toBeVisible();
+            await guide.click();
+            await expect(page).toHaveURL(/\/documentation\/[^/?]+/);
+            await expect(page.locator('.pmc-doc-detail-layout')).toBeVisible();
+            await expect(page.locator('.pmc-doc-detail-content > section')).toHaveCount(3);
+            await expect(page.locator('main main')).toHaveCount(0);
+
+            const guideNavigationColumns = await page
+                .locator('.pmc-doc-detail-layout > aside')
+                .evaluate(
+                    (node) =>
+                        window
+                            .getComputedStyle(node)
+                            .gridTemplateColumns.split(' ').length,
+                );
+            expect(guideNavigationColumns).toBe(
+                viewport.width < 1200 ? 3 : 1,
+            );
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/documentation?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'دليل الاستخدام' }),
+        ).toBeVisible();
+        await expect(page.getByText('نقاط بداية مقترحة')).toBeVisible();
+
+        await page.goto('/documentation/asset-control?locale=ar');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'إدارة الأصول' }),
+        ).toBeVisible();
+        await expect(page.getByRole('heading', { name: 'المزايا' })).toBeVisible();
+        await expect(page.getByText('Features')).toHaveCount(0);
+        await expectNoHorizontalOverflow(page);
     });
 
     test('reports use responsive cards, complete Arabic controls, and real XLSX export', async ({

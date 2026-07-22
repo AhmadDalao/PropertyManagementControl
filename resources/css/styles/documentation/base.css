@@ -1,0 +1,175 @@
+.pmc-documentation-page {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-documentation-page .pmc-page-head {
+    margin-bottom: 0;
+}
+
+.pmc-doc-command {
+    display: grid;
+    grid-template-columns: minmax(16rem, 0.8fr) minmax(20rem, 1.2fr);
+    min-width: 0;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #decf9e;
+    border-radius: var(--pmc-radius);
+    background: linear-gradient(135deg, #fffdf6 0%, #f7fbf9 100%);
+}
+
+.pmc-doc-role-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
+    align-content: start;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-doc-role-icon {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #111;
+    color: #ffd735;
+    font-size: 1rem;
+}
+
+.pmc-doc-role-card > div:nth-child(2) {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.15rem;
+}
+
+.pmc-doc-role-card > div > span,
+.pmc-doc-discovery > label > span,
+.pmc-doc-discovery nav > span {
+    color: #806600;
+    font-size: 0.63rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-doc-role-card strong {
+    color: var(--pmc-ink);
+    font-size: 0.9rem;
+}
+
+.pmc-doc-role-card small {
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+    line-height: 1.5;
+}
+
+.pmc-doc-role-card em {
+    color: var(--pmc-teal);
+    font-size: 0.62rem;
+    font-style: normal;
+    font-weight: 750;
+}
+
+.pmc-doc-role-responsibilities {
+    display: flex;
+    grid-column: 1 / -1;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.pmc-doc-role-card > .pmc-doc-role-responsibilities > span {
+    padding: 0.3rem 0.5rem;
+    border: 1px solid #e8d781;
+    border-radius: 999px;
+    background: #fff9d9;
+    color: #594b12;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.pmc-doc-discovery {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.8rem;
+}
+
+.pmc-doc-discovery > label {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.pmc-doc-discovery > label > div {
+    position: relative;
+    min-width: 0;
+}
+
+.pmc-doc-discovery > label i {
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    inset-inline-start: 0.9rem;
+    color: #777168;
+    transform: translateY(-50%);
+}
+
+.pmc-doc-discovery .form-control {
+    min-width: 0;
+    min-height: 2.85rem;
+    padding-inline-start: 2.45rem;
+    border-color: var(--pmc-line);
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.pmc-doc-discovery nav {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.pmc-doc-discovery nav > div {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    min-width: 0;
+    gap: 0.45rem;
+}
+
+.pmc-doc-discovery nav a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    min-width: 0;
+    min-height: 2.8rem;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.7rem;
+    background: #fff;
+    color: #111;
+    font-size: 0.64rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.pmc-doc-discovery nav a:hover {
+    border-color: #c9aa16;
+    background: #fff9db;
+}
+
+.pmc-doc-discovery nav a span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -1,0 +1,95 @@
+.pmc-doc-index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-doc-guide-grid,
+.pmc-doc-shortcut-list {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+}
+
+.pmc-doc-guide-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pmc-doc-guide-link,
+.pmc-doc-shortcut-list > a {
+    display: grid;
+    min-width: 0;
+    min-height: 4.25rem;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-doc-guide-link {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.pmc-doc-guide-link:hover,
+.pmc-doc-shortcut-list > a:hover {
+    border-color: #d0ad00;
+    background: #fffaf0;
+}
+
+.pmc-doc-guide-link > i:first-child,
+.pmc-doc-shortcut-list > a > i {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.6rem;
+    background: #fff0a3;
+    color: #715900;
+}
+
+.pmc-doc-guide-link > div,
+.pmc-doc-shortcut-list > a > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.pmc-doc-guide-link span,
+.pmc-doc-guide-link small,
+.pmc-doc-shortcut-list span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+    text-overflow: ellipsis;
+}
+
+.pmc-doc-guide-link small {
+    display: -webkit-box;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.pmc-doc-guide-link strong,
+.pmc-doc-shortcut-list strong {
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+    text-overflow: ellipsis;
+}
+
+.pmc-doc-shortcut-list > a {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+
+.pmc-doc-shortcut-list em {
+    color: var(--pmc-teal);
+    font-size: 0.63rem;
+    font-style: normal;
+    font-weight: 800;
+}

@@ -216,7 +216,7 @@ return [
             'label' => 'Reports',
             'category' => 'Control',
             'route' => '/reports',
-            'description' => 'Review revenue, expenses, arrears, occupancy, lease expiry, and CSV exports.',
+            'description' => 'Review revenue, expenses, arrears, occupancy, lease expiry, and XLSX workbook exports.',
             'action' => 'Open reports',
             'icon' => 'bi-graph-up-arrow',
             'roles' => ['superadmin', 'owner', 'property_manager'],
@@ -239,7 +239,7 @@ return [
             'summary' => 'Owners and managers must only see users, assets, tenants, leases, payments, documents, and reports inside their portfolio.',
             'route' => '/audit-logs',
             'icon' => 'bi-shield-check',
-            'checks' => ['Owner A cannot search Owner B assets', 'CSV exports use the same scope as tables', 'Global search hides disabled modules'],
+            'checks' => ['Owner A cannot search Owner B assets', 'XLSX exports use the same scope as tables', 'Global search hides disabled modules'],
         ],
         [
             'title' => 'Tenant privacy',

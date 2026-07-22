@@ -1,0 +1,142 @@
+.pmc-doc-detail-layout {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.25fr) minmax(0, 1fr);
+    min-width: 0;
+    align-items: start;
+    gap: 1rem;
+}
+
+.pmc-doc-detail-layout > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 1rem);
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-guide-icon {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 0.5rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: #fff0a3;
+    color: #715900;
+    font-size: 1.2rem;
+}
+
+.pmc-doc-detail-layout > aside > span {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-doc-detail-layout > aside > a {
+    min-height: 2.65rem;
+    padding: 0.65rem;
+    border-radius: 0.55rem;
+    color: #33302b;
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.pmc-doc-detail-layout > aside > a:hover {
+    background: #fff7d2;
+}
+
+.pmc-doc-detail-content {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-doc-detail-content > section {
+    min-width: 0;
+    scroll-margin-top: calc(var(--pmc-topbar-height) + 1rem);
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-doc-detail-content h2 {
+    margin: 0.25rem 0 0.9rem;
+    color: var(--pmc-ink);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.pmc-doc-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    min-width: 0;
+    gap: 0.65rem;
+}
+
+.pmc-doc-feature-grid article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-doc-feature-grid span {
+    color: #806600;
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-doc-feature-grid p {
+    margin: 0;
+    color: #4e4a43;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.pmc-doc-step-list,
+.pmc-doc-rule-list {
+    display: grid;
+    min-width: 0;
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-doc-step-list {
+    padding-inline-start: 1.25rem;
+}
+
+.pmc-doc-step-list li,
+.pmc-doc-rule-list li {
+    min-width: 0;
+    padding: 0.7rem;
+    border-radius: 0.65rem;
+    background: var(--pmc-surface-soft);
+    color: #4e4a43;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.pmc-doc-rule-list {
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-doc-rule-list li {
+    display: flex;
+    gap: 0.55rem;
+}
+
+.pmc-doc-rule-list i {
+    flex: 0 0 auto;
+    color: var(--pmc-teal);
+}

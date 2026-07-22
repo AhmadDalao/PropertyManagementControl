@@ -78,6 +78,9 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Profile is the fourteenth complete vertical slice. `ProfileController` is a 49-line route adapter over dedicated requests, actions, and a safe presenter; its former 529-line React page is a one-line route entry over focused identity, account-details, password, and access-context modules.
 - `ProfileModuleArchitectureTest` protects the split. Feature coverage enforces field allowlists, trimming, localized language-transition feedback, current-password verification, temporary-password completion, and omission of password internals. Browser coverage verifies EN/AR content, one-column tablet/mobile forms, zero overflow, and rendered icons.
 - The local Bootstrap Icon subset is now contract-tested against every icon used by React and Blade. A missing glyph fails architecture tests instead of shipping as a blank control.
+- Documentation is the fifteenth complete vertical slice. `DocumentationController` fell from 133 lines to a 33-line adapter over role-aware index and guide presenters; configuration access, localization, module policy, route inference, and payload scoping live under `app/Modules/Documentation`.
+- Its former 332-line index and 138-line guide page are one-line route entries over focused search, access, workflow, library, regulation, navigation, content, and related-guide components. Disabled portfolio modules now remove their guides, shortcuts, workflow steps, and direct URLs instead of exposing dead documentation.
+- `DocumentationModuleArchitectureTest` protects the split. Feature and browser coverage enforce role/module scoping, payload allowlists, EN/AR guide content, direct links, searchable empty states, mobile guide navigation, zero overflow, and the absence of nested page landmarks. Documentation CSS is route-loaded as an 11.17 KB chunk instead of inflating the shared bundle.
 
 ## Resource Refactor Checklist
 
@@ -89,7 +92,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is Documentation. Move guide definitions and presentation out of its 133-line controller, split the 332-line index into search, role-guide, workflow, and guide-card modules, and preserve bilingual direct links, mobile accessibility, and the existing guide URLs.
+The next refactor target by risk is Showcase Data. Split the 902-line generation/purge service, 125-line controller, and 339-line Data Lab page into explicit dataset lifecycle actions, building-generation jobs, record factories, purge transactions, progress presenters, and focused operator controls. Preserve retry/purge safety, production confirmation, queue idempotency, dataset tagging, and exact generated totals.
 
 ## Local Verification
 
