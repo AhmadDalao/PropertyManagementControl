@@ -66,3 +66,16 @@ export type PortfolioIndexPageProps = SharedProps & {
     moduleDefinitions: ModuleDefinition[];
     statusOptions: string[];
 };
+
+export type PortfolioTableProps = Pick<
+    PortfolioIndexPageProps,
+    | 'portfolios'
+    | 'filters'
+    | 'counts'
+    | 'canCreate'
+    | 'canUpdate'
+    | 'canArchive'
+    | 'moduleDefinitions'
+    | 'statusOptions'
+    | 'app'
+>;
