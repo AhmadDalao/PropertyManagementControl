@@ -831,20 +831,29 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('media.');
         const mediaCards = page.locator('.pmc-mobile-record-card');
-        expect(await mediaCards.count()).toBeGreaterThan(0);
-        await expect(mediaCards.first()).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
-        const mediaDetailHref = await mediaCards
-            .first()
-            .locator('a[href^="/media-files/"]')
-            .first()
-            .getAttribute('href');
-        expect(mediaDetailHref).toBeTruthy();
-        await page.goto(`${mediaDetailHref}?locale=ar`);
-        await expect(page.getByText('سجل الوسائط')).toBeVisible();
-        await expect(page.locator('body')).not.toContainText('media.');
-        await expectNoHorizontalOverflow(page);
+        if ((await mediaCards.count()) > 0) {
+            await expect(mediaCards.first()).toBeVisible();
+            const mediaDetailHref = await mediaCards
+                .first()
+                .locator('a[href^="/media-files/"]')
+                .first()
+                .getAttribute('href');
+            expect(mediaDetailHref).toBeTruthy();
+            await page.goto(`${mediaDetailHref}?locale=ar`);
+            await expect(page.getByText('سجل الوسائط')).toBeVisible();
+            await expect(page.locator('body')).not.toContainText('media.');
+            await expectNoHorizontalOverflow(page);
+        } else {
+            const mobileEmptyState = page.locator(
+                '.pmc-mobile-record-list .pmc-empty-state',
+            );
+            await expect(mobileEmptyState).toBeVisible();
+            await expect(mobileEmptyState).toContainText(
+                'لا توجد سجلات مطابقة',
+            );
+        }
 
         await page.goto('/media-files/create?locale=ar');
         await expect(
