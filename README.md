@@ -19,6 +19,7 @@ Laravel 13 property management platform built with Inertia React, Bootstrap 5.3,
 - Tenant profiles, leases, installments, manual payments, and PDF outputs
 - Maintenance request intake and expense tracking
 - Superadmin CMS controls for public pages, sections, navigation, and media
+- Modular public-site rendering with editable CMS content and a bilingual fallback catalog
 - English/Arabic locale switching with RTL support for Arabic
 
 ## Local setup

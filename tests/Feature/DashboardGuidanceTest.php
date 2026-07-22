@@ -255,5 +255,6 @@ class DashboardGuidanceTest extends TestCase
         $this->assertArrayHasKey('assets', $modules);
         $this->assertArrayHasKey('leases', $modules);
         $this->assertArrayHasKey('cms', $modules);
+        $this->assertArrayHasKey('public_site', $modules);
     }
 }

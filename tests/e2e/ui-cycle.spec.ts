@@ -74,6 +74,39 @@ test.describe('public shell', () => {
             expect(results.violations).toEqual([]);
         }
     });
+
+    test('mobile public navigation locks the page and restores focus', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/');
+
+        const header = page.locator('.pmc-site-header');
+        const trigger = page.locator('.pmc-site-menu');
+        await expect(header).toBeVisible();
+        expect(
+            await header.evaluate(
+                (node) => node.getBoundingClientRect().height,
+            ),
+        ).toBeLessThanOrEqual(64);
+
+        await trigger.click();
+        await expect(page.locator('body')).toHaveClass(/pmc-site-menu-open/);
+        await expect(page.locator('.pmc-site-links')).toHaveClass(/is-open/);
+        await expect(page.locator('.pmc-site-links a').first()).toBeFocused();
+
+        await page.keyboard.press('Escape');
+        await expect(page.locator('body')).not.toHaveClass(
+            /pmc-site-menu-open/,
+        );
+        await expect(trigger).toBeFocused();
+
+        await page.goto('/?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(page.locator('.pmc-hero-copy h1')).toContainText(
+            'أدر محفظتك العقارية',
+        );
+    });
 });
 
 test.describe('authenticated administration', () => {

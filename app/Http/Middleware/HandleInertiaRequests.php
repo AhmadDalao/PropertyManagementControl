@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\NavigationItem;
+use App\Modules\PublicSite\Queries\PublicNavigationQuery;
 use App\Modules\Wording\UiTranslationCatalog;
 use App\Support\PortfolioModules;
 use Illuminate\Http\Request;
@@ -79,13 +79,7 @@ class HandleInertiaRequests extends Middleware
                 'status' => fn () => $request->session()->get('status'),
             ],
             'publicNavigation' => [
-                'header' => fn () => NavigationItem::query()
-                    ->where('location', 'header')
-                    ->where('is_visible', true)
-                    ->whereNull('parent_id')
-                    ->with('children')
-                    ->orderBy('sort_order')
-                    ->get(),
+                'header' => fn () => app(PublicNavigationQuery::class)->header(),
             ],
         ];
     }

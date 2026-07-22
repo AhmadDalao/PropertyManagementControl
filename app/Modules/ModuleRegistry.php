@@ -26,6 +26,7 @@ final class ModuleRegistry
             'audit' => ['label' => 'Audit History', 'area' => 'system'],
             'showcase_data' => ['label' => 'Showcase Data', 'area' => 'system'],
             'cms' => ['label' => 'Website Control', 'area' => 'website'],
+            'public_site' => ['label' => 'Public Site', 'area' => 'website'],
             'media' => ['label' => 'Media', 'area' => 'website'],
         ];
     }

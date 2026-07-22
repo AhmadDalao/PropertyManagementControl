@@ -52,7 +52,6 @@ class CmsModuleArchitectureTest extends TestCase
             'app/Modules/Cms/Actions/ManageCmsSections.php',
             'app/Modules/Cms/Actions/ManageNavigationItems.php',
             'app/Modules/Cms/Queries/CmsWorkspaceQuery.php',
-            'app/Modules/Cms/Queries/PublicCmsPageQuery.php',
             'app/Modules/Cms/Presenters/CmsBuilderPresenter.php',
             'app/Modules/Cms/Presenters/CmsPageFormPresenter.php',
             'app/Modules/Cms/Presenters/NavigationFormPresenter.php',

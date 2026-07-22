@@ -1,0 +1,163 @@
+@media (max-width: 991.98px) {
+    body.pmc-site-menu-open {
+        overflow: hidden;
+    }
+
+    .pmc-site-menu-backdrop {
+        position: fixed;
+        z-index: 55;
+        inset: 4rem 0 0;
+        display: block;
+        border: 0;
+        background: rgba(17, 17, 15, 0.28);
+        backdrop-filter: blur(2px);
+    }
+
+    .pmc-site-links {
+        position: fixed;
+        z-index: 60;
+        top: 4.65rem;
+        right: 1rem;
+        left: 1rem;
+        display: none;
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.2rem;
+        padding: 0.65rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.9rem;
+        background: #fff;
+        box-shadow: var(--pmc-shadow-float);
+    }
+
+    .pmc-site-links.is-open {
+        display: flex;
+    }
+
+    .pmc-site-links a {
+        min-height: 2.75rem;
+        padding: 0.65rem;
+        border-radius: 0.55rem;
+    }
+
+    .pmc-site-links a:hover,
+    .pmc-site-links a:focus-visible {
+        background: #fff7d2;
+    }
+
+    .pmc-site-menu {
+        display: grid;
+    }
+
+    .pmc-landing-hero,
+    .pmc-section-split,
+    .pmc-operations-inner {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-landing-hero {
+        min-height: auto;
+        padding-block: 3.5rem;
+    }
+
+    .pmc-dashboard-preview {
+        transform: none;
+    }
+
+    .pmc-hero-visual.has-image .pmc-dashboard-preview {
+        margin: -2rem 0.65rem 0;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-site-nav {
+        width: min(100% - 1.25rem, 78rem);
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .pmc-site-brand > div {
+        display: none;
+    }
+
+    .pmc-site-actions {
+        gap: 0.35rem;
+    }
+
+    .pmc-site-actions > .btn {
+        min-height: 2.45rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.68rem;
+    }
+
+    .pmc-landing-hero,
+    .pmc-section-band,
+    .pmc-final-cta,
+    .pmc-operations-inner {
+        width: min(100% - 1.25rem, 78rem);
+    }
+
+    .pmc-hero-copy h1 {
+        font-size: clamp(2.65rem, 14vw, 4rem);
+    }
+
+    .pmc-hero-actions,
+    .pmc-hero-actions .btn {
+        width: 100%;
+    }
+
+    .pmc-hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-section-heading h2,
+    .pmc-section-band > h2,
+    .pmc-final-cta h2 {
+        font-size: clamp(1.8rem, 9vw, 2.5rem);
+    }
+
+    .pmc-auth-page {
+        padding-block: 0.5rem 1rem;
+    }
+
+    .pmc-auth-topbar {
+        margin-bottom: 0.75rem;
+    }
+
+    .pmc-auth-copy {
+        display: none;
+    }
+
+    .pmc-login-panel {
+        margin-inline: 0 !important;
+        padding: 1.15rem !important;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-control-list > div {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .pmc-control-list strong {
+        text-align: start;
+    }
+
+    .pmc-strip-items {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-role-card,
+    .pmc-feature-item {
+        transition: none;
+    }
+
+    .pmc-role-card:hover,
+    .pmc-feature-item:hover {
+        transform: none;
+    }
+}

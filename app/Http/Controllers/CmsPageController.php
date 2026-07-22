@@ -12,7 +12,6 @@ use App\Modules\Cms\Presenters\CmsBuilderPresenter;
 use App\Modules\Cms\Presenters\CmsPageFormPresenter;
 use App\Modules\Cms\Presenters\CmsSectionFormPresenter;
 use App\Modules\Cms\Queries\CmsWorkspaceQuery;
-use App\Modules\Cms\Queries\PublicCmsPageQuery;
 use App\Modules\Cms\Requests\AttachCmsSectionRequest;
 use App\Modules\Cms\Requests\ReorderCmsPageSectionsRequest;
 use App\Modules\Cms\Requests\SaveCmsSectionRequest;
@@ -27,7 +26,6 @@ use Inertia\Response;
 class CmsPageController extends Controller
 {
     public function __construct(
-        private readonly PublicCmsPageQuery $publicPages,
         private readonly CmsWorkspaceQuery $workspace,
         private readonly CmsPageFormPresenter $pageForms,
         private readonly CmsSectionFormPresenter $sectionForms,
@@ -36,16 +34,6 @@ class CmsPageController extends Controller
         private readonly ManageCmsSections $sections,
         private readonly ComposeCmsPage $composition,
     ) {}
-
-    public function home(): Response
-    {
-        return Inertia::render('public/home', ['page' => $this->publicPages->homepage()]);
-    }
-
-    public function show(string $slug): Response
-    {
-        return Inertia::render('public/page', ['page' => $this->publicPages->bySlug($slug)]);
-    }
 
     public function index(Request $request): Response
     {

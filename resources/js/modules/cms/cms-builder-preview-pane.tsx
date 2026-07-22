@@ -1,5 +1,5 @@
-import { CmsRenderer } from '@/components/cms-renderer';
 import { useTranslator } from '@/lib/i18n';
+import { CmsRenderer } from '@/modules/public-site/cms-renderer';
 
 import type { CmsBuilderController } from './use-cms-builder';
 

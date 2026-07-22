@@ -1,0 +1,163 @@
+.pmc-section-band {
+    padding-block: clamp(3rem, 7vw, 6rem);
+}
+
+.pmc-section-band + .pmc-section-band {
+    border-top: 1px solid #eee9df;
+}
+
+.pmc-section-heading,
+.pmc-section-copy {
+    max-width: 50rem;
+}
+
+.pmc-section-heading h2,
+.pmc-section-band > h2,
+.pmc-final-cta h2 {
+    margin: 0.35rem 0 0;
+    color: #111;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.055em;
+}
+
+.pmc-section-copy,
+.pmc-section-heading p,
+.pmc-final-cta p {
+    margin: 0.9rem 0 0;
+    color: var(--pmc-muted);
+    line-height: 1.65;
+}
+
+.pmc-role-grid,
+.pmc-feature-grid,
+.pmc-metric-grid,
+.pmc-workflow {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+.pmc-role-grid,
+.pmc-feature-grid {
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.pmc-metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.pmc-role-card,
+.pmc-feature-item,
+.pmc-metric-panel,
+.pmc-workflow-step {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-role-card,
+.pmc-feature-item {
+    transition:
+        border-color 160ms ease,
+        transform 160ms ease;
+}
+
+.pmc-role-card:hover,
+.pmc-feature-item:hover {
+    border-color: #c3b78e;
+    transform: translateY(-2px);
+}
+
+.pmc-role-card > i,
+.pmc-feature-item > i {
+    display: grid;
+    width: 2.6rem;
+    height: 2.6rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #fff0a3;
+    color: #715900;
+}
+
+.pmc-role-card h3,
+.pmc-feature-item h3,
+.pmc-workflow-step h3 {
+    margin: 0.8rem 0 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.pmc-role-card p,
+.pmc-feature-item p,
+.pmc-workflow-step p {
+    margin: 0.4rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.76rem;
+    line-height: 1.55;
+}
+
+.pmc-metric-panel span,
+.pmc-metric-panel strong {
+    display: block;
+}
+
+.pmc-metric-panel span {
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-metric-panel strong {
+    margin-top: 0.35rem;
+    font-size: 1.2rem;
+}
+
+.pmc-workflow {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+
+.pmc-workflow-index {
+    color: #8a6d00;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.pmc-section-split {
+    display: grid;
+    grid-template-columns: minmax(0, 0.7fr) minmax(20rem, 1fr);
+    align-items: center;
+    gap: 2rem;
+}
+
+.pmc-control-list {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.75rem;
+    border: 1px solid #111;
+    border-radius: 1rem;
+    background: #fffdf5;
+}
+
+.pmc-control-list > div {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem;
+    border-radius: 0.75rem;
+    background: #fff;
+}
+
+.pmc-control-list span {
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-control-list strong {
+    text-align: end;
+    font-size: 0.78rem;
+}

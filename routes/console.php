@@ -2,8 +2,8 @@
 
 use App\Models\User;
 use App\Modules\Leases\LeaseLifecycle;
+use App\Modules\PublicSite\Actions\SeedLandingContent;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
-use App\Services\LandingContentSeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -86,8 +86,8 @@ Artisan::command('property:ensure-superadmin {email} {--password=} {--name=Syste
     return 0;
 })->purpose('Create or repair the global superadmin account.');
 
-Artisan::command('property:seed-landing-content', function () {
-    $result = app(LandingContentSeeder::class)->seed();
+Artisan::command('property:seed-landing-content', function (SeedLandingContent $seed) {
+    $result = $seed->handle();
 
     $this->info("Landing page [{$result['page_id']}] seeded with {$result['sections']} sections and {$result['navigation_items']} navigation items.");
 

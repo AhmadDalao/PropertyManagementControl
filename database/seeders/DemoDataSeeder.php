@@ -15,7 +15,7 @@ use App\Models\User;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Leases\Actions\InstallmentSchedule;
 use App\Modules\Payments\Actions\PaymentAllocator;
-use App\Services\LandingContentSeeder;
+use App\Modules\PublicSite\Actions\SeedLandingContent;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -492,7 +492,7 @@ class DemoDataSeeder extends Seeder
 
     private function seedCmsAndMedia(User $superadmin): void
     {
-        app(LandingContentSeeder::class)->seed();
+        app(SeedLandingContent::class)->handle();
 
         $svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720"><rect width="1200" height="720" fill="#fff7ed"/><circle cx="980" cy="110" r="190" fill="#0f766e" opacity=".16"/><circle cx="180" cy="620" r="220" fill="#f97316" opacity=".2"/><text x="90" y="360" font-family="Arial" font-size="64" font-weight="700" fill="#172033">Property Control</text></svg>';
         Storage::disk('public')->put('demo/property-control-hero.svg', $svg);

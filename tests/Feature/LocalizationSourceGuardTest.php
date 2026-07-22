@@ -50,6 +50,18 @@ class LocalizationSourceGuardTest extends TestCase
             'resources/js/pages/auth/login.tsx',
         ];
 
+        $publicSite = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator(
+                resource_path('js/modules/public-site'),
+            ),
+        );
+
+        foreach ($publicSite as $file) {
+            if ($file->isFile() && $file->getExtension() === 'tsx') {
+                $files[] = str_replace(base_path().'/', '', $file->getPathname());
+            }
+        }
+
         foreach ($files as $file) {
             $source = (string) file_get_contents(base_path($file));
             $source = preg_replace('/>\s*(?:PMC|PC)\s*</', '><', $source) ?? $source;

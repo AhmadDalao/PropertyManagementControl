@@ -1,0 +1,110 @@
+.pmc-operations-strip {
+    border-block: 1px solid #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-operations-inner {
+    display: grid;
+    width: min(100% - 2rem, 78rem);
+    grid-template-columns: minmax(0, 0.8fr) minmax(20rem, 1.2fr);
+    align-items: center;
+    gap: 2rem;
+    margin-inline: auto;
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.pmc-operations-copy h2 {
+    margin: 0;
+    color: #fff;
+    font-size: clamp(1.7rem, 3vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -0.045em;
+}
+
+.pmc-operations-copy p {
+    margin: 0.75rem 0 0;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 1.6;
+}
+
+.pmc-strip-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-strip-items > div {
+    min-width: 0;
+    padding: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.8rem;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.pmc-strip-items strong,
+.pmc-strip-items span {
+    display: block;
+}
+
+.pmc-strip-items strong {
+    font-size: 0.8rem;
+}
+
+.pmc-strip-items span {
+    margin-top: 0.3rem;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 0.68rem;
+}
+
+.pmc-faq-list {
+    display: grid;
+    gap: 0.55rem;
+    margin-top: 1.5rem;
+}
+
+.pmc-faq-item {
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.8rem;
+    background: #fff;
+}
+
+.pmc-faq-item summary {
+    min-height: 2.75rem;
+    padding: 0.85rem 1rem;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.pmc-faq-item p {
+    margin: 0;
+    padding: 0 1rem 1rem;
+    color: var(--pmc-muted);
+    font-size: 0.74rem;
+    line-height: 1.6;
+}
+
+.pmc-final-cta {
+    margin-block: clamp(3rem, 7vw, 6rem);
+    padding: clamp(1.5rem, 4vw, 3rem);
+    border-radius: 1.3rem;
+    background: #ffdc25;
+    text-align: center;
+}
+
+.pmc-final-cta > div {
+    max-width: 50rem;
+    margin-inline: auto;
+}
+
+.pmc-final-cta p {
+    color: #3f381f;
+}
+
+.pmc-final-cta .btn {
+    margin-top: 1.25rem;
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}

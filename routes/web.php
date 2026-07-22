@@ -21,6 +21,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyMapController;
+use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\TenantController;
@@ -28,8 +29,8 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\WordingController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', [CmsPageController::class, 'home'])->name('home');
-Route::get('/pages/{slug}', [CmsPageController::class, 'show'])->name('pages.show');
+Route::get('/', [PublicSiteController::class, 'home'])->name('home');
+Route::get('/pages/{slug}', [PublicSiteController::class, 'show'])->name('pages.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
