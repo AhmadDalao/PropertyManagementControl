@@ -11,7 +11,6 @@ export type ExpenseRecord = {
     asset_id?: number | null;
     maintenance_request_id?: number | null;
     title: string;
-    description?: string | null;
     category: string;
     status: string;
     vendor_name?: string | null;

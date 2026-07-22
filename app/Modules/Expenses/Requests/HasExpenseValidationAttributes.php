@@ -24,8 +24,20 @@ trait HasExpenseValidationAttributes
 
     protected function prepareForValidation(): void
     {
+        $updates = [];
+
+        foreach (['title', 'description', 'vendor_name'] as $field) {
+            if (is_string($this->input($field))) {
+                $updates[$field] = trim((string) $this->input($field));
+            }
+        }
+
         if (is_string($this->input('currency'))) {
-            $this->merge(['currency' => strtoupper(trim((string) $this->input('currency')))]);
+            $updates['currency'] = strtoupper(trim((string) $this->input('currency')));
+        }
+
+        if ($updates !== []) {
+            $this->merge($updates);
         }
     }
 }

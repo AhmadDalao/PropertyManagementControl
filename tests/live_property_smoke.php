@@ -230,7 +230,10 @@ $authChecks = [
     '/payments/create?locale=en' => 'admin/resource-form',
     '/payments/create?locale=ar' => 'admin/resource-form',
     '/maintenance-requests' => 'admin/maintenance/index',
-    '/expenses' => 'admin/expenses/index',
+    '/expenses?locale=en' => 'admin/expenses/index',
+    '/expenses?locale=ar' => 'admin/expenses/index',
+    '/expenses/create?locale=en' => 'admin/resource-form',
+    '/expenses/create?locale=ar' => 'admin/resource-form',
     '/documents' => 'admin/documents/index',
     '/documents/create' => 'admin/resource-form',
     '/media-files' => 'admin/media/index',
@@ -355,6 +358,40 @@ if (! str_contains($paymentExportHeaders, '.xlsx') || ! str_starts_with((string)
 }
 
 smoke_note('/exports/payments Excel .xlsx');
+
+$expenseIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/expenses?status=posted&per_page=10&locale=en');
+$expensePayload = smoke_page_payload($expenseIndex['body']);
+$expenseRows = $expensePayload['props']['expenses']['data'] ?? [];
+
+if (is_array($expenseRows) && isset($expenseRows[0]['id'])) {
+    $expenseId = (int) $expenseRows[0]['id'];
+    $expenseDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/expenses/'.$expenseId.'?locale=en');
+
+    if ($expenseDetail['status'] !== 200 || smoke_component($expenseDetail['body']) !== 'admin/resource-show') {
+        smoke_fail("Expense {$expenseId} detail did not load.");
+    }
+
+    smoke_note("/expenses/{$expenseId} admin/resource-show");
+} else {
+    smoke_note('No posted expense available for the non-destructive detail check.');
+}
+
+$expenseExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/expenses?status=posted&locale=en');
+$expenseExportHeaders = strtolower((string) $expenseExport['headers']);
+
+if ($expenseExport['status'] !== 200) {
+    smoke_fail("Expense export returned {$expenseExport['status']}.");
+}
+
+if (! str_contains($expenseExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Expense export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($expenseExportHeaders, '.xlsx') || ! str_starts_with((string) $expenseExport['body'], 'PK')) {
+    smoke_fail('Expense export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/expenses Excel .xlsx');
 
 $reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
 $reportHeaders = strtolower((string) $reportExport['headers']);

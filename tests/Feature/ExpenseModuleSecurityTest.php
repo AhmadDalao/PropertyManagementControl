@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
+use App\Modules\Expenses\Actions\ManageExpenses;
 use App\Modules\Expenses\Support\ExpenseOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -102,6 +104,13 @@ class ExpenseModuleSecurityTest extends TestCase
             ->assertSessionHasErrors('portfolio_id');
 
         $this->assertDatabaseCount('expense_entries', 0);
+
+        $this->assertValidationError(
+            fn () => app(ManageExpenses::class)->create($superadmin, $this->expensePayload([
+                'portfolio_id' => $inactivePortfolio->id,
+            ])),
+            'portfolio_id',
+        );
     }
 
     public function test_expense_values_are_strictly_validated(): void
@@ -157,6 +166,133 @@ class ExpenseModuleSecurityTest extends TestCase
         $this->assertSame($request->id, $expense->maintenance_request_id);
         $this->assertSame($owner->id, $expense->created_by_user_id);
         $this->assertSame('USD', $expense->currency);
+    }
+
+    public function test_corrupt_maintenance_asset_reference_cannot_cross_portfolios(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+        $request = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $foreignAsset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $owner->id,
+            'category' => 'electrical',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Legacy corrupt asset link',
+            'description' => 'The guard must not inherit a foreign asset.',
+            'requested_at' => now(),
+        ]);
+
+        $this->assertValidationError(
+            fn () => app(ManageExpenses::class)->create($owner, $this->expensePayload([
+                'maintenance_request_id' => $request->id,
+            ])),
+            'asset_id',
+        );
+        $this->assertDatabaseCount('expense_entries', 0);
+    }
+
+    public function test_direct_actions_validate_input_preserve_currency_and_keep_void_terminal(): void
+    {
+        $portfolio = $this->createPortfolio(['default_currency' => 'USD']);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $expenses = app(ManageExpenses::class);
+
+        $this->assertValidationError(
+            fn () => $expenses->create($owner, ['portfolio_id' => $portfolio->id]),
+            'category',
+        );
+        $this->assertValidationError(
+            fn () => $expenses->create($owner, $this->expensePayload([
+                'title' => ['not', 'text'],
+                'amount' => ['250'],
+                'status' => 'void',
+            ])),
+            'title',
+        );
+        $this->assertDatabaseCount('expense_entries', 0);
+
+        $expense = $expenses->create($owner, $this->expensePayload([
+            'title' => 'Original currency expense',
+            'currency' => 'SAR',
+        ]));
+        $this->assertSame('USD', $expense->currency);
+
+        $portfolio->update(['default_currency' => 'EUR']);
+        $updated = $expenses->update($owner, $expense, $this->expensePayload([
+            'title' => 'Updated without currency rewrite',
+            'currency' => 'EUR',
+        ]));
+        $this->assertSame('USD', $updated->currency);
+
+        $expenses->void($owner, $updated);
+        $this->assertValidationError(
+            fn () => $expenses->update($owner, $updated, $this->expensePayload([
+                'status' => 'posted',
+            ])),
+            'status',
+        );
+        $this->assertDatabaseHas('expense_entries', [
+            'id' => $expense->id,
+            'title' => 'Updated without currency rewrite',
+            'currency' => 'USD',
+            'status' => 'void',
+        ]);
+    }
+
+    public function test_expense_list_normalizes_filters_and_omits_internal_descriptions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $expense = $this->createExpense($portfolio->id, $owner->id, [
+            'title' => 'Lean expense payload',
+            'description' => 'Private invoice reconciliation detail.',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('expenses.index', [
+                'search' => $expense->title,
+                'status' => 'not-a-status',
+                'category' => 'not-a-category',
+                'date_from' => '2026-99-99',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('expenses.total', 1)
+                ->where('expenses.data.0.title', 'Lean expense payload')
+                ->missing('expenses.data.0.description')
+                ->missing('expenses.data.0.created_by')
+                ->where('filters.status', 'all')
+                ->where('filters.category', 'all')
+                ->where('filters.date_from', ''));
+    }
+
+    public function test_arabic_expense_export_uses_localized_workbook_labels(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $this->createExpense($portfolio->id, $owner->id, [
+            'title' => 'Arabic workbook expense',
+            'category' => 'maintenance',
+        ]);
+
+        $export = $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('exports.resource', ['resource' => 'expenses']));
+
+        $export->assertOk();
+        $sheet = $this->xlsxWorksheetXml($export);
+        $this->assertStringContainsString('عنوان المصروف', $sheet);
+        $this->assertStringContainsString('الصيانة', $sheet);
+        $this->assertStringNotContainsString('Property management', $sheet);
     }
 
     public function test_void_expenses_are_terminal_and_cannot_be_edited_or_restored(): void
@@ -269,6 +405,15 @@ class ExpenseModuleSecurityTest extends TestCase
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
+            ->get(route('expenses.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.direction', 'rtl')
+                ->where('counts.0.label', 'الكل')
+                ->where('counts.1.label', 'مرحل'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
             ->get(route('expenses.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -356,5 +501,15 @@ class ExpenseModuleSecurityTest extends TestCase
             'vendor_name' => 'Expense Vendor',
             'status' => 'posted',
         ], $overrides);
+    }
+
+    private function assertValidationError(callable $action, string $field): void
+    {
+        try {
+            $action();
+            $this->fail("Expected a validation error for {$field}.");
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
     }
 }

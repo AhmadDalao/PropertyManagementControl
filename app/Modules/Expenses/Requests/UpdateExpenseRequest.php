@@ -3,11 +3,12 @@
 namespace App\Modules\Expenses\Requests;
 
 use App\Models\ExpenseEntry;
+use App\Modules\Expenses\Support\ExpenseAccess;
 use App\Modules\Expenses\Support\ExpenseOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateExpenseRequest extends FormRequest
+final class UpdateExpenseRequest extends FormRequest
 {
     use HasExpenseValidationAttributes;
 
@@ -16,12 +17,9 @@ class UpdateExpenseRequest extends FormRequest
         $actor = $this->user();
         $expense = $this->route('expense');
 
-        if (! $actor || ! $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
-            return false;
-        }
-
-        return $expense instanceof ExpenseEntry
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $expense->portfolio_id);
+        return $actor !== null
+            && $expense instanceof ExpenseEntry
+            && app(ExpenseAccess::class)->canManage($actor, $expense);
     }
 
     /** @return array<string, array<int, mixed>> */
@@ -34,7 +32,7 @@ class UpdateExpenseRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
             'incurred_on' => ['required', 'date', 'before_or_equal:today'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'between:0.01,999999999999.99'],
             'currency' => ['required', 'string', 'size:3', 'regex:/^[A-Z]{3}$/'],
             'vendor_name' => ['nullable', 'string', 'max:255'],
             'status' => ['required', Rule::in(ExpenseOptions::MUTABLE_STATUSES)],

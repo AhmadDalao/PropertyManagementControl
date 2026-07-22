@@ -4,16 +4,24 @@ namespace App\Modules\Expenses\Support;
 
 use App\Models\ExpenseEntry;
 use App\Models\User;
-use App\Modules\Shared\PortfolioScope;
 
-class ExpenseAccess
+final class ExpenseAccess
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function canManageSection(User $actor): bool
+    {
+        return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+    }
+
+    public function canManage(User $actor, ExpenseEntry $expense): bool
+    {
+        return $this->canManageSection($actor)
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $expense->portfolio_id);
+    }
 
     public function ensureManager(User $actor): void
     {
         abort_unless(
-            $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']),
+            $this->canManageSection($actor),
             403,
             trans('app.errors.section_access_denied'),
         );
@@ -21,7 +29,10 @@ class ExpenseAccess
 
     public function ensureCanManage(User $actor, ExpenseEntry $expense): void
     {
-        $this->ensureManager($actor);
-        $this->portfolios->ensureAccess($actor, $expense->portfolio_id);
+        abort_unless(
+            $this->canManage($actor, $expense),
+            403,
+            trans('app.errors.portfolio_access_denied'),
+        );
     }
 }
