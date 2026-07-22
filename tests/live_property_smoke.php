@@ -208,6 +208,8 @@ $authChecks = [
     '/audit-logs' => 'admin/audit/index',
     '/cms' => 'admin/cms/index',
     '/wording' => 'admin/wording/index',
+    '/system/showcase-data' => 'admin/showcase-data/index',
+    '/system/showcase-data?locale=ar' => 'admin/showcase-data/index',
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',
