@@ -6,7 +6,10 @@ use App\Models\CmsPage;
 use App\Models\CmsPageSection;
 use App\Models\CmsSection;
 use App\Models\NavigationItem;
+use App\Modules\Cms\Actions\ManageCmsPages;
+use App\Modules\Cms\Actions\ManageCmsSections;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -232,6 +235,134 @@ class CmsModuleSecurityTest extends TestCase
                 ->has('sections', 60));
 
         $this->actingAs($owner)->get(route('cms.index'))->assertForbidden();
+    }
+
+    public function test_direct_actions_reuse_validation_and_discard_untrusted_attributes(): void
+    {
+        $admin = $this->createUserWithRole('superadmin');
+        $page = app(ManageCmsPages::class)->create($admin, [
+            'slug' => '',
+            'title_en' => 'Safe module boundary',
+            'title_ar' => 'حد آمن للوحدة',
+            'status' => 'draft',
+            'is_homepage' => false,
+            'is_visible' => true,
+            'published_at' => now()->addYear(),
+            'unexpected_column' => 'must not survive',
+        ]);
+
+        $this->assertNull($page->published_at);
+        $this->assertArrayNotHasKey('unexpected_column', $page->getAttributes());
+
+        try {
+            app(ManageCmsSections::class)->create($admin, [
+                'section_type' => 'hero',
+                'name_en' => 'Invalid section',
+                'name_ar' => 'قسم غير صالح',
+                'content_en' => [],
+                'content_ar' => [],
+                'status' => 'made-up-status',
+            ]);
+            $this->fail('Direct CMS actions must validate the same contract as HTTP requests.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('status', $exception->errors());
+        }
+    }
+
+    public function test_live_pages_reject_incomplete_arabic_sections_on_attach_toggle_and_edit(): void
+    {
+        $admin = $this->createUserWithRole('superadmin');
+        $page = $this->page();
+        $incomplete = $this->section([
+            'name_en' => 'Incomplete section',
+            'name_ar' => 'قسم غير مكتمل',
+            'content_en' => ['headline' => 'English only'],
+            'content_ar' => null,
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('cms.pages.sections.store', $page), [
+                'cms_section_id' => $incomplete->id,
+                'is_visible' => true,
+            ])
+            ->assertSessionHasErrors('cms_section_id');
+
+        $this->actingAs($admin)
+            ->post(route('cms.pages.sections.store', $page), [
+                'cms_section_id' => $incomplete->id,
+                'is_visible' => false,
+            ])
+            ->assertRedirect(route('cms.pages.show', $page));
+
+        $hiddenAttachment = CmsPageSection::query()
+            ->where('cms_page_id', $page->id)
+            ->where('cms_section_id', $incomplete->id)
+            ->firstOrFail();
+
+        $this->actingAs($admin)
+            ->put(route('cms.page-sections.update', $hiddenAttachment), [
+                'is_visible' => true,
+            ])
+            ->assertSessionHasErrors('cms_section_id');
+
+        $complete = $this->section(['name_en' => 'Complete section']);
+        $this->attach($page, $complete, 2);
+
+        $this->actingAs($admin)
+            ->put(route('cms.sections.update', $complete), [
+                'section_type' => $complete->section_type,
+                'name_en' => $complete->name_en,
+                'name_ar' => $complete->name_ar,
+                'content_en' => ['headline' => 'Changed English'],
+                'content_ar' => null,
+                'status' => 'active',
+            ])
+            ->assertSessionHasErrors('content_ar');
+    }
+
+    public function test_navigation_requires_safe_public_destinations_and_canonicalizes_page_links(): void
+    {
+        $admin = $this->createUserWithRole('superadmin');
+        $draft = $this->page([
+            'slug' => 'draft-destination',
+            'status' => 'draft',
+            'is_visible' => true,
+            'published_at' => null,
+        ]);
+        $payload = [
+            'parent_id' => null,
+            'cms_page_id' => $draft->id,
+            'location' => 'header',
+            'title_en' => 'Draft destination',
+            'title_ar' => 'وجهة مسودة',
+            'url' => '/wrong-path',
+            'target' => '_self',
+            'sort_order' => 1,
+            'is_visible' => true,
+        ];
+
+        $this->actingAs($admin)
+            ->post(route('navigation-items.store'), $payload)
+            ->assertSessionHasErrors('cms_page_id');
+
+        $this->actingAs($admin)
+            ->post(route('navigation-items.store'), [
+                ...$payload,
+                'is_visible' => false,
+            ])
+            ->assertRedirect(route('cms.index'));
+
+        $item = NavigationItem::query()->firstOrFail();
+        $this->assertSame('/pages/draft-destination', $item->url);
+        $this->assertFalse($item->is_visible);
+
+        $this->actingAs($admin)
+            ->post(route('navigation-items.store'), [
+                ...$payload,
+                'cms_page_id' => null,
+                'url' => 'javascript:alert(1)',
+            ])
+            ->assertSessionHasErrors('url');
     }
 
     /** @param array<string, mixed> $attributes */

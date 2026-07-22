@@ -41,6 +41,12 @@ export type NavigationItemRecord = {
     target?: string;
     location: string;
     sort_order: number;
+    page?: {
+        slug: string;
+        title_en: string;
+        title_ar: string;
+        is_homepage: boolean;
+    } | null;
     children?: NavigationItemRecord[];
 };
 

@@ -1,0 +1,207 @@
+.pmc-cms-section-form {
+    display: grid;
+    gap: 1rem;
+}
+
+.pmc-cms-section-basics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.pmc-section-editor {
+    padding: 1rem;
+    border: 1px solid #dedbd5;
+    border-radius: 1rem;
+    background: #faf9f6;
+}
+
+.pmc-section-editor-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-section-editor-head > div {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.pmc-section-editor-head span {
+    color: #856a00;
+    font-size: 0.7rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-section-editor-head h2 {
+    margin: 0;
+    color: #111;
+    font-size: 1.25rem;
+    font-weight: 950;
+}
+
+.pmc-section-editor-head p {
+    max-width: 720px;
+    margin: 0;
+    color: #707078;
+    font-size: 0.8rem;
+}
+
+.pmc-section-editor-head .btn {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.pmc-section-language-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.pmc-section-language {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.9rem;
+    padding: 0.9rem;
+    border: 1px solid #e4e1da;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-section-language > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid #ededed;
+}
+
+.pmc-section-language > header strong {
+    font-size: 0.86rem;
+    font-weight: 950;
+}
+
+.pmc-section-language > header span {
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-section-field-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.pmc-section-field-grid > label:has(textarea),
+.pmc-section-field-grid > label:only-child {
+    grid-column: 1 / -1;
+}
+
+.pmc-section-collection {
+    display: grid;
+    gap: 0.65rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid #ededed;
+}
+
+.pmc-section-collection > header,
+.pmc-section-collection-list > article > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-section-collection > header > div {
+    display: grid;
+    gap: 0.1rem;
+}
+
+.pmc-section-collection > header strong,
+.pmc-section-collection-list > article > header strong {
+    color: #171717;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.pmc-section-collection > header span {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+}
+
+.pmc-section-collection-list {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.pmc-section-collection-list > article {
+    display: grid;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid #e6e3dc;
+    border-radius: 0.72rem;
+    background: #fcfbf8;
+}
+
+.pmc-section-json {
+    margin-top: 0.9rem;
+    padding: 0.8rem;
+    border: 1px solid #e2dfd8;
+    border-radius: 0.8rem;
+    background: #fff;
+}
+
+.pmc-section-json summary {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    color: #4c4c52;
+    font-size: 0.78rem;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.pmc-section-json > div {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.8rem;
+}
+
+.pmc-section-json label {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.pmc-section-json label > span {
+    color: #66666d;
+    font-size: 0.7rem;
+    font-weight: 850;
+}
+
+.pmc-cms-form-actions {
+    position: sticky;
+    z-index: 3;
+    bottom: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    padding: 0.8rem;
+    border: 1px solid #e0ddd6;
+    border-radius: 0.85rem;
+    background: rgba(255, 255, 255, 0.94);
+    box-shadow: 0 12px 30px rgba(25, 25, 25, 0.08);
+    backdrop-filter: blur(12px);
+}
+
+.pmc-cms-form-actions .btn {
+    min-width: 9rem;
+}

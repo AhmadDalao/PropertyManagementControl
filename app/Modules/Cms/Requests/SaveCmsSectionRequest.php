@@ -2,15 +2,11 @@
 
 namespace App\Modules\Cms\Requests;
 
-use App\Modules\Cms\Requests\Concerns\PreparesCmsInput;
-use App\Modules\Cms\Support\CmsOptions;
+use App\Modules\Cms\Support\CmsRules;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class SaveCmsSectionRequest extends FormRequest
 {
-    use PreparesCmsInput;
-
     public function authorize(): bool
     {
         return $this->user()?->hasRole('superadmin') ?? false;
@@ -18,23 +14,18 @@ class SaveCmsSectionRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'name_en' => $this->requiredString('name_en'),
-            'name_ar' => $this->requiredString('name_ar'),
-        ]);
+        $this->replace(CmsRules::normalizeSection($this->all()));
     }
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
-        return [
-            'section_type' => ['required', Rule::in(CmsOptions::SECTION_TYPES)],
-            'name_en' => ['required', 'string', 'max:255'],
-            'name_ar' => ['required', 'string', 'max:255'],
-            'content_en' => ['nullable', 'array', 'max:100'],
-            'content_ar' => ['nullable', 'array', 'max:100'],
-            'settings_json' => ['nullable', 'array', 'max:100'],
-            'status' => ['required', Rule::in(CmsOptions::SECTION_STATUSES)],
-        ];
+        return CmsRules::section();
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return CmsRules::attributes();
     }
 }

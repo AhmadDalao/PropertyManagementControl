@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 import type { RefObject } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
@@ -65,11 +66,88 @@ function PublicNavItem({
     locale: 'en' | 'ar';
     onNavigate: () => void;
 }) {
-    const href = item.url || '/';
-    const label = locale === 'ar' ? item.title_ar : item.title_en;
+    const { t } = useTranslator();
+    const [expanded, setExpanded] = useState(false);
+    const children = item.children ?? [];
+
+    if (children.length === 0) {
+        return (
+            <PublicNavLink
+                item={item}
+                locale={locale}
+                onNavigate={onNavigate}
+            />
+        );
+    }
+
+    return (
+        <div
+            className={`pmc-site-link-group ${expanded ? 'is-open' : ''}`}
+            onBlur={(event) => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                    setExpanded(false);
+                }
+            }}
+        >
+            <span>
+                <PublicNavLink
+                    item={item}
+                    locale={locale}
+                    onNavigate={onNavigate}
+                />
+                <button
+                    type="button"
+                    aria-label={t('public.open_child_links')}
+                    aria-expanded={expanded}
+                    onClick={() => setExpanded((current) => !current)}
+                >
+                    <i className="bi bi-chevron-down" />
+                </button>
+            </span>
+            <div className="pmc-site-submenu" hidden={!expanded}>
+                {children.map((child) => (
+                    <PublicNavLink
+                        key={child.id}
+                        item={child}
+                        locale={locale}
+                        onNavigate={() => {
+                            setExpanded(false);
+                            onNavigate();
+                        }}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+function PublicNavLink({
+    item,
+    locale,
+    onNavigate,
+}: {
+    item: NavigationItemRecord;
+    locale: 'en' | 'ar';
+    onNavigate: () => void;
+}) {
+    const href = item.page
+        ? item.page.is_homepage
+            ? '/'
+            : `/pages/${item.page.slug}`
+        : item.url || '/';
+    const label =
+        locale === 'ar'
+            ? item.title_ar || item.title_en
+            : item.title_en || item.title_ar;
     const target = item.target || '_self';
 
-    if (href.startsWith('#') || href.startsWith('http')) {
+    if (
+        target === '_blank' ||
+        href.startsWith('#') ||
+        href.startsWith('http') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:')
+    ) {
         return (
             <a
                 href={href.startsWith('#') ? `/${href}` : href}

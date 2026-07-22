@@ -2,6 +2,7 @@
 
 namespace App\Modules\Cms\Requests;
 
+use App\Modules\Cms\Support\CmsRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateCmsPageSectionRequest extends FormRequest
@@ -14,10 +15,12 @@ class UpdateCmsPageSectionRequest extends FormRequest
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
-        return [
-            'sort_order' => ['sometimes', 'integer', 'min:0'],
-            'is_visible' => ['sometimes', 'boolean'],
-            'settings_json' => ['sometimes', 'nullable', 'array', 'max:100'],
-        ];
+        return CmsRules::pageSection();
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return CmsRules::attributes();
     }
 }

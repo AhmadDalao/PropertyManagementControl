@@ -45,6 +45,26 @@
         background: #fff7d2;
     }
 
+    .pmc-site-link-group > span {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 2.75rem;
+    }
+
+    .pmc-site-link-group > span > button {
+        width: 2.75rem;
+        height: 2.75rem;
+    }
+
+    .pmc-site-submenu {
+        position: static;
+        min-width: 0;
+        margin: 0.2rem 0.65rem 0.45rem;
+        border: 0;
+        border-inline-start: 2px solid var(--pmc-amber);
+        border-radius: 0;
+        box-shadow: none;
+    }
+
     .pmc-site-menu {
         display: grid;
     }

@@ -65,4 +65,40 @@ class PublicSiteModuleTest extends TestCase
                     'أدر محفظتك العقارية من مركز تحكم واحد.',
                 ));
     }
+
+    public function test_public_navigation_exposes_only_visible_children_with_live_page_destinations(): void
+    {
+        app(SeedLandingContent::class)->handle();
+        $homepage = CmsPage::query()->where('is_homepage', true)->firstOrFail();
+        $parent = NavigationItem::query()->where('url', '/')->firstOrFail();
+        NavigationItem::query()->create([
+            'parent_id' => $parent->id,
+            'cms_page_id' => $homepage->id,
+            'location' => 'header',
+            'title_en' => 'Visible child',
+            'title_ar' => 'رابط فرعي ظاهر',
+            'url' => '/stale-path',
+            'target' => '_self',
+            'sort_order' => 1,
+            'is_visible' => true,
+        ]);
+        NavigationItem::query()->create([
+            'parent_id' => $parent->id,
+            'cms_page_id' => null,
+            'location' => 'header',
+            'title_en' => 'Hidden child',
+            'title_ar' => 'رابط فرعي مخفي',
+            'url' => '/hidden-child',
+            'target' => '_self',
+            'sort_order' => 2,
+            'is_visible' => false,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('publicNavigation.header.0.children', 1)
+                ->where('publicNavigation.header.0.children.0.title_en', 'Visible child')
+                ->where('publicNavigation.header.0.children.0.page.slug', $homepage->slug));
+    }
 }

@@ -2,9 +2,8 @@
 
 namespace App\Modules\Cms\Requests;
 
-use Illuminate\Database\Query\Builder;
+use App\Modules\Cms\Support\CmsRules;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class AttachCmsSectionRequest extends FormRequest
 {
@@ -16,16 +15,12 @@ class AttachCmsSectionRequest extends FormRequest
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
-        return [
-            'cms_section_id' => [
-                'required',
-                'integer',
-                Rule::exists('cms_sections', 'id')->where(
-                    fn (Builder $query): Builder => $query->where('status', '!=', 'archived'),
-                ),
-            ],
-            'sort_order' => ['nullable', 'integer', 'min:0'],
-            'is_visible' => ['sometimes', 'boolean'],
-        ];
+        return CmsRules::attachment();
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return CmsRules::attributes();
     }
 }

@@ -1,0 +1,125 @@
+@media (max-width: 767.98px) {
+    .pmc-cms-view-switcher {
+        gap: 0.25rem;
+        padding: 0.3rem;
+    }
+
+    .pmc-cms-view-switcher a {
+        min-height: 3.5rem;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 0.18rem;
+        padding: 0.45rem 0.25rem;
+        text-align: center;
+    }
+
+    .pmc-cms-view-switcher strong {
+        display: none;
+    }
+
+    .pmc-cms-library-grid,
+    .pmc-cms-section-basics,
+    .pmc-section-language-grid,
+    .pmc-section-field-grid,
+    .pmc-section-json > div {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-section-editor-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-section-editor-head .btn,
+    .pmc-cms-card-actions,
+    .pmc-cms-card-actions .btn,
+    .pmc-cms-card-actions form,
+    .pmc-cms-card-actions form button {
+        width: 100%;
+    }
+
+    .pmc-cms-card-actions .btn,
+    .pmc-cms-card-actions form button {
+        justify-content: center;
+    }
+
+    .pmc-cms-form-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-cms-form-actions .btn {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-cms-builder-workspace {
+        grid-template-columns: minmax(13rem, 0.32fr) minmax(0, 1fr);
+    }
+
+    .pmc-cms-inspector-pane {
+        position: static;
+        grid-column: 1 / -1;
+        max-height: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-cms-builder-toolbar {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-cms-builder-pills {
+        display: none;
+    }
+
+    .pmc-cms-mobile-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-cms-mobile-tabs button {
+        min-height: 2.35rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.55rem;
+        background: #fff;
+        color: var(--pmc-muted);
+        font-size: 0.68rem;
+        font-weight: 800;
+    }
+
+    .pmc-cms-mobile-tabs button.active {
+        border-color: #111;
+        background: #111;
+        color: #fff;
+    }
+
+    .pmc-cms-builder-workspace {
+        display: block;
+    }
+
+    .pmc-cms-library-pane,
+    .pmc-cms-preview-pane,
+    .pmc-cms-inspector-pane {
+        position: static;
+        display: none;
+        max-height: none;
+    }
+
+    .pmc-cms-builder-workspace[data-mobile-panel='sections']
+        .pmc-cms-library-pane,
+    .pmc-cms-builder-workspace[data-mobile-panel='preview']
+        .pmc-cms-preview-pane,
+    .pmc-cms-builder-workspace[data-mobile-panel='settings']
+        .pmc-cms-inspector-pane {
+        display: grid;
+    }
+
+    .pmc-cms-preview-frame {
+        min-height: 60dvh;
+        max-height: calc(100dvh - 12rem);
+        padding: 0.4rem;
+    }
+}
