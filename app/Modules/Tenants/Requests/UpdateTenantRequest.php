@@ -3,6 +3,8 @@
 namespace App\Modules\Tenants\Requests;
 
 use App\Models\TenantProfile;
+use App\Models\User;
+use App\Modules\Tenants\Support\TenantAccess;
 use App\Modules\Tenants\Support\TenantOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -17,12 +19,9 @@ class UpdateTenantRequest extends FormRequest
         $actor = $this->user();
         $tenant = $this->route('tenant');
 
-        if (! $actor || ! $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
-            return false;
-        }
-
-        return $tenant instanceof TenantProfile
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $tenant->portfolio_id);
+        return $actor instanceof User
+            && $tenant instanceof TenantProfile
+            && app(TenantAccess::class)->canManage($actor, $tenant);
     }
 
     /**

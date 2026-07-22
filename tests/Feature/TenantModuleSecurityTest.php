@@ -3,7 +3,9 @@
 namespace Tests\Feature;
 
 use App\Models\Payment;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -48,7 +50,21 @@ class TenantModuleSecurityTest extends TestCase
                 ->component('admin/tenants/index')
                 ->where('tenants.total', 1)
                 ->where('tenants.data.0.id', $visible->id)
+                ->missing('tenants.data.0.emergency_contact_name')
+                ->missing('tenants.data.0.emergency_contact_phone')
+                ->missing('tenants.data.0.address')
+                ->missing('tenants.data.0.user.preferred_locale')
+                ->where('tenants.data.0.missing_profile_fields', fn ($fields): bool => collect($fields)
+                    ->contains('emergency_contact'))
+                ->where('counts.0.label', 'All')
                 ->where('filters.search', 'Tenant'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('tenants.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('counts.0.label', 'الكل'));
 
         $this->actingAs($owner)->get(route('tenants.show', $hidden))->assertForbidden();
         $this->actingAs($owner)->get(route('tenants.edit', $hidden))->assertForbidden();
@@ -105,6 +121,17 @@ class TenantModuleSecurityTest extends TestCase
             ]))
             ->assertSessionHasErrors('portfolio_id');
 
+        $this->actingAs($superadmin)
+            ->get(route('tenants.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.fields', fn ($fields): bool => collect($fields)
+                    ->pipe(fn ($items): bool => collect(
+                        $items->firstWhere('name', 'portfolio_id')['options'],
+                    )->contains(
+                        fn ($option): bool => (string) $option['value'] === (string) $inactivePortfolio->id,
+                    ) === false)));
+
         $this->assertDatabaseMissing('users', ['email' => 'missing-portfolio@example.test']);
         $this->assertDatabaseMissing('users', ['email' => 'inactive-portfolio@example.test']);
     }
@@ -157,6 +184,66 @@ class TenantModuleSecurityTest extends TestCase
         $this->assertSame(['tenant'], $tenant->user?->getRoleNames()->sort()->values()->all());
     }
 
+    public function test_tenant_credential_changes_revoke_sessions_tokens_and_resets(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, [
+            'email' => 'tenant-old@example.test',
+            'email_verified_at' => now(),
+            'remember_token' => 'tenant-remember-token',
+        ]);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $this->insertSession('tenant-owner-session', $owner);
+        $this->insertSession('tenant-portal-session', $tenantUser);
+        DB::table('password_reset_tokens')->insert([
+            'email' => $tenantUser->email,
+            'token' => 'tenant-reset-token',
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('tenants.update', $tenant), $this->tenantPayload([
+                'email' => 'TENANT-NEW@example.test',
+                'password' => 'replacement-password',
+            ]))
+            ->assertRedirect(route('tenants.show', $tenant));
+
+        $tenantUser->refresh();
+        $this->assertSame('tenant-new@example.test', $tenantUser->email);
+        $this->assertNull($tenantUser->email_verified_at);
+        $this->assertNotSame('tenant-remember-token', $tenantUser->remember_token);
+        $this->assertDatabaseMissing('sessions', ['id' => 'tenant-portal-session']);
+        $this->assertDatabaseHas('sessions', ['id' => 'tenant-owner-session', 'user_id' => $owner->id]);
+        $this->assertDatabaseMissing('password_reset_tokens', ['email' => 'tenant-old@example.test']);
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('tenants.edit', $tenant))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.fields', fn ($fields): bool => collect($fields)
+                    ->firstWhere('name', 'email')['help'] === 'يؤدي تغيير بريد الدخول أو كلمة المرور إلى إنهاء جميع جلسات هذا المستأجر النشطة.'));
+    }
+
+    public function test_tenant_form_cannot_demote_a_portfolio_owner_account(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $tenant = $this->createTenantProfile($portfolio, $owner);
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->put(route('tenants.update', $tenant), $this->tenantPayload([
+                'email' => $owner->email,
+            ]))
+            ->assertSessionHasErrors('role');
+
+        $this->assertTrue($owner->fresh()->hasRole('owner'));
+        $this->assertSame($owner->id, $portfolio->fresh()->owner_user_id);
+    }
+
     public function test_active_lease_blocks_status_archive_and_delete_archive(): void
     {
         $portfolio = $this->createPortfolio();
@@ -167,12 +254,14 @@ class TenantModuleSecurityTest extends TestCase
         $tenant = $this->createTenantProfile($portfolio, $tenantUser);
         $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
 
-        $this->actingAs($owner)
-            ->put(route('tenants.update', $tenant), $this->tenantPayload([
-                'email' => 'active-contract@example.test',
-                'status' => 'blocked',
-            ]))
-            ->assertSessionHasErrors('status');
+        foreach (['inactive', 'blocked'] as $status) {
+            $this->actingAs($owner)
+                ->put(route('tenants.update', $tenant), $this->tenantPayload([
+                    'email' => 'active-contract@example.test',
+                    'status' => $status,
+                ]))
+                ->assertSessionHasErrors('status');
+        }
 
         $this->actingAs($owner)
             ->delete(route('tenants.destroy', $tenant))
@@ -183,13 +272,18 @@ class TenantModuleSecurityTest extends TestCase
         $this->assertSame('active', $tenantUser->fresh()->status);
 
         $lease->update(['status' => 'terminated']);
+        $tenantUser->update(['remember_token' => 'archive-remember-token']);
+        $this->insertSession('tenant-archive-session', $tenantUser);
 
         $this->actingAs($owner)
             ->delete(route('tenants.destroy', $tenant))
             ->assertRedirect(route('tenants.index'));
 
         $this->assertSame('blocked', $tenant->fresh()->status);
-        $this->assertSame('suspended', $tenantUser->fresh()->status);
+        $tenantUser->refresh();
+        $this->assertSame('suspended', $tenantUser->status);
+        $this->assertNotSame('archive-remember-token', $tenantUser->remember_token);
+        $this->assertDatabaseMissing('sessions', ['id' => 'tenant-archive-session']);
     }
 
     public function test_missing_login_can_be_recreated_without_rebuilding_the_profile(): void
@@ -343,5 +437,17 @@ class TenantModuleSecurityTest extends TestCase
             'notes' => 'Tenant module test.',
             'status' => 'active',
         ], $overrides);
+    }
+
+    private function insertSession(string $id, User $user): void
+    {
+        DB::table('sessions')->insert([
+            'id' => $id,
+            'user_id' => $user->id,
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'Tenant module security test',
+            'payload' => '',
+            'last_activity' => now()->timestamp,
+        ]);
     }
 }

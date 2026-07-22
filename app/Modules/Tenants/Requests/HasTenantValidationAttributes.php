@@ -24,4 +24,33 @@ trait HasTenantValidationAttributes
             'status' => trans('app.tenants.status'),
         ];
     }
+
+    protected function prepareForValidation(): void
+    {
+        $updates = [];
+
+        foreach ([
+            'name',
+            'email',
+            'phone',
+            'national_id',
+            'company_name',
+            'emergency_contact_name',
+            'emergency_contact_phone',
+            'address',
+            'notes',
+        ] as $field) {
+            if (is_string($this->input($field))) {
+                $updates[$field] = trim((string) $this->input($field));
+            }
+        }
+
+        if (isset($updates['email'])) {
+            $updates['email'] = mb_strtolower($updates['email']);
+        }
+
+        if ($updates !== []) {
+            $this->merge($updates);
+        }
+    }
 }

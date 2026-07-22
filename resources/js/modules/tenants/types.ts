@@ -10,11 +10,11 @@ export type TenantRecord = {
     profile_type: string;
     national_id?: string | null;
     company_name?: string | null;
-    emergency_contact_name?: string | null;
-    emergency_contact_phone?: string | null;
-    address?: string | null;
     status: string;
     is_showcase?: boolean;
+    missing_profile_fields: Array<
+        'emergency_contact' | 'address' | 'company_name'
+    >;
     leases_count?: number;
     active_leases_count?: number;
     open_requests_count?: number;
@@ -23,7 +23,6 @@ export type TenantRecord = {
         name: string;
         email: string;
         phone?: string | null;
-        preferred_locale: 'en' | 'ar';
         status: string;
     } | null;
 };
@@ -47,3 +46,14 @@ export type TenantIndexPageProps = SharedProps & {
     statusOptions: string[];
     tenantInsights: TenantInsights;
 };
+
+export type TenantTableProps = Pick<
+    TenantIndexPageProps,
+    | 'tenants'
+    | 'filters'
+    | 'counts'
+    | 'portfolioOptions'
+    | 'profileTypeOptions'
+    | 'statusOptions'
+    | 'auth'
+>;

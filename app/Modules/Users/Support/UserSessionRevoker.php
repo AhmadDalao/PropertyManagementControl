@@ -3,25 +3,14 @@
 namespace App\Modules\Users\Support;
 
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use App\Modules\Shared\AccountSessionRevoker;
 
 final class UserSessionRevoker
 {
+    public function __construct(private readonly AccountSessionRevoker $sessions) {}
+
     public function revoke(User $user, ?string $previousEmail = null): void
     {
-        $user->setRememberToken(Str::random(60));
-        $user->saveQuietly();
-
-        DB::table((string) config('session.table', 'sessions'))
-            ->where('user_id', $user->id)
-            ->delete();
-
-        DB::table('password_reset_tokens')
-            ->whereIn('email', array_values(array_unique(array_filter([
-                $previousEmail,
-                $user->email,
-            ]))))
-            ->delete();
+        $this->sessions->revoke($user, $previousEmail);
     }
 }
