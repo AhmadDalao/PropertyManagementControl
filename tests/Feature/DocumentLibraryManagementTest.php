@@ -8,6 +8,7 @@ use App\Modules\Documents\Actions\ManageDocuments;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -463,9 +464,14 @@ class DocumentLibraryManagementTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('formPage.title', 'رفع المستند')
                 ->where('formPage.description', 'اربط ملف PDF خاصاً بعقد أو أصل أو دفعة.')
-                ->where('formPage.fields', fn ($fields): bool => collect($fields)
-                    ->contains(fn (array $field): bool => ($field['name'] ?? null) === 'file'
-                        && ($field['label'] ?? null) === 'ملف PDF')));
+                ->where('formPage.fields', function ($fields): bool {
+                    $fields = collect($fields)->keyBy('name');
+
+                    return data_get($fields, 'file.label') === 'ملف PDF'
+                        && collect(data_get($fields, 'type.options', []))
+                            ->contains(fn (array $option): bool => ($option['value'] ?? null) === 'signed_contract'
+                                && ($option['label'] ?? null) === 'العقد الموقع');
+                }));
     }
 
     public function test_internal_document_type_cannot_be_marked_portal_visible(): void
@@ -540,5 +546,238 @@ class DocumentLibraryManagementTest extends TestCase
         }
 
         $this->assertDatabaseHas('documents', ['id' => $document->id]);
+    }
+
+    public function test_document_action_rejects_non_pdf_uploads_when_reused_directly(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        try {
+            app(ManageDocuments::class)->create($owner, [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'title_en' => 'Direct fake upload',
+                'title_ar' => 'رفع مباشر مزيف',
+                'file' => UploadedFile::fake()->image('not-a-contract.jpg'),
+            ]);
+            $this->fail('A direct document action accepted a non-PDF upload.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('file', $exception->errors());
+        }
+
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Direct fake upload']);
+        $this->assertSame([], Storage::disk('local')->allFiles());
+    }
+
+    public function test_document_action_derives_authoritative_ownership_and_portal_visibility(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $document = app(ManageDocuments::class)->create($owner, [
+            'portfolio_id' => $foreignPortfolio->id,
+            'uploaded_by_user_id' => $foreignOwner->id,
+            'documentable_type' => 'lease',
+            'documentable_id' => $lease->id,
+            'type' => 'owner_report',
+            'title_en' => '  Authoritative document  ',
+            'title_ar' => '  مستند موثوق  ',
+            'is_public' => true,
+            'disk' => 'public',
+            'mime_type' => 'text/html',
+            'file' => $this->fakePdf('authoritative.pdf'),
+        ]);
+
+        $this->assertSame($portfolio->id, $document->portfolio_id);
+        $this->assertSame($owner->id, $document->uploaded_by_user_id);
+        $this->assertSame('Authoritative document', $document->title_en);
+        $this->assertSame('مستند موثوق', $document->title_ar);
+        $this->assertSame('local', $document->disk);
+        $this->assertSame('application/pdf', $document->mime_type);
+        $this->assertFalse($document->is_public);
+        $this->assertStringStartsWith("documents/library/{$portfolio->id}/", $document->file_path);
+        Storage::disk('local')->assertExists($document->file_path);
+    }
+
+    public function test_document_action_rejects_invalid_direct_metadata_updates(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $document = app(ManageDocuments::class)->create($owner, [
+            'documentable_type' => 'lease',
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => 'Original metadata',
+            'title_ar' => 'البيانات الأصلية',
+            'file' => $this->fakePdf('original-metadata.pdf'),
+        ]);
+
+        try {
+            app(ManageDocuments::class)->update($owner, $document, [
+                'type' => 'executable_file',
+                'title_en' => ['not', 'text'],
+                'title_ar' => '',
+                'is_public' => true,
+            ]);
+            $this->fail('A direct document update accepted malformed metadata.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('type', $exception->errors());
+            $this->assertArrayHasKey('title_en', $exception->errors());
+            $this->assertArrayHasKey('title_ar', $exception->errors());
+        }
+
+        $this->assertSame('Original metadata', $document->fresh()->title_en);
+        $this->assertSame('signed_contract', $document->fresh()->type);
+    }
+
+    public function test_document_action_rejects_uploads_for_inactive_portfolios(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio(['status' => 'inactive']);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        try {
+            app(ManageDocuments::class)->create($owner, [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'title_en' => 'Inactive portfolio document',
+                'title_ar' => 'مستند محفظة غير نشطة',
+                'file' => $this->fakePdf('inactive.pdf'),
+            ]);
+            $this->fail('An inactive portfolio accepted a document upload.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('documentable_id', $exception->errors());
+        }
+
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Inactive portfolio document']);
+        $this->assertSame([], Storage::disk('local')->allFiles());
+    }
+
+    public function test_document_directory_normalizes_filters_and_omits_storage_paths(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        app(ManageDocuments::class)->create($owner, [
+            'documentable_type' => 'lease',
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => 'Lean secure document',
+            'title_ar' => 'مستند آمن مختصر',
+            'file' => $this->fakePdf('lean-secure.pdf'),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('documents.index', [
+                'search' => 'Lean secure document',
+                'type' => 'invalid-type',
+                'attachment' => 'invalid-attachment',
+                'visibility' => 'invalid-visibility',
+                'date_from' => '2026-99-99',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('documents.total', 1)
+                ->where('filters.type', 'all')
+                ->where('filters.attachment', 'all')
+                ->where('filters.visibility', 'all')
+                ->where('filters.date_from', '')
+                ->missing('documents.data.0.disk')
+                ->missing('documents.data.0.file_path')
+                ->missing('documents.data.0.mime_type'));
+    }
+
+    public function test_arabic_document_export_uses_localized_headers_and_types(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        app(ManageDocuments::class)->create($owner, [
+            'documentable_type' => 'lease',
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => 'Arabic export document',
+            'title_ar' => 'مستند التصدير العربي',
+            'file' => $this->fakePdf('arabic-export.pdf'),
+        ]);
+
+        $export = $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('exports.resource', ['resource' => 'documents']));
+
+        $export->assertOk();
+        $sheet = $this->xlsxWorksheetXml($export);
+        $this->assertStringContainsString('العنوان بالإنجليزية', $sheet);
+        $this->assertStringContainsString('العقد الموقع', $sheet);
+        $this->assertStringNotContainsString('Original File', $sheet);
     }
 }

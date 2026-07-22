@@ -234,8 +234,10 @@ $authChecks = [
     '/expenses?locale=ar' => 'admin/expenses/index',
     '/expenses/create?locale=en' => 'admin/resource-form',
     '/expenses/create?locale=ar' => 'admin/resource-form',
-    '/documents' => 'admin/documents/index',
-    '/documents/create' => 'admin/resource-form',
+    '/documents?locale=en' => 'admin/documents/index',
+    '/documents?locale=ar' => 'admin/documents/index',
+    '/documents/create?locale=en' => 'admin/resource-form',
+    '/documents/create?locale=ar' => 'admin/resource-form',
     '/media-files' => 'admin/media/index',
     '/audit-logs' => 'admin/audit/index',
     '/cms' => 'admin/cms/index',
@@ -392,6 +394,53 @@ if (! str_contains($expenseExportHeaders, '.xlsx') || ! str_starts_with((string)
 }
 
 smoke_note('/exports/expenses Excel .xlsx');
+
+$documentIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/documents?per_page=10&locale=en');
+$documentPayload = smoke_page_payload($documentIndex['body']);
+$documentRows = $documentPayload['props']['documents']['data'] ?? [];
+
+if (is_array($documentRows) && isset($documentRows[0]['id'])) {
+    $documentId = (int) $documentRows[0]['id'];
+    $documentDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/documents/'.$documentId.'?locale=en');
+
+    if ($documentDetail['status'] !== 200 || smoke_component($documentDetail['body']) !== 'admin/resource-show') {
+        smoke_fail("Document {$documentId} detail did not load.");
+    }
+
+    smoke_note("/documents/{$documentId} admin/resource-show");
+
+    $documentPdf = smoke_request($baseUrl, $cookieFile, 'GET', "/documents/{$documentId}/download");
+    $documentPdfHeaders = strtolower((string) $documentPdf['headers']);
+
+    if ($documentPdf['status'] !== 200 || ! str_contains($documentPdfHeaders, 'application/pdf')) {
+        smoke_fail("Document {$documentId} returned an invalid PDF response.");
+    }
+
+    if (! str_starts_with((string) $documentPdf['body'], '%PDF-')) {
+        smoke_fail("Document {$documentId} download was not a valid PDF.");
+    }
+
+    smoke_note("/documents/{$documentId}/download PDF");
+} else {
+    smoke_note('No document available for non-destructive detail and PDF checks.');
+}
+
+$documentExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/documents?locale=ar');
+$documentExportHeaders = strtolower((string) $documentExport['headers']);
+
+if ($documentExport['status'] !== 200) {
+    smoke_fail("Document export returned {$documentExport['status']}.");
+}
+
+if (! str_contains($documentExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Document export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($documentExportHeaders, '.xlsx') || ! str_starts_with((string) $documentExport['body'], 'PK')) {
+    smoke_fail('Document export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/documents Excel .xlsx');
 
 $reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
 $reportHeaders = strtolower((string) $reportExport['headers']);

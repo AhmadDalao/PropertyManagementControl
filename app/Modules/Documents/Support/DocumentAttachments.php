@@ -9,33 +9,13 @@ use App\Models\Payment;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\ResourcePresenter;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Validation\ValidationException;
 
-class DocumentAttachments
+final class DocumentAttachments
 {
     public function __construct(
         private readonly MorphTypes $morphTypes,
         private readonly ResourcePresenter $resources,
     ) {}
-
-    public function resolve(string $alias, int $id): Asset|Lease|Payment
-    {
-        $model = match ($alias) {
-            'lease' => Lease::query()->find($id),
-            'asset' => Asset::query()->find($id),
-            'payment' => Payment::query()->find($id),
-            default => throw ValidationException::withMessages([
-                'documentable_type' => trans('app.errors.unsupported_document_attachment'),
-            ]),
-        };
-
-        if (! $model) {
-            throw (new ModelNotFoundException)->setModel($this->classFor($alias), [$id]);
-        }
-
-        return $model;
-    }
 
     public function aliasForModel(Model $model): ?string
     {
@@ -94,17 +74,6 @@ class DocumentAttachments
                 'url' => route('payments.show', $model),
             ],
             default => null,
-        };
-    }
-
-    /** @return class-string<Asset|Lease|Payment> */
-    private function classFor(string $alias): string
-    {
-        return match ($alias) {
-            'lease' => Lease::class,
-            'asset' => Asset::class,
-            'payment' => Payment::class,
-            default => Lease::class,
         };
     }
 }

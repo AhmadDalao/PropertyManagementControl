@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Document;
 use App\Models\Lease;
 use App\Models\Payment;
+use App\Modules\Documents\Support\DocumentAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -91,6 +92,13 @@ class DocumentAuthorizationTest extends TestCase
         $this->actingAs($tenantUser)
             ->get(route('documents.download', $document))
             ->assertForbidden();
+
+        $this->assertFalse(
+            app(DocumentAccess::class)
+                ->tenantPortalScope(Document::query(), $tenantUser)
+                ->whereKey($document->id)
+                ->exists(),
+        );
     }
 
     public function test_tenant_cannot_download_hidden_or_internal_documents_from_their_own_lease(): void
@@ -199,6 +207,31 @@ class DocumentAuthorizationTest extends TestCase
         $this->actingAs($owner)
             ->get(route('documents.download', $document))
             ->assertNotFound();
+    }
+
+    public function test_tenant_cannot_download_a_document_with_a_mismatched_portfolio_attachment(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $tenantUser),
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        Storage::disk('local')->put('documents/corrupt-portfolio.pdf', '%PDF-corrupt');
+        $document = $this->document($foreignPortfolio->id, $owner->id, $lease, [
+            'file_path' => 'documents/corrupt-portfolio.pdf',
+            'title_en' => 'Corrupt portfolio contract',
+        ]);
+
+        $this->actingAs($tenantUser)
+            ->get(route('documents.download', $document))
+            ->assertForbidden();
     }
 
     /** @param array<string, mixed> $attributes */

@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\User;
 use App\Modules\Documents\Queries\DocumentIndexQuery;
 use App\Modules\Documents\Support\DocumentAttachments;
+use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Exports\Contracts\ResourceExporter;
 use App\Modules\Exports\Support\ResourceWorkbook;
 use Illuminate\Http\Request;
@@ -22,21 +23,21 @@ class DocumentWorkbookExport implements ResourceExporter
     public function download(Request $request, User $actor): BinaryFileResponse
     {
         return $this->workbook->download('documents', [
-            'Title',
-            'Arabic Title',
-            'Type',
-            'Attachment',
-            'Original File',
-            'Mime Type',
-            'Size',
-            trans('app.documents.portal_visible'),
-            'Portfolio',
-            'Uploaded By',
-            'Created',
+            trans('app.documents.export_headers.title'),
+            trans('app.documents.export_headers.arabic_title'),
+            trans('app.documents.export_headers.type'),
+            trans('app.documents.export_headers.attachment'),
+            trans('app.documents.export_headers.original_file'),
+            trans('app.documents.export_headers.mime_type'),
+            trans('app.documents.export_headers.size'),
+            trans('app.documents.export_headers.portal_visible'),
+            trans('app.documents.export_headers.portfolio'),
+            trans('app.documents.export_headers.uploaded_by'),
+            trans('app.documents.export_headers.created'),
         ], $this->documents->forExport($request, $actor), fn (Document $document): array => [
             $document->title_en,
             $document->title_ar,
-            $this->workbook->option($document->type),
+            DocumentOptions::label($document->type),
             $this->attachmentLabel($document),
             $document->original_name,
             $document->mime_type,
@@ -52,6 +53,6 @@ class DocumentWorkbookExport implements ResourceExporter
     {
         $type = $this->attachments->aliasForDocument($document) ?? 'record';
 
-        return $this->workbook->option($type).' #'.$document->documentable_id;
+        return DocumentOptions::label($type).' #'.$document->documentable_id;
     }
 }

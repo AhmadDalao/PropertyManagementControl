@@ -2,37 +2,33 @@
 
 namespace App\Modules\Documents\Requests;
 
-use App\Modules\Documents\Support\DocumentOptions;
-use App\Modules\Shared\Rules\ValidPdf;
+use App\Modules\Documents\Support\DocumentAccess;
+use App\Modules\Documents\Support\DocumentRules;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class StoreDocumentRequest extends FormRequest
+final class StoreDocumentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['superadmin', 'owner', 'property_manager']) ?? false;
+        $actor = $this->user();
+
+        return $actor !== null && app(DocumentAccess::class)->canManageSection($actor);
     }
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
-        return [
-            'documentable_type' => ['required', 'string', Rule::in(DocumentOptions::ATTACHMENTS)],
-            'documentable_id' => ['required', 'integer', 'min:1'],
-            'type' => ['required', 'string', Rule::in(DocumentOptions::TYPES)],
-            'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['required', 'string', 'max:255'],
-            'is_public' => ['nullable', 'boolean'],
-            'file' => [
-                'required',
-                'file',
-                'extensions:pdf',
-                'mimes:pdf',
-                'mimetypes:application/pdf',
-                'max:10240',
-                new ValidPdf,
-            ],
-        ];
+        return DocumentRules::create();
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return DocumentRules::attributes();
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->replace(DocumentRules::normalize($this->all()));
     }
 }

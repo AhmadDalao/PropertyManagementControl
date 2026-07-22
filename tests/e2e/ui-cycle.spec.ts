@@ -657,6 +657,54 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic document workspace, PDF form, and detail stay localized on mobile', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/documents?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'المستندات', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('سجل المستندات', { exact: true }),
+        ).toBeVisible();
+        const cards = page.locator('.pmc-mobile-record-card');
+        const cardCount = await cards.count();
+        expect(cardCount).toBeGreaterThan(0);
+        expect(cardCount).toBeLessThanOrEqual(10);
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expect(page.locator('body')).not.toContainText(
+            'documents.options.',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await cards.locator('.pmc-record-open').first().click();
+        await expect(
+            page.getByText('تفاصيل المستند', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('سجل الملف', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تنزيل PDF' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/documents/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'رفع المستند', exact: true }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^إرفاق بـ/)).toBeVisible();
+        await expect(page.getByLabel(/^نوع المستند/)).toBeVisible();
+        await expect(page.getByLabel(/^ملف PDF/)).toHaveAttribute(
+            'accept',
+            '.pdf,application/pdf',
+        );
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('Arabic maintenance workspace, form, and detail stay localized', async ({
         page,
     }) => {

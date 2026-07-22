@@ -677,10 +677,6 @@
         width: 100%;
     }
 
-    .pmc-resource-actions > :nth-child(n + 3):not(.pmc-resource-action-menu) {
-        display: none;
-    }
-
     .pmc-resource-tabs {
         display: none;
     }

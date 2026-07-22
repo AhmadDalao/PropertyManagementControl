@@ -39,5 +39,14 @@ final class DocumentOptions
         return self::PORTAL_TYPES[$attachment] ?? [];
     }
 
+    public static function label(string $value): string
+    {
+        $key = "app.documents.options.{$value}";
+
+        return trans()->has($key)
+            ? trans($key)
+            : str($value)->replace('_', ' ')->headline()->toString();
+    }
+
     private function __construct() {}
 }

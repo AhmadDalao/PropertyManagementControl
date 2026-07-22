@@ -1,6 +1,6 @@
 import type { TableFilterField } from '@/components/data-table';
-import { humanLabel } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
+import type { UiTranslationKey } from '@/lib/i18n';
 
 type DocumentFilterOptions = {
     types: string[];
@@ -17,21 +17,21 @@ export function useDocumentFilterFields({
     portfolios,
     includePortfolio,
 }: DocumentFilterOptions): TableFilterField[] {
-    const { t, text } = useTranslator();
+    const { t } = useTranslator();
     const fields: TableFilterField[] = [
         selectField(
             'type',
             t('documents.filter_type'),
             types,
             t('documents.all'),
-            text,
+            t,
         ),
         selectField(
             'attachment',
             t('documents.attached_to'),
             attachments,
             t('documents.all'),
-            text,
+            t,
         ),
         {
             name: 'visibility',
@@ -73,7 +73,7 @@ function selectField(
     label: string,
     options: string[],
     allLabel: string,
-    translateOption: (value: string) => string,
+    translate: ReturnType<typeof useTranslator>['t'],
 ): TableFilterField {
     return {
         name,
@@ -81,7 +81,10 @@ function selectField(
         options: [
             { label: allLabel, value: 'all' },
             ...options.map((option) => ({
-                label: translateOption(humanLabel(option)),
+                label: translate(
+                    `documents.options.${option}` as UiTranslationKey,
+                    option.replaceAll('_', ' '),
+                ),
                 value: option,
             })),
         ],

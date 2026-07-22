@@ -3,11 +3,11 @@
 namespace App\Modules\Documents\Requests;
 
 use App\Models\Document;
-use App\Modules\Documents\Support\DocumentOptions;
+use App\Modules\Documents\Support\DocumentAccess;
+use App\Modules\Documents\Support\DocumentRules;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class UpdateDocumentRequest extends FormRequest
+final class UpdateDocumentRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -16,18 +16,23 @@ class UpdateDocumentRequest extends FormRequest
 
         return $actor !== null
             && $document instanceof Document
-            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $document->portfolio_id);
+            && app(DocumentAccess::class)->canManage($actor, $document);
     }
 
     /** @return array<string, array<int, mixed>> */
     public function rules(): array
     {
-        return [
-            'type' => ['required', 'string', Rule::in(DocumentOptions::TYPES)],
-            'title_en' => ['required', 'string', 'max:255'],
-            'title_ar' => ['required', 'string', 'max:255'],
-            'is_public' => ['nullable', 'boolean'],
-        ];
+        return DocumentRules::update();
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return DocumentRules::attributes();
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->replace(DocumentRules::normalize($this->all()));
     }
 }

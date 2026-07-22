@@ -8,19 +8,29 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class DocumentAccess
+final class DocumentAccess
 {
     public function __construct(
         private readonly PortfolioScope $portfolios,
         private readonly DocumentAttachments $attachments,
     ) {}
 
+    public function canManageSection(User $actor): bool
+    {
+        return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+    }
+
+    public function canManage(User $actor, Document $document): bool
+    {
+        return $this->canManageSection($actor)
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $document->portfolio_id);
+    }
+
     public function ensureManager(User $actor): void
     {
         abort_unless(
-            $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']),
+            $this->canManageSection($actor),
             403,
             trans('app.errors.section_access_denied'),
         );
@@ -28,8 +38,11 @@ class DocumentAccess
 
     public function ensureCanManage(User $actor, Document $document): void
     {
-        $this->ensureManager($actor);
-        $this->portfolios->ensureAccess($actor, $document->portfolio_id);
+        abort_unless(
+            $this->canManage($actor, $document),
+            403,
+            trans('app.errors.document_access_denied'),
+        );
     }
 
     /**
@@ -63,6 +76,7 @@ class DocumentAccess
                             ->whereIn('type', DocumentOptions::portalTypes('lease'))
                             ->whereIn('documentable_id', Lease::query()
                                 ->select('id')
+                                ->whereColumn('leases.portfolio_id', 'documents.portfolio_id')
                                 ->whereHas(
                                     'tenantProfile',
                                     fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
@@ -74,6 +88,7 @@ class DocumentAccess
                             ->whereIn('type', DocumentOptions::portalTypes('payment'))
                             ->whereIn('documentable_id', Payment::query()
                                 ->select('id')
+                                ->whereColumn('payments.portfolio_id', 'documents.portfolio_id')
                                 ->whereHas(
                                     'tenantProfile',
                                     fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
@@ -94,13 +109,7 @@ class DocumentAccess
     public function canDownload(User $actor, Document $document): bool
     {
         if ($actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
-            try {
-                $this->ensureCanManage($actor, $document);
-
-                return true;
-            } catch (HttpException) {
-                return false;
-            }
+            return $this->canManage($actor, $document);
         }
 
         if (! $actor->hasRole('tenant') || ! $document->is_public) {
@@ -117,8 +126,10 @@ class DocumentAccess
         $record = $document->documentable;
 
         return match (true) {
-            $record instanceof Lease => $record->tenantProfile()->where('user_id', $actor->id)->exists(),
-            $record instanceof Payment => $record->tenantProfile()->where('user_id', $actor->id)->exists(),
+            $record instanceof Lease => $record->portfolio_id === $document->portfolio_id
+                && $record->tenantProfile()->where('user_id', $actor->id)->exists(),
+            $record instanceof Payment => $record->portfolio_id === $document->portfolio_id
+                && $record->tenantProfile()->where('user_id', $actor->id)->exists(),
             default => false,
         };
     }
