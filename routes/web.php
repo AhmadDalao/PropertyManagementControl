@@ -43,7 +43,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('locale.update');
 
-Route::middleware(['auth', 'password.changed'])->group(function () {
+Route::middleware(['auth', 'account.active', 'password.changed'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');

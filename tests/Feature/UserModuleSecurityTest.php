@@ -7,6 +7,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Users\Support\UserAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -41,7 +42,11 @@ class UserModuleSecurityTest extends TestCase
                     ->pluck('id')
                     ->sort()
                     ->values()
-                    ->all() === collect([$manager->id, $tenant->id])->sort()->values()->all()));
+                    ->all() === collect([$manager->id, $tenant->id])->sort()->values()->all())
+                ->missing('users.data.0.preferred_locale')
+                ->missing('users.data.0.tenant_profile')
+                ->where('users.data.0.roles', fn ($roles): bool => collect($roles)
+                    ->every(fn ($role): bool => is_string($role))));
 
         foreach ([$owner, $peer, $foreign] as $hidden) {
             $this->actingAs($manager)->get(route('users.show', $hidden))->assertForbidden();
@@ -142,6 +147,115 @@ class UserModuleSecurityTest extends TestCase
 
         $this->assertDatabaseMissing('users', ['email' => 'foreign-user@example.test']);
         $this->assertDatabaseMissing('users', ['email' => 'inactive-user@example.test']);
+    }
+
+    public function test_disabled_accounts_are_removed_from_existing_authenticated_sessions(): void
+    {
+        $portfolio = $this->createPortfolio();
+
+        foreach (['inactive', 'suspended'] as $status) {
+            $user = $this->createUserWithRole('tenant', $portfolio, [
+                'email' => "{$status}-session@example.test",
+                'status' => $status,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('dashboard'))
+                ->assertRedirect(route('login'))
+                ->assertSessionHasErrors('email');
+            $this->assertGuest();
+        }
+
+        $inactive = $this->createUserWithRole('tenant', $portfolio, [
+            'email' => 'inactive-json@example.test',
+            'status' => 'inactive',
+        ]);
+
+        $this->actingAs($inactive)
+            ->getJson(route('global-search', ['q' => 'test']))
+            ->assertUnauthorized()
+            ->assertJson(['message' => trans('auth.inactive')]);
+        $this->assertGuest();
+    }
+
+    public function test_email_changes_revoke_sessions_remember_tokens_and_password_resets(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio, [
+            'email' => 'old-login@example.test',
+            'email_verified_at' => now(),
+            'remember_token' => 'remember-me',
+        ]);
+        $this->insertSession('owner-session', $owner);
+        $this->insertSession('tenant-session', $tenant);
+        DB::table('password_reset_tokens')->insert([
+            'email' => $tenant->email,
+            'token' => 'reset-token',
+            'created_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('users.update', $tenant), $this->userUpdatePayload($tenant, [
+                'email' => 'NEW-LOGIN@example.test',
+            ]))
+            ->assertRedirect(route('users.show', $tenant));
+
+        $tenant->refresh();
+        $this->assertSame('new-login@example.test', $tenant->email);
+        $this->assertNull($tenant->email_verified_at);
+        $this->assertNotSame('remember-me', $tenant->remember_token);
+        $this->assertDatabaseMissing('sessions', ['id' => 'tenant-session']);
+        $this->assertDatabaseHas('sessions', ['id' => 'owner-session', 'user_id' => $owner->id]);
+        $this->assertDatabaseMissing('password_reset_tokens', ['email' => 'old-login@example.test']);
+    }
+
+    public function test_email_changes_remain_unique_and_are_explicit_in_the_edit_form(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio, [
+            'email' => 'editable-login@example.test',
+        ]);
+        $otherTenant = $this->createUserWithRole('tenant', $portfolio, [
+            'email' => 'existing-login@example.test',
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('users.update', $tenant), $this->userUpdatePayload($tenant, [
+                'email' => $otherTenant->email,
+            ]))
+            ->assertSessionHasErrors('email');
+
+        $this->assertSame('editable-login@example.test', $tenant->fresh()->email);
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('users.edit', $tenant))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.email', 'editable-login@example.test')
+                ->where('formPage.fields', fn ($fields): bool => collect($fields)
+                    ->firstWhere('name', 'email')['help'] === 'يؤدي تغيير بريد تسجيل الدخول إلى إنهاء جميع جلسات هذا المستخدم النشطة.'));
+    }
+
+    public function test_suspension_revokes_existing_sessions_and_remember_token(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio, [
+            'remember_token' => 'remember-me',
+        ]);
+        $this->insertSession('suspended-tenant-session', $tenant);
+
+        $this->actingAs($owner)
+            ->delete(route('users.destroy', $tenant))
+            ->assertRedirect(route('users.index'));
+
+        $tenant->refresh();
+        $this->assertSame('suspended', $tenant->status);
+        $this->assertNotSame('remember-me', $tenant->remember_token);
+        $this->assertDatabaseMissing('sessions', ['id' => 'suspended-tenant-session']);
     }
 
     public function test_superadmin_creation_is_portfolio_free_and_owner_creation_claims_unowned_portfolio(): void
@@ -309,6 +423,8 @@ class UserModuleSecurityTest extends TestCase
                 ->where('app.locale', 'ar')
                 ->where('detailPage.header.eyebrow', 'حساب المستخدم')
                 ->where('detailPage.sections.0.title', 'الحساب والنطاق')
+                ->where('detailPage.decisionCards.2.value', 12)
+                ->where('detailPage.decisionCards.3.value', 12)
                 ->has('detailPage.related.0.rows', 8)
                 ->has('detailPage.related.1.rows', 8));
 
@@ -342,11 +458,24 @@ class UserModuleSecurityTest extends TestCase
     {
         return array_merge([
             'name' => $user->name,
+            'email' => $user->email,
             'phone' => $user->phone,
             'preferred_locale' => $user->preferred_locale,
             'status' => $user->status,
             'password' => '',
             'role' => $user->getRoleNames()->first(),
         ], $overrides);
+    }
+
+    private function insertSession(string $id, User $user): void
+    {
+        DB::table('sessions')->insert([
+            'id' => $id,
+            'user_id' => $user->id,
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'User module security test',
+            'payload' => '',
+            'last_activity' => now()->timestamp,
+        ]);
     }
 }

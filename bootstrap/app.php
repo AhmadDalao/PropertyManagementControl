@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\AddSecurityHeaders;
+use App\Http\Middleware\EnsureActiveAccount;
 use App\Http\Middleware\EnsurePortfolioModuleEnabled;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RequirePermanentPassword;
@@ -25,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
             AddSecurityHeaders::class,
         ]);
         $middleware->alias([
+            'account.active' => EnsureActiveAccount::class,
             'portfolio.module' => EnsurePortfolioModuleEnabled::class,
             'password.changed' => RequirePermanentPassword::class,
         ]);

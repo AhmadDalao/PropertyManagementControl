@@ -137,6 +137,6 @@ class ResolvedUiTranslations
 
     private function cacheKey(string $locale): string
     {
-        return "ui-translations:v24:{$locale}";
+        return "ui-translations:v25:{$locale}";
     }
 }

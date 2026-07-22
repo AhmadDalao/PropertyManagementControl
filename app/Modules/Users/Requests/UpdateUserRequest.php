@@ -31,6 +31,13 @@ class UpdateUserRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'sometimes',
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($target instanceof User ? $target->id : null),
+            ],
             'phone' => ['nullable', 'string', 'max:30'],
             'preferred_locale' => ['required', Rule::in(UserOptions::LOCALES)],
             'status' => ['required', Rule::in(UserOptions::STATUSES)],

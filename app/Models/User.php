@@ -127,6 +127,12 @@ class User extends Authenticatable
         return $this->hasMany(MaintenanceRequest::class, 'assigned_to_user_id');
     }
 
+    /** @return HasMany<AssetStakeholder, $this> */
+    public function assetStakeholders(): HasMany
+    {
+        return $this->hasMany(AssetStakeholder::class);
+    }
+
     /** @return HasMany<Document, $this> */
     public function uploadedDocuments(): HasMany
     {

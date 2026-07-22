@@ -49,7 +49,10 @@ class UserAccess
         return $target->hasRole('tenant') && ! $target->hasRole('property_manager');
     }
 
-    /** @return Builder<User> */
+    /**
+     * @param  Builder<User>  $query
+     * @return Builder<User>
+     */
     public function directoryScope(Builder $query, User $actor): Builder
     {
         $this->ensureManager($actor);

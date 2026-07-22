@@ -32,7 +32,7 @@
 
 .pmc-role-grid,
 .pmc-feature-grid,
-.pmc-metric-grid,
+.pmc-site-shell .pmc-metric-grid,
 .pmc-workflow {
     display: grid;
     gap: 0.75rem;
@@ -44,7 +44,7 @@
     grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 }
 
-.pmc-metric-grid {
+.pmc-site-shell .pmc-metric-grid {
     grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
 }
 

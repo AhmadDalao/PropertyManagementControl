@@ -410,6 +410,7 @@ return [
         'assignment_count' => ':count open assignments',
         'name' => 'Full name',
         'email' => 'Login email',
+        'email_change_help' => 'Changing the login email signs this user out of every active session.',
         'phone' => 'Phone',
         'preferred_language' => 'Preferred language',
         'english' => 'English',
@@ -460,7 +461,7 @@ return [
         'request' => 'Request',
         'priority' => 'Priority',
         'no_maintenance' => 'No maintenance requests are assigned to this user.',
-        'archive_confirm' => 'Archive :name? This user will no longer have an active portal account.',
+        'archive_confirm' => 'Suspend :name? This immediately ends every active portal session.',
     ],
     'tenants' => [
         'title' => 'Tenants',

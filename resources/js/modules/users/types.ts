@@ -7,29 +7,20 @@ import type {
 
 export type UserRecord = {
     id: number;
-    portfolio_id?: number | null;
     name: string;
     email: string;
     phone?: string | null;
-    preferred_locale: 'en' | 'ar';
     status: string;
     force_password_reset: boolean;
     last_login_at?: string | null;
     is_showcase?: boolean;
-    portfolios_owned_count?: number;
     open_assignments_count?: number;
-    roles?: Array<{ id: number; name: string }>;
-    tenant_profile?: {
-        id: number;
-        status: string;
-        profile_type: string;
-    } | null;
+    roles: string[];
     portfolio?: {
         id: number;
         name_en?: string | null;
         name_ar?: string | null;
         code?: string | null;
-        status: string;
     } | null;
 };
 
@@ -50,3 +41,15 @@ export type UserIndexPageProps = SharedProps & {
     statusOptions: string[];
     userInsights: UserInsights;
 };
+
+export type UserTableProps = Pick<
+    UserIndexPageProps,
+    | 'users'
+    | 'filters'
+    | 'counts'
+    | 'portfolioOptions'
+    | 'roleOptions'
+    | 'statusOptions'
+    | 'auth'
+    | 'app'
+>;
