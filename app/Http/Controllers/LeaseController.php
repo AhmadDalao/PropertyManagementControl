@@ -61,6 +61,13 @@ class LeaseController extends Controller
         ]);
     }
 
+    public function renew(Request $request, Lease $lease): Response
+    {
+        return Inertia::render('admin/resource-form', [
+            'formPage' => $this->formPresenter->renew($this->actor($request), $lease),
+        ]);
+    }
+
     public function store(StoreLeaseRequest $request): RedirectResponse
     {
         $lease = $this->leases->create($this->actor($request), $request->validated());
@@ -81,7 +88,7 @@ class LeaseController extends Controller
     {
         $this->leases->terminate($this->actor($request), $lease);
 
-        return to_route('leases.index')
+        return to_route('leases.show', $lease)
             ->with('success', trans('app.messages.lease_terminated', ['code' => $lease->code]));
     }
 

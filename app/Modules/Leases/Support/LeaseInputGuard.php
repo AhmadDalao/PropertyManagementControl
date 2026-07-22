@@ -15,6 +15,7 @@ final class LeaseInputGuard
         $this->option($errors, $data, 'payment_frequency', LeaseOptions::PAYMENT_FREQUENCIES);
         $this->requiredId($errors, $data, 'tenant_profile_id');
         $this->requiredId($errors, $data, 'asset_id');
+        $this->optionalId($errors, $data, 'renewed_from_lease_id');
         $start = $this->date($errors, $data, 'started_at', true);
         $end = $this->date($errors, $data, 'ends_at', true);
         $this->date($errors, $data, 'signed_at');
@@ -95,6 +96,25 @@ final class LeaseInputGuard
     {
         if (filter_var($data[$field] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false) {
             $errors[$field] = $this->message('validation.required', [
+                'attribute' => $this->message("app.leases.{$field}"),
+            ]);
+        }
+    }
+
+    /**
+     * @param  array<string, string>  $errors
+     * @param  array<string, mixed>  $data
+     */
+    private function optionalId(array &$errors, array $data, string $field): void
+    {
+        $value = $data[$field] ?? null;
+
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]) === false) {
+            $errors[$field] = $this->message('validation.integer', [
                 'attribute' => $this->message("app.leases.{$field}"),
             ]);
         }

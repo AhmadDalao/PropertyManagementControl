@@ -18,7 +18,7 @@ export default defineConfig({
         ? undefined
         : {
               command:
-                  'php artisan serve --host=127.0.0.1 --port=8019 --no-reload',
+                  'php -d memory_limit=1G artisan serve --host=127.0.0.1 --port=8019 --no-reload',
               url: 'http://127.0.0.1:8019/up',
               reuseExistingServer: true,
               timeout: 120_000,

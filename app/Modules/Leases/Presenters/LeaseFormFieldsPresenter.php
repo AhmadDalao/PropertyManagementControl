@@ -26,11 +26,19 @@ final class LeaseFormFieldsPresenter
             ];
         }
 
+        if (! empty($data->defaults['renewed_from_lease_id'])) {
+            $fields[] = [
+                'name' => 'renewed_from_lease_id',
+                'label' => trans('app.leases.previous_contract'),
+                'type' => 'hidden',
+            ];
+        }
+
         $fields = [
             ...$fields,
             ['name' => 'tenant_profile_id', 'label' => trans('app.leases.tenant'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->tenants, trans('app.leases.no_active_tenants'))],
             ['name' => 'asset_id', 'label' => trans('app.leases.rentable_asset'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->assets, trans('app.leases.no_available_assets'))],
-            ['name' => 'status', 'label' => trans('app.leases.status'), 'type' => 'select', 'required' => true, 'options' => $this->statusOptions(LeaseOptions::CREATE_STATUSES)],
+            ['name' => 'status', 'label' => trans('app.leases.status'), 'type' => 'select', 'required' => true, 'options' => $this->statusOptions(! empty($data->defaults['renewed_from_lease_id']) ? ['draft'] : LeaseOptions::CREATE_STATUSES)],
             ['name' => 'payment_frequency', 'label' => trans('app.leases.payment_frequency'), 'type' => 'select', 'required' => true, 'options' => $this->frequencyOptions()],
             ['name' => 'started_at', 'label' => trans('app.leases.start_date'), 'type' => 'date', 'required' => true],
             ['name' => 'ends_at', 'label' => trans('app.leases.end_date'), 'type' => 'date', 'required' => true],
@@ -85,7 +93,7 @@ final class LeaseFormFieldsPresenter
         return [
             trans('app.leases.contract_scope') => [
                 'description' => trans('app.leases.contract_scope_help'),
-                'fields' => ['portfolio_id', 'tenant_profile_id', 'asset_id', 'status'],
+                'fields' => ['portfolio_id', 'renewed_from_lease_id', 'tenant_profile_id', 'asset_id', 'status'],
             ],
             trans('app.leases.contract_period') => [
                 'description' => trans('app.leases.contract_period_help'),

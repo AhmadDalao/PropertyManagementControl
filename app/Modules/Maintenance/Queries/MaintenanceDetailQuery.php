@@ -36,6 +36,7 @@ class MaintenanceDetailQuery
 
         return new MaintenanceDetailData(
             request: $request,
+            actor: $actor,
             tenantMode: $tenantMode,
             updates: $updates,
             expenses: $expenses,

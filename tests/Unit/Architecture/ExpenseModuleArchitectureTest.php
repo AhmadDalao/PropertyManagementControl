@@ -52,6 +52,7 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormFieldsPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseTableRowPresenter.php'),
+            $this->path('app/Modules/Expenses/Presenters/ExpenseWorkflowPresenter.php'),
             $this->path('app/Modules/Expenses/Queries/ExpenseDetailQuery.php'),
             $this->path('app/Modules/Expenses/Queries/ExpenseDirectoryQuery.php'),
             $this->path('app/Modules/Expenses/Queries/ExpenseFormOptionsQuery.php'),

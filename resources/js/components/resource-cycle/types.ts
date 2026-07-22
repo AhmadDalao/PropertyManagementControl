@@ -81,6 +81,16 @@ export type ResourceSpotlight = {
     image?: { src: string; alt: string };
 };
 
+export type ResourceWorkflow = {
+    eyebrow: string;
+    title: string;
+    description?: string;
+    status?: string;
+    tone?: 'primary' | 'teal' | 'danger' | 'muted';
+    icon?: string;
+    actions?: ResourceAction[];
+};
+
 export type RelatedCell = ReactNode | { label: string; href: string };
 
 export type RelatedTable = {
@@ -132,6 +142,7 @@ export type ResourceFormShellProps = {
 export type ResourceDetailShellProps = {
     header: ResourceHeaderProps;
     spotlight?: ResourceSpotlight;
+    workflow?: ResourceWorkflow;
     decisionCards?: DecisionCard[];
     stats?: DetailItem[];
     sections?: DetailSection[];

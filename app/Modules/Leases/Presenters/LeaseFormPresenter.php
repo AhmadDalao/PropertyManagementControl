@@ -14,6 +14,7 @@ final class LeaseFormPresenter
         private readonly LeaseFormOptionsQuery $options,
         private readonly LeaseCreateFormPresenter $create,
         private readonly LeaseEditFormPresenter $edit,
+        private readonly LeaseRenewalFormPresenter $renewal,
     ) {}
 
     /**
@@ -31,5 +32,11 @@ final class LeaseFormPresenter
         $this->access->ensureManager($actor);
 
         return $this->create->present($this->options->get($actor, defaults: $defaults));
+    }
+
+    /** @return array<string, mixed> */
+    public function renew(User $actor, Lease $lease): array
+    {
+        return $this->renewal->present($actor, $lease);
     }
 }

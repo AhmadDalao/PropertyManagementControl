@@ -5,6 +5,7 @@ namespace App\Modules\Payments\Presenters;
 use App\Modules\Payments\Data\PaymentDetailData;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
+use App\Support\PortfolioModules;
 
 final class PaymentDetailOverviewPresenter
 {
@@ -48,19 +49,26 @@ final class PaymentDetailOverviewPresenter
                 [
                     'label' => trans('app.payments.tenant'),
                     'value' => $payment->tenantProfile?->user?->name,
-                    'href' => $data->adminMode && $payment->tenantProfile
+                    'href' => $data->adminMode
+                        && $payment->tenantProfile
+                        && PortfolioModules::enabledForUser($data->actor, 'tenants')
                         ? route('tenants.show', $payment->tenantProfile)
                         : null,
                 ],
                 [
                     'label' => trans('app.payments.lease'),
                     'value' => $payment->lease?->code,
-                    'href' => $payment->lease ? route('leases.show', $payment->lease) : null,
+                    'href' => $payment->lease
+                        && PortfolioModules::enabledForUser($data->actor, 'leases')
+                        ? route('leases.show', $payment->lease)
+                        : null,
                 ],
                 [
                     'label' => trans('app.payments.asset'),
                     'value' => $assetTitle,
-                    'href' => $data->adminMode && $data->asset
+                    'href' => $data->adminMode
+                        && $data->asset
+                        && PortfolioModules::enabledForUser($data->actor, 'assets')
                         ? route('assets.show', $data->asset)
                         : null,
                 ],
@@ -75,6 +83,7 @@ final class PaymentDetailOverviewPresenter
                     'label' => trans('app.payments.recorded_by'),
                     'value' => $data->adminMode ? $payment->recordedBy?->name : null,
                     'href' => $data->adminMode
+                        && PortfolioModules::enabledForUser($data->actor, 'users')
                         ? $this->userAccess->recordHref($data->actor, $payment->recordedBy)
                         : null,
                 ],

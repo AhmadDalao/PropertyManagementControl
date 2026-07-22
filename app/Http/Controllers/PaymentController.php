@@ -83,7 +83,7 @@ class PaymentController extends Controller
     {
         $this->payments->void($this->actor($request), $payment);
 
-        return to_route('payments.index')
+        return to_route('payments.show', $payment)
             ->with('success', trans('app.messages.payment_voided'));
     }
 

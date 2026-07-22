@@ -304,11 +304,22 @@ class ExpenseModuleSecurityTest extends TestCase
         ]);
 
         $this->actingAs($owner)
-            ->delete(route('expenses.destroy', $expense))
-            ->assertRedirect(route('expenses.index'));
+            ->get(route('expenses.show', $expense))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Edit expense',
+                ])
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Void expense',
+                ]));
+
         $this->actingAs($owner)
             ->delete(route('expenses.destroy', $expense))
-            ->assertRedirect(route('expenses.index'));
+            ->assertRedirect(route('expenses.show', $expense));
+        $this->actingAs($owner)
+            ->delete(route('expenses.destroy', $expense))
+            ->assertRedirect(route('expenses.show', $expense));
 
         $this->assertSame('void', $expense->fresh()->status);
         $this->actingAs($owner)->get(route('expenses.edit', $expense))->assertStatus(409);
@@ -327,7 +338,10 @@ class ExpenseModuleSecurityTest extends TestCase
         $this->actingAs($owner)
             ->get(route('expenses.show', $expense))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->has('detailPage.header.actions', 0));
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('detailPage.header.actions', 0)
+                ->where('detailPage.workflow.title', 'Keep this void expense for audit')
+                ->has('detailPage.workflow.actions', 0));
     }
 
     public function test_superadmin_form_scopes_reference_options_and_index_drops_unused_payloads(): void

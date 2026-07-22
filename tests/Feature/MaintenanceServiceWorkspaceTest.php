@@ -537,6 +537,66 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         $this->assertSame(0, $requestItem->updates()->count());
     }
 
+    public function test_detail_guides_the_next_action_and_terminal_requests_reopen_safely(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+        $requestItem = $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+            ['status' => 'resolved', 'resolved_at' => now()],
+        );
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.show', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.title', 'Review the completed service record')
+                ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
+                    'Review and reopen',
+                    'Add expense',
+                ]));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.edit', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.fields', function ($fields): bool {
+                    $status = collect($fields)->firstWhere('name', 'status');
+
+                    return collect($status['options'] ?? [])->pluck('value')->all() === [
+                        'resolved',
+                        'open',
+                    ];
+                }));
+
+        $this->actingAs($owner)
+            ->from(route('maintenance-requests.edit', $requestItem))
+            ->put(route('maintenance-requests.update', $requestItem), [
+                'priority' => 'medium',
+                'status' => 'in_progress',
+            ])
+            ->assertRedirect(route('maintenance-requests.edit', $requestItem))
+            ->assertSessionHasErrors('status');
+
+        $this->assertSame('resolved', $requestItem->fresh()->status);
+
+        $this->actingAs($owner)
+            ->put(route('maintenance-requests.update', $requestItem), [
+                'priority' => 'medium',
+                'status' => 'open',
+            ])
+            ->assertRedirect(route('maintenance-requests.show', $requestItem));
+
+        $this->assertSame('open', $requestItem->fresh()->status);
+        $this->assertNull($requestItem->fresh()->resolved_at);
+    }
+
     /** @param array<string, mixed> $attributes */
     private function maintenanceRecord(
         int $portfolioId,

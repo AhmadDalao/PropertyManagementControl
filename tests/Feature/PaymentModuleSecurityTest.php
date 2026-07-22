@@ -244,6 +244,8 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
                     'Download receipt',
+                ])
+                ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
                     'Open lease',
                 ])
                 ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Notes')
@@ -302,7 +304,7 @@ class PaymentModuleSecurityTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('payments.destroy', $payment))
-            ->assertRedirect(route('payments.index'));
+            ->assertRedirect(route('payments.show', $payment));
 
         $this->actingAs($owner)
             ->put(route('payments.update', $payment), [

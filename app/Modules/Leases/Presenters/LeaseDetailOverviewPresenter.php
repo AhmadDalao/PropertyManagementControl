@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Modules\Leases\Data\LeaseDetailData;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
+use App\Support\PortfolioModules;
 
 final class LeaseDetailOverviewPresenter
 {
@@ -39,14 +40,16 @@ final class LeaseDetailOverviewPresenter
                 'description' => trans('app.leases.contract_help'),
                 'tab' => 'overview',
                 'items' => $this->resources->detailItems([
-                    ['label' => trans('app.leases.tenant'), 'value' => $lease->tenantProfile?->user?->name, 'href' => $data->adminMode && $lease->tenantProfile ? route('tenants.show', $lease->tenantProfile) : null],
-                    ['label' => trans('app.leases.asset'), 'value' => $this->resources->localized($asset?->title_en, $asset?->title_ar), 'href' => $data->adminMode && $asset ? route('assets.show', $asset) : null],
+                    ['label' => trans('app.leases.tenant'), 'value' => $lease->tenantProfile?->user?->name, 'href' => $data->adminMode && $lease->tenantProfile && PortfolioModules::enabledForUser($data->actor, 'tenants') ? route('tenants.show', $lease->tenantProfile) : null],
+                    ['label' => trans('app.leases.asset'), 'value' => $this->resources->localized($asset?->title_en, $asset?->title_ar), 'href' => $data->adminMode && $asset && PortfolioModules::enabledForUser($data->actor, 'assets') ? route('assets.show', $asset) : null],
                     ['label' => trans('app.leases.portfolio'), 'value' => $this->resources->localized($lease->portfolio?->name_en, $lease->portfolio?->name_ar), 'href' => $data->adminMode && $lease->portfolio ? route('portfolios.show', $lease->portfolio) : null],
-                    ['label' => trans('app.leases.managed_by'), 'value' => $lease->managedBy?->name, 'href' => $data->adminMode ? $this->userAccess->recordHref($data->actor, $lease->managedBy) : null],
+                    ['label' => trans('app.leases.managed_by'), 'value' => $lease->managedBy?->name, 'href' => $data->adminMode && PortfolioModules::enabledForUser($data->actor, 'users') ? $this->userAccess->recordHref($data->actor, $lease->managedBy) : null],
                     ['label' => trans('app.leases.started'), 'value' => $lease->started_at?->toDateString()],
                     ['label' => trans('app.leases.ends'), 'value' => $lease->ends_at?->toDateString()],
                     ['label' => trans('app.leases.signed'), 'value' => $lease->signed_at?->toDateString() ?? trans('app.leases.not_signed')],
                     ['label' => trans('app.leases.frequency'), 'value' => trans("app.leases.frequency_{$lease->payment_frequency}")],
+                    ['label' => trans('app.leases.previous_contract'), 'value' => $lease->previousLease?->code, 'href' => $data->adminMode && $lease->previousLease ? route('leases.show', $lease->previousLease) : null],
+                    ['label' => trans('app.leases.renewal_contract'), 'value' => $lease->renewalLease?->code, 'href' => $data->adminMode && $lease->renewalLease ? route('leases.show', $lease->renewalLease) : null],
                     ['label' => trans('app.leases.notes'), 'value' => $data->adminMode ? $lease->notes : null],
                 ]),
             ],

@@ -11,6 +11,7 @@ class MaintenanceDetailPresenter
 {
     public function __construct(
         private readonly MaintenanceDetailQuery $details,
+        private readonly MaintenanceWorkflowPresenter $workflow,
         private readonly MaintenanceDetailOverviewPresenter $overview,
         private readonly MaintenanceRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
@@ -23,6 +24,7 @@ class MaintenanceDetailPresenter
 
         return [
             ...$this->overview->present($data),
+            'workflow' => $this->workflow->present($data),
             'related' => $this->related->present($data),
             'documents' => [],
             'timeline' => $data->tenantMode

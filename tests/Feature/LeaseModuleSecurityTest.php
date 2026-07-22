@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\Lease;
 use App\Modules\Leases\Actions\ManageLeases;
+use App\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -252,6 +254,148 @@ final class LeaseModuleSecurityTest extends TestCase
 
         $this->assertSame('expired', $expired->fresh()->status);
         $this->assertSame('terminated', $terminated->fresh()->status);
+    }
+
+    public function test_renewal_flow_prefills_a_linked_draft_and_prevents_double_occupancy(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $asset = $this->createAsset($portfolio, ['occupancy_status' => 'occupied']);
+        $source = $this->createLease($portfolio, $tenant, $asset, $owner);
+        $renewalStart = $source->ends_at->copy()->addDay()->toDateString();
+        $renewalEnd = $source->ends_at->copy()->addYear()->toDateString();
+
+        $this->actingAs($owner)
+            ->get(route('leases.renew', $source))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.title', "Renew {$source->code}")
+                ->where('formPage.submitLabel', 'Create renewal draft')
+                ->where('formPage.initialValues.renewed_from_lease_id', (string) $source->id)
+                ->where('formPage.initialValues.tenant_profile_id', (string) $tenant->id)
+                ->where('formPage.initialValues.asset_id', (string) $asset->id)
+                ->where('formPage.initialValues.status', 'draft')
+                ->where('formPage.initialValues.started_at', $renewalStart)
+                ->where('formPage.initialValues.deposit_amount', 0)
+                ->where('formPage.fields', function ($fields) use ($asset, $tenant): bool {
+                    $fields = collect($fields);
+
+                    return collect($fields->firstWhere('name', 'asset_id')['options'] ?? [])->pluck('value')->all() === [$asset->id]
+                        && collect($fields->firstWhere('name', 'tenant_profile_id')['options'] ?? [])->pluck('value')->all() === [$tenant->id]
+                        && collect($fields->firstWhere('name', 'status')['options'] ?? [])->pluck('value')->all() === ['draft'];
+                }));
+
+        $payload = $this->leasePayload($portfolio->id, $tenant->id, $asset->id, [
+            'renewed_from_lease_id' => $source->id,
+            'status' => 'draft',
+            'started_at' => $renewalStart,
+            'ends_at' => $renewalEnd,
+            'deposit_amount' => 0,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('leases.store'), [...$payload, 'status' => 'active'])
+            ->assertSessionHasErrors('status');
+
+        $this->actingAs($owner)
+            ->post(route('leases.store'), $payload)
+            ->assertRedirect();
+
+        $renewal = Lease::query()->where('renewed_from_lease_id', $source->id)->firstOrFail();
+        $this->assertSame('draft', $renewal->status);
+        $this->assertSame($source->id, $renewal->previousLease->id);
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $renewal))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Contract PDF',
+                ])
+                ->where('detailPage.workflow.actions.0.label', 'Review and activate'));
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $source))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->contains(
+                    fn (array $action): bool => $action['label'] === 'Open renewal'
+                        && $action['href'] === route('leases.show', $renewal)
+                )));
+
+        $this->actingAs($owner)
+            ->get(route('leases.renew', $source))
+            ->assertStatus(409);
+        $this->assertValidationError(
+            fn () => app(ManageLeases::class)->create($owner, $payload),
+            'renewed_from_lease_id',
+        );
+
+        $this->actingAs($owner)
+            ->from(route('leases.edit', $renewal))
+            ->put(route('leases.update', $renewal), [
+                'status' => 'active',
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertSessionHasErrors('asset_id');
+
+        $this->actingAs($owner)
+            ->put(route('leases.update', $source), [
+                'status' => 'expired',
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertRedirect(route('leases.show', $source));
+        $this->actingAs($owner)
+            ->put(route('leases.update', $renewal), [
+                'status' => 'active',
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertRedirect(route('leases.show', $renewal));
+
+        $this->assertSame('active', $renewal->fresh()->status);
+        $this->assertSame('occupied', $asset->fresh()->occupancy_status);
+    }
+
+    public function test_lease_workflow_hides_actions_for_disabled_portfolio_modules(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'payments' => false,
+                'documents' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->actingAs($owner)
+            ->get(route('leases.show', $lease))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.actions', function ($actions): bool {
+                    $labels = collect($actions)->pluck('label');
+
+                    return ! $labels->contains(trans('app.leases.record_payment'))
+                        && ! $labels->contains(trans('app.leases.upload_signed_pdf'))
+                        && $labels->contains(trans('app.leases.prepare_renewal'))
+                        && $labels->contains(trans('app.leases.tenant_statement'));
+                }));
     }
 
     public function test_lease_list_minimizes_personal_data_and_normalizes_filters(): void

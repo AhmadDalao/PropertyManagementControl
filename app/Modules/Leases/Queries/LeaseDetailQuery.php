@@ -22,6 +22,8 @@ final class LeaseDetailQuery
                 'tenantProfile.user',
                 'leaseable',
                 'managedBy',
+                'previousLease',
+                'renewalLease',
                 'installments',
                 'documents',
             ])

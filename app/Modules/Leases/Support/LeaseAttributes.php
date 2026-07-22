@@ -22,6 +22,7 @@ final class LeaseAttributes
         array $data,
     ): array {
         return [
+            'renewed_from_lease_id' => $data['renewed_from_lease_id'] ?? null,
             'portfolio_id' => $portfolioId,
             'tenant_profile_id' => $tenant->id,
             'managed_by_user_id' => $actor->id,

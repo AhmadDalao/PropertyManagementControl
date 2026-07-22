@@ -16,10 +16,12 @@ import type {
     ResourceDetailShellProps,
     ResourceDetailTab,
 } from './types';
+import { WorkflowActionPanel } from './workflow-action-panel';
 
 export function ResourceDetailShell({
     header,
     spotlight,
+    workflow,
     decisionCards = [],
     stats = [],
     sections = [],
@@ -66,6 +68,7 @@ export function ResourceDetailShell({
                 {activeTab === 'overview' ? (
                     <OverviewPanel
                         spotlight={spotlight}
+                        workflow={workflow}
                         decisionCards={decisionCards}
                         stats={stats}
                         sections={overviewSections}
@@ -101,10 +104,14 @@ export function ResourceDetailShell({
 
 function OverviewPanel({
     spotlight,
+    workflow,
     decisionCards,
     stats,
     sections,
-}: Pick<ResourceDetailShellProps, 'spotlight' | 'decisionCards' | 'stats'> & {
+}: Pick<
+    ResourceDetailShellProps,
+    'spotlight' | 'workflow' | 'decisionCards' | 'stats'
+> & {
     sections: DetailSection[];
 }) {
     const { text } = useTranslator();
@@ -114,6 +121,7 @@ function OverviewPanel({
             {spotlight ? (
                 <ResourceSpotlightPanel spotlight={spotlight} />
             ) : null}
+            {workflow ? <WorkflowActionPanel workflow={workflow} /> : null}
             {decisionCards && decisionCards.length > 0 ? (
                 <DecisionCardGrid cards={decisionCards} />
             ) : null}

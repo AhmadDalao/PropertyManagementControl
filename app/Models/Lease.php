@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read Portfolio|null $portfolio
  * @property-read TenantProfile|null $tenantProfile
  * @property-read User|null $managedBy
+ * @property-read Lease|null $previousLease
+ * @property-read Lease|null $renewalLease
  * @property-read Model|null $leaseable
  * @property-read Collection<int, LeaseInstallment> $installments
  * @property-read Collection<int, Payment> $payments
@@ -69,6 +72,18 @@ class Lease extends Model
     public function managedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'managed_by_user_id');
+    }
+
+    /** @return BelongsTo<Lease, $this> */
+    public function previousLease(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'renewed_from_lease_id');
+    }
+
+    /** @return HasOne<Lease, $this> */
+    public function renewalLease(): HasOne
+    {
+        return $this->hasOne(self::class, 'renewed_from_lease_id');
     }
 
     /** @return MorphTo<Model, $this> */

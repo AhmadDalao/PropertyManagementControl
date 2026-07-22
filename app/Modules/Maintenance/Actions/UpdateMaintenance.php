@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Maintenance\Support\MaintenanceReferenceGuard;
 use App\Modules\Maintenance\Support\MaintenanceSchedule;
+use App\Modules\Maintenance\Support\MaintenanceTransitionGuard;
 use Illuminate\Support\Facades\DB;
 
 class UpdateMaintenance
@@ -15,6 +16,7 @@ class UpdateMaintenance
         private readonly MaintenanceAccess $access,
         private readonly MaintenanceSchedule $schedule,
         private readonly MaintenanceReferenceGuard $references,
+        private readonly MaintenanceTransitionGuard $transitions,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -55,6 +57,7 @@ class UpdateMaintenance
             $previousStatus = $locked->status;
             $previousPriority = $locked->priority;
             $previousAssignee = $locked->assigned_to_user_id;
+            $this->transitions->ensureAllowed($previousStatus, $data['status']);
             $locked->update([
                 'assigned_to_user_id' => $data['assigned_to_user_id'] ?? null,
                 'priority' => $data['priority'],

@@ -10,6 +10,7 @@ use App\Modules\Leases\Support\LeaseAttributes;
 use App\Modules\Leases\Support\LeaseInputGuard;
 use App\Modules\Leases\Support\LeaseParticipants;
 use App\Modules\Leases\Support\LeasePortfolioResolver;
+use App\Modules\Leases\Support\LeaseRenewalGuard;
 use Illuminate\Support\Facades\DB;
 
 final class CreateLease
@@ -19,6 +20,7 @@ final class CreateLease
         private readonly LeaseInputGuard $input,
         private readonly LeasePortfolioResolver $portfolios,
         private readonly LeaseParticipants $participants,
+        private readonly LeaseRenewalGuard $renewals,
         private readonly LeaseAttributes $attributes,
         private readonly LeaseLifecycle $lifecycle,
     ) {}
@@ -33,6 +35,7 @@ final class CreateLease
             $portfolioId = $this->portfolios->resolve($actor, $data['portfolio_id'] ?? null);
             $asset = $this->participants->asset((int) $data['asset_id'], $portfolioId);
             $tenant = $this->participants->tenant((int) $data['tenant_profile_id'], $portfolioId);
+            $this->renewals->validateCreation($actor, $data, $portfolioId, $tenant, $asset);
 
             return $this->lifecycle->create(
                 $asset,

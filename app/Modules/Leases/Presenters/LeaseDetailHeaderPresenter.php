@@ -20,31 +20,11 @@ final class LeaseDetailHeaderPresenter
         $tenant = $lease->tenantProfile?->user->name ?? trans('app.leases.no_tenant');
         $actions = [];
 
-        if ($data->adminMode) {
+        if ($data->adminMode && $lease->status !== 'draft') {
             $actions[] = ['label' => trans('app.leases.edit_action'), 'href' => route('leases.edit', $lease), 'variant' => 'primary'];
         }
 
         $actions[] = ['label' => trans('app.leases.contract_pdf'), 'href' => route('leases.contract', $lease), 'variant' => 'secondary'];
-
-        if ($data->adminMode) {
-            $actions[] = [
-                'label' => trans('app.leases.upload_signed_pdf'),
-                'href' => route('documents.create', [
-                    'documentable_type' => 'lease',
-                    'documentable_id' => $lease->id,
-                    'type' => 'signed_contract',
-                    'title_en' => "Signed contract {$lease->code}",
-                    'title_ar' => "العقد الموقع {$lease->code}",
-                ]),
-                'variant' => 'secondary',
-            ];
-        }
-
-        $actions[] = ['label' => trans('app.leases.tenant_statement'), 'href' => route('leases.statement', $lease), 'variant' => 'secondary'];
-
-        if ($data->adminMode) {
-            $actions[] = ['label' => trans('app.leases.record_payment'), 'href' => route('payments.create', ['lease_id' => $lease->id]), 'variant' => 'secondary'];
-        }
 
         return [
             'eyebrow' => trans('app.leases.detail_eyebrow'),

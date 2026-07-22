@@ -75,7 +75,7 @@ class ExpenseEntryController extends Controller
     {
         $this->expenses->void($this->actor($request), $expense);
 
-        return to_route('expenses.index')
+        return to_route('expenses.show', $expense)
             ->with('success', trans('app.messages.expense_voided'));
     }
 }

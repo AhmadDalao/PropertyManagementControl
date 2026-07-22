@@ -12,7 +12,7 @@ final class PaymentDetailHeaderPresenter
         $payment = $data->payment;
         $actions = [];
 
-        if ($data->adminMode) {
+        if ($data->adminMode && $payment->status === 'posted') {
             $actions[] = [
                 'label' => trans('app.payments.review_payment'),
                 'href' => route('payments.edit', $payment),
@@ -24,14 +24,6 @@ final class PaymentDetailHeaderPresenter
             $actions[] = [
                 'label' => trans('app.payments.download_receipt'),
                 'href' => route('payments.receipt', $payment),
-                'variant' => 'secondary',
-            ];
-        }
-
-        if ($payment->lease) {
-            $actions[] = [
-                'label' => trans('app.payments.open_lease'),
-                'href' => route('leases.show', $payment->lease),
                 'variant' => 'secondary',
             ];
         }

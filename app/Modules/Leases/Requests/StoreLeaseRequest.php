@@ -25,6 +25,7 @@ final class StoreLeaseRequest extends FormRequest
     {
         return [
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
+            'renewed_from_lease_id' => ['nullable', 'integer', 'exists:leases,id', 'unique:leases,renewed_from_lease_id'],
             'tenant_profile_id' => ['required', 'integer', 'exists:tenant_profiles,id'],
             'asset_id' => ['required', 'integer', 'exists:assets,id'],
             'status' => ['required', Rule::in(LeaseOptions::CREATE_STATUSES)],

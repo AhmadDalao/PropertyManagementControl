@@ -100,7 +100,7 @@ class MaintenanceRequestController extends Controller
             return back()->with('error', trans('app.errors.maintenance_not_open'));
         }
 
-        return to_route('maintenance-requests.index')
+        return to_route('maintenance-requests.show', $maintenanceRequest)
             ->with('success', trans('app.messages.maintenance_cancelled'));
     }
 }

@@ -13,6 +13,7 @@ final class PaymentDetailPresenter
     public function __construct(
         private readonly PaymentDetailQuery $query,
         private readonly PaymentDetailHeaderPresenter $header,
+        private readonly PaymentWorkflowPresenter $workflow,
         private readonly PaymentDetailOverviewPresenter $overview,
         private readonly PaymentRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
@@ -30,6 +31,7 @@ final class PaymentDetailPresenter
 
         return [
             'header' => $this->header->present($data),
+            'workflow' => $this->workflow->present($data),
             'stats' => $this->overview->stats($data),
             'sections' => $this->overview->sections($data),
             'related' => $this->related->present($data),

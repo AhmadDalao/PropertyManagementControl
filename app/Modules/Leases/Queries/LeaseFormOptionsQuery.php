@@ -29,6 +29,11 @@ final class LeaseFormOptionsQuery
         $portfolioId = collect($portfolios)->contains('value', $requested)
             ? (int) $requested
             : $this->defaultPortfolioId($actor, $portfolios);
+        $includeAssetId = filter_var(
+            $defaults['include_asset_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
 
         return new LeaseFormData(
             actor: $actor,
@@ -37,7 +42,9 @@ final class LeaseFormOptionsQuery
             portfolioId: $portfolioId,
             portfolios: $portfolios,
             tenants: $lease || ! $portfolioId ? [] : $this->activeTenants($portfolioId),
-            assets: $lease || ! $portfolioId ? [] : $this->availableAssets($portfolioId),
+            assets: $lease || ! $portfolioId
+                ? []
+                : $this->availableAssets($portfolioId, $includeAssetId ?: null),
         );
     }
 
@@ -73,7 +80,7 @@ final class LeaseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function availableAssets(int $portfolioId): array
+    private function availableAssets(int $portfolioId, ?int $includeAssetId = null): array
     {
         $leasedAssetIds = Lease::query()
             ->select('leaseable_id')
@@ -85,7 +92,13 @@ final class LeaseFormOptionsQuery
             ->where('portfolio_id', $portfolioId)
             ->where('status', 'active')
             ->where('rentable', true)
-            ->whereNotIn('id', $leasedAssetIds)
+            ->where(function (Builder $assets) use ($leasedAssetIds, $includeAssetId): void {
+                $assets->whereNotIn('id', $leasedAssetIds);
+
+                if ($includeAssetId !== null) {
+                    $assets->orWhere('id', $includeAssetId);
+                }
+            })
             ->orderBy($titleColumn)
             ->get(['id', 'title_en', 'title_ar', 'code'])
             ->map(fn (Asset $asset): array => [

@@ -4,6 +4,7 @@ namespace App\Modules\Maintenance\Presenters;
 
 use App\Modules\Maintenance\Data\MaintenanceDetailData;
 use App\Modules\Shared\ResourcePresenter;
+use App\Support\PortfolioModules;
 
 class MaintenanceDetailOverviewPresenter
 {
@@ -57,15 +58,13 @@ class MaintenanceDetailOverviewPresenter
     private function actions(MaintenanceDetailData $data): array
     {
         $request = $data->request;
-        $actions = [[
-            'label' => trans($data->tenantMode
-                ? 'app.maintenance.add_comment'
-                : 'app.maintenance.triage_request_action'),
-            'href' => route('maintenance-requests.edit', $request),
-            'variant' => 'primary',
-        ]];
+        $actions = [];
 
-        if (! $data->tenantMode && $request->asset) {
+        if (
+            ! $data->tenantMode
+            && $request->asset
+            && PortfolioModules::enabledForUser($data->actor, 'assets')
+        ) {
             $actions[] = [
                 'label' => trans('app.maintenance.open_asset'),
                 'href' => route('assets.show', $request->asset),
@@ -85,19 +84,28 @@ class MaintenanceDetailOverviewPresenter
             [
                 'label' => trans('app.maintenance.asset'),
                 'value' => $this->resources->localized($request->asset?->title_en, $request->asset?->title_ar),
-                'href' => ! $data->tenantMode && $request->asset ? route('assets.show', $request->asset) : null,
+                'href' => ! $data->tenantMode
+                    && $request->asset
+                    && PortfolioModules::enabledForUser($data->actor, 'assets')
+                        ? route('assets.show', $request->asset)
+                        : null,
             ],
             [
                 'label' => trans('app.maintenance.tenant'),
                 'value' => $request->tenantProfile?->user?->name,
-                'href' => ! $data->tenantMode && $request->tenantProfile
+                'href' => ! $data->tenantMode
+                    && $request->tenantProfile
+                    && PortfolioModules::enabledForUser($data->actor, 'tenants')
                     ? route('tenants.show', $request->tenantProfile)
                     : null,
             ],
             [
                 'label' => trans('app.maintenance.lease'),
                 'value' => $request->lease?->code,
-                'href' => $request->lease ? route('leases.show', $request->lease) : null,
+                'href' => $request->lease
+                    && PortfolioModules::enabledForUser($data->actor, 'leases')
+                        ? route('leases.show', $request->lease)
+                        : null,
             ],
             ['label' => trans('app.maintenance.submitted_by'), 'value' => $request->submittedBy?->name],
             ['label' => trans('app.maintenance.assigned_to'), 'value' => $request->assignedTo?->name],

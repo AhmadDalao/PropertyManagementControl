@@ -8,6 +8,7 @@ import type {
     RelatedTable,
     ResourceHeaderProps,
     ResourceSpotlight,
+    ResourceWorkflow,
 } from '@/components/resource-cycle';
 import { AdminLayout } from '@/layouts/admin-layout';
 import type { SharedProps } from '@/types';
@@ -16,6 +17,7 @@ type PageProps = SharedProps & {
     detailPage: {
         header: ResourceHeaderProps;
         spotlight?: ResourceSpotlight;
+        workflow?: ResourceWorkflow;
         decisionCards?: DecisionCard[];
         stats?: DetailItem[];
         sections?: DetailSection[];

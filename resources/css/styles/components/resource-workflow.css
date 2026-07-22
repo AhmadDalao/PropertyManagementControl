@@ -1,0 +1,138 @@
+.pmc-resource-workflow {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) minmax(13rem, auto);
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-inline-start: 0.28rem solid #111;
+    border-radius: var(--pmc-radius);
+    background: #fff;
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-resource-workflow-primary {
+    border-inline-start-color: var(--pmc-amber);
+    background: linear-gradient(105deg, #fffaf0 0%, #fff 54%);
+}
+
+.pmc-resource-workflow-teal {
+    border-inline-start-color: var(--pmc-teal);
+    background: linear-gradient(105deg, #f1fbf8 0%, #fff 54%);
+}
+
+.pmc-resource-workflow-danger {
+    border-inline-start-color: var(--pmc-red);
+    background: linear-gradient(105deg, #fff6f3 0%, #fff 54%);
+}
+
+.pmc-resource-workflow-icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 0.78rem;
+    background: #111;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.pmc-resource-workflow-copy {
+    min-width: 0;
+}
+
+.pmc-resource-workflow-copy > span {
+    display: block;
+    margin-bottom: 0.28rem;
+    color: var(--pmc-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+}
+
+.pmc-resource-workflow-copy > div {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.pmc-resource-workflow-copy h2 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+
+.pmc-resource-workflow-copy em {
+    padding: 0.24rem 0.48rem;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.64rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-resource-workflow-copy p {
+    max-width: 58rem;
+    margin: 0.32rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+    line-height: 1.55;
+}
+
+.pmc-resource-workflow-actions {
+    display: flex;
+    min-width: 0;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.pmc-resource-workflow-actions .btn {
+    min-height: 2.55rem;
+}
+
+.pmc-resource-workflow-actions small {
+    color: var(--pmc-muted);
+    font-size: 0.76rem;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-resource-workflow {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-resource-workflow-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+        padding-inline-start: 3.75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-resource-workflow {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .pmc-resource-workflow-icon {
+        width: 2.45rem;
+        height: 2.45rem;
+    }
+
+    .pmc-resource-workflow-actions {
+        display: grid;
+        grid-column: auto;
+        padding-inline-start: 0;
+    }
+
+    .pmc-resource-workflow-actions .btn {
+        width: 100%;
+    }
+}

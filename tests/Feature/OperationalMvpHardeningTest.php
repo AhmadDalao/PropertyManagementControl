@@ -152,7 +152,7 @@ class OperationalMvpHardeningTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('leases.destroy', $firstLease))
-            ->assertRedirect(route('leases.index'));
+            ->assertRedirect(route('leases.show', $firstLease));
 
         $this->actingAs($owner)
             ->from(route('leases.edit', $firstLease))

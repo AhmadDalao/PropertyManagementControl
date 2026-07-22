@@ -12,6 +12,7 @@ final class ExpenseDetailPresenter
     public function __construct(
         private readonly ExpenseDetailQuery $query,
         private readonly ExpenseDetailHeaderPresenter $header,
+        private readonly ExpenseWorkflowPresenter $workflow,
         private readonly ExpenseDetailOverviewPresenter $overview,
         private readonly ResourcePresenter $resources,
     ) {}
@@ -23,6 +24,7 @@ final class ExpenseDetailPresenter
 
         return [
             'header' => $this->header->present($data),
+            'workflow' => $this->workflow->present($data),
             'decisionCards' => $this->overview->decisionCards($data),
             'stats' => $this->overview->stats($data),
             'sections' => $this->overview->sections($data),

@@ -420,6 +420,49 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('stateful records expose a compact next-step workflow on mobile', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+
+        for (const path of [
+            '/leases/1',
+            '/payments/1',
+            '/maintenance-requests/1',
+            '/expenses/1',
+        ]) {
+            await page.goto(path);
+
+            const workflow = page.locator('.pmc-resource-workflow');
+            await expect(workflow).toBeVisible();
+            await expect(
+                workflow.locator('#pmc-resource-workflow-title'),
+            ).toBeVisible();
+            expect(
+                await workflow.evaluate(
+                    (node) =>
+                        window
+                            .getComputedStyle(node)
+                            .gridTemplateColumns.split(' ').length,
+                ),
+            ).toBe(1);
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.goto('/leases/1');
+        await page.getByRole('link', { name: 'Prepare renewal' }).click();
+        await expect(
+            page.getByRole('heading', { name: /Renew / }),
+        ).toBeVisible();
+        await expect(page.getByLabel('Status')).toHaveValue('draft');
+        await expect(page.getByLabel('Available rentable asset')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/leases/1?locale=ar');
+        await expect(page.getByText('الخطوة التالية')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('Arabic lease directory, detail, and create form stay focused on mobile', async ({
         page,
     }) => {

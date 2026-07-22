@@ -12,4 +12,5 @@ export type {
     ResourceFormValues,
     ResourceHeaderProps,
     ResourceSpotlight,
+    ResourceWorkflow,
 } from './types';

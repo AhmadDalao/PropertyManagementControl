@@ -63,7 +63,7 @@ class OperationalArchiveTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('leases.destroy', $lease))
-            ->assertRedirect(route('leases.index'));
+            ->assertRedirect(route('leases.show', $lease));
 
         $this->assertSame('terminated', $lease->fresh()->status);
         $this->assertSame('vacant', $asset->fresh()->occupancy_status);
@@ -100,7 +100,7 @@ class OperationalArchiveTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('payments.destroy', $payment))
-            ->assertRedirect(route('payments.index'));
+            ->assertRedirect(route('payments.show', $payment));
 
         $this->assertSame('void', $payment->fresh()->status);
         $this->assertSame(0, $payment->allocations()->count());
@@ -149,7 +149,7 @@ class OperationalArchiveTest extends TestCase
 
         $this->actingAs($tenantUser)
             ->delete(route('maintenance-requests.destroy', $ownRequest))
-            ->assertRedirect(route('maintenance-requests.index'));
+            ->assertRedirect(route('maintenance-requests.show', $ownRequest));
 
         $this->assertSame('open', $otherRequest->fresh()->status);
         $this->assertSame('cancelled', $ownRequest->fresh()->status);

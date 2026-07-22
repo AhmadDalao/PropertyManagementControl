@@ -169,11 +169,11 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where(
-                    'detailPage.header.actions.2.label',
-                    'Upload signed PDF',
-                )
-                ->where('detailPage.header.actions.2.href', $uploadUrl));
+                ->where('detailPage.workflow.eyebrow', 'Next step')
+                ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->contains(
+                    fn (array $action): bool => $action['label'] === 'Upload signed PDF'
+                        && $action['href'] === $uploadUrl
+                )));
 
         $this->actingAs($owner)
             ->get($uploadUrl)
@@ -320,6 +320,8 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
                     'Contract PDF',
+                ])
+                ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
                     'Tenant statement',
                 ])
                 ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Notes')
@@ -362,7 +364,7 @@ class LeaseLifecycleWorkspaceTest extends TestCase
 
         $this->actingAs($owner)
             ->delete(route('leases.destroy', $lease))
-            ->assertRedirect(route('leases.index'));
+            ->assertRedirect(route('leases.show', $lease));
 
         $this->assertSame('terminated', $lease->fresh()->status);
         $this->assertSame('vacant', $asset->fresh()->occupancy_status);

@@ -57,6 +57,7 @@ class PaymentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Payments/Presenters/PaymentFormFieldsPresenter.php'),
             $this->path('app/Modules/Payments/Presenters/PaymentRelatedPresenter.php'),
             $this->path('app/Modules/Payments/Presenters/PaymentTableRowPresenter.php'),
+            $this->path('app/Modules/Payments/Presenters/PaymentWorkflowPresenter.php'),
             $this->path('app/Modules/Payments/Queries/PaymentDetailQuery.php'),
             $this->path('app/Modules/Payments/Queries/PaymentDirectoryQuery.php'),
             $this->path('app/Modules/Payments/Queries/PaymentFormOptionsQuery.php'),

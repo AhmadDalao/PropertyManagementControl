@@ -12,18 +12,11 @@ final class ExpenseDetailHeaderPresenter
         $expense = $data->expense;
         $actions = [];
 
-        if ($expense->status !== 'void') {
+        if ($expense->status === 'posted') {
             $actions[] = [
                 'label' => trans('app.expenses.edit_expense'),
                 'href' => route('expenses.edit', $expense),
                 'variant' => 'primary',
-            ];
-            $actions[] = [
-                'label' => trans('app.expenses.void_expense'),
-                'href' => route('expenses.destroy', $expense),
-                'method' => 'delete',
-                'variant' => 'danger',
-                'confirm' => trans('app.expenses.void_confirm', ['title' => $expense->title]),
             ];
         }
 

@@ -75,6 +75,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'resource-header.tsx',
             'resource-input.tsx',
             'resource-spotlight-panel.tsx',
+            'workflow-action-panel.tsx',
             'types.ts',
         ];
 
@@ -129,6 +130,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'controls.css',
             'resource-header.css',
             'resource-detail.css',
+            'resource-workflow.css',
             'resource-related.css',
             'records.css',
             'responsive.css',

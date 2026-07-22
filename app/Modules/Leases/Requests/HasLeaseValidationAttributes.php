@@ -9,6 +9,7 @@ trait HasLeaseValidationAttributes
     {
         return [
             'portfolio_id' => trans('app.leases.portfolio'),
+            'renewed_from_lease_id' => trans('app.leases.previous_contract'),
             'tenant_profile_id' => trans('app.leases.tenant'),
             'asset_id' => trans('app.leases.asset'),
             'status' => trans('app.leases.status'),

@@ -92,6 +92,16 @@ class PaymentWorkspaceTest extends TestCase
                 ->missing('payments.data.0.allocations')
                 ->missing('leaseOptions')
                 ->missing('tenantOptions'));
+
+        $this->actingAs($owner)
+            ->get(route('payments.show', $postedPayment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.title', 'Payment allocated and receipt ready')
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Open lease',
+                    'Void',
+                ]));
     }
 
     public function test_pending_payments_do_not_allocate_until_posted_and_can_return_to_pending(): void
@@ -121,6 +131,16 @@ class PaymentWorkspaceTest extends TestCase
 
         $this->assertSame(0, $payment->allocations()->count());
         $this->assertSame(0.0, (float) $firstInstallment->fresh()->amount_paid);
+        $this->actingAs($owner)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('detailPage.header.actions', 0)
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Review and post',
+                    'Open lease',
+                    'Void',
+                ]));
 
         $this->actingAs($owner)
             ->put(route('payments.update', $payment), [
