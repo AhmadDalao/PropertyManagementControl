@@ -1,0 +1,75 @@
+.pmc-report-record-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-report-record-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-report-record-cards > a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.65rem;
+    min-width: 0;
+    padding: 0.75rem;
+    border: 1px solid #ece9e3;
+    border-radius: 0.7rem;
+    background: #fbfaf7;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-report-record-cards > a:hover {
+    border-color: #d3b65f;
+}
+
+.pmc-report-record-cards > a > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-report-record-cards strong,
+.pmc-report-record-cards span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-report-record-cards strong {
+    font-size: 0.78rem;
+}
+
+.pmc-report-record-cards span {
+    color: #6f6f76;
+    font-size: 0.68rem;
+}
+
+.pmc-report-record-cards em {
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.pmc-report-record-cards em.is-success {
+    color: #08786e;
+}
+
+.pmc-report-record-cards em.is-warning {
+    color: #856a00;
+}
+
+.pmc-report-record-cards em.is-danger {
+    color: #b23d29;
+}
+
+.pmc-report-record-cards > a > i {
+    color: #999;
+    font-size: 0.7rem;
+}

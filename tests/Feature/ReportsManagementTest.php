@@ -14,6 +14,43 @@ class ReportsManagementTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_report_payload_contract_stays_stable_for_dashboard_and_workbook(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/index')
+                ->where('mode', 'portfolio')
+                ->hasAll([
+                    'summary.revenue',
+                    'summary.expenses',
+                    'summary.net',
+                    'summary.scheduledDue',
+                    'summary.scheduledPaid',
+                    'summary.collectionRate',
+                    'summary.occupancyRate',
+                    'summary.arrears',
+                    'summary.contractBalance',
+                    'summary.activeLeases',
+                    'summary.leasesInArrears',
+                    'summary.openRequests',
+                    'summary.resolvedRequests',
+                    'charts.revenueByMonth',
+                    'charts.expenseByCategory',
+                    'charts.assetMix',
+                    'charts.maintenanceByStatus',
+                    'arrearsLeases',
+                    'topAssets',
+                    'recentPayments',
+                    'recentExpenses',
+                    'maintenanceBacklog',
+                ]));
+    }
+
     public function test_owner_report_summary_and_export_do_not_leak_foreign_portfolio_data(): void
     {
         $portfolio = $this->createPortfolio();

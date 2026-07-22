@@ -36,23 +36,69 @@ class ReportModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function report_query_and_saved_view_shell_delegate_bounded_responsibilities(): void
+    {
+        $query = $this->source($this->path('app/Modules/Reports/Queries/PortfolioReportQuery.php'));
+        $presets = $this->source($this->path('resources/js/modules/reports/report-presets.tsx'));
+
+        $this->assertLessThanOrEqual(70, substr_count($query, "\n") + 1);
+        $this->assertStringContainsString('PortfolioReportDatasetQuery', $query);
+        $this->assertStringContainsString('LeaseReportSnapshotFactory', $query);
+        $this->assertStringContainsString('ReportSummaryPresenter', $query);
+        $this->assertStringNotContainsString('Payment::query()', $query);
+        $this->assertStringNotContainsString('->groupBy(', $query);
+
+        $this->assertLessThanOrEqual(60, substr_count($presets, "\n") + 1);
+        $this->assertStringContainsString("from './report-preset-form'", $presets);
+        $this->assertStringContainsString("from './report-preset-list'", $presets);
+        $this->assertStringNotContainsString('useForm(', $presets);
+        $this->assertStringNotContainsString('router.delete(', $presets);
+    }
+
+    #[Test]
+    public function report_styles_are_split_by_concern(): void
+    {
+        $facade = $this->source($this->path('resources/css/styles/reports.css'));
+
+        $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
+
+        foreach (['filters', 'metrics', 'records', 'presets', 'responsive'] as $layer) {
+            $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
+            $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
+        }
+    }
+
+    #[Test]
     public function report_module_owns_each_operational_responsibility(): void
     {
         foreach ([
             'app/Modules/Reports/Actions/ManageReportPresets.php',
             'app/Modules/Reports/Actions/ReportWorkbookExport.php',
+            'app/Modules/Reports/Data/LeaseReportSnapshot.php',
+            'app/Modules/Reports/Data/PortfolioReportData.php',
             'app/Modules/Reports/Presenters/ReportPagePresenter.php',
+            'app/Modules/Reports/Presenters/ReportChartsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportSummaryPresenter.php',
+            'app/Modules/Reports/Queries/PortfolioReportDatasetQuery.php',
             'app/Modules/Reports/Queries/PortfolioReportQuery.php',
             'app/Modules/Reports/Queries/ReportPresetQuery.php',
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
             'app/Modules/Reports/Requests/StoreReportPresetRequest.php',
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
+            'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
+            'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
             'resources/js/modules/reports/report-operations.tsx',
             'resources/js/modules/reports/report-overview.tsx',
+            'resources/js/modules/reports/report-preset-form.tsx',
+            'resources/js/modules/reports/report-preset-list.tsx',
             'resources/js/modules/reports/report-presets.tsx',
             'resources/js/modules/reports/report-tabs.tsx',
             'resources/js/modules/reports/report-visuals.tsx',

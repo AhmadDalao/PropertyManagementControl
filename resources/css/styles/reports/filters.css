@@ -1,0 +1,67 @@
+.pmc-report-toolbar {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    align-items: end;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.9rem;
+    background: #fbfaf7;
+}
+
+.pmc-report-filter-trigger {
+    display: none;
+}
+
+.pmc-report-tabs {
+    display: flex;
+    gap: 0.45rem;
+    margin-bottom: 1rem;
+    padding: 0.35rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-report-tabs button {
+    display: inline-flex;
+    min-height: 2.55rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.8rem;
+    border: 0;
+    border-radius: 0.62rem;
+    background: transparent;
+    color: #6b665e;
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.pmc-report-tabs button.is-active {
+    background: #111;
+    color: #fff;
+}
+
+.pmc-report-toolbar > label {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.pmc-report-toolbar > label > span {
+    color: #494950;
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-report-toolbar-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pmc-report-toolbar-actions .btn {
+    min-height: 2.75rem;
+}
