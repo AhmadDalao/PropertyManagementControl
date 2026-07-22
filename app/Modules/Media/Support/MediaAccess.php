@@ -7,26 +7,18 @@ use App\Models\User;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
-class MediaAccess
+final class MediaAccess
 {
     public function __construct(private readonly PortfolioScope $portfolios) {}
 
     public function ensureManager(User $actor): void
     {
-        abort_unless(
-            $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']),
-            403,
-            trans('app.errors.section_access_denied'),
-        );
+        abort_unless($this->canCreate($actor), 403, trans('app.errors.section_access_denied'));
     }
 
     public function ensureGlobalManager(User $actor): void
     {
-        abort_unless(
-            $actor->hasRole('superadmin'),
-            403,
-            trans('app.errors.section_access_denied'),
-        );
+        abort_unless($actor->hasRole('superadmin'), 403, trans('app.errors.section_access_denied'));
     }
 
     /**
@@ -42,15 +34,7 @@ class MediaAccess
 
     public function ensureCanManage(User $actor, MediaFile $mediaFile): void
     {
-        $this->ensureManager($actor);
-
-        if ($mediaFile->portfolio_id === null) {
-            $this->ensureGlobalManager($actor);
-
-            return;
-        }
-
-        $this->portfolios->ensureAccess($actor, $mediaFile->portfolio_id);
+        abort_unless($this->canManage($actor, $mediaFile), 403, trans('app.errors.section_access_denied'));
     }
 
     public function ensurePortfolio(User $actor, ?int $portfolioId): void
@@ -64,5 +48,23 @@ class MediaAccess
         }
 
         $this->portfolios->ensureAccess($actor, $portfolioId);
+    }
+
+    public function canCreate(?User $actor): bool
+    {
+        return $actor?->hasAnyRole(['superadmin', 'owner', 'property_manager']) ?? false;
+    }
+
+    public function canManage(?User $actor, MediaFile $mediaFile): bool
+    {
+        if (! $this->canCreate($actor) || $actor === null) {
+            return false;
+        }
+
+        if ($mediaFile->portfolio_id === null) {
+            return $actor->hasRole('superadmin');
+        }
+
+        return $actor->hasRole('superadmin') || $actor->portfolio_id === $mediaFile->portfolio_id;
     }
 }

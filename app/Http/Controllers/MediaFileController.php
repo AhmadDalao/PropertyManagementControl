@@ -37,7 +37,10 @@ class MediaFileController extends Controller
     public function create(Request $request): Response
     {
         return Inertia::render('admin/resource-form', [
-            'formPage' => $this->formPresenter->present($this->actor($request)),
+            'formPage' => $this->formPresenter->present(
+                $this->actor($request),
+                defaults: $request->only('portfolio_id'),
+            ),
         ]);
     }
 

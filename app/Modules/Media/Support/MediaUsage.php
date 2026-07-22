@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
-class MediaUsage
+final class MediaUsage
 {
     public function cmsSectionCount(MediaFile $mediaFile): int
     {

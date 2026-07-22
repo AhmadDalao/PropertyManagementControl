@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-class MediaFileResponse
+final class MediaFileResponse
 {
     public function __construct(private readonly MediaAccess $access) {}
 

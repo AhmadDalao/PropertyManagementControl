@@ -179,6 +179,10 @@
 }
 
 @media (max-width: 767.98px) {
+    body.pmc-media-picker-open {
+        overflow: hidden;
+    }
+
     .pmc-media-picker-selected {
         grid-template-columns: 3.5rem minmax(0, 1fr);
     }

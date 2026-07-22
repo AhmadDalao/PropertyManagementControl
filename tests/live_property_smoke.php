@@ -238,7 +238,10 @@ $authChecks = [
     '/documents?locale=ar' => 'admin/documents/index',
     '/documents/create?locale=en' => 'admin/resource-form',
     '/documents/create?locale=ar' => 'admin/resource-form',
-    '/media-files' => 'admin/media/index',
+    '/media-files?locale=en' => 'admin/media/index',
+    '/media-files?locale=ar' => 'admin/media/index',
+    '/media-files/create?locale=en' => 'admin/resource-form',
+    '/media-files/create?locale=ar' => 'admin/resource-form',
     '/audit-logs' => 'admin/audit/index',
     '/cms' => 'admin/cms/index',
     '/wording' => 'admin/wording/index',
@@ -441,6 +444,53 @@ if (! str_contains($documentExportHeaders, '.xlsx') || ! str_starts_with((string
 }
 
 smoke_note('/exports/documents Excel .xlsx');
+
+$mediaIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/media-files?per_page=10&locale=en');
+$mediaPayload = smoke_page_payload($mediaIndex['body']);
+$mediaRows = $mediaPayload['props']['mediaFiles']['data'] ?? [];
+
+if (is_array($mediaRows) && isset($mediaRows[0]['id'])) {
+    $mediaId = (int) $mediaRows[0]['id'];
+    $mediaDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/media-files/'.$mediaId.'?locale=en');
+
+    if ($mediaDetail['status'] !== 200 || smoke_component($mediaDetail['body']) !== 'admin/resource-show') {
+        smoke_fail("Media {$mediaId} detail did not load.");
+    }
+
+    smoke_note("/media-files/{$mediaId} admin/resource-show");
+
+    $image = smoke_request($baseUrl, $cookieFile, 'GET', "/media-files/{$mediaId}/file");
+    $imageHeaders = strtolower((string) $image['headers']);
+
+    if ($image['status'] !== 200 || ! str_contains($imageHeaders, 'content-type: image/')) {
+        smoke_fail("Media {$mediaId} returned an invalid image response.");
+    }
+
+    if (strlen((string) $image['body']) < 8) {
+        smoke_fail("Media {$mediaId} returned an empty image file.");
+    }
+
+    smoke_note("/media-files/{$mediaId}/file image");
+} else {
+    smoke_note('No media image available for the non-destructive detail and file checks.');
+}
+
+$mediaExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/media-files?locale=ar');
+$mediaExportHeaders = strtolower((string) $mediaExport['headers']);
+
+if ($mediaExport['status'] !== 200) {
+    smoke_fail("Media export returned {$mediaExport['status']}.");
+}
+
+if (! str_contains($mediaExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Media export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($mediaExportHeaders, '.xlsx') || ! str_starts_with((string) $mediaExport['body'], 'PK')) {
+    smoke_fail('Media export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/media-files Excel .xlsx');
 
 $reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
 $reportHeaders = strtolower((string) $reportExport['headers']);

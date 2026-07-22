@@ -859,6 +859,7 @@ test.describe('authenticated administration', () => {
         const picker = page.locator('details.pmc-media-picker').first();
         await expect(picker).toHaveAttribute('dir', 'rtl');
         await picker.locator('summary').click();
+        await expect(page.locator('body')).toHaveClass(/pmc-media-picker-open/);
         await expect(
             picker.getByText('اختر صورة عامة من مكتبة الوسائط العامة.'),
         ).toBeVisible();
@@ -866,6 +867,9 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
         await page.keyboard.press('Escape');
         await expect(picker.locator('.pmc-media-picker-panel')).toBeHidden();
+        await expect(page.locator('body')).not.toHaveClass(
+            /pmc-media-picker-open/,
+        );
         await expect(picker.locator('summary')).toBeFocused();
     });
 

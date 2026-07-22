@@ -16,13 +16,13 @@ class TableQuery
     public function filters(Request $request, array $defaults = []): array
     {
         $filters = [
-            'search' => trim((string) $request->query('search', $defaults['search'] ?? '')),
-            'status' => trim((string) $request->query('status', $defaults['status'] ?? 'all')),
+            'search' => $this->stringValue($request->query('search'), (string) ($defaults['search'] ?? '')),
+            'status' => $this->stringValue($request->query('status'), (string) ($defaults['status'] ?? 'all')),
             'portfolio_id' => $this->nullableInteger($request->query('portfolio_id')),
             'per_page' => $this->perPage($request),
-            'page' => max(1, (int) $request->query('page', $defaults['page'] ?? 1)),
-            'sort' => trim((string) $request->query('sort', $defaults['sort'] ?? 'created_at')),
-            'direction' => strtolower((string) $request->query('direction', $defaults['direction'] ?? 'desc')) === 'asc'
+            'page' => $this->positiveInteger($request->query('page'), (int) ($defaults['page'] ?? 1)),
+            'sort' => $this->stringValue($request->query('sort'), (string) ($defaults['sort'] ?? 'created_at')),
+            'direction' => strtolower($this->stringValue($request->query('direction'), (string) ($defaults['direction'] ?? 'desc'))) === 'asc'
                 ? 'asc'
                 : 'desc',
         ];
@@ -33,7 +33,9 @@ class TableQuery
             }
 
             $value = $request->query($key, $default);
-            $filters[$key] = is_string($value) ? trim($value) : $value;
+            $filters[$key] = is_string($value)
+                ? trim($value)
+                : (is_scalar($value) || $value === null ? $value : $default);
         }
 
         return $filters;
@@ -159,15 +161,34 @@ class TableQuery
 
     private function nullableInteger(mixed $value): ?int
     {
-        return $value === null || $value === '' || $value === 'all' || ! ctype_digit((string) $value)
+        return ! is_scalar($value)
+            || $value === ''
+            || $value === 'all'
+            || ! ctype_digit((string) $value)
             ? null
             : (int) $value;
     }
 
     private function perPage(Request $request): int
     {
-        $perPage = (int) $request->query('per_page', 10);
+        $perPage = $this->positiveInteger($request->query('per_page'), 10);
 
         return in_array($perPage, [10, 25, 50, 100], true) ? $perPage : 10;
+    }
+
+    private function stringValue(mixed $value, string $default): string
+    {
+        return is_scalar($value) ? trim((string) $value) : $default;
+    }
+
+    private function positiveInteger(mixed $value, int $default): int
+    {
+        if (! is_scalar($value)) {
+            return max(1, $default);
+        }
+
+        $integer = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return $integer === false ? max(1, $default) : (int) $integer;
     }
 }
