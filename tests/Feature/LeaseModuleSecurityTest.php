@@ -266,6 +266,7 @@ final class LeaseModuleSecurityTest extends TestCase
         );
         $asset = $this->createAsset($portfolio, ['occupancy_status' => 'occupied']);
         $source = $this->createLease($portfolio, $tenant, $asset, $owner);
+        $tenant->user()->update(['status' => 'inactive']);
         $renewalStart = $source->ends_at->copy()->addDay()->toDateString();
         $renewalEnd = $source->ends_at->copy()->addYear()->toDateString();
 

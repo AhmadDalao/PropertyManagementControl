@@ -34,6 +34,11 @@ final class LeaseFormOptionsQuery
             FILTER_VALIDATE_INT,
             ['options' => ['min_range' => 1]],
         );
+        $includeTenantId = filter_var(
+            $defaults['include_tenant_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
 
         return new LeaseFormData(
             actor: $actor,
@@ -41,7 +46,9 @@ final class LeaseFormOptionsQuery
             defaults: $defaults,
             portfolioId: $portfolioId,
             portfolios: $portfolios,
-            tenants: $lease || ! $portfolioId ? [] : $this->activeTenants($portfolioId),
+            tenants: $lease || ! $portfolioId
+                ? []
+                : $this->activeTenants($portfolioId, $includeTenantId ?: null),
             assets: $lease || ! $portfolioId
                 ? []
                 : $this->availableAssets($portfolioId, $includeAssetId ?: null),
@@ -64,12 +71,20 @@ final class LeaseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function activeTenants(int $portfolioId): array
+    private function activeTenants(int $portfolioId, ?int $includeTenantId = null): array
     {
         return TenantProfile::query()
             ->where('portfolio_id', $portfolioId)
-            ->where('status', 'active')
-            ->whereHas('user', fn (Builder $users) => $users->where('status', 'active'))
+            ->where(function (Builder $tenants) use ($includeTenantId): void {
+                $tenants->where(function (Builder $active): void {
+                    $active->where('status', 'active')
+                        ->whereHas('user', fn (Builder $users) => $users->where('status', 'active'));
+                });
+
+                if ($includeTenantId !== null) {
+                    $tenants->orWhere('id', $includeTenantId);
+                }
+            })
             ->with('user:id,name')
             ->orderBy('id')
             ->get(['id', 'user_id'])

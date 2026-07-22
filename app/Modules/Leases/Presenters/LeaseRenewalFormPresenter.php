@@ -25,6 +25,7 @@ final class LeaseRenewalFormPresenter
         $data = $this->options->get($actor, defaults: [
             'portfolio_id' => $source->portfolio_id,
             'tenant_profile_id' => $source->tenant_profile_id,
+            'include_tenant_id' => $source->tenant_profile_id,
             'asset_id' => $source->leaseable_id,
             'include_asset_id' => $source->leaseable_id,
             'renewed_from_lease_id' => $source->id,

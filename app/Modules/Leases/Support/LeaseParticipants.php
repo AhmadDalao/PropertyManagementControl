@@ -27,8 +27,11 @@ final class LeaseParticipants
         return $asset;
     }
 
-    public function tenant(int $tenantId, int $portfolioId): TenantProfile
-    {
+    public function tenant(
+        int $tenantId,
+        int $portfolioId,
+        bool $allowInactivePortal = false,
+    ): TenantProfile {
         $tenant = TenantProfile::query()->lockForUpdate()->findOrFail($tenantId);
 
         abort_if(
@@ -39,7 +42,11 @@ final class LeaseParticipants
 
         $user = $tenant->user()->lockForUpdate()->first();
 
-        if ($tenant->status !== 'active' || ! $user || $user->status !== 'active') {
+        if (
+            $tenant->status !== 'active'
+            || ! $user
+            || (! $allowInactivePortal && $user->status !== 'active')
+        ) {
             throw ValidationException::withMessages([
                 'tenant_profile_id' => trans('app.errors.lease_tenant_inactive'),
             ]);
