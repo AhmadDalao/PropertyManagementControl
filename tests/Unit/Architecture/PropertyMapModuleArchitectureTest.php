@@ -76,6 +76,7 @@ class PropertyMapModuleArchitectureTest extends TestCase
     {
         foreach ([
             'geographic-map.tsx',
+            'map-leaflet.ts',
             'map-filters.tsx',
             'map-metrics.tsx',
             'map-setup-status.tsx',
@@ -85,6 +86,7 @@ class PropertyMapModuleArchitectureTest extends TestCase
             'property-map-detail.tsx',
             'property-map-directory.tsx',
             'types.ts',
+            'use-geographic-map.ts',
             'use-property-map-workspace.ts',
         ] as $file) {
             $path = "resources/js/modules/property-map/{$file}";
@@ -100,14 +102,55 @@ class PropertyMapModuleArchitectureTest extends TestCase
         $map = $this->source(
             'resources/js/modules/property-map/geographic-map.tsx',
         );
+        $mapLifecycle = $this->source(
+            'resources/js/modules/property-map/use-geographic-map.ts',
+        );
+        $leaflet = $this->source(
+            'resources/js/modules/property-map/map-leaflet.ts',
+        );
         $state = $this->source(
             'resources/js/modules/property-map/use-property-map-workspace.ts',
         );
 
-        $this->assertStringContainsString("from 'leaflet'", $map);
+        $this->assertLessThanOrEqual(70, substr_count($map, "\n") + 1);
+        $this->assertStringContainsString("from './use-geographic-map'", $map);
+        $this->assertStringNotContainsString('useEffect', $map);
+        $this->assertStringNotContainsString("from 'leaflet'", $map);
+        $this->assertStringContainsString('useEffect', $mapLifecycle);
+        $this->assertStringContainsString('initializePropertyMap', $mapLifecycle);
+        $this->assertStringContainsString("from 'leaflet'", $leaflet);
+        $this->assertStringContainsString('markerClusterGroup', $leaflet);
         $this->assertStringNotContainsString('filterMapAssets', $map);
         $this->assertStringContainsString('useState', $state);
         $this->assertStringNotContainsString("from 'leaflet'", $state);
+    }
+
+    #[Test]
+    public function property_map_styles_stay_in_focused_layers(): void
+    {
+        $facade = $this->source('resources/css/styles/property-map.css');
+
+        $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
+
+        foreach ([
+            'workspace.css',
+            'map.css',
+            'detail.css',
+            'directory.css',
+            'responsive.css',
+        ] as $file) {
+            $path = "resources/css/styles/property-map/{$file}";
+
+            $this->assertStringContainsString(
+                "@import './property-map/{$file}';",
+                $facade,
+            );
+            $this->assertLessThanOrEqual(
+                300,
+                substr_count($this->source($path), "\n") + 1,
+                "{$path} is becoming a monolith.",
+            );
+        }
     }
 
     private function source(string $relativePath): string

@@ -49,7 +49,7 @@ These accounts are created only by the local/demo seeders. Production accounts a
 php artisan migrate:fresh --seed
 npm run types:check
 npm run build
-php artisan test
+php -d memory_limit=1G artisan test
 ```
 
 `php artisan test` requires a PHP runtime with the `xmlwriter` extension enabled.

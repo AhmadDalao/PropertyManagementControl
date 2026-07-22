@@ -1,0 +1,147 @@
+.pmc-property-map-detail {
+    align-self: stretch;
+    padding: 0.95rem;
+}
+
+.pmc-property-map-detail > header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.7rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-property-map-detail > header > div {
+    min-width: 0;
+}
+
+.pmc-property-map-detail > header span {
+    color: #806600;
+    font-size: 0.6rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-property-map-detail h3 {
+    margin: 0.15rem 0 0;
+    font-size: 1.15rem;
+    letter-spacing: -0.03em;
+}
+
+.pmc-property-map-detail > header p,
+.pmc-property-map-address {
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+}
+
+.pmc-property-map-detail > header p {
+    margin: 0.15rem 0 0;
+}
+
+.pmc-property-map-detail > header em,
+.pmc-property-map-record-status {
+    flex: 0 0 auto;
+    padding: 0.28rem 0.45rem;
+    border-radius: 999px;
+    color: #7a5d00;
+    background: #fff1c2;
+    font-size: 0.55rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-property-map-detail > header .is-ready,
+.pmc-property-map-record-status.is-ready {
+    color: #0d6749;
+    background: #ddf4ec;
+}
+
+.pmc-showcase-badge {
+    display: inline-flex;
+    width: fit-content;
+    margin-top: 0.7rem;
+    padding: 0.25rem 0.42rem;
+    border-radius: 999px;
+    color: #704f00;
+    background: #fff0bd;
+    font-size: 0.55rem;
+    font-weight: 900;
+}
+
+.pmc-property-map-address {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0.75rem 0;
+}
+
+.pmc-property-map-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.pmc-property-map-facts > div {
+    min-width: 0;
+    padding: 0.6rem;
+    border-radius: 0.62rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-property-map-facts dt,
+.pmc-property-map-responsibility span {
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+}
+
+.pmc-property-map-facts dd {
+    margin: 0.1rem 0 0;
+    overflow: hidden;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-map-responsibility {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--pmc-line);
+}
+
+.pmc-property-map-responsibility > div {
+    display: flex;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.7rem;
+}
+
+.pmc-property-map-responsibility strong {
+    overflow: hidden;
+    font-size: 0.64rem;
+    text-align: end;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-map-detail-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+}
+
+.pmc-property-map-detail-actions .btn {
+    min-width: 0;
+    font-size: 0.66rem;
+}
+
+.pmc-property-map-detail-empty {
+    display: grid;
+    min-height: 100%;
+    place-content: center;
+    justify-items: center;
+    text-align: center;
+}
