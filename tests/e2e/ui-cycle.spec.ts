@@ -461,6 +461,55 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic payment directory, detail, and create form stay focused on mobile', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/payments?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'الدفعات', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('سجل الدفعات', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        const paymentCards = page.locator('.pmc-mobile-record-card');
+        const paymentCardCount = await paymentCards.count();
+        expect(paymentCardCount).toBeGreaterThan(0);
+        expect(paymentCardCount).toBeLessThanOrEqual(10);
+        await expect(page.locator('body')).not.toContainText('payments.');
+        await expectNoHorizontalOverflow(page);
+
+        const detailLink = paymentCards.locator('.pmc-record-open').first();
+        await expect(detailLink).toBeVisible();
+        await detailLink.click();
+        await expect(
+            page.getByText('تفاصيل الدفعة', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('المبلغ', { exact: true }).first(),
+        ).toBeVisible();
+        await expect(
+            page.getByText('الموزع', { exact: true }).first(),
+        ).toBeVisible();
+        await expect(
+            page.getByText('غير الموزع', { exact: true }).first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/payments/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'تسجيل دفعة', exact: true }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        await expect(page.getByLabel(/^العقد/)).toBeVisible();
+        await expect(page.getByLabel(/^طريقة الدفع/)).toBeVisible();
+        await expect(page.getByLabel(/^المبلغ/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('profile settings are focused, responsive, and fully localized', async ({
         page,
     }) => {

@@ -159,6 +159,62 @@ class PaymentModuleSecurityTest extends TestCase
                 }));
     }
 
+    public function test_superadmin_portfolio_selection_reloads_scoped_payment_options_with_a_lean_payload(): void
+    {
+        $firstPortfolio = $this->createPortfolio(['name_en' => 'First Portfolio']);
+        $secondPortfolio = $this->createPortfolio(['name_en' => 'Second Portfolio']);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $firstOwner = $this->createUserWithRole('owner', $firstPortfolio);
+        $secondOwner = $this->createUserWithRole('owner', $secondPortfolio);
+        $firstTenant = $this->createTenantProfile(
+            $firstPortfolio,
+            $this->createUserWithRole('tenant', $firstPortfolio, [
+                'name' => 'First Payment Tenant',
+                'email' => 'first-private@example.test',
+            ]),
+        );
+        $secondTenant = $this->createTenantProfile(
+            $secondPortfolio,
+            $this->createUserWithRole('tenant', $secondPortfolio, [
+                'name' => 'Second Payment Tenant',
+                'email' => 'second-private@example.test',
+            ]),
+        );
+        $firstLease = $this->createLease(
+            $firstPortfolio,
+            $firstTenant,
+            $this->createAsset($firstPortfolio),
+            $firstOwner,
+        );
+        $secondLease = $this->createLease(
+            $secondPortfolio,
+            $secondTenant,
+            $this->createAsset($secondPortfolio),
+            $secondOwner,
+        );
+
+        $response = $this->actingAs($superadmin)
+            ->get(route('payments.create', ['portfolio_id' => $secondPortfolio->id]));
+
+        $response
+            ->assertOk()
+            ->assertDontSee('first-private@example.test')
+            ->assertDontSee('second-private@example.test')
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.portfolio_id', (string) $secondPortfolio->id)
+                ->where('formPage.initialValues.lease_id', (string) $secondLease->id)
+                ->where('formPage.fields', function ($fields) use ($firstLease, $secondLease): bool {
+                    $fields = collect($fields);
+                    $portfolio = $fields->firstWhere('name', 'portfolio_id');
+                    $leaseOptions = collect($fields->firstWhere('name', 'lease_id')['options'] ?? []);
+
+                    return data_get($portfolio, 'reloadOnChange.queryKey') === 'portfolio_id'
+                        && $leaseOptions->contains('value', $secondLease->id)
+                        && ! $leaseOptions->contains('value', $firstLease->id)
+                        && $leaseOptions->every(fn (array $option): bool => array_keys($option) === ['value', 'label']);
+                }));
+    }
+
     public function test_tenant_payment_detail_hides_internal_notes_documents_and_history(): void
     {
         Storage::fake('local');
@@ -256,6 +312,253 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertSessionHasErrors('status');
 
         $this->assertSame('void', $payment->fresh()->status);
+
+        $this->actingAs($owner)
+            ->get(route('payments.edit', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.fields.0.options', [[
+                    'value' => 'void',
+                    'label' => 'Void',
+                ]]));
+
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->update($owner, $payment, [
+                'status' => 'posted',
+                'notes' => 'Direct reopen attempt.',
+            ]),
+            'status',
+        );
+    }
+
+    public function test_direct_payment_action_rejects_malformed_input_and_inactive_portfolios(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->create($owner, ['lease_id' => $lease->id]),
+            'type',
+        );
+        $this->assertDatabaseCount('payments', 0);
+
+        $portfolio->update(['status' => 'archived']);
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->create(
+                $owner,
+                $this->paymentPayload($lease->id, ['reference' => 'INACTIVE-PORTFOLIO']),
+            ),
+            'lease_id',
+        );
+        $this->assertDatabaseMissing('payments', ['reference' => 'INACTIVE-PORTFOLIO']);
+    }
+
+    public function test_direct_payment_action_rejects_duplicate_references_and_non_scalar_input(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
+            'reference' => 'UNIQUE-PAYMENT-REFERENCE',
+        ]);
+
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->create(
+                $owner,
+                $this->paymentPayload($lease->id, ['reference' => 'UNIQUE-PAYMENT-REFERENCE']),
+            ),
+            'reference',
+        );
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->create(
+                $owner,
+                $this->paymentPayload($lease->id, ['amount' => ['500']]),
+            ),
+            'amount',
+        );
+        $this->assertValidationError(
+            fn () => app(ManagePayments::class)->create(
+                $owner,
+                $this->paymentPayload($lease->id, ['notes' => ['not', 'text']]),
+            ),
+            'notes',
+        );
+        $this->assertDatabaseCount('payments', 1);
+    }
+
+    public function test_payment_list_minimizes_personal_data_and_normalizes_filters(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio, [
+                'name' => 'Private Payment Tenant',
+                'email' => 'payment-private@example.test',
+            ]),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
+            'reference' => 'PAYMENT-PRIVATE-PAYLOAD',
+            'notes' => 'Sensitive internal bank reconciliation note.',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('payments.index', [
+                'search' => $payment->reference,
+                'status' => 'not-a-status',
+                'type' => 'not-a-type',
+                'method' => 'not-a-method',
+                'date_from' => '2026-99-99',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('payments.total', 1)
+                ->where('payments.data.0.tenant_profile.user.name', 'Private Payment Tenant')
+                ->missing('payments.data.0.tenant_profile.user.email')
+                ->missing('payments.data.0.notes')
+                ->missing('payments.data.0.recorded_by')
+                ->missing('payments.data.0.allocations')
+                ->where('filters.status', 'all')
+                ->where('filters.type', 'all')
+                ->where('filters.method', 'all')
+                ->where('filters.date_from', ''));
+    }
+
+    public function test_arabic_payment_index_create_and_detail_are_translated(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, ['preferred_locale' => 'ar']);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio, ['name' => 'Arabic Payment Tenant']),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('payments.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.locale', 'ar')
+                ->where('app.direction', 'rtl')
+                ->where('counts.0.label', 'الكل')
+                ->where('app.translations.payments.ledger_title', 'سجل الدفعات'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('payments.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.title', 'تسجيل دفعة')
+                ->where('formPage.submitLabel', 'تسجيل دفعة')
+                ->where('formPage.fields.0.label', 'العقد')
+                ->where('formPage.fields.1.label', 'نوع الدفعة'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.eyebrow', 'تفاصيل الدفعة')
+                ->where('detailPage.sections.0.title', 'سجل الدفعة')
+                ->where('detailPage.related.0.title', 'التوزيعات'));
+    }
+
+    public function test_payment_insights_do_not_present_mixed_currencies_as_one_total(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $sarLease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $usdLease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+            ['currency' => 'USD'],
+        );
+        $this->createPayment($portfolio, $tenant, $owner, $sarLease->id, [
+            'status' => 'posted',
+            'amount' => 500,
+        ]);
+        $this->createPayment($portfolio, $tenant, $owner, $usdLease->id, [
+            'status' => 'pending',
+            'amount' => 100,
+            'currency' => 'USD',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('payments.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('paymentInsights.mixed_currencies', true)
+                ->where('paymentInsights.currency', null));
+    }
+
+    public function test_tenant_receipt_generation_is_attributed_to_the_payment_recorder(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
+            'status' => 'posted',
+        ]);
+
+        $this->actingAs($tenantUser)
+            ->get(route('payments.receipt', $payment))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+
+        $receipt = Document::query()->where('type', 'receipt')->firstOrFail();
+        $this->assertSame($owner->id, $receipt->uploaded_by_user_id);
     }
 
     public function test_allocator_rejects_payment_currency_that_does_not_match_the_lease(): void
@@ -373,5 +676,33 @@ class PaymentModuleSecurityTest extends TestCase
             'file_size' => 12,
             'is_public' => $type === 'receipt',
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
+     */
+    private function paymentPayload(int $leaseId, array $overrides = []): array
+    {
+        return array_merge([
+            'lease_id' => $leaseId,
+            'type' => 'rent',
+            'method' => 'bank_transfer',
+            'status' => 'posted',
+            'reference' => null,
+            'received_on' => now()->toDateString(),
+            'amount' => 500,
+            'notes' => null,
+        ], $overrides);
+    }
+
+    private function assertValidationError(callable $action, string $field): void
+    {
+        try {
+            $action();
+            $this->fail("Expected a validation error for {$field}.");
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey($field, $exception->errors());
+        }
     }
 }

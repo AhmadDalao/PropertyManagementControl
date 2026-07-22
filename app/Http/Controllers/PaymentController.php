@@ -10,7 +10,6 @@ use App\Modules\Payments\Presenters\PaymentFormPresenter;
 use App\Modules\Payments\Queries\PaymentIndexQuery;
 use App\Modules\Payments\Requests\StorePaymentRequest;
 use App\Modules\Payments\Requests\UpdatePaymentRequest;
-use App\Modules\Payments\Support\PaymentAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +24,6 @@ class PaymentController extends Controller
         private readonly PaymentDetailPresenter $detailPresenter,
         private readonly ManagePayments $payments,
         private readonly PaymentReceipts $receipts,
-        private readonly PaymentAccess $access,
     ) {}
 
     public function index(Request $request): Response
@@ -42,7 +40,7 @@ class PaymentController extends Controller
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present(
                 $actor,
-                defaults: $request->only('lease_id'),
+                defaults: $request->only('lease_id', 'portfolio_id'),
             ),
         ]);
     }
@@ -50,7 +48,6 @@ class PaymentController extends Controller
     public function show(Request $request, Payment $payment): Response
     {
         $actor = $this->actor($request);
-        $this->access->ensureCanAccess($actor, $payment);
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => $this->detailPresenter->present($payment, $actor),
@@ -60,7 +57,6 @@ class PaymentController extends Controller
     public function edit(Request $request, Payment $payment): Response
     {
         $actor = $this->actor($request);
-        $this->access->ensureCanManage($actor, $payment);
 
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present($actor, $payment),

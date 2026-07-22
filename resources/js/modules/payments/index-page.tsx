@@ -10,24 +10,24 @@ import type { PaymentIndexPageProps } from './types';
 
 export default function PaymentsIndexPage() {
     const { props } = usePage<PaymentIndexPageProps>();
-    const { text } = useTranslator();
+    const { t } = useTranslator();
 
     return (
         <AdminLayout>
-            <Head title={text('Payments')} />
+            <Head title={t('payments.title')} />
 
             <WorkspaceHeader
-                eyebrow="Money & service"
-                title="Payments"
-                description="Review money received, verify installment allocation, download receipts, and void incorrect entries safely."
+                eyebrow={t('payments.workspace_eyebrow')}
+                title={t('payments.title')}
+                description={t('payments.workspace_description')}
                 actions={[
                     {
-                        label: 'Reports',
+                        label: t('payments.reports'),
                         href: '/reports',
                         icon: 'bi-bar-chart-line',
                     },
                     {
-                        label: 'Post payment',
+                        label: t('payments.record_payment'),
                         href: '/payments/create',
                         icon: 'bi-plus-lg',
                         tone: 'primary',

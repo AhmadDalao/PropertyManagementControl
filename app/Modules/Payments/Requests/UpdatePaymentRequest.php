@@ -3,12 +3,15 @@
 namespace App\Modules\Payments\Requests;
 
 use App\Models\Payment;
+use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdatePaymentRequest extends FormRequest
+final class UpdatePaymentRequest extends FormRequest
 {
+    use HasPaymentValidationAttributes;
+
     public function authorize(): bool
     {
         $actor = $this->user();
@@ -16,8 +19,7 @@ class UpdatePaymentRequest extends FormRequest
 
         return $actor !== null
             && $payment instanceof Payment
-            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id);
+            && app(PaymentAccess::class)->canManage($actor, $payment);
     }
 
     /**

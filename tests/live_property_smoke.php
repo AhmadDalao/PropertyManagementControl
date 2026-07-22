@@ -225,7 +225,10 @@ $authChecks = [
     '/leases?locale=ar' => 'admin/leases/index',
     '/leases/create' => 'admin/resource-form',
     '/leases/create?locale=ar' => 'admin/resource-form',
-    '/payments' => 'admin/payments/index',
+    '/payments?locale=en' => 'admin/payments/index',
+    '/payments?locale=ar' => 'admin/payments/index',
+    '/payments/create?locale=en' => 'admin/resource-form',
+    '/payments/create?locale=ar' => 'admin/resource-form',
     '/maintenance-requests' => 'admin/maintenance/index',
     '/expenses' => 'admin/expenses/index',
     '/documents' => 'admin/documents/index',
@@ -305,6 +308,53 @@ if (! str_contains($leaseExportHeaders, '.xlsx') || ! str_starts_with((string) $
 }
 
 smoke_note('/exports/leases Excel .xlsx');
+
+$paymentIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/payments?status=posted&per_page=10&locale=en');
+$paymentPayload = smoke_page_payload($paymentIndex['body']);
+$paymentRows = $paymentPayload['props']['payments']['data'] ?? [];
+
+if (is_array($paymentRows) && isset($paymentRows[0]['id'])) {
+    $paymentId = (int) $paymentRows[0]['id'];
+    $paymentDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/payments/'.$paymentId.'?locale=en');
+
+    if ($paymentDetail['status'] !== 200 || smoke_component($paymentDetail['body']) !== 'admin/resource-show') {
+        smoke_fail("Payment {$paymentId} detail did not load.");
+    }
+
+    smoke_note("/payments/{$paymentId} admin/resource-show");
+
+    $receipt = smoke_request($baseUrl, $cookieFile, 'GET', "/payments/{$paymentId}/receipt");
+    $receiptHeaders = strtolower((string) $receipt['headers']);
+
+    if ($receipt['status'] !== 200 || ! str_contains($receiptHeaders, 'application/pdf')) {
+        smoke_fail('Payment receipt returned an invalid response.');
+    }
+
+    if (! str_starts_with((string) $receipt['body'], '%PDF-')) {
+        smoke_fail('Payment receipt download was not a valid PDF.');
+    }
+
+    smoke_note("/payments/{$paymentId}/receipt PDF");
+} else {
+    smoke_note('No posted payment available for non-destructive detail and receipt checks.');
+}
+
+$paymentExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/payments?status=posted&locale=en');
+$paymentExportHeaders = strtolower((string) $paymentExport['headers']);
+
+if ($paymentExport['status'] !== 200) {
+    smoke_fail("Payment export returned {$paymentExport['status']}.");
+}
+
+if (! str_contains($paymentExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Payment export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($paymentExportHeaders, '.xlsx') || ! str_starts_with((string) $paymentExport['body'], 'PK')) {
+    smoke_fail('Payment export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/payments Excel .xlsx');
 
 $reportExport = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/export');
 $reportHeaders = strtolower((string) $reportExport['headers']);

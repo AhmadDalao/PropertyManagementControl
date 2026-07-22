@@ -40,10 +40,11 @@ class PaymentReceipts
         $content = $this->pdf->loadView('pdf.receipt', ['payment' => $payment])
             ->setPaper('a4')
             ->output();
+        $documentOwner = $payment->recordedBy ?? $actor;
 
         $this->documents->replace(
             $payment,
-            $actor,
+            $documentOwner,
             $payment->portfolio_id,
             'receipt',
             "Payment receipt {$reference}",

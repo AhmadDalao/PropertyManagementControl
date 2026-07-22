@@ -19,7 +19,7 @@ export type PaymentRecord = {
     allocation_count: number;
     receipt_url: string;
     tenant_profile?: {
-        user?: { name?: string | null; email?: string | null };
+        user?: { name?: string | null };
     };
     lease?: {
         code?: string | null;
@@ -42,6 +42,8 @@ export type PaymentInsights = {
     allocated_amount: number;
     unallocated_amount: number;
     received_this_month: number;
+    currency?: string | null;
+    mixed_currencies: boolean;
 };
 
 export type PaymentIndexPageProps = SharedProps & {

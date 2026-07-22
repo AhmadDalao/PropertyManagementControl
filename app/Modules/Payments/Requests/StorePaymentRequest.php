@@ -2,15 +2,20 @@
 
 namespace App\Modules\Payments\Requests;
 
+use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StorePaymentRequest extends FormRequest
+final class StorePaymentRequest extends FormRequest
 {
+    use HasPaymentValidationAttributes;
+
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['superadmin', 'owner', 'property_manager']) ?? false;
+        $actor = $this->user();
+
+        return $actor !== null && app(PaymentAccess::class)->canManageSection($actor);
     }
 
     /**
@@ -25,7 +30,7 @@ class StorePaymentRequest extends FormRequest
             'status' => ['required', Rule::in(PaymentOptions::CREATE_STATUSES)],
             'reference' => ['nullable', 'string', 'max:255', 'unique:payments,reference'],
             'received_on' => ['required', 'date'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
+            'amount' => ['required', 'numeric', 'decimal:0,2', 'between:0.01,999999999999.99'],
             'notes' => ['nullable', 'string', 'max:5000'],
         ];
     }
