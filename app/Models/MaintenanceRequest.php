@@ -13,6 +13,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
+ * @property int $id
+ * @property int $portfolio_id
+ * @property int $asset_id
+ * @property int|null $lease_id
+ * @property int $tenant_profile_id
+ * @property int $submitted_by_user_id
+ * @property int|null $assigned_to_user_id
+ * @property string $category
+ * @property string $priority
+ * @property string $status
+ * @property string $title
+ * @property string $description
+ * @property string|null $internal_notes
+ * @property int $expenses_count
+ * @property float|null $posted_expense_total
  * @property-read Portfolio|null $portfolio
  * @property-read Asset|null $asset
  * @property-read Lease|null $lease

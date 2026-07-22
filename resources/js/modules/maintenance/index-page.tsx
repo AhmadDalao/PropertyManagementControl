@@ -10,25 +10,25 @@ import type { MaintenanceIndexPageProps } from './types';
 
 export default function MaintenanceIndexPage() {
     const { props } = usePage<MaintenanceIndexPageProps>();
-    const { text } = useTranslator();
+    const { t } = useTranslator();
 
     return (
         <AdminLayout>
-            <Head title={text('Maintenance')} />
+            <Head title={t('maintenance.title')} />
 
             <WorkspaceHeader
-                eyebrow="Money & service"
-                title="Maintenance"
+                eyebrow={t('maintenance.workspace_eyebrow')}
+                title={t('maintenance.title')}
                 description={
                     props.mode === 'tenant'
-                        ? 'Submit a property issue, then open the request to follow owner and manager updates.'
-                        : 'Find a request and open it to assign work, update the tenant, record cost, resolve, or reopen.'
+                        ? t('maintenance.tenant_description')
+                        : t('maintenance.manager_description')
                 }
                 actions={[
                     ...(props.mode === 'manager'
                         ? [
                               {
-                                  label: 'Expenses',
+                                  label: t('maintenance.expenses_action'),
                                   href: '/expenses',
                                   icon: 'bi-receipt',
                                   tone: 'quiet' as const,
@@ -36,7 +36,7 @@ export default function MaintenanceIndexPage() {
                           ]
                         : []),
                     {
-                        label: 'Create request',
+                        label: t('maintenance.create_request'),
                         href: '/maintenance-requests/create',
                         icon: 'bi-plus-lg',
                         tone: 'primary',

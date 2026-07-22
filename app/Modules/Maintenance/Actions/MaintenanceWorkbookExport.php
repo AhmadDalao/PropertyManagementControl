@@ -20,15 +20,15 @@ class MaintenanceWorkbookExport implements ResourceExporter
     public function download(Request $request, User $actor): BinaryFileResponse
     {
         return $this->workbook->download('maintenance-requests', [
-            'ID',
-            'Title',
-            'Tenant',
-            'Asset',
-            'Category',
-            'Priority',
-            'Status',
-            'Requested',
-            'Assigned To',
+            trans('app.maintenance.id'),
+            trans('app.maintenance.issue_title'),
+            trans('app.maintenance.tenant'),
+            trans('app.maintenance.asset'),
+            trans('app.maintenance.category'),
+            trans('app.maintenance.priority'),
+            trans('app.maintenance.status'),
+            trans('app.maintenance.requested_at'),
+            trans('app.maintenance.assigned_to'),
         ], $this->maintenance->forExport($request, $actor), fn (MaintenanceRequest $maintenance): array => [
             $maintenance->id,
             $maintenance->title,

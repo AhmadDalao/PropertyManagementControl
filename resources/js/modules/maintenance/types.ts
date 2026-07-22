@@ -50,3 +50,15 @@ export type MaintenanceIndexPageProps = SharedProps & {
     priorityOptions: string[];
     statusOptions: string[];
 };
+
+export type MaintenanceTableProps = Pick<
+    MaintenanceIndexPageProps,
+    | 'mode'
+    | 'requests'
+    | 'filters'
+    | 'counts'
+    | 'categoryOptions'
+    | 'priorityOptions'
+    | 'statusOptions'
+    | 'app'
+>;

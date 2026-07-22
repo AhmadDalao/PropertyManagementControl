@@ -1,5 +1,6 @@
 import type { TableFilterField } from '@/components/data-table';
-import { humanLabel } from '@/components/operations';
+import { useTranslator } from '@/lib/i18n';
+import type { Translator } from '@/lib/i18n';
 
 type MaintenanceFilterOptions = {
     categories: string[];
@@ -7,17 +8,19 @@ type MaintenanceFilterOptions = {
     statuses: string[];
 };
 
-export function maintenanceFilterFields({
+export function useMaintenanceFilterFields({
     categories,
     priorities,
     statuses,
 }: MaintenanceFilterOptions): TableFilterField[] {
+    const { t } = useTranslator();
+
     return [
-        selectField('status', 'Status', statuses),
-        selectField('category', 'Category', categories),
-        selectField('priority', 'Priority', priorities),
-        { name: 'date_from', label: 'From', type: 'date' },
-        { name: 'date_to', label: 'To', type: 'date' },
+        selectField('status', t('maintenance.status'), statuses, t),
+        selectField('category', t('maintenance.category'), categories, t),
+        selectField('priority', t('maintenance.priority'), priorities, t),
+        { name: 'date_from', label: t('maintenance.from'), type: 'date' },
+        { name: 'date_to', label: t('maintenance.to'), type: 'date' },
     ];
 }
 
@@ -25,14 +28,15 @@ function selectField(
     name: string,
     label: string,
     options: string[],
+    t: Translator,
 ): TableFilterField {
     return {
         name,
         label,
         options: [
-            { label: 'All', value: 'all' },
+            { label: t('maintenance.all'), value: 'all' },
             ...options.map((option) => ({
-                label: humanLabel(option),
+                label: t(`status.${option}`),
                 value: option,
             })),
         ],

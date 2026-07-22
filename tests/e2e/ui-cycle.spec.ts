@@ -567,6 +567,45 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic maintenance workspace, form, and detail stay localized', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/maintenance-requests?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'الصيانة' }),
+        ).toBeVisible();
+        const cards = page.locator('.pmc-mobile-record-card');
+        const cardCount = await cards.count();
+        expect(cardCount).toBeGreaterThan(0);
+        expect(cardCount).toBeLessThanOrEqual(10);
+        await expect(page.locator('body')).not.toContainText('maintenance.');
+        await expectNoHorizontalOverflow(page);
+
+        const detailLink = cards
+            .locator('a[href^="/maintenance-requests/"]')
+            .first();
+        await expect(detailLink).toBeVisible();
+        const detailHref = await detailLink.getAttribute('href');
+        expect(detailHref).toBeTruthy();
+
+        await page.goto(`${detailHref}?locale=ar`);
+        await expect(page.getByText('طلب صيانة')).toBeVisible();
+        await expect(page.getByText('سياق الطلب')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/maintenance-requests/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء طلب' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^الأصل/)).toBeVisible();
+        await expect(page.getByLabel(/^المستأجر/)).toBeVisible();
+        await expect(page.getByLabel(/^وصف المشكلة/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('Arabic user workspace, form, and detail stay localized', async ({
         page,
     }) => {

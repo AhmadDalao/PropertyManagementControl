@@ -22,7 +22,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         $this->withoutVite();
     }
 
-    public function test_manager_queue_exposes_due_dates_expenses_and_full_timeline(): void
+    public function test_manager_queue_exposes_operational_summary_without_detail_internals(): void
     {
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
@@ -86,15 +86,33 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('requests.data.0.title', 'Kitchen leak')
                 ->where('requests.data.0.assigned_to.name', 'Service Manager')
                 ->where('requests.data.0.expense_total', 350)
-                ->where('requests.data.0.internal_notes', 'Call vendor before visiting.')
                 ->where('requests.data.0.is_overdue', false)
+                ->where('requests.data.0', fn ($row) => collect($row)->only([
+                    'description',
+                    'internal_notes',
+                    'updates',
+                ])->isEmpty())
                 ->where('maintenanceInsights.total', 1)
                 ->where('maintenanceInsights.in_progress', 1)
                 ->where('maintenanceInsights.posted_expenses', 350)
                 ->has('categoryOptions', 4)
                 ->has('priorityOptions', 4)
-                ->has('statusOptions', 4)
-                ->has('requests.data.0.updates', 2));
+                ->has('statusOptions', 4));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.show', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.stats', fn ($stats) => collect($stats)->contains('label', 'Posted cost'))
+                ->where('detailPage.sections.0.items', fn ($items) => collect($items)->contains(
+                    fn ($item) => $item['label'] === 'Internal notes'
+                        && $item['value'] === 'Call vendor before visiting.'
+                ))
+                ->where('detailPage.related', fn ($related) => collect($related)->pluck('title')->all() === [
+                    'Updates',
+                    'Expenses',
+                ])
+                ->where('detailPage.timeline', fn ($timeline) => collect($timeline)->isNotEmpty()));
     }
 
     public function test_tenant_request_uses_the_active_lease_for_the_selected_asset(): void
@@ -275,12 +293,14 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->component('admin/maintenance/index')
                 ->where('mode', 'tenant')
                 ->where('requests.total', 1)
-                ->where('requests.data.0.internal_notes', null)
+                ->where('requests.data.0', fn ($row) => collect($row)->only([
+                    'description',
+                    'internal_notes',
+                    'updates',
+                ])->isEmpty())
                 ->where('requests.data.0.expense_total', 0)
                 ->where('requests.data.0.expense_count', 0)
-                ->where('maintenanceInsights.posted_expenses', 0)
-                ->has('requests.data.0.updates', 1)
-                ->where('requests.data.0.updates.0.comment', 'We will visit tomorrow.'));
+                ->where('maintenanceInsights.posted_expenses', 0));
 
         $this->actingAs($tenantUser)
             ->get(route('maintenance-requests.show', $requestItem))
@@ -292,7 +312,8 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                     && collect($related)->first()['title'] === 'Updates'
                     && count(collect($related)->first()['rows']) === 1
                     && collect($related)->first()['rows'][0]['Comment'] === 'We will visit tomorrow.')
-                ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Internal notes')));
+                ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Internal notes'))
+                ->where('detailPage.timeline', []));
 
         $this->actingAs($tenantUser)
             ->put(route('maintenance-requests.update', $requestItem), [
@@ -351,10 +372,10 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         ]);
 
         $this->actingAs($tenantUser)
-            ->get(route('maintenance-requests.index', ['search' => 'AC stopped']))
+            ->get(route('maintenance-requests.show', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('requests.data.0.updates.0.comment', 'Technician is scheduled for today.'));
+                ->where('detailPage.related.0.rows.0.Comment', 'Technician is scheduled for today.'));
     }
 
     public function test_maintenance_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
@@ -386,5 +407,157 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         }
 
         $this->assertSame('open', $foreignRequest->fresh()->status);
+    }
+
+    public function test_manager_insights_use_scoped_sql_aggregates_and_posted_costs_only(): void
+    {
+        $this->travelTo('2026-07-22 12:00:00');
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+
+        $open = $this->maintenanceRecord($portfolio->id, $asset->id, $tenant->id, $tenantUser->id, [
+            'priority' => 'urgent',
+            'status' => 'open',
+            'due_at' => now()->subHour(),
+        ]);
+        $this->maintenanceRecord($portfolio->id, $asset->id, $tenant->id, $tenantUser->id, [
+            'status' => 'in_progress',
+            'assigned_to_user_id' => $owner->id,
+        ]);
+        $this->maintenanceRecord($portfolio->id, $asset->id, $tenant->id, $tenantUser->id, [
+            'status' => 'resolved',
+            'due_at' => now()->subDay(),
+        ]);
+        $this->maintenanceRecord($portfolio->id, $asset->id, $tenant->id, $tenantUser->id, [
+            'status' => 'cancelled',
+        ]);
+
+        foreach ([['posted', 125], ['pending', 900]] as [$status, $amount]) {
+            ExpenseEntry::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $asset->id,
+                'maintenance_request_id' => $open->id,
+                'created_by_user_id' => $owner->id,
+                'category' => 'repairs',
+                'title' => $status.' repair',
+                'incurred_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => 'SAR',
+                'status' => $status,
+            ]);
+        }
+
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $foreignTenantUser = $this->createUserWithRole('tenant', $foreignPortfolio);
+        $foreignTenant = $this->createTenantProfile($foreignPortfolio, $foreignTenantUser);
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+        $this->maintenanceRecord(
+            $foreignPortfolio->id,
+            $foreignAsset->id,
+            $foreignTenant->id,
+            $foreignOwner->id,
+            ['priority' => 'urgent', 'due_at' => now()->subDay()],
+        );
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('maintenanceInsights.total', 4)
+                ->where('maintenanceInsights.open', 1)
+                ->where('maintenanceInsights.in_progress', 1)
+                ->where('maintenanceInsights.resolved', 1)
+                ->where('maintenanceInsights.cancelled', 1)
+                ->where('maintenanceInsights.urgent', 1)
+                ->where('maintenanceInsights.overdue', 1)
+                ->where('maintenanceInsights.unassigned', 1)
+                ->where('maintenanceInsights.posted_expenses', 125));
+    }
+
+    public function test_arabic_create_and_detail_pages_use_structured_maintenance_copy(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio, [
+            'title_en' => 'Service unit',
+            'title_ar' => 'وحدة الخدمة',
+        ]);
+        $requestItem = $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+        );
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-requests.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.locale', 'ar')
+                ->where('formPage.title', 'إنشاء طلب')
+                ->where('formPage.fields', fn ($fields) => collect($fields)->pluck('label')->contains('الأصل')
+                    && collect($fields)->pluck('label')->contains('المستأجر')
+                    && collect($fields)->pluck('label')->contains('وصف المشكلة')));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-requests.show', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.eyebrow', 'طلب صيانة')
+                ->where('detailPage.header.backLabel', 'قائمة الصيانة')
+                ->where('detailPage.sections.0.title', 'سياق الطلب')
+                ->where('detailPage.related.0.title', 'التحديثات')
+                ->where('detailPage.related.1.title', 'المصاريف'));
+    }
+
+    public function test_terminal_request_cannot_be_cancelled_twice(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+        $requestItem = $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+            ['status' => 'cancelled'],
+        );
+
+        $this->assertFalse(app(ManageMaintenance::class)->cancel($owner, $requestItem));
+        $this->assertSame(0, $requestItem->updates()->count());
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function maintenanceRecord(
+        int $portfolioId,
+        int $assetId,
+        int $tenantId,
+        int $submittedBy,
+        array $attributes = [],
+    ): MaintenanceRequest {
+        return MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolioId,
+            'asset_id' => $assetId,
+            'tenant_profile_id' => $tenantId,
+            'submitted_by_user_id' => $submittedBy,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Service request',
+            'description' => 'Service request details.',
+            'requested_at' => now(),
+            'due_at' => now()->addDays(4),
+            ...$attributes,
+        ]);
     }
 }

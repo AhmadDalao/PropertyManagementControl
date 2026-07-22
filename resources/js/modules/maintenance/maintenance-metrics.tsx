@@ -21,7 +21,7 @@ export function MaintenanceMetrics({
         <MetricGrid
             metrics={[
                 {
-                    label: 'Active requests',
+                    label: t('maintenance.active_requests'),
                     value: activeCount,
                     detail: t('maintenance.active_mix', undefined, {
                         open: insights.open,
@@ -31,19 +31,19 @@ export function MaintenanceMetrics({
                     tone: 'ink',
                 },
                 {
-                    label: 'Urgent',
+                    label: t('maintenance.urgent'),
                     value: insights.urgent,
                     detail:
                         mode === 'manager'
                             ? t('maintenance.unassigned', undefined, {
                                   count: insights.unassigned,
                               })
-                            : 'High-priority tenant issues',
+                            : t('maintenance.high_priority_issues'),
                     icon: 'bi-exclamation-triangle',
                     tone: insights.urgent > 0 ? 'red' : 'teal',
                 },
                 {
-                    label: 'Overdue',
+                    label: t('maintenance.overdue'),
                     value: insights.overdue,
                     detail: t('maintenance.resolved', undefined, {
                         count: insights.resolved,
@@ -54,8 +54,8 @@ export function MaintenanceMetrics({
                 {
                     label:
                         mode === 'manager'
-                            ? 'Posted service cost'
-                            : 'Request history',
+                            ? t('maintenance.posted_service_cost')
+                            : t('maintenance.request_history'),
                     value:
                         mode === 'manager'
                             ? currency(insights.posted_expenses, app.locale)
