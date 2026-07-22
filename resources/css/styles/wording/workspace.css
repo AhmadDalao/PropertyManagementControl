@@ -1,0 +1,140 @@
+.pmc-wording-workspace {
+    overflow: hidden;
+    border: 1px solid #e7dfd0;
+    border-radius: 20px;
+    background: #fff;
+}
+
+.pmc-wording-tabs {
+    display: flex;
+    gap: 8px;
+    width: fit-content;
+    max-width: 100%;
+    margin-bottom: 14px;
+    padding: 5px;
+    overflow-x: auto;
+    border: 1px solid #e7dfd0;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.pmc-wording-tabs button,
+.pmc-wording-module-chips button {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 10px;
+    color: #625e55;
+    background: transparent;
+    font-size: 0.76rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pmc-wording-tabs button.is-active,
+.pmc-wording-module-chips button.is-active {
+    color: #171713;
+    background: #ffc400;
+}
+
+.pmc-wording-tabs button span {
+    display: grid;
+    min-width: 22px;
+    height: 22px;
+    place-items: center;
+    border-radius: 999px;
+    color: #fff;
+    background: #171713;
+    font-size: 0.62rem;
+}
+
+.pmc-wording-workspace > header {
+    display: flex;
+    min-height: 72px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eee8de;
+}
+
+.pmc-wording-workspace > header span {
+    display: block;
+    margin-bottom: 3px;
+    color: #86620e;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-wording-workspace > header strong {
+    color: #191915;
+    font-size: 1rem;
+}
+
+.pmc-wording-filters {
+    display: grid;
+    grid-template-columns:
+        minmax(220px, 1.5fr) minmax(160px, 0.6fr)
+        minmax(160px, 0.6fr) auto;
+    align-items: end;
+    gap: 14px;
+    padding: 18px 20px;
+    border-bottom: 1px solid #eee8de;
+    background: #fcfaf6;
+}
+
+.pmc-wording-filters .btn {
+    min-height: 46px;
+}
+
+.pmc-wording-filters label > span {
+    display: block;
+    margin-bottom: 7px;
+    color: #514f49;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.pmc-wording-search {
+    position: relative;
+}
+
+.pmc-wording-search i {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    inset-inline-start: 14px;
+    color: #8c887f;
+    transform: translateY(-50%);
+}
+
+.pmc-wording-search input,
+.pmc-wording-filters .form-select {
+    width: 100%;
+    min-height: 46px;
+    border: 1px solid #ddd6ca;
+    border-radius: 12px;
+    color: #22221e;
+    background: #fff;
+    font-size: 0.82rem;
+}
+
+.pmc-wording-search input {
+    padding: 0 14px;
+    padding-inline-start: 42px;
+}
+
+.pmc-wording-search input:focus,
+.pmc-wording-filters .form-select:focus {
+    border-color: #da9f00;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(218, 159, 0, 0.12);
+}
+
+[dir='rtl'] .pmc-wording-workspace > header span {
+    letter-spacing: 0;
+}

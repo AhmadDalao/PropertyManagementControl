@@ -1,0 +1,72 @@
+.pmc-wording-help-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.pmc-wording-help-grid article {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    min-width: 0;
+    padding: 20px;
+    border: 1px solid #e9e2d4;
+    border-radius: 18px;
+    background: #fff;
+}
+
+.pmc-wording-help-grid article.is-active {
+    border-color: #a7d8ce;
+    background: linear-gradient(135deg, #f4fcf9 0%, #fff 72%);
+}
+
+.pmc-wording-help-icon {
+    display: grid;
+    width: 46px;
+    height: 46px;
+    place-items: center;
+    border-radius: 14px;
+    color: #855f00;
+    background: #fff2ca;
+    font-size: 1.1rem;
+}
+
+.pmc-wording-help-grid article.is-active .pmc-wording-help-icon {
+    color: #087b6a;
+    background: #dff6ef;
+}
+
+.pmc-wording-help-grid article strong {
+    display: block;
+    margin-bottom: 5px;
+    color: #171713;
+    font-size: 0.98rem;
+}
+
+.pmc-wording-help-grid article p {
+    max-width: 680px;
+    margin: 0;
+    color: #706d65;
+    font-size: 0.82rem;
+    line-height: 1.65;
+}
+
+.pmc-wording-help-grid .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    white-space: nowrap;
+}
+
+.pmc-wording-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: #087b6a;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}

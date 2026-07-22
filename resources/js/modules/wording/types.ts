@@ -10,6 +10,13 @@ export type WordingEntry = {
     customized: boolean;
 };
 
+export type WordingFormData = {
+    group: string;
+    key: string;
+    english: string;
+    arabic: string;
+};
+
 export type MissingContent = {
     module: string;
     title: string;

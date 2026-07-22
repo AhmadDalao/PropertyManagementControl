@@ -34,6 +34,7 @@ class LocalizationSourceGuardTest extends TestCase
             'resources/js/modules/wording/index-page.tsx',
             'resources/js/modules/wording/wording-catalog.tsx',
             'resources/js/modules/wording/wording-editor.tsx',
+            'resources/js/modules/wording/wording-editor-form.tsx',
             'resources/js/modules/wording/wording-entry-list.tsx',
             'resources/js/modules/wording/wording-filters.tsx',
             'resources/js/modules/wording/wording-metrics.tsx',

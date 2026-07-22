@@ -1,0 +1,110 @@
+.pmc-wording-editor-layer {
+    position: fixed;
+    z-index: 1080;
+    inset: 0;
+}
+
+.pmc-wording-editor-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    border: 0;
+    background: rgba(24, 22, 17, 0.42);
+}
+
+.pmc-wording-editor {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: grid;
+    width: min(520px, 100%);
+    height: 100%;
+    grid-template-rows: auto minmax(0, 1fr);
+    background: #fff;
+    box-shadow: -24px 0 70px rgba(24, 22, 17, 0.18);
+}
+
+[dir='rtl'] .pmc-wording-editor {
+    right: auto;
+    left: 0;
+    box-shadow: 24px 0 70px rgba(24, 22, 17, 0.18);
+}
+
+.pmc-wording-editor > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px;
+    border-bottom: 1px solid #eee8de;
+}
+
+.pmc-wording-editor > header span,
+.pmc-wording-editor > header code {
+    display: block;
+    color: #8b6710;
+    font-size: 0.66rem;
+}
+
+.pmc-wording-editor > header h2 {
+    margin: 3px 0;
+    font-size: 1.15rem;
+}
+
+.pmc-wording-editor form {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.pmc-wording-editor form > p {
+    margin: 0;
+    color: #706d65;
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.pmc-wording-editor form label {
+    display: grid;
+    gap: 7px;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-wording-editor textarea {
+    min-height: 120px;
+    padding: 12px;
+    resize: vertical;
+    border: 1px solid #ddd7cc;
+    border-radius: 11px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.55;
+}
+
+.pmc-wording-editor textarea:focus {
+    border-color: #da9f00;
+    outline: 0;
+    box-shadow: 0 0 0 3px rgba(218, 159, 0, 0.12);
+}
+
+.pmc-wording-tokens {
+    padding: 10px 12px;
+    border: 1px solid #f0d287;
+    border-radius: 10px;
+    color: #715400;
+    background: #fff8df;
+    font-family: monospace;
+    font-size: 0.7rem;
+}
+
+.pmc-wording-editor footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 4px;
+    padding-top: 16px;
+    border-top: 1px solid #eee8de;
+}

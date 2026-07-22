@@ -1,0 +1,78 @@
+.pmc-wording-module-chips {
+    display: flex;
+    gap: 7px;
+    padding: 14px 20px;
+    overflow-x: auto;
+    border-bottom: 1px solid #eee8de;
+    background: #fcfaf6;
+}
+
+.pmc-wording-module-chips button {
+    min-height: 36px;
+    border: 1px solid #e7dfd0;
+    background: #fff;
+}
+
+.pmc-wording-queue-count {
+    display: grid !important;
+    min-width: 32px;
+    height: 32px;
+    margin: 0 !important;
+    place-items: center;
+    border-radius: 999px;
+    color: #171713 !important;
+    background: #ffc400;
+    font-size: 0.72rem !important;
+    letter-spacing: 0 !important;
+}
+
+.pmc-wording-content-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 12px;
+    padding: 18px 20px 22px;
+}
+
+.pmc-wording-content-grid article {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 5px;
+    padding: 15px;
+    border: 1px solid #e7e1d7;
+    border-radius: 14px;
+    background: #fff;
+}
+
+.pmc-wording-content-grid article > span {
+    color: #8a6610;
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-wording-content-grid article strong,
+.pmc-wording-content-grid article p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-wording-content-grid article strong {
+    font-size: 0.84rem;
+}
+
+.pmc-wording-content-grid article p,
+.pmc-wording-content-grid article small {
+    margin: 0;
+    color: #77736a;
+    font-size: 0.68rem;
+}
+
+.pmc-wording-content-grid article small {
+    color: #9b4b25;
+}
+
+.pmc-wording-content-grid article .btn {
+    margin-top: 8px;
+}

@@ -98,9 +98,12 @@ class WordingModuleArchitectureTest extends TestCase
         foreach ([
             'content-translation-queue.tsx',
             'types.ts',
+            'use-wording-editor-dialog.ts',
+            'use-wording-editor-form.ts',
             'use-wording-workspace.ts',
             'wording-catalog.tsx',
             'wording-editor.tsx',
+            'wording-editor-form.tsx',
             'wording-entry-list.tsx',
             'wording-filters.tsx',
             'wording-labels.ts',
@@ -112,7 +115,7 @@ class WordingModuleArchitectureTest extends TestCase
             $source = $this->source($path);
 
             $this->assertLessThanOrEqual(
-                220,
+                180,
                 substr_count($source, "\n") + 1,
                 "{$path} is becoming a monolith.",
             );
@@ -121,8 +124,65 @@ class WordingModuleArchitectureTest extends TestCase
         $state = $this->source(
             'resources/js/modules/wording/use-wording-workspace.ts',
         );
+        $editor = $this->source(
+            'resources/js/modules/wording/wording-editor.tsx',
+        );
+        $editorForm = $this->source(
+            'resources/js/modules/wording/use-wording-editor-form.ts',
+        );
+        $editorDialog = $this->source(
+            'resources/js/modules/wording/use-wording-editor-dialog.ts',
+        );
+
         $this->assertStringContainsString('useState', $state);
         $this->assertStringContainsString('router.get', $state);
+        $this->assertLessThanOrEqual(80, substr_count($editor, "\n") + 1);
+        $this->assertStringContainsString("from './wording-editor-form'", $editor);
+        $this->assertStringContainsString("from './use-wording-editor-dialog'", $editor);
+        $this->assertStringContainsString("from './use-wording-editor-form'", $editor);
+        $this->assertStringNotContainsString('useEffect', $editor);
+        $this->assertStringNotContainsString('useForm', $editor);
+        $this->assertStringNotContainsString('router.', $editor);
+        $this->assertStringContainsString('useForm', $editorForm);
+        $this->assertStringContainsString('router.delete', $editorForm);
+        $this->assertStringContainsString('useEffect', $editorDialog);
+        $this->assertStringContainsString('FOCUSABLE_SELECTOR', $editorDialog);
+    }
+
+    #[Test]
+    public function wording_styles_stay_in_focused_layers_without_retired_cards(): void
+    {
+        $facade = $this->source('resources/css/styles/wording.css');
+
+        $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
+
+        foreach ([
+            'overview.css',
+            'workspace.css',
+            'catalog.css',
+            'content-queue.css',
+            'editor.css',
+            'responsive.css',
+        ] as $file) {
+            $path = "resources/css/styles/wording/{$file}";
+
+            $this->assertStringContainsString(
+                "@import './wording/{$file}';",
+                $facade,
+            );
+            $this->assertLessThanOrEqual(
+                200,
+                substr_count($this->source($path), "\n") + 1,
+                "{$path} is becoming a monolith.",
+            );
+        }
+
+        $styles = collect(glob($this->path('resources/css/styles/wording/*.css')))
+            ->map(fn (string $path): string => (string) file_get_contents($path))
+            ->implode("\n");
+
+        $this->assertStringNotContainsString('.pmc-wording-card', $styles);
+        $this->assertStringNotContainsString('.pmc-wording-language-grid', $styles);
     }
 
     private function source(string $relativePath): string

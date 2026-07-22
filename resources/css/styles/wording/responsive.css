@@ -1,0 +1,82 @@
+@media (max-width: 991.98px) {
+    .pmc-wording-help-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-wording-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-wording-filter-search {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-wording-tabs {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        overflow: visible;
+    }
+
+    .pmc-wording-tabs button {
+        min-width: 0;
+        justify-content: center;
+        white-space: normal;
+    }
+
+    .pmc-wording-help-grid article {
+        grid-template-columns: auto minmax(0, 1fr);
+        padding: 16px;
+    }
+
+    .pmc-wording-help-grid article > .btn,
+    .pmc-wording-current {
+        grid-column: 1 / -1;
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pmc-wording-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-wording-filter-search {
+        grid-column: auto;
+    }
+
+    .pmc-wording-row {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .pmc-wording-row code {
+        display: none;
+    }
+
+    .pmc-wording-row > .pmc-wording-state {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        justify-self: start;
+    }
+
+    .pmc-wording-pagination {
+        flex-wrap: wrap;
+    }
+
+    .pmc-wording-pagination span {
+        order: -1;
+        width: 100%;
+        text-align: center;
+    }
+
+    .pmc-wording-workspace > header,
+    .pmc-wording-filters,
+    .pmc-wording-list {
+        padding-inline: 14px;
+    }
+
+    .pmc-wording-state {
+        width: fit-content;
+    }
+}
