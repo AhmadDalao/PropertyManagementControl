@@ -87,6 +87,36 @@ class SharedFrontendArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function shared_stylesheets_are_thin_facades_over_bounded_layers(): void
+    {
+        $this->assertStylesheetFacade('components', [
+            'controls.css',
+            'resource-header.css',
+            'resource-detail.css',
+            'resource-related.css',
+            'records.css',
+            'responsive.css',
+        ], 180);
+
+        $this->assertStylesheetFacade('tables', [
+            'shell.css',
+            'toolbar.css',
+            'desktop.css',
+            'pagination.css',
+            'responsive.css',
+        ], 300);
+
+        $this->assertStylesheetFacade('workspaces', [
+            'shell.css',
+            'header.css',
+            'metrics.css',
+            'records.css',
+            'sidebar.css',
+            'responsive.css',
+        ], 160);
+    }
+
+    #[Test]
     public function every_used_bootstrap_icon_exists_in_the_local_subset(): void
     {
         $usedIcons = $this->iconNamesFromDirectories([
@@ -124,6 +154,38 @@ class SharedFrontendArchitectureTest extends TestCase
                 substr_count($source, "\n") + 1,
                 "{$module}/{$path} is becoming a monolith.",
             );
+        }
+    }
+
+    /**
+     * @param  list<string>  $layers
+     */
+    private function assertStylesheetFacade(
+        string $facade,
+        array $layers,
+        int $maximumLines,
+    ): void {
+        $imports = array_map(
+            fn (string $layer): string => "@import './{$facade}/{$layer}';\n",
+            $layers,
+        );
+
+        $this->assertSame(
+            implode('', $imports),
+            $this->source("resources/css/styles/{$facade}.css"),
+        );
+
+        foreach ($layers as $layer) {
+            $source = $this->source(
+                "resources/css/styles/{$facade}/{$layer}",
+            );
+
+            $this->assertLessThanOrEqual(
+                $maximumLines,
+                substr_count(rtrim($source), "\n") + 1,
+                "{$facade}/{$layer} is becoming a stylesheet monolith.",
+            );
+            $this->assertStringNotContainsString('@import', $source);
         }
     }
 

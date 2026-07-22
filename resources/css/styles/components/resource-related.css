@@ -1,0 +1,170 @@
+.pmc-resource-decision-grid,
+.pmc-resource-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-resource-decision-card,
+.pmc-resource-stat {
+    min-width: 0;
+    padding: 0.95rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-resource-decision-card {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.pmc-resource-decision-card > div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-resource-decision-card > strong,
+.pmc-resource-stat > strong {
+    overflow: hidden;
+    color: #111;
+    font-size: clamp(1.25rem, 2.2vw, 1.8rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    text-overflow: ellipsis;
+}
+
+.pmc-resource-decision-card > p,
+.pmc-resource-decision-card > a {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-resource-decision-card > a {
+    color: var(--pmc-teal);
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pmc-resource-stat > span {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-resource-detail-card,
+.pmc-related-table-card,
+.pmc-side-panel {
+    min-width: 0;
+    padding: 1rem !important;
+}
+
+.pmc-resource-detail-card header p,
+.pmc-related-table-head p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+}
+
+.pmc-resource-detail-card dl > div {
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-related-table-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.8rem;
+}
+
+.pmc-document-strip,
+.pmc-history-timeline {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.pmc-document-strip > a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-document-strip > a > i {
+    color: var(--pmc-red);
+    font-size: 1.2rem;
+}
+
+.pmc-document-strip span {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-document-strip strong,
+.pmc-document-strip small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-document-strip strong {
+    font-size: 0.76rem;
+}
+
+.pmc-document-strip small,
+.pmc-document-strip em {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    font-style: normal;
+}
+
+.pmc-history-timeline > div {
+    position: relative;
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.35rem 0 0.75rem 1.2rem;
+    border-inline-start: 1px solid var(--pmc-line);
+}
+
+[dir='rtl'] .pmc-history-timeline > div {
+    padding: 0.35rem 1.2rem 0.75rem 0;
+}
+
+.pmc-history-timeline > div > span {
+    position: absolute;
+    top: 0.55rem;
+    inset-inline-start: -0.3rem;
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--pmc-amber);
+}
+
+.pmc-history-timeline strong {
+    font-size: 0.76rem;
+}
+
+.pmc-history-timeline small,
+.pmc-history-timeline p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+}

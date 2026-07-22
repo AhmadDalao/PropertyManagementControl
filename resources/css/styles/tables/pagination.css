@@ -1,0 +1,48 @@
+.pmc-mobile-record-list {
+    display: none;
+}
+
+.pmc-table-footer {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem 1rem;
+}
+
+.pmc-table-pagination {
+    display: flex;
+    min-width: 0;
+    gap: 0.25rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pmc-table-pagination-mobile {
+    display: none;
+}
+
+.pmc-page-button {
+    display: grid;
+    min-width: 2.15rem;
+    min-height: 2.15rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    background: #fff;
+    color: #5a554e;
+    font-size: 0.67rem;
+    font-weight: 800;
+}
+
+.pmc-page-button.active {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-page-button:disabled {
+    opacity: 0.38;
+}

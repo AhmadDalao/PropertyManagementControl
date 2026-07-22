@@ -1,0 +1,114 @@
+.pmc-metric-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.25rem;
+}
+
+.pmc-metric-card {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    min-height: 10.25rem;
+    align-content: start;
+    padding: 1rem;
+    overflow: hidden;
+    border: 1px solid #e5e3de;
+    border-radius: 0.95rem;
+    background: #fff;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-metric-card::after {
+    position: absolute;
+    inset-inline-end: -2rem;
+    bottom: -3.5rem;
+    width: 8rem;
+    height: 8rem;
+    border-radius: 999px;
+    background: currentColor;
+    content: '';
+    opacity: 0.045;
+}
+
+.pmc-metric-card:hover {
+    border-color: #cfcac0;
+    color: #111;
+}
+
+.pmc-metric-card.is-ink {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-metric-card.is-ink:hover {
+    color: #fff;
+}
+
+.pmc-metric-card.is-blue {
+    border-color: #dbe4ff;
+    background: #f5f7ff;
+    color: #163fbe;
+}
+
+.pmc-metric-card.is-teal {
+    border-color: #d5ece7;
+    background: #f2faf8;
+    color: #08786e;
+}
+
+.pmc-metric-card.is-amber {
+    border-color: #eadfb8;
+    background: #fffaf0;
+    color: #876b00;
+}
+
+.pmc-metric-card.is-red {
+    border-color: #f0d8d3;
+    background: #fff7f5;
+    color: #b23d29;
+}
+
+.pmc-metric-icon {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    margin-bottom: 1rem;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 0.7rem;
+    font-size: 0.95rem;
+    opacity: 0.85;
+}
+
+.pmc-metric-card > span {
+    color: currentColor;
+    font-size: 0.73rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    opacity: 0.72;
+    text-transform: uppercase;
+}
+
+.pmc-metric-card > strong {
+    margin-top: 0.3rem;
+    overflow: hidden;
+    color: currentColor;
+    font-size: clamp(1.45rem, 2.2vw, 2.25rem);
+    font-weight: 950;
+    letter-spacing: -0.055em;
+    line-height: 1.05;
+    text-overflow: ellipsis;
+}
+
+.pmc-metric-card > small {
+    margin-top: auto;
+    padding-top: 0.8rem;
+    color: currentColor;
+    font-size: 0.76rem;
+    font-weight: 700;
+    line-height: 1.35;
+    opacity: 0.68;
+}

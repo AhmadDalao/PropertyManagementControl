@@ -1,0 +1,33 @@
+.pmc-sidebar-collapse {
+    display: flex;
+    min-height: 2.55rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    margin-top: auto;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 0.72rem;
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.75rem;
+    font-weight: 850;
+}
+
+.pmc-sidebar-collapse:hover {
+    border-color: rgba(255, 193, 7, 0.5);
+    background: rgba(255, 193, 7, 0.12);
+    color: #fff;
+}
+
+.pmc-console-shell.is-collapsed .pmc-sidebar-collapse span {
+    display: none;
+}
+
+[dir='rtl']
+    .pmc-console-shell:not(.is-collapsed)
+    .pmc-sidebar-collapse
+    .bi-chevron-double-left::before {
+    transform: scaleX(-1);
+}

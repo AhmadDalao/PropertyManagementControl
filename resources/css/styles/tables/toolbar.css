@@ -1,0 +1,113 @@
+.pmc-table-toolbar {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0.75rem 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-table-primary-tools {
+    display: flex;
+    min-width: 0;
+    gap: 0.65rem;
+}
+
+.pmc-table-search {
+    position: relative;
+    display: flex;
+    min-width: 14rem;
+    flex: 1 1 20rem;
+    align-items: center;
+}
+
+.pmc-table-search > i {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0.85rem;
+    color: #7b766e;
+}
+
+.pmc-table-search .form-control {
+    min-height: 2.65rem;
+    padding-inline-start: 2.35rem;
+    border-radius: 0.68rem;
+    background: #fff;
+}
+
+.pmc-mobile-filter-trigger {
+    display: none;
+}
+
+.pmc-table-filter-panel {
+    display: grid;
+    grid-template-columns: auto repeat(4, minmax(8rem, 1fr)) auto;
+    gap: 0.65rem;
+    align-items: end;
+}
+
+.pmc-table-page-size,
+.pmc-table-filter {
+    display: grid;
+    min-width: 0;
+    gap: 0.28rem;
+}
+
+.pmc-table-page-size {
+    grid-template-columns: auto 4.5rem auto;
+    align-items: center;
+}
+
+.pmc-table-page-size > span,
+.pmc-table-filter > span {
+    color: #655f56;
+    font-size: 0.64rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-table-filter .form-control,
+.pmc-table-filter .form-select,
+.pmc-table-page-size .form-select {
+    min-height: 2.55rem;
+    border-radius: 0.65rem;
+    background-color: #fff;
+    font-size: 0.74rem;
+}
+
+.pmc-table-actions {
+    display: flex;
+    gap: 0.45rem;
+}
+
+.pmc-active-filters {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0 1rem 0.75rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pmc-active-filters > span {
+    flex: 0 0 auto;
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.pmc-active-filters button {
+    display: inline-flex;
+    min-height: 1.85rem;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #ead476;
+    border-radius: 999px;
+    background: #fff8d6;
+    color: #544300;
+    font-size: 0.63rem;
+    font-weight: 750;
+}

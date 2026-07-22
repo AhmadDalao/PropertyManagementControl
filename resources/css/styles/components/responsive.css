@@ -1,0 +1,105 @@
+@media (max-width: 1199.98px) {
+    .pmc-resource-detail-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-resource-detail-stack,
+    .pmc-resource-side-stack,
+    .pmc-resource-detail-card,
+    .pmc-related-table-card,
+    .pmc-side-panel {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .pmc-resource-decision-grid,
+    .pmc-resource-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-page-head,
+    .pmc-resource-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 0.9rem;
+    }
+
+    .pmc-page-title,
+    .pmc-resource-header h1 {
+        font-size: clamp(1.8rem, 9vw, 2.1rem);
+    }
+
+    .pmc-page-actions,
+    .pmc-resource-actions {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        justify-content: stretch;
+    }
+
+    .pmc-page-actions > .btn,
+    .pmc-page-actions > a,
+    .pmc-resource-actions > .btn,
+    .pmc-resource-actions > a {
+        width: 100%;
+    }
+
+    .pmc-resource-tabs {
+        display: none;
+    }
+
+    .pmc-resource-tab-select {
+        position: sticky;
+        z-index: 20;
+        top: calc(var(--pmc-topbar-height) + 0.5rem);
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 1rem;
+        padding: 0.4rem 0.55rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.85rem;
+        background: rgba(255, 255, 255, 0.96);
+    }
+
+    .pmc-resource-tab-select > i {
+        flex: 0 0 auto;
+        color: var(--pmc-muted);
+    }
+
+    .pmc-resource-tab-select .form-select {
+        min-height: 2.65rem;
+        border: 0;
+        background-color: transparent;
+        font-size: 0.78rem;
+        font-weight: 850;
+        box-shadow: none;
+    }
+
+    .pmc-resource-decision-grid,
+    .pmc-resource-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+
+    .pmc-resource-decision-card,
+    .pmc-resource-stat {
+        padding: 0.75rem;
+    }
+
+    .pmc-resource-decision-card > strong,
+    .pmc-resource-stat > strong {
+        font-size: 1.15rem;
+    }
+
+    .pmc-resource-spotlight-main {
+        flex-direction: column;
+    }
+
+    .pmc-resource-spotlight dl,
+    .pmc-resource-detail-card dl {
+        grid-template-columns: 1fr;
+    }
+}

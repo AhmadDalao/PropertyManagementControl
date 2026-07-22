@@ -1,0 +1,75 @@
+.pmc-table-scroll {
+    width: 100%;
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.pmc-data-table {
+    width: 100%;
+    min-width: 48rem;
+    margin: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.pmc-data-table thead th {
+    padding: 0.7rem 0.8rem;
+    border-block: 1px solid #ece8df;
+    background: #faf8f3;
+    color: #5f5a52;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.pmc-data-table tbody td {
+    max-width: 18rem;
+    padding: 0.72rem 0.8rem;
+    border-bottom: 1px solid #eeeae3;
+    color: #2f2d29;
+    font-size: 0.79rem;
+    vertical-align: middle;
+}
+
+.pmc-data-table tbody tr:hover {
+    background: #fffaf0;
+}
+
+.pmc-table-row-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.pmc-table-primary-record {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+}
+
+.pmc-table-showcase-badge {
+    display: inline-flex;
+    min-height: 22px;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid #ead6a0;
+    border-radius: 999px;
+    background: #fff8df;
+    color: #775400;
+    font-size: 0.68rem;
+    font-weight: 800;
+    line-height: 1;
+    padding: 0.25rem 0.45rem;
+}
+
+.pmc-table-showcase-badge i {
+    font-size: 0.7rem;
+}
+
+.pmc-empty-cell {
+    padding: 1.5rem !important;
+}

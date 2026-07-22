@@ -1,0 +1,289 @@
+@media (max-width: 1199.98px) {
+    .pmc-table-filter-panel {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-table-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pmc-operations-table {
+        border: 0;
+        background: transparent;
+    }
+
+    .pmc-operations-head,
+    .pmc-table-toolbar,
+    .pmc-filter-chips,
+    .pmc-active-filters,
+    .pmc-table-footer {
+        margin-inline: 0;
+    }
+
+    .pmc-operations-head {
+        padding: 0 0 0.8rem;
+        border-bottom: 0;
+    }
+
+    .pmc-filter-chips,
+    .pmc-active-filters {
+        flex-wrap: wrap;
+        padding-inline: 0;
+        overflow: visible;
+    }
+
+    .pmc-table-toolbar {
+        margin-block: 0.5rem 0.75rem;
+    }
+
+    .pmc-mobile-filter-trigger {
+        display: inline-flex;
+        min-width: 2.75rem;
+        min-height: 2.65rem;
+        flex: 0 0 auto;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.5rem 0.65rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.68rem;
+        background: #fff;
+        color: #111;
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+
+    .pmc-mobile-filter-trigger strong {
+        display: grid;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        place-items: center;
+        border-radius: 999px;
+        background: #111;
+        color: #fff;
+        font-size: 0.58rem;
+    }
+
+    .pmc-table-filter-panel {
+        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        padding-top: 0.7rem;
+        border-top: 1px solid var(--pmc-line);
+    }
+
+    .pmc-table-filter-panel.is-open {
+        display: grid;
+    }
+
+    .pmc-operations-table > .pmc-table-scroll {
+        display: none;
+    }
+
+    .pmc-related-table-card .pmc-table-scroll {
+        display: block;
+        overflow: visible;
+    }
+
+    .pmc-related-table-card .pmc-data-table {
+        min-width: 0;
+    }
+
+    .pmc-related-table-card .pmc-data-table thead {
+        display: none;
+    }
+
+    .pmc-related-table-card .pmc-data-table tbody {
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .pmc-related-table-card .pmc-data-table tr {
+        display: grid;
+        overflow: hidden;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.7rem;
+        background: #fff;
+    }
+
+    .pmc-related-table-card .pmc-data-table td {
+        display: grid;
+        max-width: none;
+        grid-template-columns: minmax(5.5rem, 0.45fr) minmax(0, 1fr);
+        gap: 0.65rem;
+        padding: 0.6rem 0.7rem;
+        border-bottom: 1px solid var(--pmc-line-soft);
+        overflow-wrap: anywhere;
+    }
+
+    .pmc-related-table-card .pmc-data-table td::before {
+        color: var(--pmc-muted);
+        content: attr(data-label);
+        font-size: 0.62rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .pmc-mobile-record-list {
+        display: grid;
+        gap: 0.65rem;
+    }
+
+    .pmc-mobile-record-card {
+        display: grid;
+        min-width: 0;
+        gap: 0.8rem;
+        padding: 0.85rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: var(--pmc-radius);
+        background: #fff;
+    }
+
+    .pmc-mobile-record-head {
+        display: flex;
+        min-width: 0;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 0.75rem;
+    }
+
+    .pmc-mobile-record-head > div {
+        display: grid;
+        min-width: 0;
+        gap: 0.15rem;
+    }
+
+    .pmc-mobile-record-head > div > a {
+        min-width: 0;
+        color: #111;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+    .pmc-mobile-record-head small {
+        color: var(--pmc-muted);
+        font-size: 0.66rem;
+    }
+
+    .pmc-mobile-record-card dl {
+        display: grid;
+        grid-template-columns: repeat(
+            auto-fit,
+            minmax(min(6.25rem, 100%), 1fr)
+        );
+        gap: 0.45rem;
+        margin: 0;
+    }
+
+    .pmc-mobile-record-card dl > div {
+        min-width: 0;
+        padding: 0.55rem;
+        border-radius: 0.6rem;
+        background: var(--pmc-surface-soft);
+    }
+
+    .pmc-mobile-record-card dt {
+        color: var(--pmc-muted);
+        font-size: 0.58rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+
+    .pmc-mobile-record-card dd {
+        min-width: 0;
+        margin: 0.2rem 0 0;
+        overflow: hidden;
+        font-size: 0.69rem;
+        font-weight: 750;
+        text-overflow: ellipsis;
+    }
+
+    .pmc-mobile-record-footer {
+        display: flex;
+        min-height: 2.35rem;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-top: 0.65rem;
+        border-top: 1px solid #eeeae3;
+    }
+
+    .pmc-mobile-action-menu > summary {
+        min-width: 2.35rem;
+        min-height: 2.35rem;
+        border-radius: 999px;
+    }
+
+    .pmc-table-pagination-desktop {
+        display: none;
+    }
+
+    .pmc-table-pagination-mobile {
+        display: grid;
+        width: 100%;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .pmc-table-pagination-mobile button {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.7rem;
+        background: #fff;
+        color: #111;
+        font-size: 0.7rem;
+        font-weight: 850;
+    }
+
+    .pmc-table-pagination-mobile button:disabled {
+        opacity: 0.4;
+    }
+
+    .pmc-table-pagination-mobile strong {
+        color: var(--pmc-muted);
+        font-size: 0.68rem;
+        font-weight: 850;
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-operations-head {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-export-button {
+        width: 100%;
+    }
+
+    .pmc-table-filter-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-table-page-size,
+    .pmc-table-actions {
+        grid-column: 1;
+    }
+
+    .pmc-table-actions .btn {
+        flex: 1 1 0;
+    }
+
+    .pmc-table-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+
+[dir='rtl'] .pmc-table-pagination-mobile .bi-chevron-left,
+[dir='rtl'] .pmc-table-pagination-mobile .bi-chevron-right {
+    transform: scaleX(-1);
+}

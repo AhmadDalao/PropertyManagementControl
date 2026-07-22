@@ -1,0 +1,115 @@
+.pmc-empty-state,
+.pmc-inline-empty,
+.pmc-chart-empty,
+.pmc-command-empty {
+    display: grid;
+    min-height: 8rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.4rem;
+    padding: 1.25rem;
+    border: 1px dashed var(--pmc-line-strong);
+    border-radius: var(--pmc-radius);
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    text-align: center;
+}
+
+.pmc-empty-state > i,
+.pmc-chart-empty > i {
+    font-size: 1.3rem;
+}
+
+.pmc-empty-state strong,
+.pmc-chart-empty strong {
+    color: #111;
+    font-size: 0.85rem;
+}
+
+.pmc-empty-state span,
+.pmc-chart-empty span {
+    font-size: 0.72rem;
+}
+
+.pmc-status-badge {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 1.65rem;
+    align-items: center;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 800;
+}
+
+.pmc-status-badge.is-success {
+    background: #dcf6e7;
+    color: var(--pmc-green);
+}
+
+.pmc-status-badge.is-warning {
+    background: #fff1b9;
+    color: #725900;
+}
+
+.pmc-status-badge.is-danger {
+    background: #ffe2dc;
+    color: var(--pmc-red);
+}
+
+.pmc-status-badge.is-blue {
+    background: #e4ebff;
+    color: var(--pmc-blue);
+}
+
+.pmc-status-badge.is-neutral {
+    background: #efeeeb;
+    color: #5f5b55;
+}
+
+.pmc-primary-cell,
+.pmc-stacked-cell,
+.pmc-badge-stack {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-primary-cell strong,
+.pmc-stacked-cell strong {
+    min-width: 0;
+    overflow: hidden;
+    color: #111;
+    font-size: 0.76rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+}
+
+.pmc-primary-cell span,
+.pmc-primary-cell small,
+.pmc-stacked-cell span,
+.pmc-badge-stack > span:not(.pmc-status-badge) {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+    text-overflow: ellipsis;
+}
+
+.pmc-record-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.pmc-record-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #111;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-decoration: none;
+}

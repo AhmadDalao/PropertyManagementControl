@@ -1,0 +1,97 @@
+.pmc-operations-table {
+    min-width: 0;
+    overflow: visible;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+}
+
+.pmc-operations-head {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-table-heading {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pmc-table-icon {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: #fff2b6;
+    color: #715900;
+}
+
+.pmc-table-heading > strong {
+    overflow: hidden;
+    font-size: 0.88rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-table-count {
+    display: inline-flex;
+    min-width: 1.7rem;
+    min-height: 1.45rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.15rem 0.45rem;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-table-copy,
+.pmc-table-results {
+    margin: 0.35rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-export-button {
+    flex: 0 0 auto;
+}
+
+.pmc-filter-chips {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.75rem 1rem 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pmc-filter-chip {
+    display: inline-flex;
+    min-height: 2rem;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.6rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 999px;
+    background: #fff;
+    color: #555149;
+    font-size: 0.66rem;
+    font-weight: 750;
+}
+
+.pmc-filter-chip.active {
+    border-color: #ddba00;
+    background: #fff2ad;
+    color: #111;
+}

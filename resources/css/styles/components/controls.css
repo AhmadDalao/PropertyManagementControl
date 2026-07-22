@@ -1,0 +1,54 @@
+.btn {
+    display: inline-flex;
+    min-height: 2.65rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: 0.7rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.btn-sm {
+    min-height: 2.2rem;
+    border-radius: 0.6rem;
+    font-size: 0.72rem;
+}
+
+.btn-outline-secondary {
+    --bs-btn-color: #555149;
+    --bs-btn-border-color: #777168;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #555149;
+    --bs-btn-hover-border-color: #555149;
+    --bs-btn-active-color: #fff;
+    --bs-btn-active-bg: #555149;
+    --bs-btn-active-border-color: #555149;
+}
+
+.btn-outline-danger {
+    --bs-btn-color: #b02a37;
+    --bs-btn-border-color: #b02a37;
+    --bs-btn-hover-bg: #b02a37;
+    --bs-btn-hover-border-color: #b02a37;
+    --bs-btn-active-bg: #b02a37;
+    --bs-btn-active-border-color: #b02a37;
+}
+
+.btn-primary {
+    border-color: var(--pmc-amber);
+    background: var(--pmc-amber);
+    color: #111;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    border-color: var(--pmc-amber-strong);
+    background: var(--pmc-amber-strong);
+    color: #111;
+}
+
+.btn-light {
+    border-color: var(--pmc-line);
+    background: #fff;
+}
