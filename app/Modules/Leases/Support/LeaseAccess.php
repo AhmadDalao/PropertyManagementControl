@@ -4,23 +4,34 @@ namespace App\Modules\Leases\Support;
 
 use App\Models\Lease;
 use App\Models\User;
-use App\Modules\Shared\PortfolioScope;
 
-class LeaseAccess
+final class LeaseAccess
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function canManageSection(User $actor): bool
+    {
+        return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
+    }
+
+    public function canManage(User $actor, Lease $lease): bool
+    {
+        return $this->canManageSection($actor)
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $lease->portfolio_id);
+    }
+
+    public function canAccess(User $actor, Lease $lease): bool
+    {
+        if ($this->canManage($actor, $lease)) {
+            return true;
+        }
+
+        return $actor->hasRole('tenant')
+            && $lease->tenantProfile()->where('user_id', $actor->id)->exists();
+    }
 
     public function ensureCanAccess(User $actor, Lease $lease): void
     {
-        if ($actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])) {
-            $this->portfolios->ensureAccess($actor, $lease->portfolio_id);
-
-            return;
-        }
-
         abort_unless(
-            $actor->hasRole('tenant')
-                && $lease->tenantProfile()->where('user_id', $actor->id)->exists(),
+            $this->canAccess($actor, $lease),
             403,
             trans('app.errors.lease_access_denied')
         );
@@ -28,14 +39,17 @@ class LeaseAccess
 
     public function ensureCanManage(User $actor, Lease $lease): void
     {
-        $this->ensureManager($actor);
-        $this->portfolios->ensureAccess($actor, $lease->portfolio_id);
+        abort_unless(
+            $this->canManage($actor, $lease),
+            403,
+            trans('app.errors.portfolio_access_denied')
+        );
     }
 
     public function ensureManager(User $actor): void
     {
         abort_unless(
-            $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']),
+            $this->canManageSection($actor),
             403,
             trans('app.errors.section_access_denied')
         );

@@ -420,6 +420,47 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('Arabic lease directory, detail, and create form stay focused on mobile', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/leases?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'العقود', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('سجل العقود', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page
+            .locator('.pmc-mobile-record-card .pmc-record-open')
+            .first()
+            .click();
+        await expect(
+            page.getByText('إجمالي المستحق', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('الأيام المتبقية', { exact: true }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/leases/create?locale=ar');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء عقد', exact: true }),
+        ).toBeVisible();
+        await expect(page.getByLabel('المستأجر')).toBeVisible();
+        await expect(page.getByLabel('أصل متاح للتأجير')).toBeVisible();
+        await expect(page.getByLabel('قيمة الإيجار')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('profile settings are focused, responsive, and fully localized', async ({
         page,
     }) => {

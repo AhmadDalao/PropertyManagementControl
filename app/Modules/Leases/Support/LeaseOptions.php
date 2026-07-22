@@ -8,6 +8,9 @@ final class LeaseOptions
     public const STATUSES = ['draft', 'active', 'expired', 'terminated'];
 
     /** @var array<int, string> */
+    public const CREATE_STATUSES = ['draft', 'active'];
+
+    /** @var array<int, string> */
     public const PAYMENT_FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
 
     /** @var array<int, string> */

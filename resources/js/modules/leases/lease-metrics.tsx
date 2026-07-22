@@ -14,7 +14,7 @@ export function LeaseMetrics({ leaseInsights, app }: LeaseMetricsProps) {
         <MetricGrid
             metrics={[
                 {
-                    label: 'Active leases',
+                    label: t('leases.active_leases'),
                     value: leaseInsights.active,
                     detail: t('leases.total_contracts', undefined, {
                         count: leaseInsights.total,
@@ -23,7 +23,7 @@ export function LeaseMetrics({ leaseInsights, app }: LeaseMetricsProps) {
                     tone: 'ink',
                 },
                 {
-                    label: 'Collected',
+                    label: t('leases.collected'),
                     value: compactCurrency(
                         leaseInsights.total_paid,
                         app.locale,
@@ -35,7 +35,7 @@ export function LeaseMetrics({ leaseInsights, app }: LeaseMetricsProps) {
                     tone: 'teal',
                 },
                 {
-                    label: 'Outstanding',
+                    label: t('leases.outstanding'),
                     value: compactCurrency(
                         leaseInsights.balance_remaining,
                         app.locale,
@@ -47,7 +47,7 @@ export function LeaseMetrics({ leaseInsights, app }: LeaseMetricsProps) {
                     tone: leaseInsights.balance_remaining > 0 ? 'red' : 'blue',
                 },
                 {
-                    label: 'Contract attention',
+                    label: t('leases.contract_attention'),
                     value: attention,
                     detail: t('leases.attention_mix', undefined, {
                         unsigned: leaseInsights.unsigned,

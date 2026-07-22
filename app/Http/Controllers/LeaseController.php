@@ -11,7 +11,6 @@ use App\Modules\Leases\Queries\LeaseIndexQuery;
 use App\Modules\Leases\Requests\StoreLeaseRequest;
 use App\Modules\Leases\Requests\UpdateLeaseRequest;
 use App\Modules\Leases\Requests\UploadSignedContractRequest;
-use App\Modules\Leases\Support\LeaseAccess;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -27,7 +26,6 @@ class LeaseController extends Controller
         private readonly LeaseDetailPresenter $detailPresenter,
         private readonly ManageLeases $leases,
         private readonly LeaseDocuments $documents,
-        private readonly LeaseAccess $access,
     ) {}
 
     public function index(Request $request): Response
@@ -51,21 +49,15 @@ class LeaseController extends Controller
 
     public function show(Request $request, Lease $lease): Response
     {
-        $actor = $this->actor($request);
-        $this->access->ensureCanAccess($actor, $lease);
-
         return Inertia::render('admin/resource-show', [
-            'detailPage' => $this->detailPresenter->present($lease, $actor),
+            'detailPage' => $this->detailPresenter->present($lease, $this->actor($request)),
         ]);
     }
 
     public function edit(Request $request, Lease $lease): Response
     {
-        $actor = $this->actor($request);
-        $this->access->ensureCanManage($actor, $lease);
-
         return Inertia::render('admin/resource-form', [
-            'formPage' => $this->formPresenter->present($actor, $lease),
+            'formPage' => $this->formPresenter->present($this->actor($request), $lease),
         ]);
     }
 

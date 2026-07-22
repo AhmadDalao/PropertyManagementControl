@@ -3,12 +3,15 @@
 namespace App\Modules\Leases\Requests;
 
 use App\Models\Lease;
+use App\Modules\Leases\Support\LeaseAccess;
 use App\Modules\Leases\Support\LeaseOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class UpdateLeaseRequest extends FormRequest
+final class UpdateLeaseRequest extends FormRequest
 {
+    use HasLeaseValidationAttributes;
+
     public function authorize(): bool
     {
         $actor = $this->user();
@@ -16,8 +19,7 @@ class UpdateLeaseRequest extends FormRequest
 
         return $actor !== null
             && $lease instanceof Lease
-            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $lease->portfolio_id);
+            && app(LeaseAccess::class)->canManage($actor, $lease);
     }
 
     /**
@@ -30,8 +32,7 @@ class UpdateLeaseRequest extends FormRequest
             'signed_at' => ['nullable', 'date'],
             'terms_en' => ['nullable', 'string', 'max:50000'],
             'terms_ar' => ['nullable', 'string', 'max:50000'],
-            'notes' => ['nullable', 'string'],
-            'resync_installments' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:50000'],
         ];
     }
 }

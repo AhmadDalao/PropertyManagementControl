@@ -5,10 +5,16 @@ namespace App\Modules\Leases\Actions;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 
-class InstallmentSchedule
+final class InstallmentSchedule
 {
     public function sync(Lease $lease): void
+    {
+        DB::transaction(fn () => $this->build($lease));
+    }
+
+    private function build(Lease $lease): void
     {
         $lease->installments()->delete();
 

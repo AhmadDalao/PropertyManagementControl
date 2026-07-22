@@ -3,11 +3,14 @@
 namespace App\Modules\Leases\Requests;
 
 use App\Models\Lease;
+use App\Modules\Leases\Support\LeaseAccess;
 use App\Modules\Shared\Rules\ValidPdf;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UploadSignedContractRequest extends FormRequest
+final class UploadSignedContractRequest extends FormRequest
 {
+    use HasLeaseValidationAttributes;
+
     public function authorize(): bool
     {
         $actor = $this->user();
@@ -15,8 +18,7 @@ class UploadSignedContractRequest extends FormRequest
 
         return $actor !== null
             && $lease instanceof Lease
-            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $lease->portfolio_id);
+            && app(LeaseAccess::class)->canManage($actor, $lease);
     }
 
     /**

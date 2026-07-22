@@ -2,15 +2,20 @@
 
 namespace App\Modules\Leases\Requests;
 
+use App\Modules\Leases\Support\LeaseAccess;
 use App\Modules\Leases\Support\LeaseOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreLeaseRequest extends FormRequest
+final class StoreLeaseRequest extends FormRequest
 {
+    use HasLeaseValidationAttributes;
+
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['superadmin', 'owner', 'property_manager']) ?? false;
+        $actor = $this->user();
+
+        return $actor !== null && app(LeaseAccess::class)->canManageSection($actor);
     }
 
     /**
@@ -22,7 +27,7 @@ class StoreLeaseRequest extends FormRequest
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
             'tenant_profile_id' => ['required', 'integer', 'exists:tenant_profiles,id'],
             'asset_id' => ['required', 'integer', 'exists:assets,id'],
-            'status' => ['required', Rule::in(LeaseOptions::STATUSES)],
+            'status' => ['required', Rule::in(LeaseOptions::CREATE_STATUSES)],
             'payment_frequency' => ['required', Rule::in(LeaseOptions::PAYMENT_FREQUENCIES)],
             'started_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:started_at'],
@@ -35,7 +40,7 @@ class StoreLeaseRequest extends FormRequest
             'billing_day' => ['nullable', 'integer', 'between:1,31'],
             'terms_en' => ['nullable', 'string', 'max:50000'],
             'terms_ar' => ['nullable', 'string', 'max:50000'],
-            'notes' => ['nullable', 'string'],
+            'notes' => ['nullable', 'string', 'max:50000'],
         ];
     }
 }

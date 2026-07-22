@@ -10,7 +10,7 @@ use App\Modules\Leases\Queries\LeaseIndexQuery;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class LeaseWorkbookExport implements ResourceExporter
+final class LeaseWorkbookExport implements ResourceExporter
 {
     public function __construct(
         private readonly LeaseIndexQuery $leases,
@@ -20,23 +20,23 @@ class LeaseWorkbookExport implements ResourceExporter
     public function download(Request $request, User $actor): BinaryFileResponse
     {
         return $this->workbook->download('leases', [
-            'Code',
-            'Tenant',
-            'Asset',
-            'Status',
-            'Frequency',
-            'Start',
-            'End',
-            'Rent',
-            'Paid',
-            'Balance',
-            'Currency',
+            $this->label('code'),
+            $this->label('tenant'),
+            $this->label('asset'),
+            $this->label('status'),
+            $this->label('frequency'),
+            $this->label('start'),
+            $this->label('end'),
+            $this->label('rent'),
+            $this->label('paid'),
+            $this->label('balance'),
+            $this->label('currency'),
         ], $this->leases->forExport($request, $actor), fn (Lease $lease): array => [
             $lease->code,
             $lease->tenantProfile?->user?->name,
             $this->workbook->localized($lease->leaseable, 'title_en', 'title_ar'),
             $this->workbook->option($lease->status),
-            $this->workbook->option($lease->payment_frequency),
+            $this->label("frequency_{$lease->payment_frequency}"),
             $this->workbook->date($lease->started_at),
             $this->workbook->date($lease->ends_at),
             $lease->rent_amount,
@@ -44,5 +44,12 @@ class LeaseWorkbookExport implements ResourceExporter
             $lease->balance_remaining,
             $lease->currency,
         ]);
+    }
+
+    private function label(string $key): string
+    {
+        $label = trans("app.leases.{$key}");
+
+        return is_string($label) ? $label : $key;
     }
 }

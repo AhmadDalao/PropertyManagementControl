@@ -14,7 +14,7 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
-class LeaseDocuments
+final class LeaseDocuments
 {
     public function __construct(
         private readonly LeaseAccess $access,
@@ -28,7 +28,7 @@ class LeaseDocuments
         $path = $file->store("documents/leases/{$lease->id}", 'local');
 
         if ($path === false) {
-            throw new RuntimeException('The signed contract could not be stored.');
+            throw new RuntimeException(trans('app.errors.signed_contract_store_failed'));
         }
 
         try {

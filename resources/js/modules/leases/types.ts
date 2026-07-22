@@ -15,7 +15,7 @@ export type LeaseRecord = {
     signed_at?: string | null;
     currency: string;
     tenant_profile?: {
-        user?: { name?: string | null; email?: string | null };
+        user?: { name?: string | null };
     };
     leaseable?: {
         title_en?: string | null;

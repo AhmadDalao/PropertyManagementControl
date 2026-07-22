@@ -10,24 +10,24 @@ import type { LeaseIndexPageProps } from './types';
 
 export default function LeasesIndexPage() {
     const { props } = usePage<LeaseIndexPageProps>();
-    const { text } = useTranslator();
+    const { t } = useTranslator();
 
     return (
         <AdminLayout>
-            <Head title={text('Leases')} />
+            <Head title={t('leases.title')} />
 
             <WorkspaceHeader
-                eyebrow="Portfolio"
-                title="Leases"
-                description="Find a contract and open it to manage installments, signed PDFs, balances, renewal, termination, and history."
+                eyebrow={t('leases.workspace_eyebrow')}
+                title={t('leases.title')}
+                description={t('leases.workspace_description')}
                 actions={[
                     {
-                        label: 'Post payment',
+                        label: t('leases.post_payment'),
                         href: '/payments/create',
                         icon: 'bi-cash-stack',
                     },
                     {
-                        label: 'Create lease',
+                        label: t('leases.create_lease'),
                         href: '/leases/create',
                         icon: 'bi-plus-lg',
                         tone: 'primary',

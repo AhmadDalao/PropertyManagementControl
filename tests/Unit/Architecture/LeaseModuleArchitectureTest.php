@@ -39,20 +39,64 @@ class LeaseModuleArchitectureTest extends TestCase
     public function lease_module_owns_each_resource_responsibility(): void
     {
         foreach ([
+            $this->path('app/Modules/Leases/Actions/CreateLease.php'),
             $this->path('app/Modules/Leases/Actions/ManageLeases.php'),
+            $this->path('app/Modules/Leases/Actions/TerminateLease.php'),
+            $this->path('app/Modules/Leases/Actions/UpdateLease.php'),
             $this->path('app/Modules/Leases/Actions/LeaseDocuments.php'),
+            $this->path('app/Modules/Leases/Data/LeaseDetailData.php'),
+            $this->path('app/Modules/Leases/Data/LeaseFormData.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseDetailPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseFormPresenter.php'),
+            $this->path('app/Modules/Leases/Presenters/LeaseInstallmentLabelPresenter.php'),
+            $this->path('app/Modules/Leases/Presenters/LeaseTableRowPresenter.php'),
+            $this->path('app/Modules/Leases/Queries/LeaseDetailQuery.php'),
+            $this->path('app/Modules/Leases/Queries/LeaseDirectoryQuery.php'),
+            $this->path('app/Modules/Leases/Queries/LeaseFormOptionsQuery.php'),
             $this->path('app/Modules/Leases/Queries/LeaseIndexQuery.php'),
+            $this->path('app/Modules/Leases/Queries/LeaseInsightsQuery.php'),
             $this->path('app/Modules/Leases/Requests/StoreLeaseRequest.php'),
             $this->path('app/Modules/Leases/Requests/UpdateLeaseRequest.php'),
             $this->path('app/Modules/Leases/Requests/UploadSignedContractRequest.php'),
             $this->path('resources/js/modules/leases/lease-filters.ts'),
             $this->path('resources/js/modules/leases/lease-metrics.tsx'),
             $this->path('resources/js/modules/leases/lease-table.tsx'),
+            $this->path('resources/js/modules/leases/lease-table-config.tsx'),
             $this->path('resources/js/modules/leases/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);
+        }
+    }
+
+    #[Test]
+    public function lease_facades_and_entry_components_stay_small(): void
+    {
+        foreach ([
+            'app/Modules/Leases/Actions/ManageLeases.php' => 60,
+            'app/Modules/Leases/Presenters/LeaseDetailPresenter.php' => 70,
+            'app/Modules/Leases/Presenters/LeaseFormPresenter.php' => 55,
+            'app/Modules/Leases/Queries/LeaseIndexQuery.php' => 90,
+            'resources/js/modules/leases/lease-table.tsx' => 70,
+        ] as $path => $maximum) {
+            $source = $this->source($this->path($path));
+
+            $this->assertLessThanOrEqual($maximum, substr_count($source, "\n") + 1, $path);
+        }
+    }
+
+    #[Test]
+    public function lease_requests_share_access_and_validation_contracts(): void
+    {
+        foreach ([
+            'app/Modules/Leases/Requests/StoreLeaseRequest.php',
+            'app/Modules/Leases/Requests/UpdateLeaseRequest.php',
+            'app/Modules/Leases/Requests/UploadSignedContractRequest.php',
+        ] as $path) {
+            $source = $this->source($this->path($path));
+
+            $this->assertStringContainsString('LeaseAccess', $source);
+            $this->assertStringContainsString('HasLeaseValidationAttributes', $source);
+            $this->assertStringNotContainsString("hasAnyRole(['superadmin'", $source);
         }
     }
 
