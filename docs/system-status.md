@@ -22,9 +22,9 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, removes the closed drawer from keyboard navigation, restores focus, and keeps the topbar at 64px. Desktop collapse preference persists, while resize recovery clears stale drawer state.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 306 PHP tests with 13,601 assertions and 30 Playwright/axe scenarios pass.
+- Automated status: 311 PHP tests with 13,833 assertions and 31 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
-- The main CSS bundle is 316.29 KB before gzip, with Documentation, Profile, and Media styles loaded as separate 11.17 KB, 5.77 KB, and 3.18 KB route chunks. Further CSS reduction is useful, but it is not a launch blocker.
+- The main CSS bundle is 316.36 KB before gzip, with Showcase Data, Documentation, Profile, and Media styles loaded as separate 10.63 KB, 11.17 KB, 5.77 KB, and 3.18 KB route chunks. Further CSS reduction is useful, but it is not a launch blocker.
 - PHPStan has 46 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Media, Report, Audit, Search, Export, Wording, Dashboard, Documentation, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 103-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is now a 106-line adapter and its React index is a 51-line composer. Tenant responses no longer expose internal updates or owner expense data.
@@ -49,6 +49,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Profile management is modular. Its controller is a 49-line adapter over allowlisted requests, focused update actions, and a presenter that omits credential internals. Its former 529-line route page is now a one-line adapter over focused identity, account, password, and access-context components, with localized language-transition feedback, password throttling, responsive EN/AR rendering, and zero horizontal overflow.
 - Every Bootstrap Icon referenced by React or Blade must now exist in the local optimized subset. Architecture and browser tests prevent blank menu, form, CMS, or Data Lab controls from returning.
 - Documentation is modular. Its controller is a 33-line adapter over focused access, configuration, localization, scoping, and presentation services; its former 332-line index and 138-line guide page are one-line route adapters over focused frontend modules. Role and disabled-module policies now remove inaccessible guides, shortcuts, workflow steps, and direct routes; EN/AR search, guide navigation, route-loaded CSS, accessibility, and zero overflow are regression-tested.
+- Showcase Data is modular. The former 902-line service is replaced by focused lifecycle actions, idempotent generators, target/location support, metrics queries, and a safe page presenter; its controller is a 63-line adapter and its React entry is a 46-line composer. Opening Data Lab is read-only, generation start is locked, progress/failure/purge transitions use row locks, completed retries cannot become stuck, dataset history is paginated, and terminated showcase leases now have valid end dates. The compact EN/AR workspace exposes four useful metrics, a collapsed target plan, responsive dataset cards, and an accessible destructive-action dialog.
 
 ## Required before real tenant onboarding
 
@@ -70,4 +71,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Modularize Showcase Data next: split its 902-line generation/purge service, 125-line controller, and 339-line Data Lab page without weakening production confirmation, retry/purge safety, queue idempotency, dataset tagging, or exact generated totals. Then continue production onboarding work for SMTP, backup restore, legal templates, and a controlled pilot property.
+Stop rewriting screens and finish production onboarding: configure and verify SMTP, prove database and private-document restore, approve bilingual legal templates, validate one real portfolio's opening balances and permissions, then run a controlled owner/manager/tenant pilot. Those are the remaining MVP risks; another broad UI overhaul would be avoidance, not progress.

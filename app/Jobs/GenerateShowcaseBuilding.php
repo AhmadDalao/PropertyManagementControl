@@ -2,7 +2,8 @@
 
 namespace App\Jobs;
 
-use App\Services\ShowcaseDatasetService;
+use App\Modules\ShowcaseData\Actions\BuildShowcaseProperty;
+use App\Modules\ShowcaseData\Actions\RecordShowcaseFailure;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -38,14 +39,14 @@ class GenerateShowcaseBuilding implements ShouldBeUnique, ShouldQueue
         return [10, 30, 60];
     }
 
-    public function handle(ShowcaseDatasetService $service): void
+    public function handle(BuildShowcaseProperty $builder): void
     {
-        $service->generateBuilding($this->datasetId, $this->buildingIndex);
+        $builder->handle($this->datasetId, $this->buildingIndex);
     }
 
     public function failed(?Throwable $exception): void
     {
-        app(ShowcaseDatasetService::class)->recordFailure(
+        app(RecordShowcaseFailure::class)->handle(
             $this->datasetId,
             $this->buildingIndex,
             $exception?->getMessage() ?? 'Unknown queue failure.',

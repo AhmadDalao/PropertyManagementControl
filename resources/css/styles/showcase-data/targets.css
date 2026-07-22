@@ -1,0 +1,100 @@
+.pmc-showcase-target-plan {
+    overflow: hidden;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-showcase-target-plan > summary {
+    display: grid;
+    grid-template-columns: minmax(12rem, 1fr) minmax(20rem, 1.35fr) auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-showcase-target-plan > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-showcase-target-plan summary > div:first-child {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-showcase-target-plan summary > div:first-child span {
+    color: #856200;
+    font-size: 0.62rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.pmc-showcase-target-plan summary > div:first-child strong {
+    margin-top: 0.15rem;
+    font-size: 0.9rem;
+}
+
+.pmc-showcase-target-plan summary > div:first-child small {
+    margin-top: 0.2rem;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-showcase-target-headlines {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.4rem;
+}
+
+.pmc-showcase-target-headlines > span {
+    display: grid;
+    padding: 0.45rem 0.6rem;
+    border-inline-start: 1px solid var(--pmc-line);
+}
+
+.pmc-showcase-target-headlines small {
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+}
+
+.pmc-showcase-target-headlines strong {
+    font-size: 0.84rem;
+}
+
+.pmc-showcase-target-plan summary > i {
+    transition: transform 0.18s ease;
+}
+
+.pmc-showcase-target-plan[open] summary > i {
+    transform: rotate(180deg);
+}
+
+.pmc-showcase-targets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr));
+    gap: 1px;
+    padding: 1px;
+    border-top: 1px solid var(--pmc-line);
+    background: var(--pmc-line);
+}
+
+.pmc-showcase-targets article {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-showcase-targets span {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+}
+
+.pmc-showcase-targets strong {
+    font-size: 0.9rem;
+}

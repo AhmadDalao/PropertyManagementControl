@@ -81,6 +81,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 - Documentation is the fifteenth complete vertical slice. `DocumentationController` fell from 133 lines to a 33-line adapter over role-aware index and guide presenters; configuration access, localization, module policy, route inference, and payload scoping live under `app/Modules/Documentation`.
 - Its former 332-line index and 138-line guide page are one-line route entries over focused search, access, workflow, library, regulation, navigation, content, and related-guide components. Disabled portfolio modules now remove their guides, shortcuts, workflow steps, and direct URLs instead of exposing dead documentation.
 - `DocumentationModuleArchitectureTest` protects the split. Feature and browser coverage enforce role/module scoping, payload allowlists, EN/AR guide content, direct links, searchable empty states, mobile guide navigation, zero overflow, and the absence of nested page landmarks. Documentation CSS is route-loaded as an 11.17 KB chunk instead of inflating the shared bundle.
+- Showcase Data is the sixteenth complete vertical slice. Its former 902-line service is replaced by focused start, retry, refresh, failure, build, purge, and legacy-tagging actions plus separate generators, target/location support, metrics queries, and a page presenter. `ShowcaseDataController` is a 63-line HTTP adapter, the queue job only delegates, and the React entry is a 46-line composer.
+- `ShowcaseDataModuleArchitectureTest` protects the split. Feature coverage proves read-only index behavior, start locking, paginated history, retry recovery, exact 40-building totals, valid terminated dates, PDF generation, map aggregates, idempotency, and confirmed dataset-only purge. Browser coverage verifies the collapsed generation plan, responsive cards, EN/AR rendering, zero overflow, body scroll lock, focus trapping, Escape dismissal, and focus restoration.
 
 ## Resource Refactor Checklist
 
@@ -92,7 +94,7 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 6. Split the React page into module contracts and focused components.
 7. Add an architecture guard, run PHPStan without new suppressions, then run the full browser cycle.
 
-The next refactor target by risk is Showcase Data. Split the 902-line generation/purge service, 125-line controller, and 339-line Data Lab page into explicit dataset lifecycle actions, building-generation jobs, record factories, purge transactions, progress presenters, and focused operator controls. Preserve retry/purge safety, production confirmation, queue idempotency, dataset tagging, and exact generated totals.
+The vertical module refactor is complete for the current MVP surface. Further architecture work should be driven by measured defects or new product scope; the immediate priority is production onboarding, backup recovery, SMTP delivery, legal-template approval, and a controlled real-property pilot.
 
 ## Local Verification
 

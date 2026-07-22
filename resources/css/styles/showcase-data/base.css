@@ -1,0 +1,62 @@
+.pmc-showcase-overview,
+.pmc-showcase-target-plan,
+.pmc-showcase-history {
+    margin-bottom: 1rem;
+}
+
+.pmc-showcase-status {
+    display: inline-flex;
+    min-height: 1.8rem;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    color: #6d5200;
+    background: #fff0bd;
+    font-size: 0.68rem;
+    font-weight: 850;
+    text-transform: capitalize;
+}
+
+.pmc-showcase-status.is-complete {
+    color: #0b674c;
+    background: #ddf4ec;
+}
+
+.pmc-showcase-status.is-failed {
+    color: #8b2828;
+    background: #fee4e4;
+}
+
+.pmc-showcase-status.is-purged {
+    color: #57534c;
+    background: #efede8;
+}
+
+.pmc-showcase-status.is-purging {
+    color: #2454a6;
+    background: #e5edff;
+}
+
+.pmc-showcase-empty {
+    display: grid;
+    min-height: 17rem;
+    padding: 2rem;
+    place-content: center;
+    justify-items: center;
+    border-top: 1px solid var(--pmc-line);
+    text-align: center;
+}
+
+.pmc-showcase-empty i {
+    margin-bottom: 0.7rem;
+    color: #8a6710;
+    font-size: 1.8rem;
+}
+
+.pmc-showcase-empty p {
+    max-width: 30rem;
+    margin: 0.35rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+}

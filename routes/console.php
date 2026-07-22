@@ -2,8 +2,8 @@
 
 use App\Models\User;
 use App\Modules\Leases\LeaseLifecycle;
+use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
 use App\Services\LandingContentSeeder;
-use App\Services\ShowcaseDatasetService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -129,7 +129,7 @@ Artisan::command('property:seed-demo-data {--fresh-demo : Rebuild the local data
     return 0;
 })->purpose('Rebuild the local/staging database with rich demo property data. Blocked in production.');
 
-Artisan::command('property:seed-showcase-data {--confirm-production : Allow tagged showcase generation in production}', function (ShowcaseDatasetService $service) {
+Artisan::command('property:seed-showcase-data {--confirm-production : Allow tagged showcase generation in production}', function (StartShowcaseDataset $start) {
     if (app()->environment('production') && ! $this->option('confirm-production')) {
         $this->error('Production showcase generation needs --confirm-production because it changes live totals until purged.');
 
@@ -149,7 +149,7 @@ Artisan::command('property:seed-showcase-data {--confirm-production : Allow tagg
         return 1;
     }
 
-    $dataset = $service->start($superadmin);
+    $dataset = $start->handle($superadmin);
     $this->info("Showcase dataset [{$dataset->key}] queued.");
     $this->line('Run the database queue or wait for the Hostinger scheduler to process 40 building jobs.');
 

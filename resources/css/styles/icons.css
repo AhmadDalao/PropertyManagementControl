@@ -44,6 +44,9 @@
 .bi-arrow-left::before {
     content: '\f12f';
 }
+.bi-arrow-repeat::before {
+    content: '\f130';
+}
 .bi-arrow-right::before {
     content: '\f138';
 }
@@ -355,6 +358,9 @@
 }
 .bi-tools::before {
     content: '\f5db';
+}
+.bi-trash3::before {
+    content: '\f78b';
 }
 .bi-translate::before {
     content: '\f658';

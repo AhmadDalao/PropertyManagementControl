@@ -253,6 +253,61 @@ test.describe('authenticated administration', () => {
         }
     });
 
+    test('Data Lab stays compact, accessible, and bilingual', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/system/showcase-data?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Production Data Lab',
+                }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-showcase-target-plan'),
+            ).not.toHaveAttribute('open', '');
+            await expect(
+                page.locator('.pmc-showcase-summary article'),
+            ).toHaveCount(4);
+            await expectNoHorizontalOverflow(page);
+        }
+
+        const purge = page
+            .getByRole('button', { name: 'Purge tagged data' })
+            .first();
+        await expect(purge).toBeVisible();
+        await purge.click();
+
+        const dialog = page.getByRole('dialog', {
+            name: 'Purge showcase data',
+        });
+        const confirmation = page.getByLabel('Confirmation text');
+        await expect(dialog).toBeVisible();
+        await expect(confirmation).toBeFocused();
+        expect(
+            await page.locator('body').evaluate((node) => node.style.overflow),
+        ).toBe('hidden');
+
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expect(purge).toBeFocused();
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/system/showcase-data?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'مختبر بيانات الإنتاج',
+            }),
+        ).toBeVisible();
+        await expect(page.getByText('سجل مجموعات البيانات')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('property map uses one focused responsive workspace', async ({
         page,
     }) => {
@@ -727,14 +782,14 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
             await page.getByRole('button', { name: 'Clear search' }).click();
 
-            const guide = page
-                .locator('a[href^="/documentation/"]')
-                .first();
+            const guide = page.locator('a[href^="/documentation/"]').first();
             await expect(guide).toBeVisible();
             await guide.click();
             await expect(page).toHaveURL(/\/documentation\/[^/?]+/);
             await expect(page.locator('.pmc-doc-detail-layout')).toBeVisible();
-            await expect(page.locator('.pmc-doc-detail-content > section')).toHaveCount(3);
+            await expect(
+                page.locator('.pmc-doc-detail-content > section'),
+            ).toHaveCount(3);
             await expect(page.locator('main main')).toHaveCount(0);
 
             const guideNavigationColumns = await page
@@ -745,9 +800,7 @@ test.describe('authenticated administration', () => {
                             .getComputedStyle(node)
                             .gridTemplateColumns.split(' ').length,
                 );
-            expect(guideNavigationColumns).toBe(
-                viewport.width < 1200 ? 3 : 1,
-            );
+            expect(guideNavigationColumns).toBe(viewport.width < 1200 ? 3 : 1);
             await expectNoHorizontalOverflow(page);
         }
 
@@ -763,7 +816,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { level: 1, name: 'إدارة الأصول' }),
         ).toBeVisible();
-        await expect(page.getByRole('heading', { name: 'المزايا' })).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'المزايا' }),
+        ).toBeVisible();
         await expect(page.getByText('Features')).toHaveCount(0);
         await expectNoHorizontalOverflow(page);
     });

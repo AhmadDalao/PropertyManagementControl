@@ -11,9 +11,12 @@ use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
+use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
-use App\Services\ShowcaseDatasetService;
+use App\Modules\ShowcaseData\Actions\BuildShowcaseProperty;
+use App\Modules\ShowcaseData\Actions\RetryShowcaseDataset;
+use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -44,11 +47,65 @@ class ShowcaseDatasetTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/showcase-data/index')
                 ->where('targets.buildings', 40)
-                ->where('targets.documents', 960));
+                ->where('targets.documents', 960)
+                ->where('canGenerate', true)
+                ->has('datasets.data'));
 
         $this->actingAs($owner)
             ->get(route('showcase-data.index'))
             ->assertForbidden();
+    }
+
+    public function test_opening_the_data_lab_does_not_mutate_legacy_records(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $portfolio = $this->createPortfolio(['code' => 'SHOW-LEGACY-READ']);
+        $owner = $this->createUserWithRole('owner', $portfolio, [
+            'email' => 'legacy-owner@example.test',
+            'status' => 'active',
+        ]);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+
+        $this->actingAs($superadmin)
+            ->get(route('showcase-data.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('legacyCandidates', 1));
+
+        $this->assertDatabaseCount('showcase_datasets', 0);
+        $this->assertDatabaseHas('portfolios', [
+            'id' => $portfolio->id,
+            'showcase_dataset_id' => null,
+        ]);
+        $this->assertDatabaseHas('users', [
+            'id' => $owner->id,
+            'email' => 'legacy-owner@example.test',
+            'status' => 'active',
+            'showcase_dataset_id' => null,
+        ]);
+    }
+
+    public function test_dataset_history_is_paginated_instead_of_rendered_without_a_limit(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        foreach (range(1, 7) as $index) {
+            ShowcaseDataset::query()->create([
+                'key' => "PURGED-{$index}",
+                'name' => "Purged dataset {$index}",
+                'status' => 'purged',
+                'target_properties' => 40,
+                'generated_properties' => 0,
+            ]);
+        }
+
+        $this->actingAs($superadmin)
+            ->get(route('showcase-data.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('datasets.data', 6)
+                ->where('datasets.total', 7)
+                ->where('datasets.last_page', 2));
     }
 
     public function test_generation_is_queued_and_showcase_accounts_cannot_log_in(): void
@@ -74,16 +131,21 @@ class ShowcaseDatasetTest extends TestCase
             'email' => $showcaseUser->email,
             'password' => 'known-showcase-password',
         ])->assertSessionHasErrors('email');
+
+        $this->actingAs($superadmin)
+            ->post(route('showcase-data.store'))
+            ->assertSessionHasErrors('showcase');
     }
 
     public function test_full_dataset_hits_exact_targets_maps_only_buildings_and_purges_safely(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');
-        $service = app(ShowcaseDatasetService::class);
-        $dataset = $service->start($superadmin);
+        $start = app(StartShowcaseDataset::class);
+        $builder = app(BuildShowcaseProperty::class);
+        $dataset = $start->handle($superadmin);
 
         foreach (range(0, 39) as $buildingIndex) {
-            $service->generateBuilding($dataset->id, $buildingIndex);
+            $builder->handle($dataset->id, $buildingIndex);
         }
 
         $dataset->refresh();
@@ -105,6 +167,8 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(40, Lease::query()->whereIn('id', $leaseIds)->where('status', 'expired')->count());
         $this->assertSame(20, Lease::query()->whereIn('id', $leaseIds)->where('status', 'terminated')->count());
         $this->assertSame(20, Lease::query()->whereIn('id', $leaseIds)->where('status', 'draft')->count());
+        $terminated = Lease::query()->whereIn('id', $leaseIds)->where('status', 'terminated')->firstOrFail();
+        $this->assertTrue($terminated->ends_at->isAfter($terminated->started_at));
         $this->assertSame(5760, LeaseInstallment::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(320, MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count());
@@ -116,10 +180,21 @@ class ShowcaseDatasetTest extends TestCase
         Storage::disk('local')->assertExists($sampleDocument->file_path);
         $this->assertSame('%PDF-', substr((string) Storage::disk('local')->get($sampleDocument->file_path), 0, 5));
 
-        $service->generateBuilding($dataset->id, 0);
+        $builder->handle($dataset->id, 0);
         $this->assertSame(840, Asset::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(480, Lease::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
+
+        Queue::fake();
+        $dataset->update(['status' => 'failed', 'generated_properties' => 39]);
+        $retried = app(RetryShowcaseDataset::class)->handle($dataset->fresh());
+        $this->assertSame('complete', $retried->status);
+        $this->assertSame(40, $retried->generated_properties);
+        Queue::assertNothingPushed();
+
+        $this->actingAs($superadmin)
+            ->post(route('showcase-data.retry', $retried))
+            ->assertStatus(422);
 
         $this->actingAs($superadmin)
             ->get(route('property-map.index'))
@@ -136,6 +211,12 @@ class ShowcaseDatasetTest extends TestCase
                         && $asset['active_leases_count'] === 10
                         && $asset['open_requests_count'] === 6
                 )));
+
+        $this->actingAs($superadmin)
+            ->delete(route('showcase-data.destroy', $dataset), [
+                'confirmation' => 'wrong confirmation',
+            ])
+            ->assertSessionHasErrors('confirmation');
 
         $this->actingAs($superadmin)
             ->delete(route('showcase-data.destroy', $dataset), [

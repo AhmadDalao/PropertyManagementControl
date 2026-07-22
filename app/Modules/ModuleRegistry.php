@@ -24,6 +24,7 @@ final class ModuleRegistry
             'documents' => ['label' => 'Documents', 'area' => 'operations'],
             'reports' => ['label' => 'Reports', 'area' => 'operations'],
             'audit' => ['label' => 'Audit History', 'area' => 'system'],
+            'showcase_data' => ['label' => 'Showcase Data', 'area' => 'system'],
             'cms' => ['label' => 'Website Control', 'area' => 'website'],
             'media' => ['label' => 'Media', 'area' => 'website'],
         ];
