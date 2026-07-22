@@ -24,6 +24,42 @@ class SharedFrontendArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function operations_workspace_keeps_shared_primitives_separate(): void
+    {
+        $entry = $this->source(
+            'resources/js/components/operations/workspace.tsx',
+        );
+        $publicEntry = $this->source(
+            'resources/js/components/operations/index.ts',
+        );
+
+        $this->assertLessThanOrEqual(5, substr_count($entry, "\n") + 1);
+        $this->assertStringContainsString("'./workspace/index'", $entry);
+        $this->assertStringContainsString("'./workspace'", $publicEntry);
+
+        $this->assertModulesStayFocused('operations/workspace', [
+            'human-label.ts',
+            'index.ts',
+            'metric-grid.tsx',
+            'record-actions.tsx',
+            'status-badge.tsx',
+            'types.ts',
+            'workspace-header.tsx',
+            'workspace-panel.tsx',
+        ], 80);
+
+        $header = $this->source(
+            'resources/js/components/operations/workspace/workspace-header.tsx',
+        );
+        $status = $this->source(
+            'resources/js/components/operations/workspace/status-badge.tsx',
+        );
+
+        $this->assertStringNotContainsString('MetricGrid', $header);
+        $this->assertStringNotContainsString('WorkspaceHeader', $status);
+    }
+
+    #[Test]
     public function resource_cycle_keeps_forms_details_and_workflows_separate(): void
     {
         $paths = [

@@ -1,0 +1,57 @@
+.pmc-cms-builder-toolbar {
+    position: sticky;
+    z-index: 24;
+    top: calc(var(--pmc-topbar-height) + 0.5rem);
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(14px);
+}
+
+.pmc-cms-builder-status,
+.pmc-cms-builder-pills,
+.pmc-cms-mobile-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pmc-cms-builder-status > span {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--pmc-green);
+}
+
+.pmc-cms-builder-status > span.is-saving {
+    background: var(--pmc-amber);
+    animation: pmc-pulse 900ms ease-in-out infinite alternate;
+}
+
+.pmc-cms-builder-status > span.is-error {
+    background: var(--pmc-red);
+}
+
+.pmc-cms-builder-status strong {
+    font-size: 0.68rem;
+}
+
+.pmc-cms-builder-pills span {
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-cms-mobile-tabs {
+    display: none;
+}

@@ -99,11 +99,37 @@ class CmsModuleArchitectureTest extends TestCase
 
         $this->assertFileDoesNotExist($this->path('resources/css/styles/cms.css'));
 
-        foreach (['workspace', 'section-editor', 'builder', 'responsive'] as $layer) {
+        foreach (['workspace', 'section-editor', 'responsive'] as $layer) {
             $relativePath = "resources/css/styles/cms/{$layer}.css";
             $source = $this->source($this->path($relativePath));
             $this->assertStringContainsString("./styles/cms/{$layer}.css", $appCss);
-            $this->assertLessThanOrEqual(500, substr_count($source, "\n") + 1);
+            $this->assertLessThanOrEqual(250, substr_count($source, "\n") + 1);
+        }
+
+        $builderLayers = [
+            'toolbar.css',
+            'library.css',
+            'preview.css',
+            'inspector.css',
+        ];
+        $builderImports = array_map(
+            fn (string $layer): string => "@import './builder/{$layer}';\n",
+            $builderLayers,
+        );
+
+        $this->assertStringContainsString('./styles/cms/builder.css', $appCss);
+        $this->assertSame(
+            implode('', $builderImports),
+            $this->source($this->path('resources/css/styles/cms/builder.css')),
+        );
+
+        foreach ($builderLayers as $layer) {
+            $source = $this->source(
+                $this->path("resources/css/styles/cms/builder/{$layer}"),
+            );
+
+            $this->assertLessThanOrEqual(160, substr_count(rtrim($source), "\n") + 1);
+            $this->assertStringNotContainsString('@import', $source);
         }
     }
 
