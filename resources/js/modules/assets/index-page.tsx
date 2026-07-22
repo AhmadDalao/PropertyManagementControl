@@ -10,24 +10,24 @@ import type { AssetIndexPageProps } from './types';
 
 export default function AssetsIndexPage() {
     const { props } = usePage<AssetIndexPageProps>();
-    const { text } = useTranslator();
+    const { t } = useTranslator();
 
     return (
         <AdminLayout>
-            <Head title={text('Properties & Units')} />
+            <Head title={t('assets.title')} />
 
             <WorkspaceHeader
-                eyebrow="Portfolio"
-                title="Properties & units"
-                description="Find a building, floor, unit, or space. Open the record for ownership, leases, documents, maintenance, and history."
+                eyebrow={t('assets.workspace_eyebrow')}
+                title={t('assets.title')}
+                description={t('assets.workspace_description')}
                 actions={[
                     {
-                        label: 'Property map',
+                        label: t('assets.property_map'),
                         href: '/property-map',
                         icon: 'bi-map',
                     },
                     {
-                        label: 'Create asset',
+                        label: t('assets.create_asset'),
                         href: '/assets/create',
                         icon: 'bi-plus-lg',
                         tone: 'primary',

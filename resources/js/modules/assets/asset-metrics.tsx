@@ -17,7 +17,7 @@ export function AssetMetrics({ insights, locale }: AssetMetricsProps) {
         <MetricGrid
             metrics={[
                 {
-                    label: 'Assets',
+                    label: t('assets.assets_label'),
                     value: insights.total_assets,
                     detail: t('assets.mix', undefined, {
                         buildings: insights.buildings,
@@ -27,14 +27,14 @@ export function AssetMetrics({ insights, locale }: AssetMetricsProps) {
                     tone: 'ink',
                 },
                 {
-                    label: 'Portfolio value',
+                    label: t('assets.portfolio_value'),
                     value: compactCurrency(insights.total_value, locale),
                     detail: t('assets.recorded_valuation'),
                     icon: 'bi-bank',
                     tone: 'blue',
                 },
                 {
-                    label: 'Occupancy',
+                    label: t('assets.occupancy'),
                     value: `${insights.rentable_occupancy_rate}%`,
                     detail: t('assets.vacant_rentable', undefined, {
                         count: insights.vacant_rentable_assets,
@@ -43,7 +43,7 @@ export function AssetMetrics({ insights, locale }: AssetMetricsProps) {
                     tone: 'teal',
                 },
                 {
-                    label: 'Assignment gaps',
+                    label: t('assets.assignment_gaps_label'),
                     value: assignmentGaps,
                     detail: t('assets.assignment_gaps', undefined, {
                         owners: insights.missing_owner,

@@ -10,6 +10,12 @@ export type AssetStakeholder = {
     user?: { id: number; name: string } | null;
 };
 
+export type AssetPortfolio = {
+    id: number;
+    name_en: string;
+    name_ar?: string | null;
+};
+
 export type AssetRecord = {
     id: number;
     parent_id?: number | null;
@@ -26,8 +32,15 @@ export type AssetRecord = {
     area?: number | null;
     level_label?: string | null;
     unit_label?: string | null;
+    is_showcase?: boolean;
     stakeholders?: AssetStakeholder[];
-    parent?: { title_en: string; title_ar?: string | null } | null;
+    parent?: {
+        id: number;
+        title_en: string;
+        title_ar?: string | null;
+        code: string;
+    } | null;
+    portfolio?: AssetPortfolio | null;
     children_count?: number;
     active_leases_count?: number;
 };
@@ -37,8 +50,12 @@ export type AssetInsights = {
     total_value: number;
     vacant_rentable_assets: number;
     occupied_assets: number;
+    maintenance_assets: number;
+    rentable_assets: number;
     buildings: number;
+    floors: number;
     units: number;
+    spaces: number;
     missing_owner: number;
     missing_manager: number;
     rentable_occupancy_rate: number;
@@ -51,3 +68,8 @@ export type AssetIndexPageProps = SharedProps & {
     insights: AssetInsights;
     portfolioOptions: Array<{ id: number; name: string }>;
 };
+
+export type AssetTableProps = Pick<
+    AssetIndexPageProps,
+    'assets' | 'filters' | 'counts' | 'portfolioOptions' | 'auth' | 'app'
+>;

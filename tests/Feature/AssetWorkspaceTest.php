@@ -189,7 +189,7 @@ class AssetWorkspaceTest extends TestCase
         $this->assertEquals(44.0, $asset->meta_json['map']['y']);
     }
 
-    public function test_asset_workspace_map_uses_latitude_and_longitude_for_positions(): void
+    public function test_asset_register_stays_lean_and_the_property_map_owns_map_payloads(): void
     {
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
@@ -228,15 +228,19 @@ class AssetWorkspaceTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/assets/index')
+                ->where('assets.total', 2)
+                ->missing('propertyMap')
+                ->missing('assets.data.0.meta_json')
+                ->missing('assets.data.0.address')
+                ->missing('assets.data.0.description_en'));
+
+        $this->actingAs($owner)
+            ->get(route('property-map.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/property-map/index')
                 ->where('propertyMap.summary.total', 2)
-                ->where('propertyMap.summary.mapped', 2)
-                ->where('propertyMap.assets.0.code', 'ALPHA-MAP')
-                ->where('propertyMap.assets.0.x', fn (int|float $value) => (float) $value === 10.0)
-                ->where('propertyMap.assets.0.y', fn (int|float $value) => (float) $value === 90.0)
-                ->where('propertyMap.assets.1.code', 'BETA-MAP')
-                ->where('propertyMap.assets.1.x', fn (int|float $value) => (float) $value === 90.0)
-                ->where('propertyMap.assets.1.y', fn (int|float $value) => (float) $value === 10.0)
-            );
+                ->where('propertyMap.summary.mapped', 2));
     }
 
     public function test_asset_detail_exposes_clicked_land_spotlight(): void

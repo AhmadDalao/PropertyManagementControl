@@ -85,7 +85,7 @@ class AssetSearch extends ModuleSearchSource
                     ->orWhere('code', 'like', $like),
             ),
             fn (Builder $assets, string $term, string $like) => $assets->orWhereHas(
-                'stakeholders.user',
+                'currentStakeholders.user',
                 fn (Builder $users) => $users
                     ->where('name', 'like', $like)
                     ->orWhere('email', 'like', $like),

@@ -1,61 +1,57 @@
 import type { TableFilterField } from '@/components/data-table';
+import { useTranslator } from '@/lib/i18n';
+import type { Translator } from '@/lib/i18n';
 
-export function assetFilterFields(
-    portfolioOptions: Array<{ id: number; name: string }>,
-    includePortfolio: boolean,
-): TableFilterField[] {
+type AssetFilterOptions = {
+    portfolioOptions: Array<{ id: number; name: string }>;
+    includePortfolio: boolean;
+};
+
+export function useAssetFilterFields({
+    portfolioOptions,
+    includePortfolio,
+}: AssetFilterOptions): TableFilterField[] {
+    const { t } = useTranslator();
     const fields: TableFilterField[] = [
-        {
-            name: 'status',
-            label: 'Status',
-            options: [
-                { label: 'All', value: 'all' },
-                { label: 'Active', value: 'active' },
-                { label: 'Inactive', value: 'inactive' },
-                { label: 'Archived', value: 'archived' },
+        select(
+            'status',
+            t('assets.status'),
+            ['active', 'inactive', 'archived'],
+            t,
+        ),
+        select(
+            'asset_type',
+            t('assets.type'),
+            ['property', 'building', 'floor', 'unit', 'space'],
+            t,
+            'assets.types',
+        ),
+        select(
+            'usage_type',
+            t('assets.usage'),
+            ['residential', 'commercial', 'mixed', 'personal'],
+            t,
+            'assets.usages',
+        ),
+        select(
+            'occupancy_status',
+            t('assets.occupancy'),
+            [
+                'vacant',
+                'occupied',
+                'partially_occupied',
+                'reserved',
+                'maintenance',
             ],
-        },
-        {
-            name: 'asset_type',
-            label: 'Type',
-            options: [
-                { label: 'All', value: 'all' },
-                { label: 'Property', value: 'property' },
-                { label: 'Building', value: 'building' },
-                { label: 'Floor', value: 'floor' },
-                { label: 'Unit', value: 'unit' },
-                { label: 'Space', value: 'space' },
-            ],
-        },
-        {
-            name: 'usage_type',
-            label: 'Usage',
-            options: [
-                { label: 'All', value: 'all' },
-                { label: 'Residential', value: 'residential' },
-                { label: 'Commercial', value: 'commercial' },
-                { label: 'Mixed', value: 'mixed' },
-                { label: 'Personal', value: 'personal' },
-            ],
-        },
-        {
-            name: 'occupancy_status',
-            label: 'Occupancy',
-            options: [
-                { label: 'All', value: 'all' },
-                { label: 'Vacant', value: 'vacant' },
-                { label: 'Occupied', value: 'occupied' },
-                { label: 'Reserved', value: 'reserved' },
-                { label: 'Maintenance', value: 'maintenance' },
-            ],
-        },
+            t,
+        ),
         {
             name: 'rentable',
-            label: 'Rentable',
+            label: t('assets.rentable'),
             options: [
-                { label: 'All', value: 'all' },
-                { label: 'Yes', value: 'yes' },
-                { label: 'No', value: 'no' },
+                { label: t('assets.all'), value: 'all' },
+                { label: t('assets.yes'), value: 'yes' },
+                { label: t('assets.no'), value: 'no' },
             ],
         },
     ];
@@ -63,9 +59,9 @@ export function assetFilterFields(
     if (includePortfolio) {
         fields.push({
             name: 'portfolio_id',
-            label: 'Portfolio',
+            label: t('assets.portfolio'),
             options: [
-                { label: 'All', value: 'all' },
+                { label: t('assets.all'), value: 'all' },
                 ...portfolioOptions.map((portfolio) => ({
                     label: portfolio.name,
                     value: portfolio.id,
@@ -75,4 +71,24 @@ export function assetFilterFields(
     }
 
     return fields;
+}
+
+function select(
+    name: string,
+    label: string,
+    values: string[],
+    t: Translator,
+    group: 'status' | 'assets.types' | 'assets.usages' = 'status',
+): TableFilterField {
+    return {
+        name,
+        label,
+        options: [
+            { label: t('assets.all'), value: 'all' },
+            ...values.map((value) => ({
+                label: t(`${group}.${value}`),
+                value,
+            })),
+        ],
+    };
 }

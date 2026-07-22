@@ -37,7 +37,7 @@ class PropertyMapSourceQuery
                             ->where('meta_json', 'like', '%"y"%');
                     });
             })
-            ->with(['portfolio', 'stakeholders.user'])
+            ->with(['portfolio', 'currentStakeholders.user'])
             ->orderByRaw("CASE asset_type WHEN 'property' THEN 0 WHEN 'building' THEN 1 WHEN 'space' THEN 2 ELSE 3 END")
             ->orderBy('id')
             ->limit(self::MAX_MARKERS)

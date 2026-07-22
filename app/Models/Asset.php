@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read Asset|null $parent
  * @property-read Collection<int, Asset> $children
  * @property-read Collection<int, AssetStakeholder> $stakeholders
+ * @property-read Collection<int, AssetStakeholder> $currentStakeholders
  * @property-read Collection<int, Lease> $leases
  * @property-read Collection<int, Document> $documents
  * @property-read Collection<int, MaintenanceRequest> $maintenanceRequests
@@ -67,6 +68,14 @@ class Asset extends Model
     public function stakeholders(): HasMany
     {
         return $this->hasMany(AssetStakeholder::class);
+    }
+
+    /**
+     * @return HasMany<AssetStakeholder, $this>
+     */
+    public function currentStakeholders(): HasMany
+    {
+        return $this->stakeholders()->whereNull('ends_on');
     }
 
     /**

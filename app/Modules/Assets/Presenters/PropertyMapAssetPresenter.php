@@ -47,8 +47,8 @@ class PropertyMapAssetPresenter
         $openRequests = $descendantIds->sum(
             fn (int $id): int => (int) $maintenanceCounts->get($id, 0),
         );
-        $owner = $asset->stakeholders->firstWhere('relationship_type', 'owner');
-        $manager = $asset->stakeholders->firstWhere('relationship_type', 'manager');
+        $owner = $asset->currentStakeholders->firstWhere('relationship_type', 'owner');
+        $manager = $asset->currentStakeholders->firstWhere('relationship_type', 'manager');
         $occupancy = $this->occupancy($asset, $rentableUnits, $activeLeases);
         $hasCoordinates = $latitude !== null && $longitude !== null;
         $hasIdentity = $zone !== null && $landNumber !== null;
