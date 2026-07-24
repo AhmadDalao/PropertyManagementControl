@@ -17,6 +17,7 @@ trait HasLeaseValidationAttributes
             'started_at' => trans('app.leases.start_date'),
             'ends_at' => trans('app.leases.end_date'),
             'signed_at' => trans('app.leases.signed_date'),
+            'renewal_notice_days' => trans('app.leases.renewal_notice_days'),
             'rent_amount' => trans('app.leases.rent_amount'),
             'deposit_amount' => trans('app.leases.deposit'),
             'tax_amount' => trans('app.leases.tax'),

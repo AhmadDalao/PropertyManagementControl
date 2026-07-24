@@ -43,6 +43,7 @@ final class LeaseFormFieldsPresenter
             ['name' => 'started_at', 'label' => trans('app.leases.start_date'), 'type' => 'date', 'required' => true],
             ['name' => 'ends_at', 'label' => trans('app.leases.end_date'), 'type' => 'date', 'required' => true],
             ['name' => 'signed_at', 'label' => trans('app.leases.signed_date'), 'type' => 'date'],
+            ['name' => 'renewal_notice_days', 'label' => trans('app.leases.renewal_notice_days'), 'type' => 'number', 'min' => 0, 'max' => 365, 'required' => true, 'help' => trans('app.leases.renewal_notice_days_help')],
             ['name' => 'rent_amount', 'label' => trans('app.leases.rent_amount'), 'type' => 'number', 'min' => 0, 'step' => '0.01', 'required' => true],
             ['name' => 'deposit_amount', 'label' => trans('app.leases.deposit'), 'type' => 'number', 'min' => 0, 'step' => '0.01'],
             ['name' => 'tax_amount', 'label' => trans('app.leases.tax'), 'type' => 'number', 'min' => 0, 'step' => '0.01'],
@@ -97,7 +98,7 @@ final class LeaseFormFieldsPresenter
             ],
             trans('app.leases.contract_period') => [
                 'description' => trans('app.leases.contract_period_help'),
-                'fields' => ['payment_frequency', 'started_at', 'ends_at', 'signed_at'],
+                'fields' => ['payment_frequency', 'started_at', 'ends_at', 'signed_at', 'renewal_notice_days'],
             ],
             trans('app.leases.rent_schedule') => [
                 'description' => trans('app.leases.rent_schedule_help'),

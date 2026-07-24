@@ -32,6 +32,7 @@ const primaryAdminRoutes = [
     '/assets',
     '/tenants',
     '/leases',
+    '/lease-renewals',
     '/rent-collection',
     '/payments',
     '/maintenance-requests',
@@ -241,6 +242,7 @@ test.describe('authenticated administration', () => {
             '/assets',
             '/tenants',
             '/leases',
+            '/lease-renewals',
             '/rent-collection',
             '/payments',
             '/maintenance-requests',
@@ -320,6 +322,56 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { name: 'تحصيل الإيجارات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('lease renewals stay direct, touch-safe, and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/lease-renewals?locale=en');
+
+        await expect(
+            page.getByRole('heading', { name: 'Lease renewals' }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-list')).toBeHidden();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/dashboard?locale=en');
+        await expect(
+            page.locator('a[href="/lease-renewals?queue=all"]'),
+        ).toBeVisible();
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/lease-renewals?locale=en');
+
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+        await expectMinimumTouchHeight(
+            page,
+            [
+                '.pmc-workspace-action',
+                '.pmc-filter-chip',
+                '.pmc-table-search .form-control',
+                '.pmc-mobile-filter-trigger',
+                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-action-menu > summary',
+            ].join(', '),
+        );
+
+        await page.goto('/lease-renewals?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'تجديد العقود' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -1253,6 +1305,7 @@ test.describe('authenticated administration', () => {
                 '/assets',
                 '/property-map',
                 '/rent-collection',
+                '/lease-renewals',
                 '/reports',
                 '/audit-logs',
                 '/media-files',
@@ -1279,6 +1332,7 @@ test.describe('local role dashboards', () => {
             visible: [
                 '/assets',
                 '/rent-collection',
+                '/lease-renewals',
                 '/cms',
                 '/wording',
                 '/system/showcase-data',
@@ -1286,17 +1340,30 @@ test.describe('local role dashboards', () => {
             hidden: [] as string[],
         },
         owner: {
-            visible: ['/assets', '/rent-collection', '/payments', '/users'],
+            visible: [
+                '/assets',
+                '/lease-renewals',
+                '/rent-collection',
+                '/payments',
+                '/users',
+            ],
             hidden: ['/cms', '/wording', '/system/showcase-data'],
         },
         manager: {
-            visible: ['/assets', '/rent-collection', '/payments', '/users'],
+            visible: [
+                '/assets',
+                '/lease-renewals',
+                '/rent-collection',
+                '/payments',
+                '/users',
+            ],
             hidden: ['/cms', '/wording', '/system/showcase-data'],
         },
         tenant: {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
             hidden: [
                 '/assets',
+                '/lease-renewals',
                 '/rent-collection',
                 '/payments',
                 '/users',

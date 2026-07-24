@@ -15,6 +15,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LeaseController;
+use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\MediaFileController;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement')->middleware('portfolio.module:leases');
+
+    Route::get('/lease-renewals', [LeaseRenewalController::class, 'index'])
+        ->name('lease-renewals.index')
+        ->middleware('portfolio.module:leases');
 
     Route::get('/rent-collection', [RentCollectionController::class, 'index'])
         ->name('rent-collection.index')

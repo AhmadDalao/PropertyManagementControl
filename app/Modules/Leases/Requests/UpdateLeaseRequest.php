@@ -30,6 +30,7 @@ final class UpdateLeaseRequest extends FormRequest
         return [
             'status' => ['required', Rule::in(LeaseOptions::STATUSES)],
             'signed_at' => ['nullable', 'date'],
+            'renewal_notice_days' => ['sometimes', 'required', 'integer', 'between:0,365'],
             'terms_en' => ['nullable', 'string', 'max:50000'],
             'terms_ar' => ['nullable', 'string', 'max:50000'],
             'notes' => ['nullable', 'string', 'max:50000'],

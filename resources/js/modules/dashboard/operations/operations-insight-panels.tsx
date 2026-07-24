@@ -68,7 +68,7 @@ export function OperationsInsightPanels({
                 description={t('dashboard.lease_expiry_description')}
                 action={{
                     label: t('dashboard.open_expiry_report'),
-                    href: '/reports?tab=operations',
+                    href: '/lease-renewals?queue=all',
                 }}
             >
                 <DashboardRecordList

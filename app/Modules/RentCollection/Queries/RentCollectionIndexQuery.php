@@ -5,7 +5,7 @@ namespace App\Modules\RentCollection\Queries;
 use App\Models\Asset;
 use App\Models\LeaseInstallment;
 use App\Models\User;
-use App\Modules\Assets\Support\AssetRootMap;
+use App\Modules\Assets\Support\AssetPropertyContext;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\RentCollection\Presenters\RentCollectionRowPresenter;
 use App\Modules\RentCollection\Support\RentCollectionOptions;
@@ -22,7 +22,7 @@ final readonly class RentCollectionIndexQuery
         private RentCollectionRowPresenter $rows,
         private PortfolioScope $portfolios,
         private PropertyScope $properties,
-        private AssetRootMap $roots,
+        private AssetPropertyContext $assetProperties,
         private TableQuery $tables,
     ) {}
 
@@ -84,25 +84,7 @@ final readonly class RentCollectionIndexQuery
      */
     public function assetContext(User $actor, ?int $portfolioId = null): array
     {
-        $assets = $this->portfolios
-            ->apply(Asset::query(), $actor)
-            ->when(
-                $portfolioId !== null,
-                fn (Builder $query) => $query->where('portfolio_id', $portfolioId),
-            )
-            ->get([
-                'id',
-                'portfolio_id',
-                'parent_id',
-                'title_en',
-                'title_ar',
-                'code',
-            ]);
-
-        return [
-            $this->roots->build($assets),
-            $assets->keyBy('id')->all(),
-        ];
+        return $this->assetProperties->get($actor, $portfolioId);
     }
 
     /**

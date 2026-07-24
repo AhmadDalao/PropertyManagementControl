@@ -33,6 +33,7 @@ final class LeaseCreateFormPresenter
                 'started_at' => $data->defaults['started_at'] ?? now()->toDateString(),
                 'ends_at' => $data->defaults['ends_at'] ?? now()->addYear()->toDateString(),
                 'signed_at' => $data->defaults['signed_at'] ?? '',
+                'renewal_notice_days' => $data->defaults['renewal_notice_days'] ?? 30,
                 'rent_amount' => $data->defaults['rent_amount'] ?? 0,
                 'deposit_amount' => $data->defaults['deposit_amount'] ?? 0,
                 'tax_amount' => $data->defaults['tax_amount'] ?? 0,

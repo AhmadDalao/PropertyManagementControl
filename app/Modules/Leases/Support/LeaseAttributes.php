@@ -34,6 +34,7 @@ final class LeaseAttributes
             'started_at' => $data['started_at'],
             'ends_at' => $data['ends_at'],
             'signed_at' => $this->optional($data['signed_at'] ?? null),
+            'renewal_notice_days' => $data['renewal_notice_days'] ?? 30,
             'rent_amount' => $data['rent_amount'],
             'deposit_amount' => $data['deposit_amount'] ?? 0,
             'tax_amount' => $data['tax_amount'] ?? 0,
@@ -51,12 +52,18 @@ final class LeaseAttributes
      */
     public function forUpdate(array $data): array
     {
-        return [
+        $attributes = [
             'status' => $data['status'],
             'signed_at' => $this->optional($data['signed_at'] ?? null),
             'terms_json' => $this->terms($data),
             'notes' => $this->optional($data['notes'] ?? null),
         ];
+
+        if (array_key_exists('renewal_notice_days', $data)) {
+            $attributes['renewal_notice_days'] = $data['renewal_notice_days'];
+        }
+
+        return $attributes;
     }
 
     /**

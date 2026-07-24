@@ -33,6 +33,7 @@ final class StoreLeaseRequest extends FormRequest
             'started_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after:started_at'],
             'signed_at' => ['nullable', 'date'],
+            'renewal_notice_days' => ['sometimes', 'required', 'integer', 'between:0,365'],
             'rent_amount' => ['required', 'numeric', 'min:0'],
             'deposit_amount' => ['nullable', 'numeric', 'min:0'],
             'tax_amount' => ['nullable', 'numeric', 'min:0'],

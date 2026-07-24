@@ -48,6 +48,7 @@ final class LeaseModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-form')
+                ->where('formPage.initialValues.renewal_notice_days', 30)
                 ->where('formPage.fields', function ($fields) use (
                     $activeTenant,
                     $blockedProfile,
@@ -265,7 +266,13 @@ final class LeaseModuleSecurityTest extends TestCase
             $this->createUserWithRole('tenant', $portfolio),
         );
         $asset = $this->createAsset($portfolio, ['occupancy_status' => 'occupied']);
-        $source = $this->createLease($portfolio, $tenant, $asset, $owner);
+        $source = $this->createLease(
+            $portfolio,
+            $tenant,
+            $asset,
+            $owner,
+            ['renewal_notice_days' => 45],
+        );
         $tenant->user()->update(['status' => 'inactive']);
         $renewalStart = $source->ends_at->copy()->addDay()->toDateString();
         $renewalEnd = $source->ends_at->copy()->addYear()->toDateString();
@@ -282,6 +289,7 @@ final class LeaseModuleSecurityTest extends TestCase
                 ->where('formPage.initialValues.status', 'draft')
                 ->where('formPage.initialValues.started_at', $renewalStart)
                 ->where('formPage.initialValues.deposit_amount', 0)
+                ->where('formPage.initialValues.renewal_notice_days', 45)
                 ->where('formPage.fields', function ($fields) use ($asset, $tenant): bool {
                     $fields = collect($fields);
 
@@ -296,6 +304,7 @@ final class LeaseModuleSecurityTest extends TestCase
             'started_at' => $renewalStart,
             'ends_at' => $renewalEnd,
             'deposit_amount' => 0,
+            'renewal_notice_days' => 45,
         ]);
 
         $this->actingAs($owner)
@@ -308,6 +317,7 @@ final class LeaseModuleSecurityTest extends TestCase
 
         $renewal = Lease::query()->where('renewed_from_lease_id', $source->id)->firstOrFail();
         $this->assertSame('draft', $renewal->status);
+        $this->assertSame(45, $renewal->renewal_notice_days);
         $this->assertSame($source->id, $renewal->previousLease->id);
 
         $this->actingAs($owner)
@@ -362,6 +372,42 @@ final class LeaseModuleSecurityTest extends TestCase
 
         $this->assertSame('active', $renewal->fresh()->status);
         $this->assertSame('occupied', $asset->fresh()->occupancy_status);
+    }
+
+    public function test_renewal_notice_days_are_validated_and_saved(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+
+        $this->actingAs($owner)
+            ->put(route('leases.update', $lease), [
+                'status' => 'active',
+                'renewal_notice_days' => 366,
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertSessionHasErrors('renewal_notice_days');
+
+        $this->actingAs($owner)
+            ->put(route('leases.update', $lease), [
+                'status' => 'active',
+                'renewal_notice_days' => 45,
+                'signed_at' => null,
+                'notes' => null,
+            ])
+            ->assertRedirect(route('leases.show', $lease));
+
+        $this->assertSame(45, $lease->fresh()->renewal_notice_days);
     }
 
     public function test_lease_workflow_hides_actions_for_disabled_portfolio_modules(): void
@@ -489,6 +535,7 @@ final class LeaseModuleSecurityTest extends TestCase
             'discount_amount' => 0,
             'currency' => 'sar',
             'billing_day' => 1,
+            'renewal_notice_days' => 30,
             'terms_en' => null,
             'terms_ar' => null,
             'notes' => null,

@@ -225,6 +225,8 @@ $authChecks = [
     '/leases?locale=ar' => 'admin/leases/index',
     '/leases/create' => 'admin/resource-form',
     '/leases/create?locale=ar' => 'admin/resource-form',
+    '/lease-renewals?locale=en' => 'admin/lease-renewals/index',
+    '/lease-renewals?locale=ar' => 'admin/lease-renewals/index',
     '/rent-collection?locale=en' => 'admin/rent-collection/index',
     '/rent-collection?locale=ar' => 'admin/rent-collection/index',
     '/payments?locale=en' => 'admin/payments/index',
@@ -318,6 +320,23 @@ if (! str_contains($leaseExportHeaders, '.xlsx') || ! str_starts_with((string) $
 }
 
 smoke_note('/exports/leases Excel .xlsx');
+
+$leaseRenewalExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/lease-renewals?queue=all&horizon=90&locale=en');
+$leaseRenewalExportHeaders = strtolower((string) $leaseRenewalExport['headers']);
+
+if ($leaseRenewalExport['status'] !== 200) {
+    smoke_fail("Lease renewal export returned {$leaseRenewalExport['status']}.");
+}
+
+if (! str_contains($leaseRenewalExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Lease renewal export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($leaseRenewalExportHeaders, '.xlsx') || ! str_starts_with((string) $leaseRenewalExport['body'], 'PK')) {
+    smoke_fail('Lease renewal export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/lease-renewals Excel .xlsx');
 
 $rentCollectionExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/rent-collection?status=actionable&locale=en');
 $rentCollectionExportHeaders = strtolower((string) $rentCollectionExport['headers']);

@@ -33,6 +33,7 @@ final class LeaseRenewalFormPresenter
             'payment_frequency' => $source->payment_frequency,
             'started_at' => $start->toDateString(),
             'ends_at' => $start->copy()->addDays($duration)->toDateString(),
+            'renewal_notice_days' => $source->renewal_notice_days,
             'rent_amount' => $source->rent_amount,
             'deposit_amount' => 0,
             'tax_amount' => $source->tax_amount,

@@ -46,6 +46,7 @@ final class LeaseDetailOverviewPresenter
                     ['label' => trans('app.leases.managed_by'), 'value' => $lease->managedBy?->name, 'href' => $data->adminMode && PortfolioModules::enabledForUser($data->actor, 'users') ? $this->userAccess->recordHref($data->actor, $lease->managedBy) : null],
                     ['label' => trans('app.leases.started'), 'value' => $lease->started_at?->toDateString()],
                     ['label' => trans('app.leases.ends'), 'value' => $lease->ends_at?->toDateString()],
+                    ['label' => trans('app.leases.renewal_notice_days'), 'value' => trans('app.lease_renewals.notice_days', ['count' => $lease->renewal_notice_days])],
                     ['label' => trans('app.leases.signed'), 'value' => $lease->signed_at?->toDateString() ?? trans('app.leases.not_signed')],
                     ['label' => trans('app.leases.frequency'), 'value' => trans("app.leases.frequency_{$lease->payment_frequency}")],
                     ['label' => trans('app.leases.previous_contract'), 'value' => $lease->previousLease?->code, 'href' => $data->adminMode && $lease->previousLease ? route('leases.show', $lease->previousLease) : null],
