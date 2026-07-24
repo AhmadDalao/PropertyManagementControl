@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\Asset;
 use App\Models\AssetStakeholder;
+use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Modules\Assets\Actions\ManageAssets;
 use App\Modules\Assets\Presenters\AssetFormPresenter;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -209,13 +211,107 @@ class AssetModuleSecurityTest extends TestCase
             ->get(route('assets.show', $asset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.stats.2.value', 10)
-                ->where('detailPage.stats.3.value', 10)
-                ->where('detailPage.stats.4.value', 10)
+                ->where('detailPage.stats.2.value', 11)
+                ->where('detailPage.stats.3.value', 0)
+                ->where('detailPage.workflow.status', '10 open requests')
                 ->has('detailPage.related.0.rows', 8)
                 ->has('detailPage.related.1.rows', 8)
                 ->has('detailPage.related.2.rows', 8)
-                ->has('detailPage.related.3.rows', 8));
+                ->has('detailPage.related.3.rows', 0)
+                ->has('detailPage.related.4.rows', 8)
+                ->has('detailPage.related.5.rows', 8));
+    }
+
+    public function test_asset_detail_does_not_bypass_disabled_portfolio_modules(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'leases' => false,
+                'maintenance' => false,
+                'expenses' => false,
+                'reports' => false,
+                'documents' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, [
+            'name' => 'Module Hidden Tenant',
+        ]);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $unit = $this->createAsset($portfolio, [
+            'parent_id' => $property->id,
+            'occupancy_status' => 'occupied',
+        ]);
+        $lease = $this->createLease($portfolio, $tenant, $unit, $owner, [
+            'code' => 'MODULE-HIDDEN-LEASE',
+        ], false);
+
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $unit->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Module hidden maintenance',
+            'description' => 'This module is disabled.',
+            'requested_at' => now(),
+        ]);
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $unit->id,
+            'created_by_user_id' => $owner->id,
+            'title' => 'Module hidden expense',
+            'category' => 'maintenance',
+            'status' => 'posted',
+            'amount' => 100,
+            'currency' => 'SAR',
+            'incurred_on' => today(),
+        ]);
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => Asset::class,
+            'documentable_id' => $unit->id,
+            'type' => 'property_document',
+            'title_en' => 'Module hidden PDF',
+            'title_ar' => 'ملف مخفي بالوحدة',
+            'disk' => 'local',
+            'file_path' => 'documents/module-hidden.pdf',
+            'original_name' => 'module-hidden.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('assets.show', $property));
+
+        $response
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('detailPage.header.actions', 2)
+                ->has('detailPage.stats', 3)
+                ->has('detailPage.decisionCards', 1)
+                ->has('detailPage.sections', 3)
+                ->has('detailPage.related', 2)
+                ->where('detailPage.related.0.columns', [
+                    'Unit / space',
+                    'Type',
+                    'Occupancy',
+                    'Open',
+                ])
+                ->has('detailPage.documents', 0));
+        $response->assertDontSee('MODULE-HIDDEN-LEASE');
+        $response->assertDontSee('Module Hidden Tenant');
+        $response->assertDontSee('Module hidden maintenance');
+        $response->assertDontSee('Module hidden expense');
+        $response->assertDontSee('Module hidden PDF');
     }
 
     public function test_arabic_asset_detail_uses_arabic_interface_copy(): void
@@ -236,8 +332,8 @@ class AssetModuleSecurityTest extends TestCase
                 ->where('app.direction', 'rtl')
                 ->where('detailPage.header.eyebrow', 'تفاصيل الأصل')
                 ->where('detailPage.header.title', 'أصل التفاصيل العربية')
-                ->where('detailPage.decisionCards.0.title', 'جاهزية الخريطة')
-                ->where('detailPage.related.0.title', 'الأصول الفرعية'));
+                ->where('detailPage.decisionCards.0.title', 'صحة الإشغال')
+                ->where('detailPage.related.0.title', 'المساحات القابلة للتأجير'));
     }
 
     /** @param array<string, mixed> $overrides @return array<string, mixed> */

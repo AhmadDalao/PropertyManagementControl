@@ -11,6 +11,7 @@ type PaymentTableProps = Pick<
     | 'filters'
     | 'counts'
     | 'portfolioOptions'
+    | 'propertyOptions'
     | 'statusOptions'
     | 'typeOptions'
     | 'methodOptions'
@@ -27,6 +28,7 @@ export function PaymentTable(props: PaymentTableProps) {
             types: props.typeOptions,
             methods: props.methodOptions,
             portfolios: props.portfolioOptions,
+            properties: props.propertyOptions,
             includePortfolio:
                 props.auth.user?.roles.includes('superadmin') ?? false,
         },

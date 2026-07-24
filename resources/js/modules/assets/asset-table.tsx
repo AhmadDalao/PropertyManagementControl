@@ -9,6 +9,7 @@ export function AssetTable(props: AssetTableProps) {
     const { t } = useTranslator();
     const filterFields = useAssetFilterFields({
         portfolioOptions: props.portfolioOptions,
+        propertyOptions: props.propertyOptions,
         includePortfolio:
             props.auth.user?.roles.includes('superadmin') ?? false,
     });

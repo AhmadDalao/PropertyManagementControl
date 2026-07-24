@@ -1,15 +1,24 @@
+import { propertyFilterField } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import type { Translator, UiTranslationKey } from '@/lib/i18n';
+import type { PropertyOption } from '@/types';
 
 type LeaseFilterOptions = {
     statuses: string[];
     frequencies: string[];
     portfolios: Array<{ id: number; name: string }>;
     includePortfolio: boolean;
+    properties: PropertyOption[];
 };
 
 export function leaseFilterFields(
-    { statuses, frequencies, portfolios, includePortfolio }: LeaseFilterOptions,
+    {
+        statuses,
+        frequencies,
+        portfolios,
+        properties,
+        includePortfolio,
+    }: LeaseFilterOptions,
     t: Translator,
 ): TableFilterField[] {
     const fields: TableFilterField[] = [
@@ -29,6 +38,7 @@ export function leaseFilterFields(
         fields.push({
             name: 'portfolio_id',
             label: t('leases.portfolio'),
+            clears: ['property_id'],
             options: [
                 { label: t('leases.all'), value: 'all' },
                 ...portfolios.map((portfolio) => ({
@@ -38,6 +48,8 @@ export function leaseFilterFields(
             ],
         });
     }
+
+    fields.push(propertyFilterField(properties, t));
 
     return fields;
 }

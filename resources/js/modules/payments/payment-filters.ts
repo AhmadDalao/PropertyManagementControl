@@ -1,5 +1,7 @@
+import { propertyFilterField } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import type { Translator, UiTranslationKey } from '@/lib/i18n';
+import type { PropertyOption } from '@/types';
 
 type PaymentFilterOptions = {
     statuses: string[];
@@ -7,6 +9,7 @@ type PaymentFilterOptions = {
     methods: string[];
     portfolios: Array<{ id: number; name: string }>;
     includePortfolio: boolean;
+    properties: PropertyOption[];
 };
 
 export function paymentFilterFields(
@@ -15,6 +18,7 @@ export function paymentFilterFields(
         types,
         methods,
         portfolios,
+        properties,
         includePortfolio,
     }: PaymentFilterOptions,
     t: Translator,
@@ -31,6 +35,7 @@ export function paymentFilterFields(
         fields.push({
             name: 'portfolio_id',
             label: t('payments.portfolio'),
+            clears: ['property_id'],
             options: [
                 { label: t('payments.all'), value: 'all' },
                 ...portfolios.map((portfolio) => ({
@@ -40,6 +45,8 @@ export function paymentFilterFields(
             ],
         });
     }
+
+    fields.push(propertyFilterField(properties, t));
 
     return fields;
 }

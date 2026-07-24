@@ -4,6 +4,7 @@ namespace App\Modules\Maintenance\Queries;
 
 use App\Models\MaintenanceRequest;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
@@ -15,6 +16,7 @@ class MaintenanceDirectoryQuery
     public function __construct(
         private readonly MaintenanceAccess $access,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,6 +29,7 @@ class MaintenanceDirectoryQuery
             'priority' => 'all',
             'date_from' => '',
             'date_to' => '',
+            'property_id' => 'all',
         ]);
     }
 
@@ -111,9 +114,9 @@ class MaintenanceDirectoryQuery
      * @param  Builder<MaintenanceRequest>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function applyManagerFilters(Builder $query, array $filters): void
+    public function applyManagerFilters(Builder $query, array $filters, User $actor): void
     {
-        $this->tables->exact($query, $filters, 'portfolio_id');
+        $this->applyManagerScope($query, $filters, $actor);
         $this->applyCommonFilters($query, $filters);
         $this->tables->search($query, (string) $filters['search'], [
             'title',
@@ -140,6 +143,24 @@ class MaintenanceDirectoryQuery
                     ->orWhere('email', 'like', $like),
             ),
         ]);
+    }
+
+    /**
+     * @param  Builder<MaintenanceRequest>  $query
+     * @param  array<string, mixed>  $filters
+     */
+    public function applyManagerScope(Builder $query, array $filters, User $actor): void
+    {
+        $this->tables->exact($query, $filters, 'portfolio_id');
+        $assetIds = $this->properties->assetIds(
+            $actor,
+            $filters['portfolio_id'],
+            $filters['property_id'],
+        );
+
+        if ($assetIds !== null) {
+            $query->whereIn('asset_id', $assetIds);
+        }
     }
 
     /**

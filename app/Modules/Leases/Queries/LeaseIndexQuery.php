@@ -4,6 +4,7 @@ namespace App\Modules\Leases\Queries;
 
 use App\Models\Lease;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Leases\Presenters\LeaseTableRowPresenter;
 use App\Modules\Leases\Support\LeaseOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -18,6 +19,7 @@ final class LeaseIndexQuery
         private readonly LeaseInsightsQuery $insights,
         private readonly LeaseTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,9 +29,9 @@ final class LeaseIndexQuery
         $filters = $this->directory->filters($request);
         $baseQuery = $this->directory->base($actor);
         $summaryQuery = clone $baseQuery;
-        $this->directory->applyPortfolio($summaryQuery, $filters);
+        $this->directory->applyScope($summaryQuery, $filters, $actor);
         $leases = $this->directory->listing(clone $baseQuery);
-        $this->directory->apply($leases, $filters);
+        $this->directory->apply($leases, $filters, $actor);
 
         return [
             'leases' => $this->tables->paginate($leases, $filters, [
@@ -43,6 +45,7 @@ final class LeaseIndexQuery
                 $filters,
             )),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
             'statusOptions' => LeaseOptions::STATUSES,
             'frequencyOptions' => LeaseOptions::PAYMENT_FREQUENCIES,
         ];
@@ -53,7 +56,7 @@ final class LeaseIndexQuery
     {
         $filters = $this->directory->filters($request);
         $query = $this->directory->base($actor)->with(['tenantProfile.user', 'leaseable', 'installments']);
-        $this->directory->apply($query, $filters);
+        $this->directory->apply($query, $filters, $actor);
 
         return $query;
     }

@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type AssetStakeholder = {
@@ -67,9 +68,16 @@ export type AssetIndexPageProps = SharedProps & {
     counts: TableCount[];
     insights: AssetInsights;
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
 };
 
 export type AssetTableProps = Pick<
     AssetIndexPageProps,
-    'assets' | 'filters' | 'counts' | 'portfolioOptions' | 'auth' | 'app'
+    | 'assets'
+    | 'filters'
+    | 'counts'
+    | 'portfolioOptions'
+    | 'propertyOptions'
+    | 'auth'
+    | 'app'
 >;

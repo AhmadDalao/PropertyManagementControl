@@ -11,6 +11,11 @@ export function MaintenanceTable(props: MaintenanceTableProps) {
         categories: props.categoryOptions,
         priorities: props.priorityOptions,
         statuses: props.statusOptions,
+        portfolios: props.portfolioOptions,
+        properties: props.propertyOptions,
+        includePortfolio:
+            props.auth.user?.roles.includes('superadmin') ?? false,
+        includeProperty: props.mode === 'manager',
     });
     const table = useMaintenanceTableConfig(props);
 

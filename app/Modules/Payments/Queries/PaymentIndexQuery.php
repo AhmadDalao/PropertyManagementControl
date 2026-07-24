@@ -4,6 +4,7 @@ namespace App\Modules\Payments\Queries;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Payments\Presenters\PaymentTableRowPresenter;
 use App\Modules\Payments\Support\PaymentOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -18,6 +19,7 @@ final class PaymentIndexQuery
         private readonly PaymentInsightsQuery $insights,
         private readonly PaymentTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,9 +29,9 @@ final class PaymentIndexQuery
         $filters = $this->directory->filters($request);
         $baseQuery = $this->directory->base($actor);
         $summaryQuery = clone $baseQuery;
-        $this->directory->applyPortfolio($summaryQuery, $filters);
+        $this->directory->applyScope($summaryQuery, $filters, $actor);
         $payments = $this->directory->listing(clone $baseQuery);
-        $this->directory->apply($payments, $filters);
+        $this->directory->apply($payments, $filters, $actor);
 
         return [
             'payments' => $this->tables->paginate($payments, $filters, [
@@ -43,6 +45,7 @@ final class PaymentIndexQuery
                 $filters,
             )),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
             'statusOptions' => PaymentOptions::STATUSES,
             'typeOptions' => PaymentOptions::TYPES,
             'methodOptions' => PaymentOptions::METHODS,
@@ -54,7 +57,7 @@ final class PaymentIndexQuery
     {
         $filters = $this->directory->filters($request);
         $query = $this->directory->base($actor)->with(['lease.leaseable', 'tenantProfile.user']);
-        $this->directory->apply($query, $filters);
+        $this->directory->apply($query, $filters, $actor);
 
         return $query;
     }

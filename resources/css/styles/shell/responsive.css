@@ -98,11 +98,6 @@
         display: none;
     }
 
-    .pmc-language-switcher button {
-        min-width: 1.85rem;
-        min-height: 1.95rem;
-    }
-
     .pmc-mobile-search-sheet {
         position: fixed;
         z-index: 110;

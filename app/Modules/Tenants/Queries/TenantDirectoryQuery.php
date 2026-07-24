@@ -4,6 +4,7 @@ namespace App\Modules\Tenants\Queries;
 
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use App\Modules\Tenants\Support\TenantAccess;
@@ -16,6 +17,7 @@ final class TenantDirectoryQuery
     public function __construct(
         private readonly TenantAccess $access,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -25,6 +27,7 @@ final class TenantDirectoryQuery
         $filters = $this->tables->filters($request, [
             'status' => 'all',
             'profile_type' => 'all',
+            'property_id' => 'all',
         ]);
 
         if (! in_array($filters['status'], ['all', ...TenantOptions::STATUSES], true)) {
@@ -81,12 +84,13 @@ final class TenantDirectoryQuery
      * @param  Builder<TenantProfile>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function apply(Builder $query, array $filters): void
+    public function apply(Builder $query, array $filters, User $actor): void
     {
         foreach (['portfolio_id', 'status', 'profile_type'] as $filter) {
             $this->tables->exact($query, $filters, $filter);
         }
 
+        $this->applyProperty($query, $filters, $actor);
         $this->tables->search($query, (string) $filters['search'], [
             'national_id',
             'company_name',
@@ -107,8 +111,28 @@ final class TenantDirectoryQuery
      * @param  Builder<TenantProfile>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function applyPortfolio(Builder $query, array $filters): void
+    public function applyScope(Builder $query, array $filters, User $actor): void
     {
         $this->tables->exact($query, $filters, 'portfolio_id');
+        $this->applyProperty($query, $filters, $actor);
+    }
+
+    /**
+     * @param  Builder<TenantProfile>  $query
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyProperty(Builder $query, array $filters, User $actor): void
+    {
+        $assetIds = $this->properties->assetIds(
+            $actor,
+            $filters['portfolio_id'],
+            $filters['property_id'],
+        );
+
+        if ($assetIds !== null) {
+            $query->whereHas('leases', fn (Builder $leases) => $leases
+                ->whereIn('leaseable_type', $this->properties->leaseableTypes())
+                ->whereIn('leaseable_id', $assetIds));
+        }
     }
 }

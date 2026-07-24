@@ -15,6 +15,7 @@ export type TableFilterField = {
     label: string;
     type?: 'select' | 'date' | 'text';
     options?: Array<{ label: string; value: string | number }>;
+    clears?: string[];
 };
 
 export type MobileTableConfig<T> = {

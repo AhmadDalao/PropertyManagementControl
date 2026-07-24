@@ -52,7 +52,18 @@ final readonly class PortfolioReportDatasetQuery
                 ->where('status', 'posted')
                 ->when(
                     $assetIds !== null,
-                    fn (Builder $query) => $query->whereIn('asset_id', $assetIds),
+                    fn (Builder $query) => $query->where(function (Builder $expenses) use ($assetIds): void {
+                        $expenses
+                            ->whereIn('asset_id', $assetIds)
+                            ->orWhereHas(
+                                'lease',
+                                fn (Builder $leases) => $this->scopeLeases($leases, $assetIds),
+                            )
+                            ->orWhereHas(
+                                'maintenanceRequest',
+                                fn (Builder $requests) => $requests->whereIn('asset_id', $assetIds),
+                            );
+                    }),
                 )
                 ->with('asset'),
             'incurred_on',

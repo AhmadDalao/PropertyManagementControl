@@ -4,8 +4,10 @@ namespace App\Modules\Maintenance\Queries;
 
 use App\Models\MaintenanceRequest;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Maintenance\Presenters\MaintenanceTableRowPresenter;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
+use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -16,6 +18,8 @@ class MaintenanceIndexQuery
         private readonly MaintenanceDirectoryQuery $directory,
         private readonly MaintenanceInsightsQuery $insights,
         private readonly MaintenanceTableRowPresenter $rows,
+        private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,12 +31,18 @@ class MaintenanceIndexQuery
         $baseQuery = $tenantMode
             ? $this->directory->tenantBase($actor)
             : $this->directory->managerBase($actor);
+        $summaryQuery = clone $baseQuery;
+
+        if (! $tenantMode) {
+            $this->directory->applyManagerScope($summaryQuery, $filters, $actor);
+        }
+
         $requests = $this->directory->listing(clone $baseQuery, ! $tenantMode);
 
         if ($tenantMode) {
             $this->directory->applyTenantFilters($requests, $filters);
         } else {
-            $this->directory->applyManagerFilters($requests, $filters);
+            $this->directory->applyManagerFilters($requests, $filters, $actor);
         }
 
         return [
@@ -46,16 +56,18 @@ class MaintenanceIndexQuery
             ])->through(
                 fn (MaintenanceRequest $item): array => $this->rows->present($item, ! $tenantMode),
             ),
-            'maintenanceInsights' => $this->insights->get($baseQuery, ! $tenantMode),
+            'maintenanceInsights' => $this->insights->get($summaryQuery, ! $tenantMode),
             'filters' => $filters,
             'counts' => $this->tables->statusCounts(
-                $baseQuery,
+                $summaryQuery,
                 MaintenanceOptions::STATUSES,
                 $filters,
             ),
             'categoryOptions' => MaintenanceOptions::CATEGORIES,
             'priorityOptions' => MaintenanceOptions::PRIORITIES,
             'statusOptions' => MaintenanceOptions::STATUSES,
+            'portfolioOptions' => $tenantMode ? [] : $this->portfolios->options($actor),
+            'propertyOptions' => $tenantMode ? [] : $this->properties->options($actor),
         ];
     }
 
@@ -65,7 +77,7 @@ class MaintenanceIndexQuery
         $filters = $this->directory->filters($request);
         $requests = $this->directory->managerBase($actor)
             ->with(['asset', 'tenantProfile.user', 'assignedTo']);
-        $this->directory->applyManagerFilters($requests, $filters);
+        $this->directory->applyManagerFilters($requests, $filters, $actor);
 
         return $requests;
     }

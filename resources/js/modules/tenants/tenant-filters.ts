@@ -1,16 +1,20 @@
+import { propertyFilterField } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
+import type { PropertyOption } from '@/types';
 
 export function useTenantFilterFields({
     statuses,
     profileTypes,
     portfolios,
     includePortfolio,
+    properties,
 }: {
     statuses: string[];
     profileTypes: string[];
     portfolios: Array<{ id: number; name: string }>;
     includePortfolio: boolean;
+    properties: PropertyOption[];
 }): TableFilterField[] {
     const { t } = useTranslator();
     const fields: TableFilterField[] = [
@@ -42,6 +46,7 @@ export function useTenantFilterFields({
         fields.push({
             name: 'portfolio_id',
             label: t('tenants.portfolio'),
+            clears: ['property_id'],
             options: [
                 { label: t('tenants.all_portfolios'), value: 'all' },
                 ...portfolios.map((portfolio) => ({
@@ -51,6 +56,8 @@ export function useTenantFilterFields({
             ],
         });
     }
+
+    fields.push(propertyFilterField(properties, t));
 
     return fields;
 }

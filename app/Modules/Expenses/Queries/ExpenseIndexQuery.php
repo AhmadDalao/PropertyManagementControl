@@ -4,6 +4,7 @@ namespace App\Modules\Expenses\Queries;
 
 use App\Models\ExpenseEntry;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Expenses\Presenters\ExpenseTableRowPresenter;
 use App\Modules\Expenses\Support\ExpenseOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -18,6 +19,7 @@ final class ExpenseIndexQuery
         private readonly ExpenseInsightsQuery $insights,
         private readonly ExpenseTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,9 +29,9 @@ final class ExpenseIndexQuery
         $filters = $this->directory->filters($request);
         $baseQuery = $this->directory->base($actor);
         $summaryQuery = clone $baseQuery;
-        $this->directory->applyPortfolio($summaryQuery, $filters);
+        $this->directory->applyScope($summaryQuery, $filters, $actor);
         $expenses = $this->directory->listing(clone $baseQuery);
-        $this->directory->apply($expenses, $filters);
+        $this->directory->apply($expenses, $filters, $actor);
 
         return [
             'expenses' => $this->tables->paginate($expenses, $filters, [
@@ -43,6 +45,7 @@ final class ExpenseIndexQuery
                 $filters,
             )),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
             'categoryOptions' => ExpenseOptions::CATEGORIES,
             'statusOptions' => ExpenseOptions::STATUSES,
         ];
@@ -53,7 +56,7 @@ final class ExpenseIndexQuery
     {
         $filters = $this->directory->filters($request);
         $query = $this->directory->base($actor)->with(['asset', 'maintenanceRequest']);
-        $this->directory->apply($query, $filters);
+        $this->directory->apply($query, $filters, $actor);
 
         return $query;
     }

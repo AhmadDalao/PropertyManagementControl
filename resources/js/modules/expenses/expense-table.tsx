@@ -11,6 +11,7 @@ type ExpenseTableProps = Pick<
     | 'filters'
     | 'counts'
     | 'portfolioOptions'
+    | 'propertyOptions'
     | 'categoryOptions'
     | 'statusOptions'
     | 'auth'
@@ -24,6 +25,7 @@ export function ExpenseTable(props: ExpenseTableProps) {
         statuses: props.statusOptions,
         categories: props.categoryOptions,
         portfolios: props.portfolioOptions,
+        properties: props.propertyOptions,
         includePortfolio:
             props.auth.user?.roles.includes('superadmin') ?? false,
     });

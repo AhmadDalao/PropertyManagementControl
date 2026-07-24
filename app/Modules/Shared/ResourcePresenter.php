@@ -91,12 +91,21 @@ class ResourcePresenter
      */
     public function activityTimeline(Model $model, int $limit = 8): array
     {
+        return $this->activityTimelineFor($model, [(int) $model->getKey()], $limit);
+    }
+
+    /**
+     * @param  array<int, int>  $subjectIds
+     * @return array<int, array<string, mixed>>
+     */
+    public function activityTimelineFor(Model $model, array $subjectIds, int $limit = 8): array
+    {
         $subjectTypes = array_values(array_unique([$model::class, $model->getMorphClass()]));
 
         return Activity::query()
             ->with('causer')
             ->whereIn('subject_type', $subjectTypes)
-            ->where('subject_id', $model->getKey())
+            ->whereIn('subject_id', $subjectIds)
             ->latest()
             ->limit($limit)
             ->get()

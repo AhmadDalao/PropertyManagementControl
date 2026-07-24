@@ -12,6 +12,7 @@ export function TenantTable(props: TenantTableProps) {
         statuses: props.statusOptions,
         profileTypes: props.profileTypeOptions,
         portfolios: props.portfolioOptions,
+        properties: props.propertyOptions,
         includePortfolio:
             props.auth.user?.roles.includes('superadmin') ?? false,
     });

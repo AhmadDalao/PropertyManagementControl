@@ -31,11 +31,19 @@ class AssetModuleArchitectureTest extends TestCase
         $index = $this->source($this->path('app/Modules/Assets/Queries/AssetIndexQuery.php'));
         $form = $this->source($this->path('app/Modules/Assets/Presenters/AssetFormPresenter.php'));
         $detail = $this->source($this->path('app/Modules/Assets/Presenters/AssetDetailPresenter.php'));
+        $operations = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsQuery.php'));
+        $operationRecords = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsRecordsQuery.php'));
+        $operationDocuments = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsDocumentsQuery.php'));
+        $related = $this->source($this->path('app/Modules/Assets/Presenters/AssetRelatedPresenter.php'));
 
         $this->assertLinesAtMost($actions, 40);
         $this->assertLinesAtMost($index, 90);
         $this->assertLinesAtMost($form, 35);
         $this->assertLinesAtMost($detail, 40);
+        $this->assertLinesAtMost($operations, 160);
+        $this->assertLinesAtMost($operationRecords, 210);
+        $this->assertLinesAtMost($operationDocuments, 60);
+        $this->assertLinesAtMost($related, 35);
         $this->assertStringNotContainsString('DB::', $actions);
         $this->assertStringNotContainsString('selectRaw(', $index);
         $this->assertStringNotContainsString('->loadMissing(', $detail);
@@ -86,6 +94,8 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Actions/ManageAssets.php'),
             $this->path('app/Modules/Assets/Actions/UpdateAsset.php'),
             $this->path('app/Modules/Assets/Data/AssetDetailData.php'),
+            $this->path('app/Modules/Assets/Data/AssetOperationsData.php'),
+            $this->path('app/Modules/Assets/Data/AssetOperationsRecordsData.php'),
             $this->path('app/Modules/Assets/Data/AssetFormData.php'),
             $this->path('app/Modules/Assets/Presenters/AssetCreateFormPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetDecisionCardsPresenter.php'),
@@ -96,12 +106,19 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/AssetFormOptionPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetFormPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetRelatedPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/AssetLeaseRelatedPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/AssetServiceRelatedPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/AssetStructureRelatedPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/AssetWorkflowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetTableRowPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetDetailQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetDirectoryQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetFormOptionsQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetIndexQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetInsightsQuery.php'),
+            $this->path('app/Modules/Assets/Queries/AssetOperationsQuery.php'),
+            $this->path('app/Modules/Assets/Queries/AssetOperationsDocumentsQuery.php'),
+            $this->path('app/Modules/Assets/Queries/AssetOperationsRecordsQuery.php'),
             $this->path('app/Modules/Assets/Queries/PropertyMapQuery.php'),
             $this->path('app/Modules/Assets/Requests/HasAssetValidationAttributes.php'),
             $this->path('app/Modules/Assets/Requests/PropertyMapRequest.php'),
@@ -113,6 +130,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Support/AssetOptions.php'),
             $this->path('app/Modules/Assets/Support/AssetReferenceGuard.php'),
             $this->path('app/Modules/Assets/Support/AssetStakeholderManager.php'),
+            $this->path('app/Modules/Assets/Support/PropertyScope.php'),
             $this->path('resources/js/modules/assets/asset-filters.ts'),
             $this->path('resources/js/modules/assets/asset-metrics.tsx'),
             $this->path('resources/js/modules/assets/asset-table-cells.tsx'),

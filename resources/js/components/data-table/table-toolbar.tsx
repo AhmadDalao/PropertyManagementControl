@@ -3,7 +3,7 @@ import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { useTranslator } from '@/lib/i18n';
 import type { TableCount } from '@/types';
 
-import { filterLabel, PAGE_SIZES } from './table-utils';
+import { filterLabel, filterValueLabel, PAGE_SIZES } from './table-utils';
 import type { TableFilterField, TableVisit } from './types';
 
 type TableToolbarProps = {
@@ -135,12 +135,20 @@ export function TableToolbar({
                                 <select
                                     className="form-select"
                                     value={draftFilters[field.name] ?? 'all'}
-                                    onChange={(event) =>
-                                        visit({
+                                    onChange={(event) => {
+                                        const overrides: Record<
+                                            string,
+                                            string
+                                        > = {
                                             [field.name]:
                                                 event.currentTarget.value,
-                                        })
-                                    }
+                                        };
+
+                                        field.clears?.forEach((name) => {
+                                            overrides[name] = 'all';
+                                        });
+                                        visit(overrides);
+                                    }}
                                 >
                                     {(field.options ?? []).map((option) => (
                                         <option
@@ -182,7 +190,7 @@ export function TableToolbar({
                             onClick={() => removeFilter(name)}
                         >
                             {text(filterLabel(name, filterFields))}:{' '}
-                            {text(value)}
+                            {text(filterValueLabel(name, value, filterFields))}
                             <i className="bi bi-x" />
                         </button>
                     ))}

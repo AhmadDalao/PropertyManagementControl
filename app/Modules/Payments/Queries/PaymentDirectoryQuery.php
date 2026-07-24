@@ -5,6 +5,7 @@ namespace App\Modules\Payments\Queries;
 use App\Models\Asset;
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentOptions;
 use App\Modules\Shared\MorphTypes;
@@ -19,6 +20,7 @@ final class PaymentDirectoryQuery
     public function __construct(
         private readonly PaymentAccess $access,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
         private readonly MorphTypes $morphTypes,
     ) {}
@@ -32,6 +34,7 @@ final class PaymentDirectoryQuery
             'method' => 'all',
             'date_from' => '',
             'date_to' => '',
+            'property_id' => 'all',
         ]);
 
         foreach ([
@@ -96,13 +99,14 @@ final class PaymentDirectoryQuery
      * @param  Builder<Payment>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function apply(Builder $query, array $filters): void
+    public function apply(Builder $query, array $filters, User $actor): void
     {
         foreach (['portfolio_id', 'status', 'type', 'method'] as $filter) {
             $this->tables->exact($query, $filters, $filter);
         }
 
         $this->tables->dateRange($query, $filters, 'received_on');
+        $this->applyProperty($query, $filters, $actor);
         $this->tables->search($query, (string) $filters['search'], [
             'reference',
             'notes',
@@ -137,9 +141,29 @@ final class PaymentDirectoryQuery
      * @param  Builder<Payment>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function applyPortfolio(Builder $query, array $filters): void
+    public function applyScope(Builder $query, array $filters, User $actor): void
     {
         $this->tables->exact($query, $filters, 'portfolio_id');
+        $this->applyProperty($query, $filters, $actor);
+    }
+
+    /**
+     * @param  Builder<Payment>  $query
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyProperty(Builder $query, array $filters, User $actor): void
+    {
+        $assetIds = $this->properties->assetIds(
+            $actor,
+            $filters['portfolio_id'],
+            $filters['property_id'],
+        );
+
+        if ($assetIds !== null) {
+            $query->whereHas('lease', fn (Builder $leases) => $leases
+                ->whereIn('leaseable_type', $this->properties->leaseableTypes())
+                ->whereIn('leaseable_id', $assetIds));
+        }
     }
 
     private function validDate(string $value): bool

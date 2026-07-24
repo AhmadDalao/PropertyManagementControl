@@ -11,6 +11,7 @@ type LeaseTableProps = Pick<
     | 'filters'
     | 'counts'
     | 'portfolioOptions'
+    | 'propertyOptions'
     | 'statusOptions'
     | 'frequencyOptions'
     | 'auth'
@@ -25,6 +26,7 @@ export function LeaseTable(props: LeaseTableProps) {
             statuses: props.statusOptions,
             frequencies: props.frequencyOptions,
             portfolios: props.portfolioOptions,
+            properties: props.propertyOptions,
             includePortfolio:
                 props.auth.user?.roles.includes('superadmin') ?? false,
         },

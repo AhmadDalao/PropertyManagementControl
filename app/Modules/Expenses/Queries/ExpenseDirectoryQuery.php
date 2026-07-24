@@ -4,6 +4,7 @@ namespace App\Modules\Expenses\Queries;
 
 use App\Models\ExpenseEntry;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Expenses\Support\ExpenseAccess;
 use App\Modules\Expenses\Support\ExpenseOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -17,6 +18,7 @@ final class ExpenseDirectoryQuery
     public function __construct(
         private readonly ExpenseAccess $access,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -28,6 +30,7 @@ final class ExpenseDirectoryQuery
             'category' => 'all',
             'date_from' => '',
             'date_to' => '',
+            'property_id' => 'all',
         ]);
 
         if (! in_array($filters['status'], ['all', ...ExpenseOptions::STATUSES], true)) {
@@ -86,13 +89,14 @@ final class ExpenseDirectoryQuery
      * @param  Builder<ExpenseEntry>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function apply(Builder $query, array $filters): void
+    public function apply(Builder $query, array $filters, User $actor): void
     {
         foreach (['portfolio_id', 'status', 'category'] as $filter) {
             $this->tables->exact($query, $filters, $filter);
         }
 
         $this->tables->dateRange($query, $filters, 'incurred_on');
+        $this->applyProperty($query, $filters, $actor);
         $this->tables->search($query, (string) $filters['search'], [
             'title',
             'description',
@@ -116,9 +120,35 @@ final class ExpenseDirectoryQuery
      * @param  Builder<ExpenseEntry>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function applyPortfolio(Builder $query, array $filters): void
+    public function applyScope(Builder $query, array $filters, User $actor): void
     {
         $this->tables->exact($query, $filters, 'portfolio_id');
+        $this->applyProperty($query, $filters, $actor);
+    }
+
+    /**
+     * @param  Builder<ExpenseEntry>  $query
+     * @param  array<string, mixed>  $filters
+     */
+    private function applyProperty(Builder $query, array $filters, User $actor): void
+    {
+        $assetIds = $this->properties->assetIds(
+            $actor,
+            $filters['portfolio_id'],
+            $filters['property_id'],
+        );
+
+        if ($assetIds !== null) {
+            $query->where(function (Builder $expenses) use ($assetIds): void {
+                $expenses
+                    ->whereIn('asset_id', $assetIds)
+                    ->orWhereHas('lease', fn (Builder $leases) => $leases
+                        ->whereIn('leaseable_type', $this->properties->leaseableTypes())
+                        ->whereIn('leaseable_id', $assetIds))
+                    ->orWhereHas('maintenanceRequest', fn (Builder $requests) => $requests
+                        ->whereIn('asset_id', $assetIds));
+            });
+        }
     }
 
     private function validDate(string $value): bool

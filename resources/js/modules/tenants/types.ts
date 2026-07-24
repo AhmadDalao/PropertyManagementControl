@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type TenantRecord = {
@@ -42,6 +43,7 @@ export type TenantIndexPageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
     profileTypeOptions: string[];
     statusOptions: string[];
     tenantInsights: TenantInsights;
@@ -53,6 +55,7 @@ export type TenantTableProps = Pick<
     | 'filters'
     | 'counts'
     | 'portfolioOptions'
+    | 'propertyOptions'
     | 'profileTypeOptions'
     | 'statusOptions'
     | 'auth'

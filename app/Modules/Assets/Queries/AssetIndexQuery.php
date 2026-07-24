@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\User;
 use App\Modules\Assets\Presenters\AssetTableRowPresenter;
 use App\Modules\Assets\Support\AssetOptions;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,7 @@ class AssetIndexQuery
         private readonly AssetInsightsQuery $insights,
         private readonly AssetTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,9 +29,9 @@ class AssetIndexQuery
         $filters = $this->directory->filters($request);
         $baseQuery = $this->directory->base($actor);
         $summaryQuery = clone $baseQuery;
-        $this->directory->applyPortfolio($summaryQuery, $filters);
+        $this->directory->applyScope($summaryQuery, $filters, $actor);
         $assets = $this->directory->listing(clone $baseQuery);
-        $this->directory->apply($assets, $filters);
+        $this->directory->apply($assets, $filters, $actor);
 
         return [
             'assets' => $this->tables->paginate($assets, $filters, [
@@ -50,6 +52,7 @@ class AssetIndexQuery
             )),
             'insights' => $this->insights->get($summaryQuery),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
         ];
     }
 
@@ -58,7 +61,7 @@ class AssetIndexQuery
     {
         $filters = $this->directory->filters($request);
         $assets = $this->directory->base($actor)->with(['portfolio', 'parent']);
-        $this->directory->apply($assets, $filters);
+        $this->directory->apply($assets, $filters, $actor);
 
         return $assets;
     }

@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type MaintenanceRecord = {
@@ -49,6 +50,8 @@ export type MaintenanceIndexPageProps = SharedProps & {
     categoryOptions: string[];
     priorityOptions: string[];
     statusOptions: string[];
+    portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
 };
 
 export type MaintenanceTableProps = Pick<
@@ -60,5 +63,8 @@ export type MaintenanceTableProps = Pick<
     | 'categoryOptions'
     | 'priorityOptions'
     | 'statusOptions'
+    | 'portfolioOptions'
+    | 'propertyOptions'
+    | 'auth'
     | 'app'
 >;

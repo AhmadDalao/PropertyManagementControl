@@ -4,6 +4,7 @@ namespace App\Modules\Tenants\Queries;
 
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use App\Modules\Tenants\Presenters\TenantTableRowPresenter;
@@ -18,6 +19,7 @@ final class TenantIndexQuery
         private readonly TenantInsightsQuery $insights,
         private readonly TenantTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -27,9 +29,9 @@ final class TenantIndexQuery
         $filters = $this->directory->filters($request);
         $baseQuery = $this->directory->base($actor);
         $summaryQuery = clone $baseQuery;
-        $this->directory->applyPortfolio($summaryQuery, $filters);
+        $this->directory->applyScope($summaryQuery, $filters, $actor);
         $tenants = $this->directory->listing(clone $baseQuery);
-        $this->directory->apply($tenants, $filters);
+        $this->directory->apply($tenants, $filters, $actor);
 
         return [
             'tenants' => $this->tables->paginate($tenants, $filters, [
@@ -45,6 +47,7 @@ final class TenantIndexQuery
                 $filters,
             )),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
             'tenantInsights' => $this->insights->get($summaryQuery),
             'profileTypeOptions' => TenantOptions::PROFILE_TYPES,
             'statusOptions' => TenantOptions::STATUSES,
@@ -56,7 +59,7 @@ final class TenantIndexQuery
     {
         $filters = $this->directory->filters($request);
         $query = $this->directory->base($actor)->with(['portfolio', 'user']);
-        $this->directory->apply($query, $filters);
+        $this->directory->apply($query, $filters, $actor);
 
         return $query;
     }

@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type PaymentRecord = {
@@ -52,6 +53,7 @@ export type PaymentIndexPageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
     statusOptions: string[];
     typeOptions: string[];
     methodOptions: string[];

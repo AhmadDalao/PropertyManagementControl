@@ -296,13 +296,16 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.spotlight.items.5.value', '31, 36')
                 ->where('detailPage.spotlight.actions.0.href', route('property-map.index'))
                 ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
-                ->where('detailPage.decisionCards.0.title', 'Map readiness')
-                ->where('detailPage.decisionCards.0.value', 'Ready')
-                ->where('detailPage.decisionCards.0.detail', 'Riyadh Prime · RP-77 · 24.7136, 46.6753')
-                ->where('detailPage.decisionCards.0.href', route('property-map.index'))
+                ->where('detailPage.decisionCards.0.title', 'Occupancy health')
+                ->where('detailPage.decisionCards.0.value', '100.0%')
+                ->where('detailPage.decisionCards.0.detail', '1 of 1 occupied · 0 vacant')
+                ->where('detailPage.decisionCards.0.href', route('assets.index', [
+                    'property_id' => $asset->id,
+                    'rentable' => 'yes',
+                ]))
                 ->where('detailPage.decisionCards.0.tone', 'teal')
-                ->where('detailPage.decisionCards.1.title', 'Rental state')
-                ->where('detailPage.decisionCards.1.actionLabel', 'Create lease')
+                ->where('detailPage.decisionCards.1.title', 'Collection health')
+                ->where('detailPage.header.actions.3.label', 'Create lease')
             );
     }
 
@@ -368,28 +371,32 @@ class AssetWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
                 ->where('detailPage.stats.3.value', 1)
-                ->where('detailPage.stats.4.value', 1)
-                ->where('detailPage.stats.5.value', '350.00 SAR')
-                ->where('detailPage.decisionCards.1.title', 'Rental state')
-                ->where('detailPage.decisionCards.1.value', 'Active')
-                ->where('detailPage.decisionCards.1.href', route('leases.show', $lease))
-                ->where('detailPage.decisionCards.2.title', 'Operations risk')
-                ->where('detailPage.decisionCards.2.value', 1)
+                ->where('detailPage.stats.4.value', '3,000.00 SAR')
+                ->where('detailPage.stats.5.value', '-350.00 SAR')
+                ->where('detailPage.workflow.title', 'Collect overdue rent first')
+                ->where('detailPage.decisionCards.1.title', 'Collection health')
+                ->where('detailPage.decisionCards.1.value', '0.0%')
+                ->where('detailPage.decisionCards.2.title', 'Arrears')
+                ->where('detailPage.decisionCards.2.value', '3,000.00 SAR')
                 ->where('detailPage.decisionCards.2.tone', 'danger')
-                ->where('detailPage.decisionCards.3.title', 'Financial position')
-                ->where('detailPage.decisionCards.3.actionLabel', 'Add expense')
-                ->where('detailPage.related.1.title', 'Leases')
-                ->where('detailPage.related.1.rows.0.Lease', $lease->code)
-                ->where('detailPage.related.1.rows.0.Open.href', route('leases.show', $lease))
-                ->where('detailPage.related.1.actionHref', route('leases.create', ['asset_id' => $asset->id]))
-                ->where('detailPage.related.2.title', 'Maintenance')
-                ->where('detailPage.related.2.rows.0.Request', '#'.$request->id.' Panel issue')
-                ->where('detailPage.related.2.rows.0.Open.href', route('maintenance-requests.show', $request))
-                ->where('detailPage.related.2.actionHref', route('maintenance-requests.create', ['asset_id' => $asset->id]))
-                ->where('detailPage.related.3.title', 'Expenses')
-                ->where('detailPage.related.3.rows.0.Expense', 'Panel repair')
-                ->where('detailPage.related.3.rows.0.Open.href', route('expenses.show', $expense))
-                ->where('detailPage.related.3.actionHref', route('expenses.create', ['asset_id' => $asset->id]))
+                ->where('detailPage.decisionCards.3.title', 'Service health')
+                ->where('detailPage.decisionCards.3.value', 1)
+                ->where('detailPage.related.2.title', 'Leases')
+                ->where('detailPage.related.2.rows.0.Lease', $lease->code)
+                ->where('detailPage.related.2.rows.0.Open.href', route('leases.show', $lease))
+                ->where('detailPage.related.2.actionHref', route('leases.show', $lease))
+                ->where('detailPage.related.4.title', 'Maintenance')
+                ->where('detailPage.related.4.rows.0.Request', '#'.$request->id.' Panel issue')
+                ->where('detailPage.related.4.rows.0.Open.href', route('maintenance-requests.show', $request))
+                ->where('detailPage.related.4.actionHref', route('maintenance-requests.index', [
+                    'property_id' => $asset->id,
+                ]))
+                ->where('detailPage.related.5.title', 'Expenses')
+                ->where('detailPage.related.5.rows.0.Expense', 'Panel repair')
+                ->where('detailPage.related.5.rows.0.Open.href', route('expenses.show', $expense))
+                ->where('detailPage.related.5.actionHref', route('expenses.index', [
+                    'property_id' => $asset->id,
+                ]))
             );
     }
 }

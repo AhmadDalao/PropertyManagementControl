@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type LeaseRecord = {
@@ -49,6 +50,7 @@ export type LeaseIndexPageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
     statusOptions: string[];
     frequencyOptions: string[];
 };

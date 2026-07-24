@@ -58,6 +58,13 @@ export type OptionRecord = {
     [key: string]: unknown;
 };
 
+export type PropertyOption = {
+    id: number;
+    portfolio_id: number;
+    name: string;
+    portfolio_name?: string | null;
+};
+
 export type PaginationLink = {
     url: string | null;
     label: string;

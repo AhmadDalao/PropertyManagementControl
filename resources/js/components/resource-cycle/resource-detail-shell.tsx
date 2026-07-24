@@ -29,8 +29,11 @@ export function ResourceDetailShell({
     documents = [],
     timeline = [],
 }: ResourceDetailShellProps) {
-    const financialSections = sections.filter(isFinancialSection);
-    const overviewSections = sections.filter(
+    const visibleSections = sections.filter(
+        (section) => section.items.length > 0,
+    );
+    const financialSections = visibleSections.filter(isFinancialSection);
+    const overviewSections = visibleSections.filter(
         (section) => !financialSections.includes(section),
     );
     const availableTabs = buildAvailableTabs({

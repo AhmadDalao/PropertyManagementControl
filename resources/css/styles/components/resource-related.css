@@ -49,6 +49,9 @@
 }
 
 .pmc-resource-decision-card > a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
     color: var(--pmc-teal);
     font-weight: 800;
     text-decoration: none;

@@ -28,6 +28,19 @@ export function filterLabel(name: string, fields: TableFilterField[]): string {
     );
 }
 
+export function filterValueLabel(
+    name: string,
+    value: string,
+    fields: TableFilterField[],
+): string {
+    const field = fields.find((candidate) => candidate.name === name);
+    const option = field?.options?.find(
+        (candidate) => String(candidate.value) === value,
+    );
+
+    return option?.label ?? value;
+}
+
 export function interpolate(
     value: string,
     replacements: Record<string, string | number>,

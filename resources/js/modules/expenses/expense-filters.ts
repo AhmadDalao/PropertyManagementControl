@@ -1,17 +1,21 @@
+import { propertyFilterField } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
+import type { PropertyOption } from '@/types';
 
 type ExpenseFilterOptions = {
     statuses: string[];
     categories: string[];
     portfolios: Array<{ id: number; name: string }>;
     includePortfolio: boolean;
+    properties: PropertyOption[];
 };
 
 export function useExpenseFilterFields({
     statuses,
     categories,
     portfolios,
+    properties,
     includePortfolio,
 }: ExpenseFilterOptions): TableFilterField[] {
     const { t } = useTranslator();
@@ -46,6 +50,7 @@ export function useExpenseFilterFields({
         fields.push({
             name: 'portfolio_id',
             label: t('expenses.portfolio'),
+            clears: ['property_id'],
             options: [
                 { label: t('expenses.all'), value: 'all' },
                 ...portfolios.map((portfolio) => ({
@@ -55,6 +60,8 @@ export function useExpenseFilterFields({
             ],
         });
     }
+
+    fields.push(propertyFilterField(properties, t));
 
     return fields;
 }

@@ -33,4 +33,26 @@ class AssetHierarchy
 
         return $ids;
     }
+
+    public function root(Asset $asset): Asset
+    {
+        $current = $asset;
+        $visited = [];
+
+        while ($current->parent_id !== null && ! isset($visited[$current->id])) {
+            $visited[$current->id] = true;
+            $parent = Asset::query()
+                ->whereKey($current->parent_id)
+                ->where('portfolio_id', $asset->portfolio_id)
+                ->first();
+
+            if (! $parent) {
+                break;
+            }
+
+            $current = $parent;
+        }
+
+        return $current;
+    }
 }
