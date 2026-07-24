@@ -91,6 +91,7 @@ class GlobalSearchExportInfrastructureTest extends TestCase
             'tenants',
             'leases',
             'payments',
+            'rent-collection',
             'maintenance-requests',
             'expenses',
             'documents',

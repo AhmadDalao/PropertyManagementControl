@@ -20,7 +20,7 @@ export function OperationsPriorityPanels({
                 description={t('dashboard.collection_queue_description')}
                 action={{
                     label: t('dashboard.open_collections'),
-                    href: '/reports?tab=collections',
+                    href: '/rent-collection?status=actionable',
                 }}
             >
                 <DashboardRecordList

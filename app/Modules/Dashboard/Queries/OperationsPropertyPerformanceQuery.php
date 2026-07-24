@@ -10,8 +10,8 @@ use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Assets\Support\AssetHierarchy;
+use App\Modules\Assets\Support\AssetRootMap;
 use App\Modules\Dashboard\Support\PropertyPerformanceScorer;
-use App\Modules\Dashboard\Support\PropertyRootMap;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Support\Collection;
 
@@ -20,7 +20,7 @@ final readonly class OperationsPropertyPerformanceQuery
     public function __construct(
         private PortfolioScope $portfolios,
         private AssetHierarchy $hierarchy,
-        private PropertyRootMap $rootMap,
+        private AssetRootMap $rootMap,
         private PropertyPerformanceScorer $scorer,
     ) {}
 

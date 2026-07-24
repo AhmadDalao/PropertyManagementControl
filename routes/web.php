@@ -24,6 +24,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\PublicSiteController;
+use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\TenantController;
@@ -71,6 +72,9 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement')->middleware('portfolio.module:leases');
 
+    Route::get('/rent-collection', [RentCollectionController::class, 'index'])
+        ->name('rent-collection.index')
+        ->middleware('portfolio.module:payments');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
 

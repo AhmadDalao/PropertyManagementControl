@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Modules\Dashboard\Support;
+namespace App\Modules\Assets\Support;
 
 use App\Models\Asset;
 use Illuminate\Support\Collection;
 
-final class PropertyRootMap
+final class AssetRootMap
 {
     /**
      * @param  Collection<int, Asset>  $assets

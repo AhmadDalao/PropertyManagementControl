@@ -51,7 +51,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $stats = $this->source('app/Modules/Dashboard/Queries/OperationsStatsQuery.php');
         $operations = $this->source('app/Modules/Dashboard/Presenters/OperationsDashboardPresenter.php');
         $properties = $this->source('app/Modules/Dashboard/Queries/OperationsPropertyPerformanceQuery.php');
-        $rootMap = $this->source('app/Modules/Dashboard/Support/PropertyRootMap.php');
+        $rootMap = $this->source('app/Modules/Assets/Support/AssetRootMap.php');
         $scorer = $this->source('app/Modules/Dashboard/Support/PropertyPerformanceScorer.php');
 
         $this->assertStringContainsString('LeaseInstallment::query()', $stats);

@@ -225,6 +225,8 @@ $authChecks = [
     '/leases?locale=ar' => 'admin/leases/index',
     '/leases/create' => 'admin/resource-form',
     '/leases/create?locale=ar' => 'admin/resource-form',
+    '/rent-collection?locale=en' => 'admin/rent-collection/index',
+    '/rent-collection?locale=ar' => 'admin/rent-collection/index',
     '/payments?locale=en' => 'admin/payments/index',
     '/payments?locale=ar' => 'admin/payments/index',
     '/payments/create?locale=en' => 'admin/resource-form',
@@ -316,6 +318,23 @@ if (! str_contains($leaseExportHeaders, '.xlsx') || ! str_starts_with((string) $
 }
 
 smoke_note('/exports/leases Excel .xlsx');
+
+$rentCollectionExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/rent-collection?status=actionable&locale=en');
+$rentCollectionExportHeaders = strtolower((string) $rentCollectionExport['headers']);
+
+if ($rentCollectionExport['status'] !== 200) {
+    smoke_fail("Rent collection export returned {$rentCollectionExport['status']}.");
+}
+
+if (! str_contains($rentCollectionExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Rent collection export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($rentCollectionExportHeaders, '.xlsx') || ! str_starts_with((string) $rentCollectionExport['body'], 'PK')) {
+    smoke_fail('Rent collection export was not a valid .xlsx download.');
+}
+
+smoke_note('/exports/rent-collection Excel .xlsx');
 
 $paymentIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/payments?status=posted&per_page=10&locale=en');
 $paymentPayload = smoke_page_payload($paymentIndex['body']);

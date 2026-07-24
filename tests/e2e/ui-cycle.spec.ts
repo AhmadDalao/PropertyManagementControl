@@ -32,6 +32,7 @@ const primaryAdminRoutes = [
     '/assets',
     '/tenants',
     '/leases',
+    '/rent-collection',
     '/payments',
     '/maintenance-requests',
     '/expenses',
@@ -240,6 +241,7 @@ test.describe('authenticated administration', () => {
             '/assets',
             '/tenants',
             '/leases',
+            '/rent-collection',
             '/payments',
             '/maintenance-requests',
             '/expenses',
@@ -273,6 +275,53 @@ test.describe('authenticated administration', () => {
                 await expect(mobileCards.first()).toBeVisible();
             }
         }
+    });
+
+    test('rent collection stays direct, touch-safe, and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/rent-collection?locale=en');
+
+        await expect(
+            page.getByRole('heading', { name: 'Rent Collection' }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-list')).toBeHidden();
+        await expectNoHorizontalOverflow(page);
+
+        await page.setViewportSize(viewports.mobile);
+        await page.reload();
+
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+        await expectMinimumTouchHeight(
+            page,
+            [
+                '.pmc-workspace-action',
+                '.pmc-filter-chip',
+                '.pmc-table-search .form-control',
+                '.pmc-mobile-filter-trigger',
+                '.pmc-active-filters button',
+                '.pmc-mobile-record-head > div > a',
+                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-action-menu > summary',
+            ].join(', '),
+        );
+
+        await page.goto('/rent-collection?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'تحصيل الإيجارات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
     });
 
     test('primary administration routes never overflow', async ({ page }) => {
@@ -1203,6 +1252,7 @@ test.describe('authenticated administration', () => {
                 '/profile',
                 '/assets',
                 '/property-map',
+                '/rent-collection',
                 '/reports',
                 '/audit-logs',
                 '/media-files',
@@ -1226,20 +1276,32 @@ test.describe('authenticated administration', () => {
 test.describe('local role dashboards', () => {
     const roleNavigation = {
         superadmin: {
-            visible: ['/assets', '/cms', '/wording', '/system/showcase-data'],
+            visible: [
+                '/assets',
+                '/rent-collection',
+                '/cms',
+                '/wording',
+                '/system/showcase-data',
+            ],
             hidden: [] as string[],
         },
         owner: {
-            visible: ['/assets', '/payments', '/users'],
+            visible: ['/assets', '/rent-collection', '/payments', '/users'],
             hidden: ['/cms', '/wording', '/system/showcase-data'],
         },
         manager: {
-            visible: ['/assets', '/payments', '/users'],
+            visible: ['/assets', '/rent-collection', '/payments', '/users'],
             hidden: ['/cms', '/wording', '/system/showcase-data'],
         },
         tenant: {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
-            hidden: ['/assets', '/payments', '/users', '/cms'],
+            hidden: [
+                '/assets',
+                '/rent-collection',
+                '/payments',
+                '/users',
+                '/cms',
+            ],
         },
     } as const;
 
@@ -1303,4 +1365,26 @@ async function expectNoHorizontalOverflow(page: Page) {
     });
 
     expect(overflow).toBeLessThanOrEqual(1);
+}
+
+async function expectMinimumTouchHeight(page: Page, selector: string) {
+    const heights = await page.locator(selector).evaluateAll((nodes) =>
+        nodes
+            .filter((node) => {
+                const styles = window.getComputedStyle(node);
+
+                return (
+                    styles.display !== 'none' &&
+                    styles.visibility !== 'hidden' &&
+                    node.getBoundingClientRect().height > 0
+                );
+            })
+            .map((node) => node.getBoundingClientRect().height),
+    );
+
+    expect(heights.length).toBeGreaterThan(0);
+
+    for (const height of heights) {
+        expect(height).toBeGreaterThanOrEqual(44);
+    }
 }

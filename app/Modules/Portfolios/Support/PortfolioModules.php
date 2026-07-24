@@ -80,6 +80,7 @@ class PortfolioModules
             'tenants' => 'tenants',
             'leases' => 'leases',
             'payments' => 'payments',
+            'rent-collection' => 'payments',
             'maintenance-requests' => 'maintenance',
             'expenses' => 'expenses',
             'documents' => 'documents',

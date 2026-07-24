@@ -204,7 +204,7 @@ class DashboardModuleTest extends TestCase
                 ->where('recentPayments.0.id', $posted->id)
                 ->has('recentMaintenance', 1)
                 ->where('recentMaintenance.0.id', $openRequest->id)
-                ->where('nextActions.0.href', '/reports?tab=collections'));
+                ->where('nextActions.0.href', '/rent-collection?status=overdue'));
     }
 
     public function test_tenant_dashboard_excludes_unposted_payments_and_returns_arabic_document_titles(): void

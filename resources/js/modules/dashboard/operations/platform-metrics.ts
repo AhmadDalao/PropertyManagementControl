@@ -63,7 +63,7 @@ export function platformMetrics(
             }),
             icon: 'bi-exclamation-circle',
             tone: props.stats.arrears > 0 ? 'red' : 'amber',
-            href: '/reports',
+            href: '/rent-collection?status=overdue',
         },
     ];
 }

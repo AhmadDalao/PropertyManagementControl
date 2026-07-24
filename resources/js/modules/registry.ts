@@ -72,6 +72,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
         labelKey: 'nav.group_operations',
         items: [
             {
+                labelKey: 'nav.rent_collection',
+                href: '/rent-collection',
+                icon: 'bi-calendar2-check',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'payments',
+            },
+            {
                 labelKey: 'nav.payments',
                 href: '/payments',
                 icon: 'bi-cash-stack',

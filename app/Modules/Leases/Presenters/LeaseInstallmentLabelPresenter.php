@@ -3,6 +3,7 @@
 namespace App\Modules\Leases\Presenters;
 
 use App\Models\LeaseInstallment;
+use Carbon\CarbonInterface;
 
 final class LeaseInstallmentLabelPresenter
 {
@@ -17,8 +18,28 @@ final class LeaseInstallmentLabelPresenter
         }
 
         return trans('app.leases.rent_period', [
-            'start' => $installment->period_start?->format('Y/m/d') ?? '-',
-            'end' => $installment->period_end?->format('Y/m/d') ?? '-',
+            'start' => $this->arabicDate($installment->period_start),
+            'end' => $this->arabicDate($installment->period_end),
+        ]);
+    }
+
+    private function arabicDate(?CarbonInterface $date): string
+    {
+        if (! $date) {
+            return '-';
+        }
+
+        return strtr($date->copy()->locale('ar')->translatedFormat('j F Y'), [
+            '0' => '٠',
+            '1' => '١',
+            '2' => '٢',
+            '3' => '٣',
+            '4' => '٤',
+            '5' => '٥',
+            '6' => '٦',
+            '7' => '٧',
+            '8' => '٨',
+            '9' => '٩',
         ]);
     }
 }

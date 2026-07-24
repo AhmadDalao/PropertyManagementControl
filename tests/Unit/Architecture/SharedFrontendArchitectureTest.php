@@ -142,6 +142,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'desktop.css',
             'pagination.css',
             'responsive.css',
+            'touch.css',
         ], 300);
 
         $this->assertStylesheetFacade('workspaces', [

@@ -31,69 +31,73 @@ export function MobileRecordList<T extends DataTableRow>({
     return (
         <div className="pmc-mobile-record-list">
             {rows.length > 0 ? (
-                rows.map((row, index) => (
-                    <article
-                        className="pmc-mobile-record-card"
-                        key={rowKey ? rowKey(row) : (row.id ?? index)}
-                    >
-                        <div className="pmc-mobile-record-head">
-                            <div>
+                rows.map((row, index) => {
+                    const actions = config.actions?.(row);
+
+                    return (
+                        <article
+                            className="pmc-mobile-record-card"
+                            key={rowKey ? rowKey(row) : (row.id ?? index)}
+                        >
+                            <div className="pmc-mobile-record-head">
+                                <div>
+                                    {rowHref ? (
+                                        <Link href={rowHref(row)}>
+                                            {config.title(row)}
+                                        </Link>
+                                    ) : (
+                                        config.title(row)
+                                    )}
+                                    {config.subtitle ? (
+                                        <small>{config.subtitle(row)}</small>
+                                    ) : null}
+                                    {isShowcaseRow(row) ? (
+                                        <ShowcaseBadge
+                                            label={t('showcase.badge')}
+                                        />
+                                    ) : null}
+                                </div>
+                                {config.status ? config.status(row) : null}
+                            </div>
+                            {config.meta && config.meta.length > 0 ? (
+                                <dl>
+                                    {config.meta.slice(0, 3).map((item) => (
+                                        <div key={item.label}>
+                                            <dt>{text(item.label)}</dt>
+                                            <dd>{item.value(row)}</dd>
+                                        </div>
+                                    ))}
+                                </dl>
+                            ) : null}
+                            <div className="pmc-mobile-record-footer">
                                 {rowHref ? (
-                                    <Link href={rowHref(row)}>
-                                        {config.title(row)}
+                                    <Link
+                                        href={rowHref(row)}
+                                        className="pmc-record-open"
+                                    >
+                                        {t('actions.open', 'Open')}
+                                        <i className="bi bi-arrow-up-right" />
                                     </Link>
                                 ) : (
-                                    config.title(row)
+                                    <span />
                                 )}
-                                {config.subtitle ? (
-                                    <small>{config.subtitle(row)}</small>
-                                ) : null}
-                                {isShowcaseRow(row) ? (
-                                    <ShowcaseBadge
-                                        label={t('showcase.badge')}
-                                    />
+                                {actions ? (
+                                    <details className="pmc-mobile-action-menu">
+                                        <summary
+                                            aria-label={t(
+                                                'common.more_actions',
+                                                'More actions',
+                                            )}
+                                        >
+                                            <i className="bi bi-three-dots" />
+                                        </summary>
+                                        <div>{actions}</div>
+                                    </details>
                                 ) : null}
                             </div>
-                            {config.status ? config.status(row) : null}
-                        </div>
-                        {config.meta && config.meta.length > 0 ? (
-                            <dl>
-                                {config.meta.slice(0, 3).map((item) => (
-                                    <div key={item.label}>
-                                        <dt>{text(item.label)}</dt>
-                                        <dd>{item.value(row)}</dd>
-                                    </div>
-                                ))}
-                            </dl>
-                        ) : null}
-                        <div className="pmc-mobile-record-footer">
-                            {rowHref ? (
-                                <Link
-                                    href={rowHref(row)}
-                                    className="pmc-record-open"
-                                >
-                                    {t('actions.open', 'Open')}
-                                    <i className="bi bi-arrow-up-right" />
-                                </Link>
-                            ) : (
-                                <span />
-                            )}
-                            {config.actions ? (
-                                <details className="pmc-mobile-action-menu">
-                                    <summary
-                                        aria-label={t(
-                                            'common.more_actions',
-                                            'More actions',
-                                        )}
-                                    >
-                                        <i className="bi bi-three-dots" />
-                                    </summary>
-                                    <div>{config.actions(row)}</div>
-                                </details>
-                            ) : null}
-                        </div>
-                    </article>
-                ))
+                        </article>
+                    );
+                })
             ) : (
                 <TableEmpty
                     title={t('table.no_matches', 'No matching records')}

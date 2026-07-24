@@ -14,6 +14,7 @@ use App\Modules\Media\Actions\MediaFileWorkbookExport;
 use App\Modules\Payments\Actions\PaymentWorkbookExport;
 use App\Modules\Portfolios\Actions\PortfolioWorkbookExport;
 use App\Modules\Portfolios\Support\PortfolioModules;
+use App\Modules\RentCollection\Actions\RentCollectionWorkbookExport;
 use App\Modules\Tenants\Actions\TenantWorkbookExport;
 use App\Modules\Users\Actions\UserWorkbookExport;
 use Illuminate\Contracts\Container\Container;
@@ -28,6 +29,7 @@ class ResourceExportRegistry
         'tenants' => TenantWorkbookExport::class,
         'leases' => LeaseWorkbookExport::class,
         'payments' => PaymentWorkbookExport::class,
+        'rent-collection' => RentCollectionWorkbookExport::class,
         'maintenance-requests' => MaintenanceWorkbookExport::class,
         'expenses' => ExpenseWorkbookExport::class,
         'documents' => DocumentWorkbookExport::class,

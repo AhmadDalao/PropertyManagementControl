@@ -40,7 +40,7 @@ export function portfolioMetrics(
             }),
             icon: 'bi-calendar2-check',
             tone: 'ink',
-            href: '/reports?tab=collections',
+            href: '/rent-collection?status=actionable',
         },
         {
             label: t('dashboard.collection_rate'),
@@ -54,7 +54,7 @@ export function portfolioMetrics(
             }),
             icon: 'bi-wallet2',
             tone: props.financial.collectionRate >= 80 ? 'teal' : 'amber',
-            href: '/reports?tab=collections',
+            href: '/rent-collection?status=overdue',
         },
         {
             label: t('dashboard.net_cash_flow'),

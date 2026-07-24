@@ -1,0 +1,35 @@
+@media (max-width: 991.98px) {
+    .pmc-filter-chip,
+    .pmc-active-filters button {
+        min-height: 2.75rem;
+        scroll-snap-align: start;
+    }
+
+    .pmc-table-search .form-control,
+    .pmc-table-filter .form-control,
+    .pmc-table-filter .form-select,
+    .pmc-table-page-size .form-select,
+    .pmc-table-actions .btn {
+        min-height: 2.75rem;
+    }
+
+    .pmc-mobile-record-head > div > a {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+    }
+
+    .pmc-mobile-action-menu > summary {
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        border-radius: 999px;
+    }
+
+    .pmc-mobile-record-card .pmc-record-open,
+    .pmc-mobile-record-card .pmc-record-actions .btn,
+    .pmc-mobile-record-card .pmc-record-actions button,
+    .pmc-mobile-action-menu > div .btn {
+        min-height: 2.75rem;
+        align-items: center;
+    }
+}

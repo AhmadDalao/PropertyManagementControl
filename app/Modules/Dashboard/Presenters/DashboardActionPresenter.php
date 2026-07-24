@@ -18,7 +18,7 @@ class DashboardActionPresenter
             $actions[] = $this->action(
                 'Collect outstanding rent',
                 'Open payment and arrears views before balances get stale.',
-                '/reports?tab=collections',
+                '/rent-collection?status=overdue',
                 'bi-cash-stack',
             );
         }
