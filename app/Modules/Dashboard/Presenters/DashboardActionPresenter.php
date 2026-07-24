@@ -18,7 +18,7 @@ class DashboardActionPresenter
             $actions[] = $this->action(
                 'Collect outstanding rent',
                 'Open payment and arrears views before balances get stale.',
-                '/payments',
+                '/reports?tab=collections',
                 'bi-cash-stack',
             );
         }
@@ -27,7 +27,7 @@ class DashboardActionPresenter
             $actions[] = $this->action(
                 'Triage maintenance backlog',
                 'Assign priority, publish tenant updates, and record service cost.',
-                '/maintenance-requests',
+                '/maintenance-requests?status=open',
                 'bi-tools',
             );
         }

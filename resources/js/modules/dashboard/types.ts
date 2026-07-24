@@ -4,6 +4,18 @@ import type {
 } from '@/modules/property-map/types';
 import type { SharedProps } from '@/types';
 
+import type {
+    CollectionQueueItem,
+    OperationsFinancial,
+    PropertyPerformance,
+} from './operations-types';
+
+export type {
+    CollectionQueueItem,
+    OperationsFinancial,
+    PropertyPerformance,
+} from './operations-types';
+
 export type NextAction = {
     label: string;
     description: string;
@@ -53,6 +65,7 @@ export type OperationsStats = {
 export type OperationsDashboardProps = SharedProps & {
     mode: 'portfolio' | 'superadmin';
     stats: OperationsStats;
+    financial: OperationsFinancial;
     nextActions: NextAction[];
     charts: { occupancy: Record<string, number> };
     setupChecklist: SetupItem[];
@@ -67,6 +80,8 @@ export type OperationsDashboardProps = SharedProps & {
     };
     expiringLeases: ExpiringLease[];
     arrearsLeases: ArrearsLease[];
+    collectionQueue: CollectionQueueItem[];
+    propertyPerformance: PropertyPerformance[];
     recentPayments: Array<{
         id: number;
         amount: number;

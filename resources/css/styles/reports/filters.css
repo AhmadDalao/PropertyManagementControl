@@ -1,6 +1,6 @@
 .pmc-report-toolbar {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
     align-items: end;
     gap: 0.75rem;
     margin-bottom: 1rem;

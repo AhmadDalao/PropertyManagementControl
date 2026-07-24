@@ -30,6 +30,8 @@ class DashboardModuleArchitectureTest extends TestCase
             'Presenters/TenantDashboardPresenter.php',
             'Queries/DashboardPropertyMapQuery.php',
             'Queries/OperationsActivityQuery.php',
+            'Queries/OperationsCollectionQuery.php',
+            'Queries/OperationsFinancialQuery.php',
             'Queries/OperationsLeaseQuery.php',
             'Queries/OperationsOccupancyQuery.php',
             'Queries/OperationsStatsQuery.php',
@@ -48,10 +50,16 @@ class DashboardModuleArchitectureTest extends TestCase
 
         $stats = $this->source('app/Modules/Dashboard/Queries/OperationsStatsQuery.php');
         $operations = $this->source('app/Modules/Dashboard/Presenters/OperationsDashboardPresenter.php');
+        $properties = $this->source('app/Modules/Dashboard/Queries/OperationsPropertyPerformanceQuery.php');
+        $rootMap = $this->source('app/Modules/Dashboard/Support/PropertyRootMap.php');
+        $scorer = $this->source('app/Modules/Dashboard/Support/PropertyPerformanceScorer.php');
 
         $this->assertStringContainsString('LeaseInstallment::query()', $stats);
         $this->assertStringNotContainsString("->with('installments')", $stats);
         $this->assertStringNotContainsString('paymentHealth', $operations);
+        $this->assertLessThanOrEqual(220, substr_count($properties, "\n") + 1);
+        $this->assertLessThanOrEqual(60, substr_count($rootMap, "\n") + 1);
+        $this->assertLessThanOrEqual(60, substr_count($scorer, "\n") + 1);
     }
 
     #[Test]
@@ -78,6 +86,10 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/operations-metrics.tsx',
             'operations/operations-priority-panels.tsx',
             'operations/platform-status-panel.tsx',
+            'operations/platform-metrics.ts',
+            'operations/portfolio-metrics.ts',
+            'operations/property-performance-grid.tsx',
+            'operations-types.ts',
             'shared/health-signals.tsx',
             'shared/record-list.tsx',
             'tenant/tenant-header.tsx',

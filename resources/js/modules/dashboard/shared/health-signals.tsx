@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 import { useTranslator } from '@/lib/i18n';
+import { percent } from '@/lib/utils';
 
 export type HealthSignal = {
     label: string;
@@ -9,7 +10,7 @@ export type HealthSignal = {
 };
 
 export function HealthSignals({ signals }: { signals: HealthSignal[] }) {
-    const { text } = useTranslator();
+    const { locale, text } = useTranslator();
 
     return (
         <div className="pmc-health-signals">
@@ -17,7 +18,7 @@ export function HealthSignals({ signals }: { signals: HealthSignal[] }) {
                 <Link key={signal.label} href={signal.href}>
                     <div>
                         <span>{text(signal.label)}</span>
-                        <strong>{signal.value}%</strong>
+                        <strong>{percent(signal.value, locale)}</strong>
                     </div>
                     <div className="pmc-health-track">
                         <i

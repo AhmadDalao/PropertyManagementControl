@@ -8,6 +8,7 @@ export type ReportFilterValues = {
     date_from: string;
     date_to: string;
     portfolio_id: string;
+    property_id: string;
 };
 
 export type ArrearsLease = {
@@ -73,8 +74,14 @@ export type ReportsPageProps = SharedProps & {
         date_from: string;
         date_to: string;
         portfolio_id?: number | null;
+        property_id?: number | null;
     };
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: Array<{
+        id: number;
+        portfolio_id: number;
+        name: string;
+    }>;
     presetVisibilityOptions: PresetVisibility[];
     summary: {
         revenue: number;

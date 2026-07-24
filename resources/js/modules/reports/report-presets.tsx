@@ -1,4 +1,5 @@
 import { useTranslator } from '@/lib/i18n';
+import { localizedNumber } from '@/lib/utils';
 
 import { ReportPresetForm } from './report-preset-form';
 import { ReportPresetList } from './report-preset-list';
@@ -17,7 +18,7 @@ export function ReportPresets({
     presets: ReportPreset[];
     visibilityOptions: PresetVisibility[];
 }) {
-    const { t } = useTranslator();
+    const { locale, t } = useTranslator();
 
     return (
         <details className="pmc-report-presets-compact">
@@ -25,7 +26,7 @@ export function ReportPresets({
                 <div>
                     <i className="bi bi-bookmark" aria-hidden="true" />
                     <span>{t('reports.saved_views')}</span>
-                    <strong>{presets.length}</strong>
+                    <strong>{localizedNumber(presets.length, locale)}</strong>
                 </div>
                 <i className="bi bi-chevron-down" aria-hidden="true" />
             </summary>

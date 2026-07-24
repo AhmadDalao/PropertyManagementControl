@@ -60,6 +60,21 @@ export function dateTime(
     }).format(new Date(value));
 }
 
-export function percent(value: number): string {
-    return `${Number.isFinite(value) ? value.toFixed(1) : '0.0'}%`;
+export function percent(value: number, locale = 'en'): string {
+    return new Intl.NumberFormat(localeTag(locale), {
+        style: 'percent',
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1,
+    }).format((Number.isFinite(value) ? value : 0) / 100);
+}
+
+export function localizedNumber(
+    value: number,
+    locale = 'en',
+    minimumIntegerDigits = 1,
+): string {
+    return new Intl.NumberFormat(localeTag(locale), {
+        minimumIntegerDigits,
+        maximumFractionDigits: 1,
+    }).format(Number.isFinite(value) ? value : 0);
 }

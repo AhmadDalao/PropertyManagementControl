@@ -68,8 +68,9 @@ class ReportController extends Controller
     public function export(ReportIndexRequest $request): BinaryFileResponse
     {
         $filters = $request->filters();
-        $report = $this->reports->handle($this->actor($request), $filters);
+        $actor = $this->actor($request);
+        $report = $this->reports->handle($actor, $filters);
 
-        return $this->workbook->download($report, $filters);
+        return $this->workbook->download($report, $filters, $actor);
     }
 }

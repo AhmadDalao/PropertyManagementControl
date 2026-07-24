@@ -1,6 +1,6 @@
 import { WorkspacePanel } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
+import { currency, humanDate, localizedNumber } from '@/lib/utils';
 
 import { BreakdownBars, ReportRecordSection } from './report-visuals';
 import type { ReportsPageProps } from './types';
@@ -64,10 +64,10 @@ export function ReportCollections({ props }: { props: ReportsPageProps }) {
                         title:
                             asset.asset ||
                             t('reports.asset_number', undefined, {
-                                number: index + 1,
+                                number: localizedNumber(index + 1, locale),
                             }),
                         meta: t('reports.lease_count', undefined, {
-                            count: asset.lease_count,
+                            count: localizedNumber(asset.lease_count, locale),
                         }),
                         value: currency(asset.revenue, locale, asset.currency),
                         tone: 'success',

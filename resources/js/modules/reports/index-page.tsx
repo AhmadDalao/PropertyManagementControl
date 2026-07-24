@@ -25,6 +25,9 @@ export default function ReportsIndexPage() {
         portfolio_id: props.filters.portfolio_id
             ? String(props.filters.portfolio_id)
             : 'all',
+        property_id: props.filters.property_id
+            ? String(props.filters.property_id)
+            : 'all',
     });
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<ReportTab>(() => {
@@ -100,6 +103,7 @@ export default function ReportsIndexPage() {
                 filtersOpen={filtersOpen}
                 mode={props.mode}
                 portfolioOptions={props.portfolioOptions}
+                propertyOptions={props.propertyOptions}
                 onChange={setFilters}
                 onSubmit={applyFilters}
                 onToggle={() => setFiltersOpen((open) => !open)}

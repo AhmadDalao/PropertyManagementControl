@@ -20,6 +20,10 @@ class StoreReportPresetRequest extends FormRequest
             $filters['portfolio_id'] = null;
         }
 
+        if (is_array($filters) && in_array($filters['property_id'] ?? null, ['', 'all'], true)) {
+            $filters['property_id'] = null;
+        }
+
         $this->merge([
             'resource' => 'portfolio-report',
             'filters_json' => is_array($filters) ? $filters : [],
@@ -39,6 +43,7 @@ class StoreReportPresetRequest extends FormRequest
             'filters_json.date_from' => ['nullable', 'date_format:Y-m-d'],
             'filters_json.date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:filters_json.date_from'],
             'filters_json.portfolio_id' => ['nullable', 'integer', 'min:1', 'exists:portfolios,id'],
+            'filters_json.property_id' => ['nullable', 'integer', 'min:1', 'exists:assets,id'],
         ];
     }
 }

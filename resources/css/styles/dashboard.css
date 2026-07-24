@@ -1,4 +1,5 @@
 @import './dashboard/metrics.css';
 @import './dashboard/actions.css';
 @import './dashboard/panels.css';
+@import './dashboard/property-performance.css';
 @import './dashboard/tenant.css';

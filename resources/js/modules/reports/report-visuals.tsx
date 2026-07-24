@@ -7,6 +7,7 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
+import { localizedNumber } from '@/lib/utils';
 
 import type { ReportRecord } from './types';
 
@@ -68,7 +69,7 @@ export function BreakdownBars({
 }
 
 export function BreakdownCards({ source }: { source: Record<string, number> }) {
-    const { t, text } = useTranslator();
+    const { locale, t, text } = useTranslator();
     const entries = Object.entries(source);
 
     if (entries.length === 0) {
@@ -80,7 +81,7 @@ export function BreakdownCards({ source }: { source: Record<string, number> }) {
             {entries.map(([label, value]) => (
                 <div key={label}>
                     <span>{text(humanLabel(label))}</span>
-                    <strong>{value.toLocaleString()}</strong>
+                    <strong>{localizedNumber(value, locale)}</strong>
                 </div>
             ))}
         </div>

@@ -8,7 +8,7 @@ class ReportFilterSet
 {
     /**
      * @param  array<string, mixed>  $validated
-     * @return array{date_from:string,date_to:string,portfolio_id:int|null}
+     * @return array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}
      */
     public function current(array $validated): array
     {
@@ -16,13 +16,14 @@ class ReportFilterSet
             'date_from' => (string) $validated['date_from'],
             'date_to' => (string) $validated['date_to'],
             'portfolio_id' => isset($validated['portfolio_id']) ? (int) $validated['portfolio_id'] : null,
+            'property_id' => isset($validated['property_id']) ? (int) $validated['property_id'] : null,
         ];
     }
 
     /**
      * Keep saved links portable and discard legacy or injected query keys.
      *
-     * @return array{date_from?:string,date_to?:string,portfolio_id?:int}
+     * @return array{date_from?:string,date_to?:string,portfolio_id?:int,property_id?:int}
      */
     public function stored(mixed $filters): array
     {
@@ -51,6 +52,14 @@ class ReportFilterSet
 
         if ($portfolioId !== false) {
             $normalized['portfolio_id'] = $portfolioId;
+        }
+
+        $propertyId = filter_var($filters['property_id'] ?? null, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1],
+        ]);
+
+        if ($propertyId !== false) {
+            $normalized['property_id'] = $propertyId;
         }
 
         return $normalized;

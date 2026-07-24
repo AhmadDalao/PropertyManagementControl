@@ -101,6 +101,12 @@
 .bi-calendar-check::before {
     content: '\f1e2';
 }
+.bi-calendar-event::before {
+    content: '\f1e8';
+}
+.bi-calendar2-check::before {
+    content: '\f1f8';
+}
 .bi-calendar3::before {
     content: '\f214';
 }

@@ -25,7 +25,7 @@ final readonly class PortfolioReportQuery
     ) {}
 
     /**
-     * @param  array{date_from:string,date_to:string,portfolio_id:int|null}  $filters
+     * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<string, mixed>
      */
     public function handle(User $actor, array $filters): array

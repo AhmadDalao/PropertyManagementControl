@@ -6,6 +6,7 @@ use App\Models\ReportPreset;
 use App\Models\User;
 use App\Modules\Reports\Support\ReportAccess;
 use App\Modules\Reports\Support\ReportFilterSet;
+use App\Modules\Reports\Support\ReportPropertyScope;
 use Illuminate\Support\Facades\DB;
 
 class ManageReportPresets
@@ -13,6 +14,7 @@ class ManageReportPresets
     public function __construct(
         private readonly ReportAccess $access,
         private readonly ReportFilterSet $filters,
+        private readonly ReportPropertyScope $properties,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -20,7 +22,17 @@ class ManageReportPresets
     {
         $filters = $this->filters->stored($data['filters_json'] ?? []);
         $visibility = (string) $data['visibility'];
+
+        if ($visibility === 'global') {
+            unset($filters['portfolio_id'], $filters['property_id']);
+        }
+
         $this->access->ensurePortfolioFilter($actor, $filters['portfolio_id'] ?? null);
+        $this->properties->assetIds(
+            $actor,
+            $filters['portfolio_id'] ?? null,
+            $filters['property_id'] ?? null,
+        );
         $portfolioId = $this->access->portfolioIdForPreset($actor, $visibility, $filters);
         $isDefault = (bool) ($data['is_default'] ?? false);
 

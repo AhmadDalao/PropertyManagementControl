@@ -1,6 +1,6 @@
 import { WorkspacePanel } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { currency } from '@/lib/utils';
+import { currency, humanDate, localizedNumber } from '@/lib/utils';
 
 import { DashboardRecordList } from '../shared/record-list';
 import type { OperationsDashboardProps } from '../types';
@@ -10,43 +10,48 @@ export function OperationsPriorityPanels({
 }: {
     props: OperationsDashboardProps;
 }) {
-    const { locale, text } = useTranslator();
+    const { locale, t, text } = useTranslator();
 
     return (
         <div className="pmc-command-grid">
             <WorkspacePanel
-                eyebrow="Collections"
-                title="Outstanding balances"
-                description="Largest balances that should be reviewed first."
-                action={{ label: 'Open payments', href: '/payments' }}
+                eyebrow={t('dashboard.collections')}
+                title={t('dashboard.collection_queue')}
+                description={t('dashboard.collection_queue_description')}
+                action={{
+                    label: t('dashboard.open_collections'),
+                    href: '/reports?tab=collections',
+                }}
             >
                 <DashboardRecordList
-                    empty="No outstanding balances."
-                    rows={props.arrearsLeases.slice(0, 5).map((lease) => ({
-                        href: `/leases/${lease.id}`,
-                        title: lease.code,
-                        meta: `${lease.tenant ?? text('No tenant')} · ${lease.asset ?? text('No asset')}`,
+                    empty={t('dashboard.no_collection_work')}
+                    rows={props.collectionQueue.slice(0, 5).map((item) => ({
+                        href: item.lease_id
+                            ? `/payments/create?lease_id=${item.lease_id}`
+                            : '/payments/create',
+                        title: `${item.tenant ?? text('No tenant')} · ${item.lease_code ?? ''}`,
+                        meta: `${(locale === 'ar' ? item.asset_ar || item.asset_en : item.asset_en || item.asset_ar) ?? text('No asset')} · ${humanDate(item.due_date, props.app.locale)}${item.days_overdue > 0 ? ` · ${t('dashboard.days_overdue', undefined, { count: localizedNumber(item.days_overdue, locale) })}` : ''}`,
                         value: currency(
-                            lease.arrears_amount,
+                            item.outstanding_amount,
                             props.app.locale,
-                            lease.currency,
+                            item.currency,
                         ),
-                        tone: 'danger',
+                        tone: item.days_overdue > 0 ? 'danger' : 'warning',
                     }))}
                 />
             </WorkspacePanel>
 
             <WorkspacePanel
-                eyebrow="Service"
-                title="Maintenance queue"
-                description="Latest requests across the properties in scope."
+                eyebrow={t('dashboard.service')}
+                title={t('dashboard.maintenance_queue')}
+                description={t('dashboard.maintenance_queue_description')}
                 action={{
-                    label: 'Open queue',
-                    href: '/maintenance-requests',
+                    label: t('dashboard.open_queue'),
+                    href: '/maintenance-requests?status=open',
                 }}
             >
                 <DashboardRecordList
-                    empty="No maintenance requests."
+                    empty={t('dashboard.no_open_maintenance')}
                     rows={props.recentMaintenance
                         .slice(0, 5)
                         .map((request) => ({

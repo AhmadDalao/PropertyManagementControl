@@ -1,6 +1,11 @@
 import { MetricGrid } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { compactCurrency, currency, humanDate } from '@/lib/utils';
+import {
+    compactCurrency,
+    currency,
+    humanDate,
+    localizedNumber,
+} from '@/lib/utils';
 
 import type { TenantDashboardProps } from '../types';
 
@@ -25,7 +30,7 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
                 },
                 {
                     label: 'Days remaining',
-                    value: props.stats.daysLeft ?? 0,
+                    value: localizedNumber(props.stats.daysLeft ?? 0, locale),
                     detail: text('In the current contract'),
                     icon: 'bi-calendar3',
                     tone: 'blue',
@@ -38,7 +43,10 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
                         currencyCode,
                     ),
                     detail: t('dashboard.posted_payments_count', undefined, {
-                        count: props.tenantPortal.payments.length,
+                        count: localizedNumber(
+                            props.tenantPortal.payments.length,
+                            locale,
+                        ),
                     }),
                     icon: 'bi-check-circle',
                     tone: 'teal',

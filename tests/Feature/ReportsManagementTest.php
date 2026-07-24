@@ -232,6 +232,137 @@ class ReportsManagementTest extends TestCase
                 ->where('recentPayments.0.reference', 'TODAY-PAY'));
     }
 
+    public function test_property_filter_scopes_every_report_dataset_to_the_selected_asset_tree(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $root = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Selected Tower',
+            'rentable' => false,
+        ]);
+        $unit = $this->createAsset($portfolio, [
+            'parent_id' => $root->id,
+            'title_en' => 'Selected Unit',
+            'occupancy_status' => 'occupied',
+        ]);
+        $otherRoot = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Other Tower',
+            'rentable' => false,
+        ]);
+        $otherUnit = $this->createAsset($portfolio, [
+            'parent_id' => $otherRoot->id,
+            'title_en' => 'Other Unit',
+            'occupancy_status' => 'occupied',
+        ]);
+        $foreignRoot = $this->createAsset($foreignPortfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $selectedLease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $this->createUserWithRole('tenant', $portfolio)),
+            $unit,
+            $owner,
+        );
+        $otherLease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $this->createUserWithRole('tenant', $portfolio)),
+            $otherUnit,
+            $owner,
+        );
+
+        foreach ([[$selectedLease, 1100, 'SELECTED'], [$otherLease, 9200, 'OTHER']] as [$lease, $amount, $reference]) {
+            Payment::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'lease_id' => $lease->id,
+                'tenant_profile_id' => $lease->tenant_profile_id,
+                'recorded_by_user_id' => $owner->id,
+                'reference' => $reference,
+                'type' => 'rent',
+                'method' => 'cash',
+                'status' => 'posted',
+                'received_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => 'SAR',
+            ]);
+        }
+
+        foreach ([[$unit, 100, 'Selected repair'], [$otherUnit, 800, 'Other repair']] as [$asset, $amount, $title]) {
+            ExpenseEntry::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $asset->id,
+                'created_by_user_id' => $owner->id,
+                'category' => 'general',
+                'title' => $title,
+                'incurred_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => 'SAR',
+                'status' => 'posted',
+            ]);
+        }
+
+        foreach ([
+            [$unit, $selectedLease, 'Selected issue'],
+            [$otherUnit, $otherLease, 'Other issue'],
+        ] as [$asset, $lease, $title]) {
+            MaintenanceRequest::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $asset->id,
+                'tenant_profile_id' => $lease->tenant_profile_id,
+                'submitted_by_user_id' => $owner->id,
+                'category' => 'general',
+                'priority' => 'medium',
+                'status' => 'open',
+                'title' => $title,
+                'description' => $title,
+                'requested_at' => now(),
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['property_id' => $root->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.property_id', $root->id)
+                ->has('propertyOptions', 2)
+                ->where('summary.revenue', fn (int|float $value) => (float) $value === 1100.0)
+                ->where('summary.expenses', fn (int|float $value) => (float) $value === 100.0)
+                ->where('summary.openRequests', 1)
+                ->where('recentPayments.0.reference', 'SELECTED')
+                ->where('maintenanceBacklog.0.title', 'Selected issue'));
+
+        $sheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)->get(route('reports.export', ['property_id' => $root->id])),
+        );
+        $this->assertStringContainsString('Selected issue', $sheet);
+        $this->assertStringNotContainsString('Other issue', $sheet);
+        $this->assertStringNotContainsString('9200', $sheet);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['property_id' => $unit->id]))
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['property_id' => $foreignRoot->id]))
+            ->assertForbidden();
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), [
+                'title_en' => 'Selected tower',
+                'title_ar' => 'البرج المحدد',
+                'visibility' => 'portfolio',
+                'filters_json' => ['property_id' => $root->id],
+            ])
+            ->assertRedirect();
+        $this->assertSame(
+            $root->id,
+            ReportPreset::query()->latest('id')->firstOrFail()->filters_json['property_id'],
+        );
+    }
+
     public function test_tenant_cannot_access_operational_reports_or_exports(): void
     {
         $portfolio = $this->createPortfolio();

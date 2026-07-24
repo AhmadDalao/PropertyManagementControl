@@ -58,7 +58,7 @@ class ReportPresetQuery
             ->all();
     }
 
-    /** @return array{date_from?:string,date_to?:string,portfolio_id?:int} */
+    /** @return array{date_from?:string,date_to?:string,portfolio_id?:int,property_id?:int} */
     public function defaultFiltersFor(User $actor): array
     {
         $this->access->ensureManager($actor);

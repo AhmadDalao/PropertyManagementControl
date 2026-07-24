@@ -2,7 +2,9 @@
 
 namespace App\Modules\Reports\Actions;
 
+use App\Models\User;
 use App\Modules\Exports\Support\XlsxWorkbook;
+use App\Modules\Reports\Support\ReportPropertyScope;
 use App\Modules\Wording\UiTranslationCatalog;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -11,16 +13,22 @@ class ReportWorkbookExport
     public function __construct(
         private readonly XlsxWorkbook $workbook,
         private readonly UiTranslationCatalog $translations,
+        private readonly ReportPropertyScope $properties,
     ) {}
 
     /**
      * @param  array<string, mixed>  $report
-     * @param  array{date_from:string,date_to:string,portfolio_id:int|null}  $filters
+     * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      */
-    public function download(array $report, array $filters): BinaryFileResponse
+    public function download(array $report, array $filters, User $actor): BinaryFileResponse
     {
         $filename = 'portfolio-report-'.now()->format('Ymd-His').'.xlsx';
-        $path = $this->workbook->create($this->rows($report, $filters));
+        $property = $this->properties->label(
+            $actor,
+            $filters['portfolio_id'],
+            $filters['property_id'],
+        );
+        $path = $this->workbook->create($this->rows($report, $filters, $property));
 
         return response()->download($path, $filename, [
             'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -29,15 +37,16 @@ class ReportWorkbookExport
 
     /**
      * @param  array<string, mixed>  $report
-     * @param  array{date_from:string,date_to:string,portfolio_id:int|null}  $filters
+     * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<int, array<int, mixed>>
      */
-    private function rows(array $report, array $filters): array
+    private function rows(array $report, array $filters, ?string $property): array
     {
         $rows = [
             [$this->copy('Property Management Control Report')],
             [$this->copy('Date From'), $filters['date_from']],
             [$this->copy('Date To'), $filters['date_to']],
+            [trans('app.reports.property'), $property ?? trans('app.reports.all_properties')],
             [],
             $this->labels(['Section', 'Metric', 'Value']),
         ];

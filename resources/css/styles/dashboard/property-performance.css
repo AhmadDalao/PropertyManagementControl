@@ -1,0 +1,148 @@
+.pmc-property-performance {
+    margin-bottom: 1rem;
+}
+
+.pmc-property-performance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-property-performance-card {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid #e3e0da;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-property-performance-card.is-risk {
+    border-color: #efc8c1;
+    background: #fff9f7;
+}
+
+.pmc-property-performance-card.is-watch {
+    border-color: #eadcae;
+    background: #fffcf3;
+}
+
+.pmc-property-performance-card > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-property-performance-card > header > a {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-property-performance-card > header span {
+    color: #756e65;
+    font-size: 0.66rem;
+    font-weight: 850;
+    letter-spacing: 0.04em;
+}
+
+.pmc-property-performance-card > header strong {
+    overflow: hidden;
+    font-size: 0.95rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-performance-card > header em {
+    flex: 0 0 auto;
+    padding: 0.3rem 0.52rem;
+    border-radius: 999px;
+    background: #e6f6ed;
+    color: #12633b;
+    font-size: 0.65rem;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.pmc-property-performance-card.is-risk > header em {
+    background: #ffe4df;
+    color: #a33625;
+}
+
+.pmc-property-performance-card.is-watch > header em {
+    background: #fff1c2;
+    color: #765b00;
+}
+
+.pmc-property-performance-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+}
+
+.pmc-property-performance-card dl > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+    padding: 0.7rem;
+    border-radius: 0.65rem;
+    background: rgb(255 255 255 / 78%);
+}
+
+.pmc-property-performance-card dt {
+    color: #777078;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.pmc-property-performance-card dd {
+    margin: 0;
+    overflow: hidden;
+    color: #111;
+    font-size: 0.88rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-performance-card > footer {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.pmc-property-performance-card > footer span,
+.pmc-property-performance-card > footer a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: #696970;
+    font-size: 0.67rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pmc-property-performance-card > footer a {
+    margin-inline-start: auto;
+    color: #856a00;
+}
+
+@media (max-width: 575.98px) {
+    .pmc-property-performance-card {
+        padding: 0.85rem;
+    }
+
+    .pmc-property-performance-card > footer a {
+        width: 100%;
+        margin-inline-start: 0;
+        padding-top: 0.2rem;
+    }
+}

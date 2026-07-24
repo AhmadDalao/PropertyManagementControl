@@ -37,6 +37,7 @@ class OperationsActivityQuery
             ->all();
         $maintenance = $this->portfolios->apply(MaintenanceRequest::query(), $user)
             ->with('asset')
+            ->whereIn('status', ['open', 'in_progress'])
             ->latest()
             ->limit(8)
             ->get()

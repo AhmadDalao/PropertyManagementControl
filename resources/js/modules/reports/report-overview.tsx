@@ -1,6 +1,11 @@
 import { MetricGrid } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { compactCurrency, currency, percent } from '@/lib/utils';
+import {
+    compactCurrency,
+    currency,
+    localizedNumber,
+    percent,
+} from '@/lib/utils';
 
 import { ReportPulse } from './report-visuals';
 import type { ReportsPageProps } from './types';
@@ -23,7 +28,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                             'reports.collection_health_value',
                             undefined,
                             {
-                                value: percent(collectionRate),
+                                value: percent(collectionRate, locale),
                             },
                         ),
                         icon: 'bi-cash-stack',
@@ -37,7 +42,10 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                             props.app.locale,
                         ),
                         detail: t('reports.recent_costs', undefined, {
-                            count: props.recentExpenses.length,
+                            count: localizedNumber(
+                                props.recentExpenses.length,
+                                locale,
+                            ),
                         }),
                         icon: 'bi-receipt',
                         tone: 'amber',
@@ -50,7 +58,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                             props.app.locale,
                         ),
                         detail: t('reports.occupancy_value', undefined, {
-                            value: percent(props.summary.occupancyRate),
+                            value: percent(props.summary.occupancyRate, locale),
                         }),
                         icon: 'bi-graph-up-arrow',
                         tone: props.summary.net >= 0 ? 'teal' : 'red',
@@ -62,7 +70,10 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                             props.app.locale,
                         ),
                         detail: t('reports.arrears_count', undefined, {
-                            count: props.summary.leasesInArrears,
+                            count: localizedNumber(
+                                props.summary.leasesInArrears,
+                                locale,
+                            ),
                         }),
                         icon: 'bi-exclamation-circle',
                         tone: props.summary.arrears > 0 ? 'red' : 'blue',
@@ -74,7 +85,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
             <section className="pmc-report-pulse-grid">
                 <ReportPulse
                     label={t('reports.collection_health')}
-                    value={percent(collectionRate)}
+                    value={percent(collectionRate, locale)}
                     detail={t('reports.scheduled_paid', undefined, {
                         paid: currency(props.summary.scheduledPaid, locale),
                         due: currency(props.summary.scheduledDue, locale),
@@ -84,25 +95,34 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                 />
                 <ReportPulse
                     label={t('reports.occupancy')}
-                    value={percent(props.summary.occupancyRate)}
+                    value={percent(props.summary.occupancyRate, locale)}
                     detail={t('reports.active_leases', undefined, {
-                        count: props.summary.activeLeases,
+                        count: localizedNumber(
+                            props.summary.activeLeases,
+                            locale,
+                        ),
                     })}
                     icon="bi-building-check"
                     tone={props.summary.occupancyRate >= 70 ? 'good' : 'warn'}
                 />
                 <ReportPulse
                     label={t('reports.service_backlog')}
-                    value={props.summary.openRequests.toLocaleString()}
+                    value={localizedNumber(props.summary.openRequests, locale)}
                     detail={t('reports.resolved_count', undefined, {
-                        count: props.summary.resolvedRequests,
+                        count: localizedNumber(
+                            props.summary.resolvedRequests,
+                            locale,
+                        ),
                     })}
                     icon="bi-tools"
                     tone={props.summary.openRequests > 0 ? 'warn' : 'good'}
                 />
                 <ReportPulse
                     label={t('reports.contracts_in_arrears')}
-                    value={props.summary.leasesInArrears.toLocaleString()}
+                    value={localizedNumber(
+                        props.summary.leasesInArrears,
+                        locale,
+                    )}
                     detail={t('reports.contract_balance', undefined, {
                         amount: currency(props.summary.contractBalance, locale),
                     })}

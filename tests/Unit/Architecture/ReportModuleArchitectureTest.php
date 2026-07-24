@@ -90,6 +90,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Requests/StoreReportPresetRequest.php',
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
+            'app/Modules/Reports/Support/ReportPropertyScope.php',
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
