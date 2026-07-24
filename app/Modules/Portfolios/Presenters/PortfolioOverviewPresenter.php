@@ -4,9 +4,9 @@ namespace App\Modules\Portfolios\Presenters;
 
 use App\Models\User;
 use App\Modules\Portfolios\Data\PortfolioDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
-use App\Support\PortfolioModules;
 
 class PortfolioOverviewPresenter
 {

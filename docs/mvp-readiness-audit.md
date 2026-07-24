@@ -1,6 +1,6 @@
 # MVP Readiness Audit
 
-Updated: July 22, 2026
+Updated: July 24, 2026
 
 ## Decision
 
@@ -32,7 +32,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Reports and exports are real XLSX workbooks, not renamed CSV files.
 - Maintenance states are guarded: open/in-progress work may resolve or cancel; resolved/cancelled work must reopen before continuing.
 - Activity history covers operational state changes without exposing secrets or private server paths.
-- Composer and pnpm report no known high-severity dependency vulnerabilities. PHPStan adds zero findings outside the accepted legacy baseline.
+- Composer and pnpm report no known dependency vulnerabilities. Dompdf 3.1.6 and PostCSS 8.5.18 include the July 22 security fixes, and PHPStan adds zero findings outside the accepted legacy baseline.
 
 ## Required before real users
 

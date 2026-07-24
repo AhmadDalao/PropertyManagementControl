@@ -3,8 +3,8 @@
 namespace App\Modules\Maintenance\Presenters;
 
 use App\Modules\Maintenance\Data\MaintenanceDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
-use App\Support\PortfolioModules;
 
 class MaintenanceDetailOverviewPresenter
 {

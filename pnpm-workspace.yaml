@@ -6,6 +6,7 @@ allowBuilds:
 
 overrides:
   'brace-expansion@<1.1.16': 1.1.16
+  postcss: 8.5.18
   shell-quote: 1.10.0
 
 publicHoistPattern:

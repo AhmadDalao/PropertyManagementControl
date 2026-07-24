@@ -77,7 +77,7 @@ class PublicSiteModuleArchitectureTest extends TestCase
         $stylesheet = $this->source('resources/css/styles/public.css');
         $this->assertLessThanOrEqual(10, substr_count($stylesheet, "\n") + 1);
         $layers = glob($this->path('resources/css/styles/public/*.css')) ?: [];
-        $this->assertCount(6, $layers);
+        $this->assertCount(5, $layers);
 
         foreach ($layers as $file) {
             $this->assertLessThanOrEqual(

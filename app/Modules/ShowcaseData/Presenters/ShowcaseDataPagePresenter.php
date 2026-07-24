@@ -3,7 +3,9 @@
 namespace App\Modules\ShowcaseData\Presenters;
 
 use App\Models\ShowcaseDataset;
+use App\Models\User;
 use App\Modules\ShowcaseData\Queries\ShowcaseDatasetIndexQuery;
+use App\Modules\ShowcaseData\Support\ShowcaseAccess;
 use App\Modules\ShowcaseData\Support\ShowcaseTargets;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -13,11 +15,13 @@ class ShowcaseDataPagePresenter
     public function __construct(
         private readonly ShowcaseDatasetIndexQuery $datasets,
         private readonly ShowcaseTargets $targets,
+        private readonly ShowcaseAccess $access,
     ) {}
 
     /** @return array<string, mixed> */
-    public function present(): array
+    public function present(User $actor): array
     {
+        $this->access->ensureSuperadmin($actor);
         $datasets = $this->datasets->paginate();
         $datasets->through(fn (ShowcaseDataset $dataset): array => $this->dataset($dataset));
 

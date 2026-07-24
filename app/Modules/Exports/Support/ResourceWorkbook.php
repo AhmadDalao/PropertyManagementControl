@@ -4,7 +4,6 @@ namespace App\Modules\Exports\Support;
 
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Wording\UiTranslationCatalog;
-use App\Services\XlsxWorkbook;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;

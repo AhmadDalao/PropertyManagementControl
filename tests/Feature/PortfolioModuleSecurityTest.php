@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\MaintenanceRequest;
 use App\Models\Portfolio;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;

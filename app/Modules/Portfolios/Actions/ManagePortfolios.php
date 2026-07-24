@@ -5,7 +5,7 @@ namespace App\Modules\Portfolios\Actions;
 use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Portfolios\Support\PortfolioAccess;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;

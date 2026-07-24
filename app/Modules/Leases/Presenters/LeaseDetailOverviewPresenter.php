@@ -4,9 +4,9 @@ namespace App\Modules\Leases\Presenters;
 
 use App\Models\Asset;
 use App\Modules\Leases\Data\LeaseDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
-use App\Support\PortfolioModules;
 
 final class LeaseDetailOverviewPresenter
 {

@@ -11,7 +11,12 @@ class ShowcaseDataModuleArchitectureTest extends TestCase
     public function showcase_controller_and_job_only_adapt_requests(): void
     {
         $controller = $this->source('app/Http/Controllers/ShowcaseDataController.php');
-        $job = $this->source('app/Jobs/GenerateShowcaseBuilding.php');
+        $job = $this->source(
+            'app/Modules/ShowcaseData/Jobs/GenerateShowcaseBuilding.php',
+        );
+        $compatibilityJob = $this->source(
+            'app/Jobs/GenerateShowcaseBuilding.php',
+        );
 
         $this->assertLessThanOrEqual(70, substr_count($controller, "\n") + 1);
         $this->assertStringContainsString('ShowcaseDataPagePresenter', $controller);
@@ -20,9 +25,18 @@ class ShowcaseDataModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('PurgeShowcaseDataset', $controller);
         $this->assertStringNotContainsString('::query()', $controller);
         $this->assertStringNotContainsString('tagLegacyData', $controller);
+        $this->assertStringNotContainsString('requireRoles', $controller);
         $this->assertStringContainsString('BuildShowcaseProperty', $job);
         $this->assertStringContainsString('RecordShowcaseFailure', $job);
         $this->assertStringNotContainsString('Asset::', $job);
+        $this->assertLessThanOrEqual(
+            6,
+            substr_count($compatibilityJob, "\n") + 1,
+        );
+        $this->assertStringContainsString(
+            'extends \App\Modules\ShowcaseData\Jobs\GenerateShowcaseBuilding',
+            $compatibilityJob,
+        );
     }
 
     #[Test]
@@ -40,6 +54,9 @@ class ShowcaseDataModuleArchitectureTest extends TestCase
                 "{$file} is becoming a monolith.",
             );
         }
+
+        $access = $this->source('app/Modules/ShowcaseData/Support/ShowcaseAccess.php');
+        $this->assertStringContainsString("hasRole('superadmin')", $access);
 
         $this->assertFileDoesNotExist(
             $this->path('app/Services/ShowcaseDatasetService.php'),

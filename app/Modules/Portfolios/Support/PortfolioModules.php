@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Modules\Portfolios\Support;
 
 use App\Models\User;
 

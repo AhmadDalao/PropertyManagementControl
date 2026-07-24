@@ -3,7 +3,7 @@
 namespace App\Modules\Documentation\Support;
 
 use App\Models\User;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 class DocumentationAccess
 {

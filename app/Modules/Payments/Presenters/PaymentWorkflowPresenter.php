@@ -3,7 +3,7 @@
 namespace App\Modules\Payments\Presenters;
 
 use App\Modules\Payments\Data\PaymentDetailData;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class PaymentWorkflowPresenter
 {

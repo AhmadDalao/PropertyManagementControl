@@ -5,9 +5,9 @@ namespace App\Modules\Portfolios\Queries;
 use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Portfolios\Support\PortfolioAccess;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Portfolios\Support\PortfolioOptions;
 use App\Modules\Shared\TableQuery;
-use App\Support\PortfolioModules;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 

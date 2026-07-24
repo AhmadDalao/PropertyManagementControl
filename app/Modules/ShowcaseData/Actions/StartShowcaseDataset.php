@@ -6,6 +6,7 @@ use App\Models\ShowcaseDataset;
 use App\Models\User;
 use App\Modules\ShowcaseData\Generators\ShowcaseFoundationBuilder;
 use App\Modules\ShowcaseData\Queries\ShowcaseDatasetMetrics;
+use App\Modules\ShowcaseData\Support\ShowcaseAccess;
 use App\Modules\ShowcaseData\Support\ShowcaseTargets;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -20,10 +21,12 @@ class StartShowcaseDataset
         private readonly ShowcaseFoundationBuilder $foundation,
         private readonly ShowcaseDatasetMetrics $metrics,
         private readonly DispatchMissingShowcaseBuildings $dispatcher,
+        private readonly ShowcaseAccess $access,
     ) {}
 
     public function handle(User $initiator): ShowcaseDataset
     {
+        $this->access->ensureSuperadmin($initiator);
         $lock = Cache::lock('showcase-dataset-start', 180);
 
         if (! $lock->get()) {

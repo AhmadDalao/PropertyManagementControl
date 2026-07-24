@@ -2,9 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Authentication\Presenters\AuthenticatedUserPresenter;
 use App\Modules\PublicSite\Queries\PublicNavigationQuery;
 use App\Modules\Wording\UiTranslationCatalog;
-use App\Support\PortfolioModules;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -50,27 +50,8 @@ class HandleInertiaRequests extends Middleware
                 'translations' => app(UiTranslationCatalog::class)->forLocale($locale),
             ],
             'auth' => [
-                'user' => $request->user()
-                    ? [
-                        'id' => $request->user()?->id,
-                        'name' => $request->user()?->name,
-                        'email' => $request->user()?->email,
-                        'phone' => $request->user()?->phone,
-                        'portfolio_id' => $request->user()?->portfolio_id,
-                        'preferred_locale' => $request->user()?->preferred_locale,
-                        'status' => $request->user()?->status,
-                        'force_password_reset' => $request->user()?->force_password_reset,
-                        'last_login_at' => $request->user()?->last_login_at?->toIso8601String(),
-                        'roles' => $request->user()?->getRoleNames()->values()->all(),
-                        'portfolio' => $request->user()?->portfolio ? [
-                            'id' => $request->user()->portfolio->id,
-                            'name_en' => $request->user()->portfolio->name_en,
-                            'name_ar' => $request->user()->portfolio->name_ar,
-                            'code' => $request->user()->portfolio->code,
-                            'module_settings' => PortfolioModules::normalize($request->user()->portfolio->module_settings),
-                        ] : null,
-                    ]
-                    : null,
+                'user' => app(AuthenticatedUserPresenter::class)
+                    ->present($request->user()),
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),

@@ -5,6 +5,7 @@ namespace App\Modules\ShowcaseData\Actions;
 use App\Models\Portfolio;
 use App\Models\ShowcaseDataset;
 use App\Models\User;
+use App\Modules\ShowcaseData\Support\ShowcaseAccess;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -12,8 +13,11 @@ use Throwable;
 
 class PurgeShowcaseDataset
 {
-    public function handle(ShowcaseDataset $dataset): void
+    public function __construct(private readonly ShowcaseAccess $access) {}
+
+    public function handle(User $actor, ShowcaseDataset $dataset): void
     {
+        $this->access->ensureSuperadmin($actor);
         $dataset = DB::transaction(function () use ($dataset): ShowcaseDataset {
             $locked = ShowcaseDataset::query()->lockForUpdate()->findOrFail($dataset->id);
             abort_if(in_array($locked->status, ['purging', 'purged'], true), 422, trans('app.errors.not_allowed'));

@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Lease;
 use App\Modules\Leases\Actions\ManageLeases;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;

@@ -2,8 +2,8 @@
 
 namespace App\Modules\Reports\Actions;
 
+use App\Modules\Exports\Support\XlsxWorkbook;
 use App\Modules\Wording\UiTranslationCatalog;
-use App\Services\XlsxWorkbook;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ReportWorkbookExport

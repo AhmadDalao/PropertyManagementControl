@@ -26,7 +26,6 @@ class AssetController extends Controller
     public function index(Request $request): Response
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
         return Inertia::render('admin/assets/index', $this->indexQuery->handle($request, $actor));
     }
@@ -34,7 +33,6 @@ class AssetController extends Controller
     public function create(Request $request): Response
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
 
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present($actor, defaults: $request->only(['portfolio_id', 'parent_id'])),
@@ -44,8 +42,6 @@ class AssetController extends Controller
     public function show(Request $request, Asset $asset): Response
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
-        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
 
         return Inertia::render('admin/resource-show', [
             'detailPage' => $this->detailPresenter->present($asset, $actor),
@@ -55,8 +51,6 @@ class AssetController extends Controller
     public function edit(Request $request, Asset $asset): Response
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
-        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
 
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present($actor, $asset),
@@ -77,7 +71,6 @@ class AssetController extends Controller
     public function update(UpdateAssetRequest $request, Asset $asset): RedirectResponse
     {
         $actor = $this->actor($request);
-        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
         $asset = $this->assets->update($actor, $asset, $request->validated());
 
         return to_route('assets.show', $asset)->with('success', trans('app.messages.record_updated', [
@@ -89,8 +82,6 @@ class AssetController extends Controller
     public function destroy(Request $request, Asset $asset): RedirectResponse
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin', 'owner', 'property_manager']);
-        $this->ensurePortfolioAccess($actor, $asset->portfolio_id);
 
         if (! $this->assets->archive($actor, $asset)) {
             return back()->with('error', trans('app.errors.asset_has_active_lease'));

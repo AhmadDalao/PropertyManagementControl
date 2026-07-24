@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Jobs\GenerateShowcaseBuilding;
 use App\Models\Asset;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
@@ -15,12 +14,15 @@ use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\ShowcaseData\Actions\BuildShowcaseProperty;
+use App\Modules\ShowcaseData\Actions\PurgeShowcaseDataset;
 use App\Modules\ShowcaseData\Actions\RetryShowcaseDataset;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
+use App\Modules\ShowcaseData\Jobs\GenerateShowcaseBuilding;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class ShowcaseDatasetTest extends TestCase
@@ -54,6 +56,36 @@ class ShowcaseDatasetTest extends TestCase
         $this->actingAs($owner)
             ->get(route('showcase-data.index'))
             ->assertForbidden();
+    }
+
+    public function test_showcase_actions_enforce_access_when_called_directly(): void
+    {
+        $owner = $this->createUserWithRole('owner', $this->createPortfolio());
+        $dataset = ShowcaseDataset::query()->create([
+            'key' => 'PRIVATE-DATA-LAB',
+            'name' => 'Private data lab',
+            'status' => 'failed',
+            'target_properties' => 40,
+            'generated_properties' => 0,
+        ]);
+
+        foreach ([
+            fn () => app(StartShowcaseDataset::class)->handle($owner),
+            fn () => app(RetryShowcaseDataset::class)->handle($owner, $dataset),
+            fn () => app(PurgeShowcaseDataset::class)->handle($owner, $dataset),
+        ] as $operation) {
+            try {
+                $operation();
+                $this->fail('A non-superadmin invoked a Data Lab action.');
+            } catch (HttpException $exception) {
+                $this->assertSame(403, $exception->getStatusCode());
+            }
+        }
+
+        $this->assertDatabaseHas('showcase_datasets', [
+            'id' => $dataset->id,
+            'status' => 'failed',
+        ]);
     }
 
     public function test_opening_the_data_lab_does_not_mutate_legacy_records(): void
@@ -187,7 +219,7 @@ class ShowcaseDatasetTest extends TestCase
 
         Queue::fake();
         $dataset->update(['status' => 'failed', 'generated_properties' => 39]);
-        $retried = app(RetryShowcaseDataset::class)->handle($dataset->fresh());
+        $retried = app(RetryShowcaseDataset::class)->handle($superadmin, $dataset->fresh());
         $this->assertSame('complete', $retried->status);
         $this->assertSame(40, $retried->generated_properties);
         Queue::assertNothingPushed();

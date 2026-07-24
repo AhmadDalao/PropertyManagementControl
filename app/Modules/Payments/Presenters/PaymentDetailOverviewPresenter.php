@@ -3,9 +3,9 @@
 namespace App\Modules\Payments\Presenters;
 
 use App\Modules\Payments\Data\PaymentDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
-use App\Support\PortfolioModules;
 
 final class PaymentDetailOverviewPresenter
 {

@@ -5,7 +5,7 @@ namespace App\Modules\Audit\Actions;
 use App\Models\User;
 use App\Modules\Audit\Presenters\AuditActivityPresenter;
 use App\Modules\Audit\Queries\AuditLogQuery;
-use App\Services\XlsxWorkbook;
+use App\Modules\Exports\Support\XlsxWorkbook;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AuditWorkbookExport

@@ -25,15 +25,13 @@ class ShowcaseDataController extends Controller
     public function index(Request $request): Response
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
 
-        return Inertia::render('admin/showcase-data/index', $this->page->present());
+        return Inertia::render('admin/showcase-data/index', $this->page->present($actor));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
         $this->start->handle($actor);
 
         return to_route('showcase-data.index')->with('success', trans('app.showcase.generation_started'));
@@ -44,8 +42,7 @@ class ShowcaseDataController extends Controller
         ShowcaseDataset $showcaseDataset,
     ): RedirectResponse {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-        $this->retry->handle($showcaseDataset);
+        $this->retry->handle($actor, $showcaseDataset);
 
         return to_route('showcase-data.index')->with('success', trans('app.showcase.retry_started'));
     }
@@ -55,8 +52,7 @@ class ShowcaseDataController extends Controller
         ShowcaseDataset $showcaseDataset,
     ): RedirectResponse {
         $actor = $this->actor($request);
-        $this->requireRoles($actor, ['superadmin']);
-        $this->purge->handle($showcaseDataset);
+        $this->purge->handle($actor, $showcaseDataset);
 
         return to_route('showcase-data.index')->with('success', trans('app.showcase.purge_complete'));
     }

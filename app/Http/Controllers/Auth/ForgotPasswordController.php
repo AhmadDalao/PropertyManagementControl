@@ -3,14 +3,19 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Modules\Authentication\Actions\SendPasswordResetLink;
+use App\Modules\Authentication\Requests\ForgotPasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ForgotPasswordController extends Controller
 {
+    public function __construct(
+        private readonly SendPasswordResetLink $passwordLinks,
+    ) {}
+
     public function create(Request $request): Response
     {
         return Inertia::render('auth/forgot-password', [
@@ -18,14 +23,11 @@ class ForgotPasswordController extends Controller
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(ForgotPasswordRequest $request): RedirectResponse
     {
-        $request->validate(['email' => ['required', 'email']]);
-
-        $status = Password::sendResetLink($request->only('email'));
-
-        return $status === Password::RESET_LINK_SENT
-            ? back()->with('status', trans($status))
-            : back()->withErrors(['email' => trans($status)]);
+        return back()->with(
+            'status',
+            $this->passwordLinks->execute($request->email()),
+        );
     }
 }

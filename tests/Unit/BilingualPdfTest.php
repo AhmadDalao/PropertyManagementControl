@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Support\BilingualPdf;
+use App\Modules\Documents\Support\BilingualPdf;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

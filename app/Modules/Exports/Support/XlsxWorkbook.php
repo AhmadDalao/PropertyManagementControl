@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Modules\Exports\Support;
 
 use RuntimeException;
 use ZipArchive;

@@ -2,8 +2,8 @@
 
 namespace App\Modules\ShowcaseData\Actions;
 
-use App\Jobs\GenerateShowcaseBuilding;
 use App\Models\ShowcaseDataset;
+use App\Modules\ShowcaseData\Jobs\GenerateShowcaseBuilding;
 use App\Modules\ShowcaseData\Queries\ShowcaseDatasetMetrics;
 
 class DispatchMissingShowcaseBuildings

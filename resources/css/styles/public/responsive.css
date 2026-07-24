@@ -135,23 +135,6 @@
     .pmc-final-cta h2 {
         font-size: clamp(1.8rem, 9vw, 2.5rem);
     }
-
-    .pmc-auth-page {
-        padding-block: 0.5rem 1rem;
-    }
-
-    .pmc-auth-topbar {
-        margin-bottom: 0.75rem;
-    }
-
-    .pmc-auth-copy {
-        display: none;
-    }
-
-    .pmc-login-panel {
-        margin-inline: 0 !important;
-        padding: 1.15rem !important;
-    }
 }
 
 @media (max-width: 575.98px) {

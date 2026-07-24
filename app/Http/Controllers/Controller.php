@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\BuildsResourcePages;
-use App\Http\Controllers\Concerns\InteractsWithPortfolioScope;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Validation\ValidatesRequests;
+use App\Models\User;
+use App\Modules\Shared\Authorization\ActorAccess;
+use Illuminate\Http\Request;
 
 abstract class Controller
 {
-    use AuthorizesRequests;
-    use BuildsResourcePages;
-    use InteractsWithPortfolioScope;
-    use ValidatesRequests;
+    protected function actor(Request $request): User
+    {
+        return app(ActorAccess::class)->from($request);
+    }
 }

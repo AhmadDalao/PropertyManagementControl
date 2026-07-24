@@ -3,8 +3,8 @@
 namespace App\Modules\Search\Support;
 
 use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Search\Contracts\SearchSource;
-use App\Support\PortfolioModules;
 
 abstract class ModuleSearchSource implements SearchSource
 {

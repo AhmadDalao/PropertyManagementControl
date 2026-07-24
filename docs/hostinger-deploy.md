@@ -6,7 +6,7 @@ These notes target `property.ahmaddalao.com` on Hostinger shared hosting.
 
 - Set the website PHP version to `8.4` (the application requires PHP `8.4.1` or newer).
 - Confirm the PHP `calendar` and `mbstring` extensions are enabled; bilingual PDF shaping requires both.
-- Keep the repository as the source of truth. Do not commit `.env`, database passwords, FTP passwords, or generated secrets.
+- Keep the repository as the source of truth. Never commit `.env`, database credentials, FTP credentials, or generated secrets.
 - Build assets before deployment if the Hostinger target does not have Node available.
 - Take a database and private-storage backup before changing dependencies or running migrations.
 
@@ -17,11 +17,11 @@ Best option:
 1. Deploy the Laravel app to a non-public directory on the hosting account.
 2. Point the website document root to the app's `public/` directory.
 
-If you must keep the current website root at `/home/u867436826/domains/ahmaddalao.com/public_html/property`, use Hostinger's Git deployment or FTP upload for the app files. The tracked root `index.php` and `.htaccess` are the shared-hosting compatibility shim: public assets are served from `public/`, application paths are denied, and all other requests enter Laravel. Keep both files synchronized with production.
+If the website root must stay at `/home/<hostinger-account>/domains/ahmaddalao.com/public_html/property`, use Hostinger Git deployment or an exact release upload. The tracked root `index.php` and `.htaccess` are the shared-hosting compatibility shim: public assets are served from `public/`, application paths are denied, and all other requests enter Laravel. Keep both files synchronized with production.
 
 ## Production `.env`
 
-Create the live `.env` on the server with production values such as:
+Create the live `.env` only on the server. Copy database and SMTP values from the Hostinger control panel:
 
 ```dotenv
 APP_NAME="Property Management Control"
@@ -33,11 +33,11 @@ APP_FALLBACK_LOCALE=en
 APP_TIMEZONE=Asia/Riyadh
 
 DB_CONNECTION=mysql
-DB_HOST=localhost
+DB_HOST=<hostinger-database-host>
 DB_PORT=3306
-DB_DATABASE=change-me
-DB_USERNAME=change-me
-DB_PASSWORD=change-me
+DB_DATABASE=<hostinger-database-name>
+DB_USERNAME=<hostinger-database-user>
+DB_PASSWORD=<hostinger-database-password>
 
 SESSION_DRIVER=database
 CACHE_STORE=database
@@ -45,22 +45,21 @@ QUEUE_CONNECTION=database
 FILESYSTEM_DISK=local
 
 MAIL_MAILER=smtp
-MAIL_HOST=change-me
+MAIL_HOST=<hostinger-smtp-host>
 MAIL_PORT=587
-MAIL_USERNAME=change-me
-MAIL_PASSWORD=change-me
+MAIL_USERNAME=<hostinger-mailbox>
+MAIL_PASSWORD=<hostinger-mailbox-password>
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="property@example.com"
+MAIL_FROM_ADDRESS=<hostinger-mailbox>
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
-Use the real Hostinger database credentials in the server-side `.env`. Do not put them in git.
 Configure a working Hostinger SMTP mailbox before enabling password recovery for users. `MAIL_MAILER=log` does not deliver reset links.
 
 ## Deploy steps
 
-1. Upload or deploy the repository contents, including `vendor/` and `public/build/` if the target environment is not building dependencies itself.
-2. Rebuild Composer's production autoloader after every PHP source deployment, even when `composer.lock` did not change. The production autoloader is authoritative, so newly added application classes otherwise remain invisible and cause HTTP 500 responses.
+1. Upload or deploy the repository contents, including `vendor/` and `public/build/` when the target does not build dependencies itself.
+2. Rebuild Composer's production autoloader after every PHP source deployment. The production autoloader is authoritative, so newly added application classes otherwise cause HTTP 500 responses.
 3. Set correct file permissions for `storage/` and `bootstrap/cache/`.
 4. Create the production `.env` and run `php artisan key:generate --force` only on the first deployment. Never rotate `APP_KEY` during a routine release.
 5. Run on every deployment:

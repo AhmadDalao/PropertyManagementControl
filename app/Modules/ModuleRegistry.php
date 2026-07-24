@@ -39,6 +39,8 @@ final class ModuleRegistry
     public static function infrastructureModules(): array
     {
         return [
+            'authentication' => ['label' => 'Authentication', 'area' => 'platform'],
+            'localization' => ['label' => 'Localization', 'area' => 'platform'],
             'search' => ['label' => 'Global Search', 'area' => 'platform'],
             'exports' => ['label' => 'Resource Exports', 'area' => 'platform'],
         ];

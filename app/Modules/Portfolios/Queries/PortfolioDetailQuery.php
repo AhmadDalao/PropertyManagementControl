@@ -6,8 +6,8 @@ use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Portfolios\Data\PortfolioDetailData;
 use App\Modules\Portfolios\Support\PortfolioAccess;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Users\Support\UserAccess;
-use App\Support\PortfolioModules;
 
 class PortfolioDetailQuery
 {

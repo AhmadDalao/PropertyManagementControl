@@ -98,7 +98,7 @@ class SearchExportArchitectureTest extends TestCase
     public function cross_cutting_modules_are_registered_as_infrastructure(): void
     {
         $this->assertSame(
-            ['search', 'exports'],
+            ['authentication', 'localization', 'search', 'exports'],
             array_keys(ModuleRegistry::infrastructureModules()),
         );
     }

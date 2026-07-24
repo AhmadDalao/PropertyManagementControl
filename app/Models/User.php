@@ -4,7 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
-use App\Notifications\ResetPasswordNotification;
+use App\Modules\Authentication\Notifications\ResetPasswordNotification;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;

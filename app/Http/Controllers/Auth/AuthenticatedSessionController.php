@@ -3,16 +3,21 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Models\User;
+use App\Modules\Authentication\Actions\AuthenticateUser;
+use App\Modules\Authentication\Actions\LogoutUser;
+use App\Modules\Authentication\Requests\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class AuthenticatedSessionController extends Controller
 {
+    public function __construct(
+        private readonly AuthenticateUser $authenticate,
+        private readonly LogoutUser $logout,
+    ) {}
+
     public function create(Request $request): Response|RedirectResponse
     {
         if ($request->user()) {
@@ -24,23 +29,15 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        $this->authenticate->execute($request);
         $request->session()->regenerate();
-
-        /** @var User $user */
-        $user = $request->user();
-        $user->forceFill([
-            'last_login_at' => now(),
-        ])->save();
 
         return to_route('dashboard')->with('success', trans('app.messages.welcome_back'));
     }
 
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        $this->logout->execute($request);
 
         return to_route('home')->with('success', trans('app.messages.logged_out'));
     }

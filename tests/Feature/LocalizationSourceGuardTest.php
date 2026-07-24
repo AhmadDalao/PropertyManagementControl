@@ -48,18 +48,19 @@ class LocalizationSourceGuardTest extends TestCase
             'resources/js/modules/search/search-field.tsx',
             'resources/js/layouts/admin-layout.tsx',
             'resources/js/layouts/public-layout.tsx',
-            'resources/js/pages/auth/login.tsx',
         ];
 
-        $publicSite = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                resource_path('js/modules/public-site'),
-            ),
-        );
+        foreach (['auth', 'public-site'] as $module) {
+            $moduleFiles = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator(
+                    resource_path("js/modules/{$module}"),
+                ),
+            );
 
-        foreach ($publicSite as $file) {
-            if ($file->isFile() && $file->getExtension() === 'tsx') {
-                $files[] = str_replace(base_path().'/', '', $file->getPathname());
+            foreach ($moduleFiles as $file) {
+                if ($file->isFile() && $file->getExtension() === 'tsx') {
+                    $files[] = str_replace(base_path().'/', '', $file->getPathname());
+                }
             }
         }
 

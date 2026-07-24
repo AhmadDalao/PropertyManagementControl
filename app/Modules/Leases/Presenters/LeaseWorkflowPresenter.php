@@ -3,7 +3,7 @@
 namespace App\Modules\Leases\Presenters;
 
 use App\Modules\Leases\Data\LeaseDetailData;
-use App\Support\PortfolioModules;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class LeaseWorkflowPresenter
 {

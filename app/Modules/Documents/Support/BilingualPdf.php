@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Support;
+namespace App\Modules\Documents\Support;
 
 use ArPHP\I18N\Arabic;
 use Barryvdh\DomPDF\Facade\Pdf;

@@ -4,9 +4,9 @@ namespace App\Modules\Payments\Actions;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Documents\Support\BilingualPdf;
 use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Shared\PrivatePdfDocuments;
-use App\Support\BilingualPdf;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 

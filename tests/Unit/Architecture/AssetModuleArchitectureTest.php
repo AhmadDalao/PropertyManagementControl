@@ -20,6 +20,8 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('Asset::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
+        $this->assertStringNotContainsString('requireRoles', $source);
+        $this->assertStringNotContainsString('ensurePortfolioAccess', $source);
     }
 
     #[Test]

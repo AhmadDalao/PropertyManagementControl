@@ -2,8 +2,8 @@
 
 namespace App\Modules\Portfolios\Requests;
 
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Portfolios\Support\PortfolioOptions;
-use App\Support\PortfolioModules;
 
 trait HasPortfolioValidationAttributes
 {
