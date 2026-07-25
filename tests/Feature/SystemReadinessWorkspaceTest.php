@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AssetStakeholder;
 use App\Models\OperationalReadinessCheck;
+use App\Models\ShowcaseDataset;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use App\Modules\SystemReadiness\Notifications\ReadinessTestNotification;
 use Illuminate\Console\Scheduling\Schedule;
@@ -94,6 +95,34 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->where('portfolioLaunch.needs_live_portfolio', true)
                 ->where('portfolioLaunch.create_href', route('portfolios.create'))
                 ->where('portfolioReadiness', null));
+    }
+
+    public function test_showcase_and_archived_portfolios_do_not_replace_the_live_launch_path(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $dataset = ShowcaseDataset::query()->create([
+            'key' => 'READINESS-LIVE-GATE',
+            'name' => 'Readiness live gate',
+            'status' => 'completed',
+            'target_properties' => 1,
+            'generated_properties' => 1,
+        ]);
+        $showcase = $this->createPortfolio([
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+
+        $this->createPortfolio(['status' => 'archived']);
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portfolioLaunch.live_portfolios', 0)
+                ->where('portfolioLaunch.needs_live_portfolio', true)
+                ->where('portfolioReadiness', null)
+                ->has('portfolioOptions', 1)
+                ->where('portfolioOptions.0.id', $showcase->id)
+                ->where('portfolioOptions.0.is_showcase', true));
     }
 
     public function test_portfolio_blockers_open_exact_scoped_setup_actions(): void

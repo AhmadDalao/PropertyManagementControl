@@ -2,68 +2,95 @@
 
 namespace App\Modules\Dashboard\Presenters;
 
-use App\Models\CmsPage;
-use App\Models\Portfolio;
-use App\Models\TenantProfile;
 use App\Models\User;
-use App\Modules\Shared\Authorization\AssignedPropertyScope;
-use App\Modules\Shared\PortfolioScope;
+use App\Modules\Dashboard\Queries\DashboardSetupTargetQuery;
+use App\Modules\Portfolios\Presenters\PortfolioSetupStepsPresenter;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 class SetupChecklistPresenter
 {
     public function __construct(
-        private readonly PortfolioScope $portfolios,
-        private readonly AssignedPropertyScope $assignments,
+        private readonly DashboardSetupTargetQuery $target,
+        private readonly PortfolioSetupStepsPresenter $steps,
+        private readonly ManagerSetupChecklistPresenter $manager,
     ) {}
 
     /**
      * @param  array<string, int|float>  $stats
-     * @return array<int, array{label:string, done:bool, href:string}>
+     * @return array{target:?array<string,mixed>,items:array<int,array<string,mixed>>}
      */
     public function present(User $user, array $stats): array
     {
-        if ($this->assignments->restricts($user) && ! $this->assignments->hasAssignments($user)) {
-            return [[
-                'label' => trans('app.dashboard.property_assignment_action'),
-                'done' => false,
-                'href' => '/portfolios',
-            ]];
-        }
+        $portfolio = $this->target->forUser($user);
 
-        $items = [
-            [
-                'label' => 'Create portfolio',
-                'done' => $user->hasRole('superadmin')
-                    ? Portfolio::query()->exists()
-                    : $user->portfolio_id !== null,
-                'href' => '/portfolios/create',
-            ],
-            ['label' => 'Create users', 'done' => $stats['totalUsers'] > 1, 'href' => '/users/create'],
-            [
-                'label' => 'Create assets',
-                'done' => $stats['totalAssets'] > 0,
-                'href' => $user->hasAnyRole(['superadmin', 'owner'])
-                    ? '/assets/building-setup'
-                    : '/assets/create',
-            ],
-            [
-                'label' => 'Create profiles',
-                'done' => $this->assignments
-                    ->tenants($this->portfolios->apply(TenantProfile::query(), $user), $user)
-                    ->exists(),
-                'href' => '/tenants/create',
-            ],
-            ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases/create'],
-        ];
+        if ($portfolio) {
+            $steps = $this->steps->present(
+                $portfolio,
+                $user,
+                PortfolioModules::normalize($portfolio->module_settings),
+            );
+            $completed = count(array_filter($steps, fn (array $step): bool => $step['done']));
+            $next = collect($steps)->first(fn (array $step): bool => ! $step['done']);
+            $name = app()->isLocale('ar')
+                ? ($portfolio->name_ar ?: $portfolio->name_en)
+                : ($portfolio->name_en ?: $portfolio->name_ar);
 
-        if ($user->hasRole('superadmin')) {
-            $items[] = [
-                'label' => 'Publish website',
-                'done' => CmsPage::query()->where('status', 'published')->exists(),
-                'href' => '/cms',
+            return [
+                'target' => [
+                    'id' => $portfolio->id,
+                    'code' => $portfolio->code,
+                    'name' => $name,
+                    'href' => route('portfolios.show', $portfolio),
+                    'completed' => $completed,
+                    'total' => count($steps),
+                    'next' => $next ? [
+                        'label' => $next['title'],
+                        'description' => $next['description'],
+                        'href' => $next['href'] ?? route('portfolios.show', $portfolio),
+                        'action_label' => $next['actionLabel'] ?? trans('app.actions.next_step'),
+                        'icon' => $next['icon'],
+                    ] : null,
+                ],
+                'items' => array_map(
+                    fn (array $step): array => $this->item(
+                        $step['key'],
+                        $step['title'],
+                        $step['description'],
+                        $step['done'],
+                        $step['href'] ?? route('portfolios.show', $portfolio),
+                        $step['icon'],
+                    ),
+                    $steps,
+                ),
             ];
         }
 
-        return $items;
+        if ($user->hasRole('superadmin')) {
+            return [
+                'target' => null,
+                'items' => [$this->item(
+                    'live_portfolio',
+                    trans('app.readiness.create_live_portfolio'),
+                    trans('app.readiness.live_portfolio_description'),
+                    false,
+                    route('portfolios.create'),
+                    'bi-buildings',
+                )],
+            ];
+        }
+
+        return ['target' => null, 'items' => $this->manager->present($user, $stats)];
+    }
+
+    /** @return array<string, mixed> */
+    private function item(
+        string $key,
+        string $label,
+        string $description,
+        bool $done,
+        string $href,
+        string $icon,
+    ): array {
+        return compact('key', 'label', 'description', 'done', 'href', 'icon');
     }
 }

@@ -163,6 +163,136 @@
     white-space: nowrap;
 }
 
+.pmc-dashboard-portfolio-setup {
+    margin-bottom: 1rem;
+}
+
+.pmc-dashboard-setup-body {
+    display: grid;
+    grid-template-columns: minmax(14rem, 0.8fr) minmax(0, 1.2fr);
+    gap: 1rem;
+}
+
+.pmc-dashboard-setup-progress,
+.pmc-dashboard-setup-next {
+    min-width: 0;
+    padding: 1rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.8rem;
+    background: #fbfaf7;
+}
+
+.pmc-dashboard-setup-progress {
+    display: grid;
+    align-content: center;
+    gap: 0.85rem;
+}
+
+.pmc-dashboard-setup-progress > div:first-child {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.pmc-dashboard-setup-progress span,
+.pmc-dashboard-setup-next span {
+    color: #775800;
+    font-size: 0.66rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.pmc-dashboard-setup-progress strong,
+.pmc-dashboard-setup-next strong {
+    font-size: 0.88rem;
+    font-weight: 850;
+}
+
+.pmc-dashboard-setup-progress > div:last-child {
+    height: 0.48rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8e5df;
+}
+
+.pmc-dashboard-setup-progress > div:last-child span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #111, #ffc107);
+}
+
+.pmc-dashboard-setup-next {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    background: #fff9e9;
+}
+
+.pmc-dashboard-setup-next > i,
+.pmc-dashboard-live-launch > i {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: #111;
+    color: #ffc107;
+}
+
+.pmc-dashboard-setup-next > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+}
+
+.pmc-dashboard-setup-next p,
+.pmc-dashboard-live-launch p {
+    margin: 0;
+    color: #5f5b54;
+    font-size: 0.74rem;
+}
+
+.pmc-dashboard-setup-next > a,
+.pmc-dashboard-live-launch > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 0.65rem;
+    background: #ffc107;
+    color: #111;
+    font-size: 0.74rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-dashboard-live-launch {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 0.75rem;
+    padding: 1rem;
+    border: 1px solid #111;
+    border-radius: 0.8rem;
+    background: #fff9e9;
+}
+
+.pmc-dashboard-live-launch > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+}
+
+.pmc-dashboard-live-launch strong {
+    font-size: 0.9rem;
+}
+
 .pmc-dashboard-data-context {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto;
@@ -227,15 +357,20 @@
 @media (max-width: 767.98px) {
     .pmc-command-grid,
     .pmc-command-grid.is-three,
-    .pmc-dashboard-status-grid {
+    .pmc-dashboard-status-grid,
+    .pmc-dashboard-setup-body {
         grid-template-columns: 1fr;
     }
 
-    .pmc-dashboard-data-context {
+    .pmc-dashboard-data-context,
+    .pmc-dashboard-live-launch,
+    .pmc-dashboard-setup-next {
         grid-template-columns: auto minmax(0, 1fr);
     }
 
-    .pmc-dashboard-data-context > a {
+    .pmc-dashboard-data-context > a,
+    .pmc-dashboard-live-launch > a,
+    .pmc-dashboard-setup-next > a {
         grid-column: 1 / -1;
         justify-content: center;
     }

@@ -40,12 +40,14 @@ class OperationsDashboardPresenter
     {
         $context = $this->propertyContext->forUser($user, $propertyId);
         $stats = $this->stats->forUser($user, $context);
-        $checklist = $this->checklist->present($user, $stats);
+        $setup = $this->checklist->present($user, $stats);
+        $checklist = $setup['items'];
         $propertyMap = $this->propertyMap->forUser($user, $context);
 
         return [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
             'propertyFocus' => $context->payload(),
+            'setupTarget' => $setup['target'],
             'stats' => $stats,
             'financial' => $this->financial->forUser($user, $context),
             'nextActions' => $this->actions->operations(

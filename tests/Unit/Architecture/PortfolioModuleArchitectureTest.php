@@ -83,6 +83,7 @@ class PortfolioModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Portfolios/Presenters/PortfolioOverviewPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioRelatedPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'),
+            $this->path('app/Modules/Portfolios/Presenters/PortfolioSetupStepsPresenter.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDetailQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDirectoryQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioIndexQuery.php'),
@@ -108,10 +109,14 @@ class PortfolioModuleArchitectureTest extends TestCase
     public function portfolio_setup_keeps_state_queries_out_of_the_presenter(): void
     {
         $presenter = $this->source($this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'));
+        $steps = $this->source($this->path('app/Modules/Portfolios/Presenters/PortfolioSetupStepsPresenter.php'));
         $query = $this->source($this->path('app/Modules/Portfolios/Queries/PortfolioSetupQuery.php'));
 
-        $this->assertStringContainsString('PortfolioSetupQuery', $presenter);
+        $this->assertStringContainsString('PortfolioSetupStepsPresenter', $presenter);
         $this->assertStringNotContainsString('::query()', $presenter);
+        $this->assertStringContainsString('PortfolioSetupQuery', $steps);
+        $this->assertStringNotContainsString('::query()', $steps);
+        $this->assertLessThanOrEqual(140, substr_count($steps, "\n") + 1);
         $this->assertStringContainsString('Asset::query()', $query);
         $this->assertStringContainsString('Lease::query()', $query);
         $this->assertStringContainsString('User::query()', $query);

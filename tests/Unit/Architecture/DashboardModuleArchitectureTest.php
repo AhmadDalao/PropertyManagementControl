@@ -25,11 +25,13 @@ class DashboardModuleArchitectureTest extends TestCase
     {
         foreach ([
             'Presenters/DashboardActionPresenter.php',
+            'Presenters/ManagerSetupChecklistPresenter.php',
             'Presenters/OperationsDashboardPresenter.php',
             'Presenters/SetupChecklistPresenter.php',
             'Presenters/TenantDashboardPresenter.php',
             'Queries/DashboardPropertyMapQuery.php',
             'Queries/DashboardPropertyContextQuery.php',
+            'Queries/DashboardSetupTargetQuery.php',
             'Queries/LaunchReadinessSummaryQuery.php',
             'Queries/OperationsActivityQuery.php',
             'Queries/OperationsCollectionQuery.php',
@@ -92,6 +94,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/operations-priority-panels.tsx',
             'operations/platform-status-panel.tsx',
             'operations/platform-metrics.ts',
+            'operations/portfolio-setup-panel.tsx',
             'operations/portfolio-metrics.ts',
             'operations/property-focus-url.ts',
             'operations/property-focus.tsx',

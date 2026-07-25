@@ -42,6 +42,7 @@ final class LaunchReadinessSummaryQuery
             'evidence_remaining' => $evidenceRemaining,
             'operational_portfolios' => Portfolio::query()
                 ->whereNull('showcase_dataset_id')
+                ->where('status', '!=', 'archived')
                 ->count(),
             'showcase_portfolios' => (clone $showcasePortfolioIds)->count(),
             'showcase_assets' => Asset::query()

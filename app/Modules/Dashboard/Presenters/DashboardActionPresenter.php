@@ -9,7 +9,7 @@ class DashboardActionPresenter
     ) {}
 
     /**
-     * @param  array<int, array{label:string, done:bool, href:string}>  $checklist
+     * @param  array<int, array{key:string,label:string,description:string,done:bool,href:string,icon:string}>  $checklist
      * @param  array<string, int|float>  $stats
      * @param  array<string, mixed>  $mapSummary
      * @return array<int, array{label:string, description:string, href:string, icon:string}>
@@ -27,6 +27,12 @@ class DashboardActionPresenter
         }
 
         $actions = [];
+
+        foreach ($checklist as $item) {
+            if (! $item['done'] && $item['key'] === 'live_portfolio') {
+                $actions[] = $this->setupAction($item);
+            }
+        }
 
         if ((float) ($stats['arrears'] ?? 0) > 0) {
             $actions[] = $this->action(
@@ -59,8 +65,8 @@ class DashboardActionPresenter
         }
 
         foreach ($checklist as $item) {
-            if (! $item['done']) {
-                $actions[] = $this->setupAction($item['label'], $item['href']);
+            if (! $item['done'] && $item['key'] !== 'live_portfolio') {
+                $actions[] = $this->setupAction($item);
             }
         }
 
@@ -91,20 +97,18 @@ class DashboardActionPresenter
         ];
     }
 
-    /** @return array{label:string, description:string, href:string, icon:string} */
-    private function setupAction(string $label, string $href): array
+    /**
+     * @param  array{label:string,description:string,href:string,icon:string}  $item
+     * @return array{label:string, description:string, href:string, icon:string}
+     */
+    private function setupAction(array $item): array
     {
-        $details = [
-            'Create portfolio' => ['Set the owner account boundary before adding data.', 'bi-buildings'],
-            'Create users' => ['Add owner, manager, and tenant accounts with clean roles.', 'bi-people'],
-            'Create assets' => ['Build buildings, floors, units, spaces, and stakeholder assignments.', 'bi-diagram-3'],
-            'Create profiles' => ['Create tenant profiles before writing contracts.', 'bi-person-badge'],
-            'Create leases' => ['Connect tenants to rentable assets and generate installments.', 'bi-file-earmark-text'],
-            'Publish website' => ['Use the CMS builder to publish the public landing page.', 'bi-layout-wtf'],
-        ];
-        [$description, $icon] = $details[$label] ?? ['Complete this setup step before scaling operations.', 'bi-arrow-right-circle'];
-
-        return $this->action($label, $description, $href, $icon);
+        return $this->action(
+            $item['label'],
+            $item['description'],
+            $item['href'],
+            $item['icon'],
+        );
     }
 
     /** @return array{label:string, description:string, href:string, icon:string} */

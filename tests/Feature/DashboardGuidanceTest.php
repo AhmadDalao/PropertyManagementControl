@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ShowcaseDataset;
 use App\Modules\ModuleRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -22,6 +23,7 @@ class DashboardGuidanceTest extends TestCase
     {
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
 
         $this->actingAs($owner)
             ->get(route('dashboard'))
@@ -29,13 +31,18 @@ class DashboardGuidanceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('dashboard')
                 ->where('mode', 'portfolio')
-                ->where('nextActions', fn ($actions) => collect($actions)->contains('label', 'Create users')
-                    && collect($actions)->contains('label', 'Create assets')
-                    && collect($actions)->contains('label', 'Create profiles')
-                    && collect($actions)->contains('href', '/users/create')
-                    && collect($actions)->contains('href', '/assets/building-setup')
-                    && collect($actions)->contains('href', '/tenants/create')
-                    && ! collect($actions)->contains('label', 'Create portfolio'))
+                ->where('setupTarget.id', $portfolio->id)
+                ->where('setupTarget.completed', 2)
+                ->where('setupTarget.total', 6)
+                ->where('setupTarget.next.label', 'Add the operating manager')
+                ->where('setupTarget.next.href', route('users.create', [
+                    'portfolio_id' => $portfolio->id,
+                    'role' => 'property_manager',
+                ]))
+                ->where('nextActions', fn ($actions) => collect($actions)->contains('label', 'Add the operating manager')
+                    && collect($actions)->contains('label', 'Register the first property')
+                    && collect($actions)->contains('label', 'Onboard a real tenant')
+                    && ! collect($actions)->contains('label', 'Activate the portfolio'))
             );
     }
 
@@ -59,6 +66,39 @@ class DashboardGuidanceTest extends TestCase
                     && ! collect($actions)->contains('label', 'Create profiles')
                     && ! collect($actions)->contains('label', 'Create leases'))
             );
+    }
+
+    public function test_showcase_data_never_completes_superadmin_live_setup(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $dataset = ShowcaseDataset::query()->create([
+            'key' => 'DASHBOARD-LIVE-GATE',
+            'name' => 'Dashboard live gate',
+            'status' => 'completed',
+            'target_properties' => 1,
+            'generated_properties' => 1,
+        ]);
+        $showcase = $this->createPortfolio([
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+
+        $this->createAsset($showcase);
+        $this->createUserWithRole('owner', $showcase, [
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('setupTarget', null)
+                ->has('setupChecklist', 1)
+                ->where('setupChecklist.0.key', 'live_portfolio')
+                ->where('setupChecklist.0.done', false)
+                ->where('setupChecklist.0.href', route('portfolios.create'))
+                ->where('nextActions.0.label', 'Create live portfolio')
+                ->where('nextActions.0.href', route('portfolios.create'))
+                ->where('readinessStatus.operational_portfolios', 0));
     }
 
     public function test_owner_dashboard_exposes_scoped_property_map_assets(): void

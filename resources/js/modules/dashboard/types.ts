@@ -25,9 +25,28 @@ export type { NextAction } from './shared-types';
 export type { TenantDashboardProps } from './tenant-types';
 
 export type SetupItem = {
+    key: string;
     label: string;
+    description: string;
+    icon: string;
     done: boolean;
     href: string;
+};
+
+export type DashboardSetupTarget = {
+    id: number;
+    code: string;
+    name: string;
+    href: string;
+    completed: number;
+    total: number;
+    next: {
+        label: string;
+        description: string;
+        href: string;
+        action_label: string;
+        icon: string;
+    } | null;
 };
 
 export type ExpiringLease = {
@@ -82,6 +101,7 @@ export type OperationsDashboardProps = SharedProps & {
         assignment_restricted: boolean;
         has_assignments: boolean;
     };
+    setupTarget: DashboardSetupTarget | null;
     stats: OperationsStats;
     financial: OperationsFinancial;
     nextActions: NextAction[];

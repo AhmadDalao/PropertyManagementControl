@@ -28,6 +28,7 @@ final class PortfolioReadinessQuery
     {
         $portfolios = Portfolio::query()
             ->with('owner:id,name,status')
+            ->where('status', '!=', 'archived')
             ->orderByRaw('showcase_dataset_id is not null')
             ->orderBy('name_en')
             ->get();
@@ -39,7 +40,7 @@ final class PortfolioReadinessQuery
             ? $portfolios->firstWhere('id', $requestedPortfolioId)
             : $portfolios->first(
                 fn (Portfolio $portfolio): bool => ! $portfolio->is_showcase,
-            ) ?? $portfolios->first();
+            );
 
         return [
             'options' => $portfolios

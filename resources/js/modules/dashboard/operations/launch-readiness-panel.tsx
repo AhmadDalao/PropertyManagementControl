@@ -22,6 +22,22 @@ export function LaunchReadinessPanel({ status }: { status: ReadinessStatus }) {
                 href: '/system/readiness',
             }}
         >
+            {status.operational_portfolios === 0 ? (
+                <div className="pmc-dashboard-live-launch" role="note">
+                    <i className="bi bi-buildings" aria-hidden="true" />
+                    <div>
+                        <strong>{t('readiness.live_portfolio_title')}</strong>
+                        <p>{t('readiness.live_portfolio_description')}</p>
+                    </div>
+                    <Link href="/portfolios/create">
+                        {t('readiness.create_live_portfolio')}
+                        <i
+                            className="bi bi-arrow-up-right"
+                            aria-hidden="true"
+                        />
+                    </Link>
+                </div>
+            ) : null}
             <div className="pmc-dashboard-status-grid">
                 <Link href="/system/readiness">
                     <span>{t('dashboard.platform_gate_status')}</span>
