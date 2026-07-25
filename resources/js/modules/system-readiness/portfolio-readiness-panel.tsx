@@ -65,9 +65,11 @@ export function PortfolioReadinessPanel({
                         value={readiness?.portfolio.id ?? ''}
                         onChange={selectPortfolio}
                     >
-                        {options.length === 0 ? (
-                            <option value="">
-                                {t('readiness.no_portfolios')}
+                        {!readiness ? (
+                            <option value="" disabled>
+                                {options.length === 0
+                                    ? t('readiness.no_portfolios')
+                                    : t('readiness.select_portfolio')}
                             </option>
                         ) : null}
                         {options.map((option) => (

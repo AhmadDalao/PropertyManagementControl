@@ -122,7 +122,11 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->where('portfolioReadiness', null)
                 ->has('portfolioOptions', 1)
                 ->where('portfolioOptions.0.id', $showcase->id)
-                ->where('portfolioOptions.0.is_showcase', true));
+                ->where('portfolioOptions.0.is_showcase', true)
+                ->where(
+                    'app.translations.readiness.select_portfolio',
+                    'Select a portfolio to review',
+                ));
     }
 
     public function test_portfolio_blockers_open_exact_scoped_setup_actions(): void

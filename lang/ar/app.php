@@ -3144,6 +3144,7 @@ return [
         'portfolio' => 'المحفظة',
         'portfolio_required' => 'اختر محفظة لهذا الفحص.',
         'no_portfolios' => 'لا توجد محافظ',
+        'select_portfolio' => 'اختر محفظة للمراجعة',
         'showcase' => 'استعراضية',
         'showcase_data' => 'بيانات استعراضية',
         'metric_owners' => 'الملاك النشطون',

@@ -3144,6 +3144,7 @@ return [
         'portfolio' => 'Portfolio',
         'portfolio_required' => 'Choose a portfolio for this readiness check.',
         'no_portfolios' => 'No portfolios available',
+        'select_portfolio' => 'Select a portfolio to review',
         'showcase' => 'Showcase',
         'showcase_data' => 'Showcase data',
         'metric_owners' => 'Active owners',
