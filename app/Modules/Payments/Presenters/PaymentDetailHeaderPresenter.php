@@ -25,6 +25,7 @@ final class PaymentDetailHeaderPresenter
                 'label' => trans('app.payments.download_receipt'),
                 'href' => route('payments.receipt', $payment),
                 'variant' => 'secondary',
+                'external' => true,
             ];
         }
 

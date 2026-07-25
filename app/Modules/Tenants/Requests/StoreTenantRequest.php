@@ -48,6 +48,7 @@ class StoreTenantRequest extends FormRequest
             'address' => ['nullable', 'string', 'max:5000'],
             'notes' => ['nullable', 'string', 'max:5000'],
             'status' => ['required', Rule::in(TenantOptions::STATUSES)],
+            'next' => ['nullable', 'string', Rule::in(['lease'])],
         ];
     }
 }

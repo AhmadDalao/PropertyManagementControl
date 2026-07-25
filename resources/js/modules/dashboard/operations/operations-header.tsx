@@ -57,8 +57,8 @@ export function OperationsHeader({
                         ]
                       : [
                             {
-                                label: t('dashboard.create_lease'),
-                                href: '/leases/create',
+                                label: t('dashboard.start_tenancy'),
+                                href: '/tenants/create?next=lease',
                                 icon: 'bi-file-earmark-plus',
                                 tone: 'primary',
                             },

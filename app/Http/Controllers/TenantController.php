@@ -36,7 +36,7 @@ class TenantController extends Controller
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present(
                 $this->actor($request),
-                defaults: $request->only('portfolio_id'),
+                defaults: $request->only(['portfolio_id', 'next']),
             ),
         ]);
     }
@@ -57,7 +57,17 @@ class TenantController extends Controller
 
     public function store(StoreTenantRequest $request): RedirectResponse
     {
-        $tenant = $this->tenants->create($this->actor($request), $request->validated());
+        $data = $request->validated();
+        $next = $data['next'] ?? null;
+        unset($data['next']);
+        $tenant = $this->tenants->create($this->actor($request), $data);
+
+        if ($next === 'lease') {
+            return to_route('leases.create', [
+                'tenant_profile_id' => $tenant->id,
+                'onboarding' => 1,
+            ])->with('success', trans('app.messages.tenant_created_continue_lease'));
+        }
 
         return to_route('tenants.show', $tenant)
             ->with('success', trans('app.messages.tenant_created'));

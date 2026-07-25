@@ -2,6 +2,7 @@
 @import './components/resource-header.css';
 @import './components/resource-detail.css';
 @import './components/resource-workflow.css';
+@import './components/resource-progress.css';
 @import './components/resource-related.css';
 @import './components/records.css';
 @import './components/responsive.css';

@@ -327,7 +327,7 @@ final class LeaseModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
                     'Contract PDF',
                 ])
-                ->where('detailPage.workflow.actions.0.label', 'Review and activate'));
+                ->where('detailPage.progress.steps.4.actionLabel', 'Review and activate'));
 
         $this->actingAs($owner)
             ->get(route('leases.show', $source))

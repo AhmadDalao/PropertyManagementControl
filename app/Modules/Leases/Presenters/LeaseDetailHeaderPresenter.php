@@ -24,7 +24,12 @@ final class LeaseDetailHeaderPresenter
             $actions[] = ['label' => trans('app.leases.edit_action'), 'href' => route('leases.edit', $lease), 'variant' => 'primary'];
         }
 
-        $actions[] = ['label' => trans('app.leases.contract_pdf'), 'href' => route('leases.contract', $lease), 'variant' => 'secondary'];
+        $actions[] = [
+            'label' => trans('app.leases.contract_pdf'),
+            'href' => route('leases.contract', $lease),
+            'variant' => 'secondary',
+            'external' => true,
+        ];
 
         return [
             'eyebrow' => trans('app.leases.detail_eyebrow'),

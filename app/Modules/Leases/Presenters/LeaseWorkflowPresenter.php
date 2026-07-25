@@ -12,61 +12,37 @@ final class LeaseWorkflowPresenter
     {
         $lease = $data->lease;
         $hasSignedPdf = $lease->documents->contains('type', 'signed_contract');
+        $usesMoveInProgress = $data->adminMode
+            && in_array($lease->status, ['draft', 'active'], true);
 
         return [
-            'eyebrow' => trans('app.resource.next_step'),
-            'title' => trans("app.leases.workflow_{$lease->status}_title"),
-            'description' => trans($lease->status === 'active' && ! $hasSignedPdf
-                ? 'app.leases.workflow_active_unsigned_description'
-                : "app.leases.workflow_{$lease->status}_description"),
+            'eyebrow' => trans($usesMoveInProgress
+                ? 'app.leases.contract_controls_eyebrow'
+                : 'app.resource.next_step'),
+            'title' => trans($usesMoveInProgress
+                ? 'app.leases.contract_controls_title'
+                : "app.leases.workflow_{$lease->status}_title"),
+            'description' => trans($usesMoveInProgress
+                ? 'app.leases.contract_controls_description'
+                : ($lease->status === 'active' && ! $hasSignedPdf
+                    ? 'app.leases.workflow_active_unsigned_description'
+                    : "app.leases.workflow_{$lease->status}_description")),
             'status' => trans("app.status.{$lease->status}"),
-            'tone' => $this->tone($lease->status, $hasSignedPdf),
-            'icon' => 'bi-file-earmark-check',
+            'tone' => $usesMoveInProgress
+                ? 'muted'
+                : $this->tone($lease->status, $hasSignedPdf),
+            'icon' => $usesMoveInProgress ? 'bi-signpost-split' : 'bi-file-earmark-check',
             'actions' => $data->adminMode
-                ? $this->adminActions($data, $hasSignedPdf)
+                ? $this->adminActions($data)
                 : $this->tenantActions($data),
         ];
     }
 
     /** @return array<int, array<string, mixed>> */
-    private function adminActions(LeaseDetailData $data, bool $hasSignedPdf): array
+    private function adminActions(LeaseDetailData $data): array
     {
         $lease = $data->lease;
         $actions = [];
-
-        if ($lease->status === 'draft') {
-            $actions[] = [
-                'label' => trans('app.leases.review_activate'),
-                'href' => route('leases.edit', $lease),
-                'variant' => 'primary',
-            ];
-        }
-
-        if ($lease->status === 'active' && PortfolioModules::enabledForUser($data->actor, 'payments')) {
-            $actions[] = [
-                'label' => trans('app.leases.record_payment'),
-                'href' => route('payments.create', ['lease_id' => $lease->id]),
-                'variant' => 'primary',
-            ];
-        }
-
-        if (
-            ! $hasSignedPdf
-            && in_array($lease->status, ['draft', 'active'], true)
-            && PortfolioModules::enabledForUser($data->actor, 'documents')
-        ) {
-            $actions[] = [
-                'label' => trans('app.leases.upload_signed_pdf'),
-                'href' => route('documents.create', [
-                    'documentable_type' => 'lease',
-                    'documentable_id' => $lease->id,
-                    'type' => 'signed_contract',
-                    'title_en' => "Signed contract {$lease->code}",
-                    'title_ar' => "العقد الموقع {$lease->code}",
-                ]),
-                'variant' => 'secondary',
-            ];
-        }
 
         if (
             in_array($lease->status, ['expired', 'terminated'], true)
@@ -98,6 +74,7 @@ final class LeaseWorkflowPresenter
             'label' => trans('app.leases.tenant_statement'),
             'href' => route('leases.statement', $lease),
             'variant' => 'secondary',
+            'external' => true,
         ];
 
         if (in_array($lease->status, ['draft', 'active'], true)) {
@@ -120,6 +97,7 @@ final class LeaseWorkflowPresenter
             'label' => trans('app.leases.tenant_statement'),
             'href' => route('leases.statement', $data->lease),
             'variant' => 'primary',
+            'external' => true,
         ]];
     }
 

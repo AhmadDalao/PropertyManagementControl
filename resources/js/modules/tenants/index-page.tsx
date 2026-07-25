@@ -26,15 +26,15 @@ export default function TenantsIndexPage() {
                     canCreate
                         ? [
                               {
-                                  label: t('tenants.create_lease'),
-                                  href: '/leases/create',
+                                  label: t('tenants.start_tenancy'),
+                                  href: '/tenants/create?next=lease',
                                   icon: 'bi-file-earmark-plus',
+                                  tone: 'primary',
                               },
                               {
                                   label: t('tenants.create_tenant'),
                                   href: '/tenants/create',
                                   icon: 'bi-person-plus',
-                                  tone: 'primary',
                               },
                           ]
                         : []

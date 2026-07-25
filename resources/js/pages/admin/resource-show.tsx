@@ -7,6 +7,7 @@ import type {
     DetailSection,
     RelatedTable,
     ResourceHeaderProps,
+    ResourceProgress,
     ResourceSpotlight,
     ResourceWorkflow,
 } from '@/components/resource-cycle';
@@ -18,6 +19,7 @@ type PageProps = SharedProps & {
         header: ResourceHeaderProps;
         spotlight?: ResourceSpotlight;
         workflow?: ResourceWorkflow;
+        progress?: ResourceProgress | null;
         decisionCards?: DecisionCard[];
         stats?: DetailItem[];
         sections?: DetailSection[];

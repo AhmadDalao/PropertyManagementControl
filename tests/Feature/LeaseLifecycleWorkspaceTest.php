@@ -169,10 +169,11 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.workflow.eyebrow', 'Next step')
-                ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->contains(
-                    fn (array $action): bool => $action['label'] === 'Upload signed PDF'
-                        && $action['href'] === $uploadUrl
+                ->where('detailPage.progress.eyebrow', 'Move-in control')
+                ->where('detailPage.progress.steps', fn ($steps) => collect($steps)->contains(
+                    fn (array $step): bool => $step['title'] === 'Signed contract'
+                        && $step['actionLabel'] === 'Upload signed PDF'
+                        && $step['href'] === $uploadUrl
                 )));
 
         $this->actingAs($owner)

@@ -6,6 +6,7 @@ use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Leases\Data\LeaseDetailData;
 use App\Modules\Leases\Support\LeaseAccess;
+use Illuminate\Database\Eloquent\Builder;
 
 final class LeaseDetailQuery
 {
@@ -26,6 +27,10 @@ final class LeaseDetailQuery
                 'renewalLease',
                 'installments',
                 'documents',
+            ])
+            ->withCount([
+                'payments as posted_payments_count' => fn (Builder $query): Builder => $query
+                    ->where('status', 'posted'),
             ])
             ->whereKey($target->id)
             ->firstOrFail();

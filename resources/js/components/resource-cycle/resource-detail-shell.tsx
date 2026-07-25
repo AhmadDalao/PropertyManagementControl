@@ -10,6 +10,7 @@ import { RelatedRecordsTable } from './related-records-table';
 import { ResourceDetailTabs } from './resource-detail-tabs';
 import type { ResourceDetailTabDefinition } from './resource-detail-tabs';
 import { ResourceHeader } from './resource-header';
+import { ResourceProgressPanel } from './resource-progress-panel';
 import { ResourceSpotlightPanel } from './resource-spotlight-panel';
 import type {
     DetailSection,
@@ -22,6 +23,7 @@ export function ResourceDetailShell({
     header,
     spotlight,
     workflow,
+    progress,
     decisionCards = [],
     stats = [],
     sections = [],
@@ -72,6 +74,7 @@ export function ResourceDetailShell({
                     <OverviewPanel
                         spotlight={spotlight}
                         workflow={workflow}
+                        progress={progress}
                         decisionCards={decisionCards}
                         stats={stats}
                         sections={overviewSections}
@@ -108,6 +111,7 @@ export function ResourceDetailShell({
 function OverviewPanel({
     spotlight,
     workflow,
+    progress,
     decisionCards,
     stats,
     sections,
@@ -115,6 +119,7 @@ function OverviewPanel({
     ResourceDetailShellProps,
     'spotlight' | 'workflow' | 'decisionCards' | 'stats'
 > & {
+    progress: ResourceDetailShellProps['progress'];
     sections: DetailSection[];
 }) {
     const { text } = useTranslator();
@@ -124,6 +129,7 @@ function OverviewPanel({
             {spotlight ? (
                 <ResourceSpotlightPanel spotlight={spotlight} />
             ) : null}
+            {progress ? <ResourceProgressPanel progress={progress} /> : null}
             {workflow ? <WorkflowActionPanel workflow={workflow} /> : null}
             {decisionCards && decisionCards.length > 0 ? (
                 <DecisionCardGrid cards={decisionCards} />

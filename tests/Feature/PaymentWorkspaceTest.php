@@ -97,6 +97,10 @@ class PaymentWorkspaceTest extends TestCase
             ->get(route('payments.show', $postedPayment))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->contains(
+                    fn (array $action): bool => $action['label'] === 'Download receipt'
+                        && ($action['external'] ?? false) === true,
+                ))
                 ->where('detailPage.workflow.title', 'Payment allocated and receipt ready')
                 ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
                     'Open lease',

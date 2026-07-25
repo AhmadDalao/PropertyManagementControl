@@ -634,7 +634,69 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases/1?locale=ar');
-        await expect(page.getByText('الخطوة التالية')).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'جهّز هذا التأجير للتسليم' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('owner tenancy onboarding stays direct and compact on mobile', async ({
+        page,
+    }) => {
+        await page.locator('.pmc-account-trigger').click();
+        await page.getByRole('menuitem', { name: 'Logout' }).click();
+        await expect(page).toHaveURL(/\/$/);
+        await login(page, 'owner@propertycontrol.test', 'password');
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard?locale=en');
+
+        await page.getByRole('link', { name: 'Start tenancy' }).click();
+        await expect(
+            page.getByRole('heading', {
+                name: 'Add tenant and start tenancy',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Continue to lease' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto(
+            '/leases/create?tenant_profile_id=1&onboarding=1&locale=en',
+        );
+        await expect(
+            page.getByRole('heading', { name: 'Set up the tenancy' }),
+        ).toBeVisible();
+        await expect(page.getByLabel('Status')).toHaveValue('draft');
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/leases/1?locale=en');
+        const progress = page.locator('.pmc-resource-progress');
+        await expect(progress).toBeVisible();
+        await expect(progress.locator('li')).toHaveCount(6);
+        expect(
+            await progress
+                .locator('ol')
+                .evaluate(
+                    (node) =>
+                        window
+                            .getComputedStyle(node)
+                            .gridTemplateColumns.split(' ').length,
+                ),
+        ).toBe(1);
+        const contractDownload = page.waitForEvent('download');
+        await progress.getByRole('link', { name: 'Download contract' }).click();
+        expect((await contractDownload).suggestedFilename()).toMatch(/\.pdf$/i);
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/leases/1?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'جهّز هذا التأجير للتسليم' }),
+        ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText(
+            'Prepare this tenancy',
+        );
         await expectNoHorizontalOverflow(page);
     });
 

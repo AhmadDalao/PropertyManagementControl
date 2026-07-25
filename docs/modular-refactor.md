@@ -108,6 +108,8 @@ This app stays Laravel + Inertia React. The refactor direction is vertical modul
 
 The vertical module refactor is complete for the current MVP surface. Further architecture work should be driven by measured defects or new product scope; the immediate priority is production onboarding, backup recovery, SMTP delivery, legal-template approval, and a controlled real-property pilot.
 
+The owner onboarding cycle now reuses the focused Tenant and Lease modules instead of introducing a combined form. A whitelisted continuation carries a newly created tenant into a prefilled draft lease, and `LeaseMoveInProgressPresenter` derives the six handover steps from persisted tenant, contract, PDF, status, and posted-payment records. The shared resource-cycle progress component is bounded by the same architecture, RTL, touch-target, and mobile overflow tests as the rest of the detail system.
+
 ## Local Verification
 
 The local shell may not include PHP on `PATH`, but Vite Wayfinder shells out to `php`. Use this PATH for local builds:

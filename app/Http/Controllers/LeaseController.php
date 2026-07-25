@@ -42,7 +42,12 @@ class LeaseController extends Controller
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present(
                 $actor,
-                defaults: $request->only(['portfolio_id', 'tenant_profile_id', 'asset_id']),
+                defaults: $request->only([
+                    'portfolio_id',
+                    'tenant_profile_id',
+                    'asset_id',
+                    'onboarding',
+                ]),
             ),
         ]);
     }

@@ -91,6 +91,26 @@ export type ResourceWorkflow = {
     actions?: ResourceAction[];
 };
 
+export type ResourceProgressStep = {
+    title: string;
+    description: string;
+    state: 'complete' | 'current' | 'pending';
+    icon?: string;
+    href?: string | null;
+    actionLabel?: string | null;
+    download?: boolean;
+};
+
+export type ResourceProgress = {
+    eyebrow: string;
+    title: string;
+    description?: string;
+    summary: string;
+    completed: number;
+    total: number;
+    steps: ResourceProgressStep[];
+};
+
 export type RelatedCell = ReactNode | { label: string; href: string };
 
 export type RelatedTable = {
@@ -143,6 +163,7 @@ export type ResourceDetailShellProps = {
     header: ResourceHeaderProps;
     spotlight?: ResourceSpotlight;
     workflow?: ResourceWorkflow;
+    progress?: ResourceProgress | null;
     decisionCards?: DecisionCard[];
     stats?: DetailItem[];
     sections?: DetailSection[];

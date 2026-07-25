@@ -14,6 +14,7 @@ final class LeaseDetailPresenter
         private readonly LeaseDetailQuery $query,
         private readonly LeaseDetailHeaderPresenter $header,
         private readonly LeaseWorkflowPresenter $workflow,
+        private readonly LeaseMoveInProgressPresenter $moveInProgress,
         private readonly LeaseDetailOverviewPresenter $overview,
         private readonly LeaseRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
@@ -32,6 +33,7 @@ final class LeaseDetailPresenter
         return [
             'header' => $this->header->present($data),
             'workflow' => $this->workflow->present($data),
+            'progress' => $this->moveInProgress->present($data),
             'stats' => $this->overview->stats($data),
             'sections' => $this->overview->sections($data),
             'related' => $this->related->present($data),
