@@ -20,6 +20,7 @@ use App\Http\Controllers\LeaseController;
 use App\Http\Controllers\LeaseMoveOutController;
 use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
+use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
@@ -125,6 +126,21 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
 
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/attachments/create',
+        [MaintenanceAttachmentController::class, 'create'],
+    )->name('maintenance-requests.attachments.create')
+        ->middleware('portfolio.module:maintenance');
+    Route::post(
+        '/maintenance-requests/{maintenanceRequest}/attachments',
+        [MaintenanceAttachmentController::class, 'store'],
+    )->name('maintenance-requests.attachments.store')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/attachments/{maintenanceAttachment}',
+        [MaintenanceAttachmentController::class, 'show'],
+    )->name('maintenance-requests.attachments.show')
+        ->middleware('portfolio.module:maintenance');
     Route::resource('maintenance-requests', MaintenanceRequestController::class)
         ->parameters(['maintenance-requests' => 'maintenanceRequest'])
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])

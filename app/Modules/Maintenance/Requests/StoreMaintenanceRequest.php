@@ -3,6 +3,7 @@
 namespace App\Modules\Maintenance\Requests;
 
 use App\Models\User;
+use App\Modules\Maintenance\Support\MaintenanceAttachmentRules;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
 use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
@@ -31,6 +32,7 @@ class StoreMaintenanceRequest extends FormRequest
                 'priority' => ['required', Rule::in(MaintenanceOptions::PRIORITIES)],
                 'title' => ['required', 'string', 'max:255'],
                 'description' => ['required', 'string'],
+                ...MaintenanceAttachmentRules::optional(),
             ];
         }
 
@@ -45,6 +47,13 @@ class StoreMaintenanceRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'internal_notes' => ['nullable', 'string'],
+            ...MaintenanceAttachmentRules::optional(),
         ];
+    }
+
+    /** @return array<string, string> */
+    public function attributes(): array
+    {
+        return MaintenanceAttachmentRules::attributes();
     }
 }

@@ -124,8 +124,9 @@ export function ResourceFormShell({
                                               key={field.name}
                                               field={field}
                                               value={form.data[field.name]}
-                                              error={String(
-                                                  form.errors[field.name] ?? '',
+                                              error={fieldError(
+                                                  form.errors,
+                                                  field.name,
                                               )}
                                               onChange={(value) =>
                                                   updateField(field, value)
@@ -140,7 +141,7 @@ export function ResourceFormShell({
                                   key={field.name}
                                   field={field}
                                   value={form.data[field.name]}
-                                  error={String(form.errors[field.name] ?? '')}
+                                  error={fieldError(form.errors, field.name)}
                                   onChange={(value) =>
                                       updateField(field, value)
                                   }
@@ -187,4 +188,21 @@ function groupResourceFields(fields: ResourceField[]) {
     });
 
     return Array.from(groups.values());
+}
+
+function fieldError(
+    errors: Partial<Record<string, string>>,
+    fieldName: string,
+): string {
+    const direct = errors[fieldName];
+
+    if (direct) {
+        return direct;
+    }
+
+    return (
+        Object.entries(errors).find(
+            ([key, value]) => key.startsWith(`${fieldName}.`) && Boolean(value),
+        )?.[1] ?? ''
+    );
 }

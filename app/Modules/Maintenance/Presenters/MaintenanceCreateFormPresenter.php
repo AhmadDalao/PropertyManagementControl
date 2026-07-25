@@ -48,6 +48,7 @@ class MaintenanceCreateFormPresenter
                 ['name' => 'priority', 'label' => trans('app.maintenance.priority'), 'type' => 'select', 'options' => $this->presentOptions->values(MaintenanceOptions::PRIORITIES)],
                 ['name' => 'title', 'label' => trans('app.maintenance.issue_title'), 'required' => true],
                 ['name' => 'description', 'label' => trans('app.maintenance.issue_description'), 'type' => 'textarea', 'required' => true],
+                $this->photoField(),
             ],
             'initialValues' => [
                 'asset_id' => (string) ($defaults['asset_id'] ?? ($assets[0]['value'] ?? '')),
@@ -55,6 +56,7 @@ class MaintenanceCreateFormPresenter
                 'priority' => 'medium',
                 'title' => '',
                 'description' => '',
+                'photos' => [],
             ],
         ];
     }
@@ -100,6 +102,7 @@ class MaintenanceCreateFormPresenter
                 ['name' => 'title', 'label' => trans('app.maintenance.issue_title'), 'required' => true],
                 ['name' => 'description', 'label' => trans('app.maintenance.issue_description'), 'type' => 'textarea', 'required' => true],
                 ['name' => 'internal_notes', 'label' => trans('app.maintenance.internal_notes'), 'type' => 'textarea'],
+                $this->photoField(),
             ],
             'initialValues' => [
                 'portfolio_id' => (string) $portfolioId,
@@ -112,7 +115,21 @@ class MaintenanceCreateFormPresenter
                 'title' => '',
                 'description' => '',
                 'internal_notes' => '',
+                'photos' => [],
             ],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private function photoField(): array
+    {
+        return [
+            'name' => 'photos',
+            'label' => trans('app.maintenance.photos'),
+            'type' => 'file',
+            'multiple' => true,
+            'accept' => '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
+            'help' => trans('app.maintenance.photos_help'),
         ];
     }
 }

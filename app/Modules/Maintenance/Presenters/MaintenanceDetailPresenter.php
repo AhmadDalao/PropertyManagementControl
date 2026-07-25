@@ -14,6 +14,7 @@ class MaintenanceDetailPresenter
         private readonly MaintenanceWorkflowPresenter $workflow,
         private readonly MaintenanceDetailOverviewPresenter $overview,
         private readonly MaintenanceRelatedPresenter $related,
+        private readonly MaintenanceAttachmentPresenter $attachments,
         private readonly ResourcePresenter $resources,
     ) {}
 
@@ -26,7 +27,7 @@ class MaintenanceDetailPresenter
             ...$this->overview->present($data),
             'workflow' => $this->workflow->present($data),
             'related' => $this->related->present($data),
-            'documents' => [],
+            'documents' => $this->attachments->present($data->attachments),
             'timeline' => $data->tenantMode
                 ? []
                 : $this->resources->activityTimeline($data->request),

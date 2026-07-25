@@ -23,6 +23,12 @@ class MaintenanceModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('DB::', $actions);
         $this->assertStringNotContainsString('->loadMissing(', $detail);
         $this->assertStringNotContainsString('->expenses()', $detail);
+
+        $attachmentController = $this->source(
+            'app/Http/Controllers/MaintenanceAttachmentController.php',
+        );
+        $this->assertLinesAtMost($attachmentController, 90);
+        $this->assertStringNotContainsString('MaintenanceAttachment::query()', $attachmentController);
     }
 
     #[Test]
@@ -68,10 +74,15 @@ class MaintenanceModuleArchitectureTest extends TestCase
     {
         foreach ([
             'app/Modules/Maintenance/Actions/CancelMaintenance.php',
+            'app/Modules/Maintenance/Actions/AddMaintenanceAttachments.php',
             'app/Modules/Maintenance/Actions/CreateMaintenance.php',
             'app/Modules/Maintenance/Actions/ManageMaintenance.php',
+            'app/Modules/Maintenance/Actions/PersistMaintenanceAttachments.php',
             'app/Modules/Maintenance/Actions/UpdateMaintenance.php',
             'app/Modules/Maintenance/Data/MaintenanceDetailData.php',
+            'app/Modules/Maintenance/Data/StoredMaintenancePhoto.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceAttachmentFormPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceAttachmentPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceCreateFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceDetailOverviewPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceDetailPresenter.php',
@@ -86,6 +97,9 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Queries/MaintenanceIndexQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceInsightsQuery.php',
             'app/Modules/Maintenance/Support/MaintenanceReferenceGuard.php',
+            'app/Modules/Maintenance/Support/MaintenanceAttachmentOptions.php',
+            'app/Modules/Maintenance/Support/MaintenanceAttachmentRules.php',
+            'app/Modules/Maintenance/Support/MaintenanceAttachmentStorage.php',
             'app/Modules/Maintenance/Support/MaintenanceTransitionGuard.php',
             'resources/js/modules/maintenance/maintenance-filters.ts',
             'resources/js/modules/maintenance/maintenance-metrics.tsx',

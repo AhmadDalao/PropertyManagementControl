@@ -8,6 +8,7 @@ export type {
     RelatedTable,
     ResourceAction,
     ResourceDetailTab,
+    ResourceDocument,
     ResourceField,
     ResourceFormShellProps,
     ResourceFormValues,

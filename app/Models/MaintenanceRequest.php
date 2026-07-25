@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read User|null $assignedTo
  * @property-read Collection<int, MaintenanceUpdate> $updates
  * @property-read Collection<int, ExpenseEntry> $expenses
+ * @property-read Collection<int, MaintenanceAttachment> $attachments
  * @property CarbonInterface|null $requested_at
  * @property CarbonInterface|null $due_at
  * @property CarbonInterface|null $resolved_at
@@ -106,5 +107,11 @@ class MaintenanceRequest extends Model
     public function expenses(): HasMany
     {
         return $this->hasMany(ExpenseEntry::class);
+    }
+
+    /** @return HasMany<MaintenanceAttachment, $this> */
+    public function attachments(): HasMany
+    {
+        return $this->hasMany(MaintenanceAttachment::class);
     }
 }

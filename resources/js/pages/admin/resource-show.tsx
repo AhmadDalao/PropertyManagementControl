@@ -6,6 +6,7 @@ import type {
     DetailItem,
     DetailSection,
     RelatedTable,
+    ResourceDocument,
     ResourceHeaderProps,
     ResourceProgress,
     ResourceSpotlight,
@@ -24,13 +25,7 @@ type PageProps = SharedProps & {
         stats?: DetailItem[];
         sections?: DetailSection[];
         related?: RelatedTable[];
-        documents?: Array<{
-            id: number;
-            title: string;
-            subtitle?: string;
-            badge?: string;
-            href: string;
-        }>;
+        documents?: ResourceDocument[];
         timeline?: Array<{
             id: number;
             event: string;

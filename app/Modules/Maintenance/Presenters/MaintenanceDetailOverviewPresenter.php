@@ -26,6 +26,7 @@ class MaintenanceDetailOverviewPresenter
                 'tone' => in_array($request->priority, ['high', 'urgent'], true) ? 'danger' : 'muted',
             ],
             ['label' => trans('app.maintenance.updates'), 'value' => $data->updates->count()],
+            ['label' => trans('app.maintenance.photos'), 'value' => $data->attachments->count()],
         ];
 
         if (
@@ -66,6 +67,11 @@ class MaintenanceDetailOverviewPresenter
     {
         $request = $data->request;
         $actions = [];
+        $actions[] = [
+            'label' => trans('app.maintenance.add_photos'),
+            'href' => route('maintenance-requests.attachments.create', $request),
+            'variant' => 'primary',
+        ];
 
         if (
             ! $data->tenantMode
@@ -75,7 +81,7 @@ class MaintenanceDetailOverviewPresenter
             $actions[] = [
                 'label' => trans('app.maintenance.open_asset'),
                 'href' => route('assets.show', $request->asset),
-                'variant' => 'secondary',
+                'variant' => 'light',
             ];
         }
 

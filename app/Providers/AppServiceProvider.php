@@ -14,6 +14,7 @@ use App\Models\LabelOverride;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\LeaseMoveOut;
+use App\Models\MaintenanceAttachment;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
 use App\Models\MediaFile;
@@ -68,6 +69,7 @@ class AppServiceProvider extends ServiceProvider
             'payment_allocation' => PaymentAllocation::class,
             'tenant_profile' => TenantProfile::class,
             'document' => Document::class,
+            'maintenance_attachment' => MaintenanceAttachment::class,
             'maintenance_request' => MaintenanceRequest::class,
             'maintenance_update' => MaintenanceUpdate::class,
             'expense_entry' => ExpenseEntry::class,

@@ -41,6 +41,7 @@ export type ResourceField = {
     min?: string | number;
     max?: string | number;
     accept?: string;
+    multiple?: boolean;
     section?: string;
     sectionDescription?: string;
     reloadOnChange?: { queryKey: string };
@@ -127,7 +128,7 @@ export type ResourceDetailTab =
     'overview' | 'financial' | 'documents' | 'history' | 'related';
 
 export type ResourceFormValue =
-    string | number | boolean | File | null | undefined;
+    string | number | boolean | File | File[] | null | undefined;
 
 export type ResourceFormValues = Record<string, ResourceFormValue>;
 
@@ -137,6 +138,7 @@ export type ResourceDocument = {
     subtitle?: string;
     badge?: string;
     href: string;
+    thumbnail?: string;
 };
 
 export type ResourceTimelineEntry = {

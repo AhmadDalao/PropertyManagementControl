@@ -17,7 +17,15 @@ export function DocumentStrip({
                 <div className="pmc-document-strip">
                     {documents.map((document) => (
                         <a key={document.id} href={document.href}>
-                            <i className="bi bi-file-earmark-arrow-down" />
+                            {document.thumbnail ? (
+                                <img
+                                    src={document.thumbnail}
+                                    alt=""
+                                    loading="lazy"
+                                />
+                            ) : (
+                                <i className="bi bi-file-earmark-arrow-down" />
+                            )}
                             <span>
                                 <strong>{document.title}</strong>
                                 <small>{document.subtitle}</small>

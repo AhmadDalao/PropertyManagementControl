@@ -1355,6 +1355,20 @@ test.describe('authenticated administration', () => {
         await page.goto(`${detailHref}?locale=ar`);
         await expect(page.getByText('طلب صيانة')).toBeVisible();
         await expect(page.getByText('سياق الطلب')).toBeVisible();
+        const addPhotos = page.getByRole('link', { name: 'إضافة صور' });
+        await expect(addPhotos).toBeVisible();
+        expect(
+            (await addPhotos.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        const addPhotosHref = await addPhotos.getAttribute('href');
+        expect(addPhotosHref).toBeTruthy();
+        await page.goto(`${addPhotosHref}?locale=ar`);
+        const evidenceInput = page.getByLabel(/^صور توثيق العطل/);
+        await expect(evidenceInput).toHaveAttribute('multiple', '');
+        await expect(evidenceInput).toHaveAttribute(
+            'accept',
+            '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
+        );
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/maintenance-requests/create?locale=ar');
@@ -1364,6 +1378,10 @@ test.describe('authenticated administration', () => {
         await expect(page.getByLabel(/^الأصل/)).toBeVisible();
         await expect(page.getByLabel(/^المستأجر/)).toBeVisible();
         await expect(page.getByLabel(/^وصف المشكلة/)).toBeVisible();
+        await expect(page.getByLabel(/^صور توثيق العطل/)).toHaveAttribute(
+            'multiple',
+            '',
+        );
         await expectNoHorizontalOverflow(page);
     });
 

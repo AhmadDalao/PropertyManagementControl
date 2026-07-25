@@ -1,0 +1,7 @@
+.pmc-document-strip > a > img {
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    object-fit: cover;
+}

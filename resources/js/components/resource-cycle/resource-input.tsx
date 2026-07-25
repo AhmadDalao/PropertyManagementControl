@@ -98,8 +98,13 @@ export function ResourceInput({
                     className="form-control"
                     type="file"
                     accept={field.accept}
+                    multiple={field.multiple}
                     onChange={(event) =>
-                        onChange(event.currentTarget.files?.[0] ?? null)
+                        onChange(
+                            field.multiple
+                                ? Array.from(event.currentTarget.files ?? [])
+                                : (event.currentTarget.files?.[0] ?? null),
+                        )
                     }
                     aria-describedby={describedBy}
                     aria-invalid={Boolean(error)}

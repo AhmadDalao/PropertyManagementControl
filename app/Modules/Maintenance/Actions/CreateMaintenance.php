@@ -3,6 +3,7 @@
 namespace App\Modules\Maintenance\Actions;
 
 use App\Models\Asset;
+use App\Models\MaintenanceAttachment;
 use App\Models\MaintenanceRequest;
 use App\Models\TenantProfile;
 use App\Models\User;
@@ -11,8 +12,11 @@ use App\Modules\Maintenance\Support\MaintenanceReferenceGuard;
 use App\Modules\Maintenance\Support\MaintenanceSchedule;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
+use Closure;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class CreateMaintenance
 {
@@ -22,6 +26,7 @@ class CreateMaintenance
         private readonly MaintenanceReferenceGuard $references,
         private readonly PortfolioScope $portfolios,
         private readonly MorphTypes $morphTypes,
+        private readonly PersistMaintenanceAttachments $attachments,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -35,7 +40,7 @@ class CreateMaintenance
     /** @param array<string, mixed> $data */
     private function forTenant(User $actor, array $data): MaintenanceRequest
     {
-        return DB::transaction(function () use ($actor, $data): MaintenanceRequest {
+        return $this->withAttachments($actor, $data, function () use ($actor, $data): MaintenanceRequest {
             $tenant = TenantProfile::query()
                 ->where('user_id', $actor->id)
                 ->lockForUpdate()
@@ -92,7 +97,7 @@ class CreateMaintenance
         $portfolioId = (int) $portfolioId;
         $this->portfolios->ensureAccess($actor, $portfolioId);
 
-        return DB::transaction(function () use ($actor, $portfolioId, $data): MaintenanceRequest {
+        return $this->withAttachments($actor, $data, function () use ($actor, $portfolioId, $data): MaintenanceRequest {
             $this->references->ensureBelongsToPortfolio($actor, $data, $portfolioId);
             $request = MaintenanceRequest::query()->create([
                 'portfolio_id' => $portfolioId,
@@ -120,5 +125,29 @@ class CreateMaintenance
 
             return $request;
         });
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @param  Closure(): MaintenanceRequest  $create
+     */
+    private function withAttachments(User $actor, array $data, Closure $create): MaintenanceRequest
+    {
+        /** @var Collection<int, MaintenanceAttachment> $persisted */
+        $persisted = collect();
+
+        try {
+            return DB::transaction(function () use ($actor, $data, $create, &$persisted): MaintenanceRequest {
+                $request = $create();
+                $photos = is_array($data['photos'] ?? null) ? $data['photos'] : [];
+                $persisted = $this->attachments->handle($actor, $request, $photos);
+
+                return $request;
+            });
+        } catch (Throwable $exception) {
+            $this->attachments->discard($persisted);
+
+            throw $exception;
+        }
     }
 }

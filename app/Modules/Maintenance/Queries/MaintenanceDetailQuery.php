@@ -36,6 +36,10 @@ class MaintenanceDetailQuery
         $expenses = $expensesEnabled
             ? $request->expenses()->latest('incurred_on')->get()
             : collect();
+        $attachments = $request->attachments()
+            ->with('uploadedBy:id,name')
+            ->latest()
+            ->get();
 
         return new MaintenanceDetailData(
             request: $request,
@@ -43,6 +47,7 @@ class MaintenanceDetailQuery
             tenantMode: $tenantMode,
             updates: $updates,
             expenses: $expenses,
+            attachments: $attachments,
             postedExpenseTotal: $expensesEnabled
                 ? (float) $expenses->where('status', 'posted')->sum('amount')
                 : 0,
