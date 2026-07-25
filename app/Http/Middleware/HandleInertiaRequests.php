@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Modules\Assets\Presenters\PropertyContextPresenter;
 use App\Modules\Authentication\Presenters\AuthenticatedUserPresenter;
 use App\Modules\PublicSite\Queries\PublicNavigationQuery;
 use App\Modules\Wording\UiTranslationCatalog;
@@ -53,6 +54,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => app(AuthenticatedUserPresenter::class)
                     ->present($request->user()),
             ],
+            'propertyContext' => fn () => app(PropertyContextPresenter::class)
+                ->present($request),
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),

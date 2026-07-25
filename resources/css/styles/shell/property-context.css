@@ -1,0 +1,70 @@
+.pmc-property-context {
+    display: grid;
+    flex: 0 0 auto;
+    gap: 0.4rem;
+    margin: 0.65rem 0.15rem 0;
+    padding: 0.7rem;
+    border: 1px solid #e7dcc5;
+    border-radius: 0.78rem;
+    background: #fffaf0;
+}
+
+.pmc-property-context > span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #6b5b3f;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-property-context > select {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.55rem 2rem 0.55rem 0.65rem;
+    overflow: hidden;
+    border: 1px solid #d8c9ad;
+    border-radius: 0.65rem;
+    background-color: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-overflow: ellipsis;
+}
+
+[dir='rtl'] .pmc-property-context > select {
+    padding: 0.55rem 0.65rem 0.55rem 2rem;
+}
+
+.pmc-property-context > select:focus-visible {
+    border-color: #b58b00;
+    outline: 3px solid rgba(255, 207, 0, 0.24);
+}
+
+.pmc-property-context > small {
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    line-height: 1.45;
+}
+
+.pmc-property-context-collapsed {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    margin: 0.65rem auto 0;
+    border: 1px solid #e0cfac;
+    border-radius: 0.72rem;
+    background: #fff7dc;
+    color: #4e3b09;
+}
+
+.pmc-property-context-collapsed:hover,
+.pmc-property-context-collapsed:focus-visible {
+    border-color: #c9a900;
+    background: #ffdf35;
+    color: #111;
+}

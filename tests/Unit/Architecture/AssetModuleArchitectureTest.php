@@ -114,6 +114,30 @@ class AssetModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function property_context_stays_a_bounded_asset_owned_shell_contract(): void
+    {
+        $middleware = $this->source($this->path('app/Http/Middleware/ResolvePropertyContext.php'));
+        $presenter = $this->source($this->path('app/Modules/Assets/Presenters/PropertyContextPresenter.php'));
+        $query = $this->source($this->path('app/Modules/Assets/Queries/PropertyContextQuery.php'));
+        $routes = $this->source($this->path('app/Modules/Assets/Support/PropertyContextRoutes.php'));
+        $switcher = $this->source($this->path('resources/js/modules/shell/property-context-switcher.tsx'));
+        $styles = $this->source($this->path('resources/css/styles/shell/property-context.css'));
+
+        $this->assertLinesAtMost($middleware, 100);
+        $this->assertLinesAtMost($presenter, 60);
+        $this->assertLinesAtMost($query, 150);
+        $this->assertLinesAtMost($routes, 50);
+        $this->assertLinesAtMost($switcher, 130);
+        $this->assertLinesAtMost($styles, 100);
+        $this->assertStringContainsString('PropertyContextQuery', $middleware);
+        $this->assertStringContainsString('PortfolioModules::enabledForUser', $presenter);
+        $this->assertStringContainsString('AssignedPropertyScope', $query);
+        $this->assertStringContainsString('exports.resource', $routes);
+        $this->assertStringContainsString("url.searchParams.set('property_id'", $switcher);
+        $this->assertStringNotContainsString('Asset::query()', $middleware);
+    }
+
+    #[Test]
     public function asset_module_owns_each_resource_responsibility(): void
     {
         foreach ([
@@ -142,6 +166,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/AssetWorkflowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetTableRowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/BuildingStructureFormPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/PropertyContextPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetDetailQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetDirectoryQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetFormOptionsQuery.php'),
@@ -151,6 +176,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Queries/AssetOperationsDocumentsQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetOperationsRecordsQuery.php'),
             $this->path('app/Modules/Assets/Queries/PropertyMapQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyContextQuery.php'),
             $this->path('app/Modules/Assets/Requests/HasAssetValidationAttributes.php'),
             $this->path('app/Modules/Assets/Requests/PropertyMapRequest.php'),
             $this->path('app/Modules/Assets/Requests/StoreAssetRequest.php'),
@@ -166,6 +192,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Support/BuildingStructurePlan.php'),
             $this->path('app/Modules/Assets/Support/BuildingStructureReferenceGuard.php'),
             $this->path('app/Modules/Assets/Support/PropertyScope.php'),
+            $this->path('app/Modules/Assets/Support/PropertyContextRoutes.php'),
             $this->path('resources/js/modules/assets/asset-filters.ts'),
             $this->path('resources/js/modules/assets/asset-metrics.tsx'),
             $this->path('resources/js/modules/assets/asset-table-cells.tsx'),

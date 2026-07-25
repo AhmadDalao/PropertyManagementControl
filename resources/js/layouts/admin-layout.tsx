@@ -20,6 +20,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <AdminSidebar
                 currentUrl={url}
                 user={user}
+                propertyContext={props.propertyContext}
                 direction={props.app.direction}
                 {...shell}
             />

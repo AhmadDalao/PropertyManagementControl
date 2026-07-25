@@ -31,6 +31,7 @@ class ShellModuleArchitectureTest extends TestCase
             'admin-sidebar.tsx',
             'admin-topbar.tsx',
             'navigation-access.ts',
+            'property-context-switcher.tsx',
             'temporary-password-notice.tsx',
             'use-admin-shell.ts',
         ] as $file) {
@@ -48,6 +49,7 @@ class ShellModuleArchitectureTest extends TestCase
         $access = $this->source('resources/js/modules/shell/navigation-access.ts');
         $sidebar = $this->source('resources/js/modules/shell/admin-sidebar.tsx');
         $account = $this->source('resources/js/modules/shell/account-menu.tsx');
+        $propertyContext = $this->source('resources/js/modules/shell/property-context-switcher.tsx');
 
         $this->assertStringContainsString('matchMedia', $state);
         $this->assertStringContainsString('localStorage', $state);
@@ -58,6 +60,9 @@ class ShellModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('module_settings', $access);
         $this->assertStringContainsString('aria-current', $sidebar);
         $this->assertStringContainsString('inert={drawerHidden}', $sidebar);
+        $this->assertStringContainsString('PropertyContextSwitcher', $sidebar);
+        $this->assertStringContainsString("url.searchParams.set('property_id'", $propertyContext);
+        $this->assertStringContainsString("url.searchParams.delete('portfolio_id'", $propertyContext);
         $this->assertStringContainsString('closeOutside', $account);
         $this->assertStringContainsString('closeOnEscape', $account);
     }
@@ -72,6 +77,7 @@ class ShellModuleArchitectureTest extends TestCase
         foreach ([
             'layout.css',
             'sidebar.css',
+            'property-context.css',
             'topbar.css',
             'search.css',
             'account.css',

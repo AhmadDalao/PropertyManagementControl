@@ -16,6 +16,7 @@ export type SharedProps = {
     auth: {
         user: AppUser | null;
     };
+    propertyContext: PropertyContext | null;
     app: {
         name: string;
         locale: 'en' | 'ar';
@@ -31,6 +32,22 @@ export type SharedProps = {
     publicNavigation: {
         header: NavigationItemRecord[];
     };
+};
+
+export type PropertyContextOption = {
+    id: number;
+    code: string;
+    title_en: string;
+    title_ar?: string | null;
+    portfolio_code?: string | null;
+    portfolio_name_en?: string | null;
+    portfolio_name_ar?: string | null;
+};
+
+export type PropertyContext = {
+    selected: PropertyContextOption | null;
+    options: PropertyContextOption[];
+    assignment_restricted: boolean;
 };
 
 export type NavigationItemRecord = {

@@ -14,11 +14,15 @@ class PropertyMapRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         $portfolioId = $this->query('portfolio_id');
+        $propertyId = $this->query('property_id');
 
         $this->merge([
             'portfolio_id' => in_array($portfolioId, [null, '', 'all'], true)
                 ? null
                 : $portfolioId,
+            'property_id' => in_array($propertyId, [null, '', 'all'], true)
+                ? null
+                : $propertyId,
         ]);
     }
 
@@ -27,6 +31,7 @@ class PropertyMapRequest extends FormRequest
     {
         return [
             'portfolio_id' => ['nullable', 'integer', 'exists:portfolios,id'],
+            'property_id' => ['nullable', 'integer', 'min:1'],
         ];
     }
 
@@ -35,5 +40,12 @@ class PropertyMapRequest extends FormRequest
         $portfolioId = $this->validated('portfolio_id');
 
         return $portfolioId === null ? null : (int) $portfolioId;
+    }
+
+    public function propertyId(): ?int
+    {
+        $propertyId = $this->validated('property_id');
+
+        return $propertyId === null ? null : (int) $propertyId;
     }
 }

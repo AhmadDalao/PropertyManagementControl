@@ -193,6 +193,69 @@ test.describe('authenticated administration', () => {
         await expect(accountTrigger).toBeFocused();
     });
 
+    test('property scope follows owners across operational pages in English and Arabic', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/dashboard?property_id=all&locale=en');
+
+        const selector = page.locator('.pmc-property-context select');
+        await expect(selector).toBeVisible();
+        await expect(
+            page.locator('.pmc-property-context').getByText('Property scope'),
+        ).toBeVisible();
+        expect(await selector.locator('option').count()).toBeGreaterThan(1);
+
+        const propertyId =
+            (await selector.locator('option').nth(1).getAttribute('value')) ??
+            '';
+        expect(propertyId).not.toBe('');
+        await selector.selectOption(propertyId);
+        await expect(page).toHaveURL(
+            new RegExp(`property_id=${propertyId}`),
+        );
+        await expect(selector).toHaveValue(propertyId);
+
+        const assetsLink = page.locator(
+            `.pmc-nav-link[href="/assets?property_id=${propertyId}"]`,
+        );
+        await expect(assetsLink).toBeVisible();
+        await assetsLink.click();
+        await expect(page).toHaveURL(
+            new RegExp(`/assets\\?property_id=${propertyId}`),
+        );
+        await expect(page.locator('.pmc-property-context select')).toHaveValue(
+            propertyId,
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/leases?locale=en');
+        await expect(page.locator('.pmc-property-context select')).toHaveValue(
+            propertyId,
+        );
+        await expect(
+            page.locator(
+                `.pmc-nav-link[href="/payments?property_id=${propertyId}"]`,
+            ),
+        ).toBeVisible();
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard?locale=ar');
+        await page.locator('.pmc-menu-trigger').click();
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.locator('.pmc-property-context').getByText('نطاق العقار'),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-property-context select')).toHaveValue(
+            propertyId,
+        );
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-property-context select',
+        );
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('global search is responsive, scoped, and localized', async ({
         page,
     }) => {

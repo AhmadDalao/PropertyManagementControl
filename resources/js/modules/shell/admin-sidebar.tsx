@@ -2,13 +2,20 @@ import { Link } from '@inertiajs/react';
 import type { RefObject } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
+import type { PropertyContext } from '@/types';
 import type { AppUser } from '@/types/auth';
 
-import { isActivePath, visibleNavigationGroups } from './navigation-access';
+import {
+    isActivePath,
+    navigationHref,
+    visibleNavigationGroups,
+} from './navigation-access';
+import { PropertyContextSwitcher } from './property-context-switcher';
 
 type AdminSidebarProps = {
     currentUrl: string;
     user: AppUser | null;
+    propertyContext: PropertyContext | null;
     direction: 'ltr' | 'rtl';
     navOpen: boolean;
     drawerViewport: boolean;
@@ -21,6 +28,7 @@ type AdminSidebarProps = {
 export function AdminSidebar({
     currentUrl,
     user,
+    propertyContext,
     direction,
     navOpen,
     drawerViewport,
@@ -78,6 +86,15 @@ export function AdminSidebar({
                     </button>
                 </div>
 
+                {propertyContext ? (
+                    <PropertyContextSwitcher
+                        context={propertyContext}
+                        currentUrl={currentUrl}
+                        collapsed={sidebarCollapsed && !drawerViewport}
+                        onExpand={toggleNavigation}
+                    />
+                ) : null}
+
                 <nav
                     className="pmc-console-nav"
                     aria-label={t('shell.navigation', 'Main navigation')}
@@ -90,11 +107,15 @@ export function AdminSidebar({
                                     currentUrl,
                                     item.href,
                                 );
+                                const href = navigationHref(
+                                    item,
+                                    propertyContext?.selected?.id,
+                                );
 
                                 return (
                                     <Link
                                         key={item.href}
-                                        href={item.href}
+                                        href={href}
                                         onClick={closeDrawer}
                                         className={`pmc-nav-link ${active ? 'active' : ''}`}
                                         title={t(item.labelKey)}

@@ -4,6 +4,7 @@ export type ModuleNavItem = {
     icon: string;
     roles?: string[];
     module?: string;
+    propertyScoped?: boolean;
 };
 
 export type ModuleNavGroup = {
@@ -19,12 +20,14 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 labelKey: 'nav.dashboard',
                 href: '/dashboard',
                 icon: 'bi-grid-1x2',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.action_center',
                 href: '/action-center',
                 icon: 'bi-collection',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.property_map',
@@ -32,6 +35,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-map',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'assets',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.reports',
@@ -39,6 +43,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-graph-up-arrow',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'reports',
+                propertyScoped: true,
             },
         ],
     },
@@ -57,6 +62,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-building',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'assets',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.tenants',
@@ -64,6 +70,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-person-badge',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'tenants',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.leases',
@@ -71,6 +78,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-file-earmark-text',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'leases',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.lease_renewals',
@@ -78,6 +86,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-calendar-event',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'leases',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.lease_move_outs',
@@ -85,6 +94,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-box-arrow-right',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'leases',
+                propertyScoped: true,
             },
         ],
     },
@@ -97,6 +107,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-calendar2-check',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'payments',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.payments',
@@ -104,6 +115,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-cash-stack',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'payments',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.expenses',
@@ -111,12 +123,14 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-receipt',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'expenses',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.maintenance',
                 href: '/maintenance-requests',
                 icon: 'bi-tools',
                 module: 'maintenance',
+                propertyScoped: true,
             },
             {
                 labelKey: 'nav.documents',
@@ -124,6 +138,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-folder2-open',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'documents',
+                propertyScoped: true,
             },
         ],
     },

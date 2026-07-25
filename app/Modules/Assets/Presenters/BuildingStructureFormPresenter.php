@@ -26,13 +26,21 @@ final class BuildingStructureFormPresenter
             trans('app.errors.section_access_denied'),
         );
 
-        $data = $this->options->get($actor, defaults: $defaults);
+        $data = $this->options->get(
+            $actor,
+            defaults: $defaults,
+            activePortfoliosOnly: true,
+        );
         $portfolio = Portfolio::query()
             ->whereKey($data->portfolioId)
             ->first();
         $activeOwners = $data->owners->where('status', 'active')->values();
         $activeManagers = $data->managers->where('status', 'active')->values();
         $ownerId = $portfolio?->owner_user_id;
+        $defaultOwnerId = $activeOwners->contains('id', $ownerId) ? $ownerId : null;
+        $defaultManagerId = $activeManagers->contains('id', $defaultOwnerId)
+            ? $defaultOwnerId
+            : ($activeManagers->count() === 1 ? $activeManagers->first()?->id : null);
 
         return [
             'title' => trans('app.assets.builder.title'),
@@ -62,8 +70,8 @@ final class BuildingStructureFormPresenter
                 'units_per_floor' => 4,
                 'floor_start' => 1,
                 'unit_type' => 'unit',
-                'primary_owner_user_id' => $activeOwners->contains('id', $ownerId) ? (string) $ownerId : '',
-                'primary_manager_user_id' => '',
+                'primary_owner_user_id' => (string) ($defaultOwnerId ?? ''),
+                'primary_manager_user_id' => (string) ($defaultManagerId ?? ''),
                 'valuation_amount' => '',
                 'currency' => $portfolio->default_currency ?? 'SAR',
                 'area' => '',

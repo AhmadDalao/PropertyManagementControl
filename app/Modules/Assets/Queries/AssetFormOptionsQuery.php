@@ -22,12 +22,16 @@ class AssetFormOptionsQuery
     ) {}
 
     /** @param array<string, mixed> $defaults */
-    public function get(User $actor, ?Asset $asset = null, array $defaults = []): AssetFormData
-    {
+    public function get(
+        User $actor,
+        ?Asset $asset = null,
+        array $defaults = [],
+        bool $activePortfoliosOnly = false,
+    ): AssetFormData {
         $asset
             ? $this->access->ensureCanManage($actor, $asset)
             : $this->access->ensureManager($actor);
-        $portfolioOptions = $this->portfolios->options($actor);
+        $portfolioOptions = $this->portfolios->options($actor, $activePortfoliosOnly);
         $portfolioId = $this->selectedPortfolioId($actor, $asset, $defaults, $portfolioOptions);
         $excludedParentIds = $asset
             ? $this->hierarchy->descendantIdsIncluding($asset)

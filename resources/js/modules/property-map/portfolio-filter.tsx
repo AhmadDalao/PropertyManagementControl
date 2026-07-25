@@ -25,8 +25,11 @@ export function PropertyMapPortfolioFilter({
                     router.get(
                         '/property-map',
                         portfolioId === 'all'
-                            ? {}
-                            : { portfolio_id: portfolioId },
+                            ? { property_id: 'all' }
+                            : {
+                                  portfolio_id: portfolioId,
+                                  property_id: 'all',
+                              },
                         {
                             preserveScroll: true,
                             preserveState: true,

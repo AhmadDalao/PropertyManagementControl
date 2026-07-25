@@ -17,7 +17,11 @@ class PropertyMapController extends Controller
 
         return Inertia::render(
             'admin/property-map/index',
-            $propertyMap->handle($actor, $request->portfolioId()),
+            $propertyMap->handle(
+                $actor,
+                $request->portfolioId(),
+                $request->propertyId(),
+            ),
         );
     }
 }

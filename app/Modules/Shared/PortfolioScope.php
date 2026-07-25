@@ -33,11 +33,12 @@ class PortfolioScope
     /**
      * @return array<int, array{id:int,name:string}>
      */
-    public function options(User $actor): array
+    public function options(User $actor, bool $activeOnly = false): array
     {
         $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
 
         return $this->apply(Portfolio::query()->orderBy($nameColumn), $actor, 'id')
+            ->when($activeOnly, fn (Builder $query) => $query->where('status', 'active'))
             ->get()
             ->map(fn (Portfolio $portfolio) => [
                 'id' => $portfolio->id,

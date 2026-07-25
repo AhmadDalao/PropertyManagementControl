@@ -44,6 +44,7 @@ class BuildingStructureSetupTest extends TestCase
                 ->where('buildingSetup.action', route('assets.structure.store'))
                 ->where('buildingSetup.initialValues.portfolio_id', (string) $portfolio->id)
                 ->where('buildingSetup.initialValues.primary_owner_user_id', (string) $owner->id)
+                ->where('buildingSetup.initialValues.primary_manager_user_id', (string) $owner->id)
                 ->where('buildingSetup.options.managers', fn (mixed $options): bool => collect($options)
                     ->contains('value', (string) $manager->id)
                     && ! collect($options)->contains('value', (string) $foreignManager->id))
@@ -59,6 +60,32 @@ class BuildingStructureSetupTest extends TestCase
                 ->where('app.translations.assets.builder.code_prefix', 'رمز المبنى الأساسي')
                 ->where('buildingSetup.title', 'إعداد مبنى')
                 ->where('buildingSetup.options.portfolios.0.label', 'محفظة المالك'));
+    }
+
+    public function test_superadmin_builder_hides_inactive_portfolios_and_falls_back_to_an_active_one(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $active = $this->createPortfolio([
+            'name_en' => 'Active Portfolio',
+            'status' => 'active',
+        ]);
+        $inactive = $this->createPortfolio([
+            'name_en' => 'Inactive Portfolio',
+            'status' => 'inactive',
+        ]);
+        $owner = $this->createUserWithRole('owner', $active);
+        $active->update(['owner_user_id' => $owner->id]);
+
+        $this->actingAs($superadmin)
+            ->get(route('assets.structure.create', ['portfolio_id' => $inactive->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('buildingSetup.initialValues.portfolio_id', (string) $active->id)
+                ->where('buildingSetup.initialValues.primary_owner_user_id', (string) $owner->id)
+                ->where('buildingSetup.initialValues.primary_manager_user_id', (string) $owner->id)
+                ->where('buildingSetup.options.portfolios', fn (mixed $options): bool => collect($options)
+                    ->pluck('value')
+                    ->all() === [(string) $active->id]));
     }
 
     public function test_owner_creates_a_complete_building_hierarchy_in_one_transaction(): void

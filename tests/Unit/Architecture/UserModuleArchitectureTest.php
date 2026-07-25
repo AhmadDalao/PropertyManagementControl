@@ -130,7 +130,7 @@ class UserModuleArchitectureTest extends TestCase
         $routes = $this->source($this->path('routes/web.php'));
         $bootstrap = $this->source($this->path('bootstrap/app.php'));
 
-        $this->assertStringContainsString("['auth', 'account.active', 'password.changed']", $routes);
+        $this->assertStringContainsString("['auth', 'account.active', 'password.changed', 'property.context']", $routes);
         $this->assertStringContainsString("'account.active' => EnsureActiveAccount::class", $bootstrap);
         $this->assertStringContainsString("'property.assigned' => EnsureManagerHasAssignedProperty::class", $bootstrap);
         $this->assertStringContainsString("middlewareFor(['create', 'store'], 'property.assigned')", $routes);

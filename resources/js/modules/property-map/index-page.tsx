@@ -17,6 +17,7 @@ type PropertyMapPageProps = SharedProps & {
     portfolioOptions: PropertyMapPortfolioOption[];
     filters: {
         portfolio_id?: number | null;
+        property_id?: number | null;
     };
 };
 

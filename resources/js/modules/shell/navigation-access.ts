@@ -21,6 +21,19 @@ export function isActivePath(currentUrl: string, href: string): boolean {
     return path === href || path.startsWith(`${href}/`);
 }
 
+export function navigationHref(
+    item: ModuleNavItem,
+    propertyId?: number | null,
+): string {
+    if (!item.propertyScoped || !propertyId) {
+        return item.href;
+    }
+
+    const separator = item.href.includes('?') ? '&' : '?';
+
+    return `${item.href}${separator}property_id=${propertyId}`;
+}
+
 function hasRoleAccess(item: ModuleNavItem, roles: string[]): boolean {
     return !item.roles || item.roles.some((role) => roles.includes(role));
 }

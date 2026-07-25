@@ -6,19 +6,24 @@ use App\Models\Asset;
 use App\Models\User;
 use App\Modules\Assets\PropertyMapPresenter;
 use App\Modules\Assets\Support\AssetAccess;
+use App\Modules\Assets\Support\AssetHierarchy;
 use App\Modules\Shared\PortfolioScope;
 
 class PropertyMapQuery
 {
     public function __construct(
         private readonly AssetAccess $access,
+        private readonly AssetHierarchy $hierarchy,
         private readonly PortfolioScope $portfolios,
         private readonly PropertyMapPresenter $propertyMap,
     ) {}
 
     /** @return array<string, mixed> */
-    public function handle(User $actor, ?int $portfolioId): array
-    {
+    public function handle(
+        User $actor,
+        ?int $portfolioId,
+        ?int $propertyId = null,
+    ): array {
         $assets = $this->access->directoryScope(Asset::query(), $actor);
 
         if ($portfolioId !== null) {
@@ -26,10 +31,22 @@ class PropertyMapQuery
             $assets->where('portfolio_id', $portfolioId);
         }
 
+        if ($propertyId !== null) {
+            $property = (clone $assets)
+                ->whereKey($propertyId)
+                ->whereNull('parent_id')
+                ->where('status', 'active')
+                ->firstOrFail();
+            $assets->whereIn('id', $this->hierarchy->descendantIdsIncluding($property));
+        }
+
         return [
             'propertyMap' => $this->propertyMap->forQuery($assets),
             'portfolioOptions' => $this->portfolios->options($actor),
-            'filters' => ['portfolio_id' => $portfolioId],
+            'filters' => [
+                'portfolio_id' => $portfolioId,
+                'property_id' => $propertyId,
+            ],
         ];
     }
 }
