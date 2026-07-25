@@ -2,6 +2,7 @@
 
 namespace App\Modules\Tenants\Presenters;
 
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Tenants\Data\TenantDetailData;
 
@@ -17,60 +18,83 @@ final class TenantDetailOverviewPresenter
         $lease = $data->activeLease;
         $currency = $lease ? $lease->currency : 'SAR';
         $paid = $lease ? (float) $lease->total_paid : 0.0;
+        $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
+        $paymentsEnabled = PortfolioModules::enabledForUser($data->actor, 'payments');
+        $maintenanceEnabled = PortfolioModules::enabledForUser($data->actor, 'maintenance');
+        $decisionCards = [[
+            'title' => trans('app.tenants.portal_account'),
+            'value' => trans('app.status.'.($user ? $user->status : 'inactive')),
+            'detail' => $user ? $user->email : trans('app.tenants.no_login_account'),
+            'tone' => $user?->status === 'active' ? 'teal' : 'danger',
+            'icon' => 'bi-person-lock',
+        ]];
+        $stats = [
+            ['label' => trans('app.tenants.status'), 'value' => trans("app.status.{$tenant->status}"), 'tone' => $tenant->status === 'active' ? 'teal' : 'muted'],
+        ];
+
+        if ($leasesEnabled) {
+            $decisionCards[] = [
+                'title' => trans('app.tenants.current_rental'),
+                'value' => $lease ? $lease->code : trans('app.tenants.no_active_lease'),
+                'detail' => $this->resources->localized(
+                    $lease?->leaseable?->getAttribute('title_en'),
+                    $lease?->leaseable?->getAttribute('title_ar'),
+                ),
+                'href' => $lease
+                    ? route('leases.show', $lease)
+                    : route('leases.create', ['tenant_profile_id' => $tenant->id]),
+                'actionLabel' => $lease
+                    ? trans('app.tenants.open_lease')
+                    : trans('app.tenants.create_lease'),
+                'tone' => $lease ? 'primary' : 'muted',
+                'icon' => 'bi-file-earmark-text',
+            ];
+            $stats[] = [
+                'label' => trans('app.tenants.active_leases_label'),
+                'value' => $data->activeLeaseCount,
+                'tone' => 'primary',
+            ];
+        }
+
+        if ($paymentsEnabled) {
+            $decisionCards[] = [
+                'title' => trans('app.tenants.contract_balance'),
+                'value' => $lease
+                    ? number_format((float) $lease->balance_remaining, 2).' '.$lease->currency
+                    : '0.00 SAR',
+                'detail' => trans('app.tenants.total_paid_value', [
+                    'amount' => number_format($paid, 2),
+                    'currency' => $currency,
+                ]),
+                'tone' => $lease && $lease->balance_remaining > 0 ? 'danger' : 'teal',
+                'icon' => 'bi-wallet2',
+            ];
+            $stats[] = [
+                'label' => trans('app.tenants.paid'),
+                'value' => number_format($paid, 2).' '.$currency,
+            ];
+        }
+
+        if ($maintenanceEnabled) {
+            $decisionCards[] = [
+                'title' => trans('app.tenants.open_maintenance'),
+                'value' => $data->openMaintenanceCount,
+                'detail' => trans('app.tenants.recent_requests_count', [
+                    'count' => $data->maintenance->count(),
+                ]),
+                'tone' => $data->openMaintenanceCount > 0 ? 'danger' : 'muted',
+                'icon' => 'bi-tools',
+            ];
+            $stats[] = [
+                'label' => trans('app.tenants.open_maintenance'),
+                'value' => $data->openMaintenanceCount,
+                'tone' => $data->openMaintenanceCount > 0 ? 'danger' : 'muted',
+            ];
+        }
 
         return [
-            'decisionCards' => [
-                [
-                    'title' => trans('app.tenants.portal_account'),
-                    'value' => trans('app.status.'.($user ? $user->status : 'inactive')),
-                    'detail' => $user ? $user->email : trans('app.tenants.no_login_account'),
-                    'tone' => $user?->status === 'active' ? 'teal' : 'danger',
-                    'icon' => 'bi-person-lock',
-                ],
-                [
-                    'title' => trans('app.tenants.current_rental'),
-                    'value' => $lease ? $lease->code : trans('app.tenants.no_active_lease'),
-                    'detail' => $this->resources->localized(
-                        $lease?->leaseable?->getAttribute('title_en'),
-                        $lease?->leaseable?->getAttribute('title_ar'),
-                    ),
-                    'href' => $lease
-                        ? route('leases.show', $lease)
-                        : route('leases.create', ['tenant_profile_id' => $tenant->id]),
-                    'actionLabel' => $lease
-                        ? trans('app.tenants.open_lease')
-                        : trans('app.tenants.create_lease'),
-                    'tone' => $lease ? 'primary' : 'muted',
-                    'icon' => 'bi-file-earmark-text',
-                ],
-                [
-                    'title' => trans('app.tenants.contract_balance'),
-                    'value' => $lease
-                        ? number_format((float) $lease->balance_remaining, 2).' '.$lease->currency
-                        : '0.00 SAR',
-                    'detail' => trans('app.tenants.total_paid_value', [
-                        'amount' => number_format($paid, 2),
-                        'currency' => $currency,
-                    ]),
-                    'tone' => $lease && $lease->balance_remaining > 0 ? 'danger' : 'teal',
-                    'icon' => 'bi-wallet2',
-                ],
-                [
-                    'title' => trans('app.tenants.open_maintenance'),
-                    'value' => $data->openMaintenanceCount,
-                    'detail' => trans('app.tenants.recent_requests_count', [
-                        'count' => $data->maintenance->count(),
-                    ]),
-                    'tone' => $data->openMaintenanceCount > 0 ? 'danger' : 'muted',
-                    'icon' => 'bi-tools',
-                ],
-            ],
-            'stats' => $this->resources->detailItems([
-                ['label' => trans('app.tenants.status'), 'value' => trans("app.status.{$tenant->status}"), 'tone' => $tenant->status === 'active' ? 'teal' : 'muted'],
-                ['label' => trans('app.tenants.active_leases_label'), 'value' => $data->activeLeaseCount, 'tone' => 'primary'],
-                ['label' => trans('app.tenants.paid'), 'value' => number_format($paid, 2).' '.$currency],
-                ['label' => trans('app.tenants.open_maintenance'), 'value' => $data->openMaintenanceCount, 'tone' => $data->openMaintenanceCount > 0 ? 'danger' : 'muted'],
-            ]),
+            'decisionCards' => $decisionCards,
+            'stats' => $this->resources->detailItems($stats),
             'sections' => $this->sections($data, $paid, $currency),
         ];
     }
@@ -81,8 +105,9 @@ final class TenantDetailOverviewPresenter
         $tenant = $data->tenant;
         $user = $tenant->user;
         $lease = $data->activeLease;
-
-        return [
+        $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
+        $paymentsEnabled = PortfolioModules::enabledForUser($data->actor, 'payments');
+        $sections = [
             [
                 'title' => trans('app.tenants.profile_section'),
                 'description' => trans('app.tenants.profile_section_help'),
@@ -99,18 +124,29 @@ final class TenantDetailOverviewPresenter
                     ['label' => trans('app.tenants.notes'), 'value' => $tenant->notes],
                 ]),
             ],
-            [
+        ];
+        $financialItems = [];
+
+        if ($leasesEnabled) {
+            $financialItems[] = ['label' => trans('app.tenants.active_contract'), 'value' => $lease?->code, 'href' => $lease ? route('leases.show', $lease) : null];
+            $financialItems[] = ['label' => trans('app.tenants.contract_ends'), 'value' => $lease?->ends_at?->toDateString()];
+        }
+
+        if ($paymentsEnabled) {
+            $financialItems[] = ['label' => trans('app.tenants.total_paid'), 'value' => number_format($paid, 2).' '.$currency];
+            $financialItems[] = ['label' => trans('app.tenants.contract_balance'), 'value' => $lease ? number_format((float) $lease->balance_remaining, 2).' '.$lease->currency : null];
+            $financialItems[] = ['label' => trans('app.tenants.last_payment'), 'value' => $data->lastPayment?->received_on?->toDateString()];
+        }
+
+        if ($financialItems !== []) {
+            $sections[] = [
                 'title' => trans('app.tenants.financial_position'),
                 'description' => trans('app.tenants.financial_position_help'),
                 'tab' => 'financial',
-                'items' => $this->resources->detailItems([
-                    ['label' => trans('app.tenants.active_contract'), 'value' => $lease?->code, 'href' => $lease ? route('leases.show', $lease) : null],
-                    ['label' => trans('app.tenants.contract_ends'), 'value' => $lease?->ends_at?->toDateString()],
-                    ['label' => trans('app.tenants.total_paid'), 'value' => number_format($paid, 2).' '.$currency],
-                    ['label' => trans('app.tenants.contract_balance'), 'value' => $lease ? number_format((float) $lease->balance_remaining, 2).' '.$lease->currency : null],
-                    ['label' => trans('app.tenants.last_payment'), 'value' => $data->lastPayment?->received_on?->toDateString()],
-                ]),
-            ],
-        ];
+                'items' => $this->resources->detailItems($financialItems),
+            ];
+        }
+
+        return $sections;
     }
 }

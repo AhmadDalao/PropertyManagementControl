@@ -6,6 +6,7 @@ use App\Models\Lease;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Tenants\Data\TenantDetailData;
 use App\Modules\Tenants\Support\TenantAccess;
@@ -33,42 +34,61 @@ final class TenantDetailQuery
             ->whereKey($target->id)
             ->firstOrFail();
         $this->access->ensureCanManage($actor, $tenant);
-        $activeLease = $this->leases($tenant, $actor)
-            ->with('documents')
-            ->where('status', 'active')
-            ->latest('started_at')
-            ->first();
-        $payableLease = $activeLease ?? $this->leases($tenant, $actor)
-            ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)
-            ->latest('started_at')
-            ->first();
+        $leasesEnabled = PortfolioModules::enabledForUser($actor, 'leases');
+        $paymentsEnabled = PortfolioModules::enabledForUser($actor, 'payments');
+        $maintenanceEnabled = PortfolioModules::enabledForUser($actor, 'maintenance');
+        $documentsEnabled = PortfolioModules::enabledForUser($actor, 'documents');
+        $activeLease = ($leasesEnabled || $paymentsEnabled || $documentsEnabled)
+            ? $this->leases($tenant, $actor)
+                ->with('documents')
+                ->where('status', 'active')
+                ->latest('started_at')
+                ->first()
+            : null;
+        $payableLease = $paymentsEnabled
+            ? ($activeLease ?? $this->leases($tenant, $actor)
+                ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)
+                ->latest('started_at')
+                ->first())
+            : null;
 
         return new TenantDetailData(
+            actor: $actor,
             tenant: $tenant,
             activeLease: $activeLease,
             payableLease: $payableLease,
-            leases: $this->leases($tenant, $actor)->latest('started_at')->limit(self::RELATED_LIMIT)->get(),
-            payments: $this->assignments
-                ->payments($tenant->payments()->getQuery(), $actor)
-                ->with('lease')
-                ->latest('received_on')
-                ->limit(self::RELATED_LIMIT)
-                ->get(),
-            maintenance: $this->assignments
-                ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
-                ->with('asset')
-                ->latest('requested_at')
-                ->limit(self::RELATED_LIMIT)
-                ->get(),
-            lastPayment: $activeLease?->payments()
+            leases: $leasesEnabled
+                ? $this->leases($tenant, $actor)->latest('started_at')->limit(self::RELATED_LIMIT)->get()
+                : collect(),
+            payments: $paymentsEnabled
+                ? $this->assignments
+                    ->payments($tenant->payments()->getQuery(), $actor)
+                    ->with('lease')
+                    ->latest('received_on')
+                    ->limit(self::RELATED_LIMIT)
+                    ->get()
+                : collect(),
+            maintenance: $maintenanceEnabled
+                ? $this->assignments
+                    ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
+                    ->with('asset')
+                    ->latest('requested_at')
+                    ->limit(self::RELATED_LIMIT)
+                    ->get()
+                : collect(),
+            lastPayment: $paymentsEnabled ? $activeLease?->payments()
                 ->where('status', 'posted')
                 ->latest('received_on')
-                ->first(),
-            activeLeaseCount: $this->leases($tenant, $actor)->where('status', 'active')->count(),
-            openMaintenanceCount: $this->assignments
-                ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
-                ->whereIn('status', ['open', 'in_progress'])
-                ->count(),
+                ->first() : null,
+            activeLeaseCount: $leasesEnabled
+                ? $this->leases($tenant, $actor)->where('status', 'active')->count()
+                : 0,
+            openMaintenanceCount: $maintenanceEnabled
+                ? $this->assignments
+                    ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
+                    ->whereIn('status', ['open', 'in_progress'])
+                    ->count()
+                : 0,
         );
     }
 

@@ -5,6 +5,7 @@ namespace App\Modules\Tenants\Presenters;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Tenants\Data\TenantDetailData;
 use Illuminate\Support\Collection;
@@ -16,19 +17,39 @@ final class TenantRelatedPresenter
     /** @return array<int, array<string, mixed>> */
     public function present(TenantDetailData $data): array
     {
-        return [
-            $this->leases($data->leases, $data->tenant->id),
-            $this->payments($data->payments),
-            $this->maintenance($data->maintenance),
-        ];
+        $related = [];
+        $assetsEnabled = PortfolioModules::enabledForUser($data->actor, 'assets');
+
+        if (PortfolioModules::enabledForUser($data->actor, 'leases')) {
+            $related[] = $this->leases(
+                $data->leases,
+                $data->tenant->id,
+                $assetsEnabled,
+                $data->tenant->status === 'active',
+            );
+        }
+
+        if (PortfolioModules::enabledForUser($data->actor, 'payments')) {
+            $related[] = $this->payments($data->payments);
+        }
+
+        if (PortfolioModules::enabledForUser($data->actor, 'maintenance')) {
+            $related[] = $this->maintenance($data->maintenance, $assetsEnabled);
+        }
+
+        return $related;
     }
 
     /**
      * @param  Collection<int, Lease>  $leases
      * @return array<string, mixed>
      */
-    private function leases(Collection $leases, int $tenantId): array
-    {
+    private function leases(
+        Collection $leases,
+        int $tenantId,
+        bool $assetsEnabled,
+        bool $canCreateLease,
+    ): array {
         return [
             'title' => trans('app.tenants.leases'),
             'description' => trans('app.tenants.leases_help'),
@@ -43,7 +64,7 @@ final class TenantRelatedPresenter
                     'label' => $lease->code,
                     'href' => route('leases.show', $lease),
                 ],
-                trans('app.tenants.asset') => $lease->leaseable
+                trans('app.tenants.asset') => $lease->leaseable && $assetsEnabled
                     ? [
                         'label' => $this->resources->localized(
                             $lease->leaseable->getAttribute('title_en'),
@@ -51,13 +72,18 @@ final class TenantRelatedPresenter
                         ) ?? '-',
                         'href' => route('assets.show', $lease->leaseable),
                     ]
-                    : '-',
+                    : ($this->resources->localized(
+                        $lease->leaseable?->getAttribute('title_en'),
+                        $lease->leaseable?->getAttribute('title_ar'),
+                    ) ?? '-'),
                 trans('app.tenants.status') => trans("app.status.{$lease->status}"),
                 trans('app.tenants.balance') => number_format((float) $lease->balance_remaining, 2).' '.$lease->currency,
             ])->all(),
             'emptyText' => trans('app.tenants.no_leases'),
-            'actionHref' => route('leases.create', ['tenant_profile_id' => $tenantId]),
-            'actionLabel' => trans('app.tenants.create_lease'),
+            'actionHref' => $canCreateLease
+                ? route('leases.create', ['tenant_profile_id' => $tenantId])
+                : null,
+            'actionLabel' => $canCreateLease ? trans('app.tenants.create_lease') : null,
         ];
     }
 
@@ -93,7 +119,7 @@ final class TenantRelatedPresenter
      * @param  Collection<int, MaintenanceRequest>  $requests
      * @return array<string, mixed>
      */
-    private function maintenance(Collection $requests): array
+    private function maintenance(Collection $requests, bool $assetsEnabled): array
     {
         return [
             'title' => trans('app.tenants.maintenance'),
@@ -109,7 +135,7 @@ final class TenantRelatedPresenter
                     'label' => '#'.$request->id.' '.$request->title,
                     'href' => route('maintenance-requests.show', $request),
                 ],
-                trans('app.tenants.asset') => $request->asset
+                trans('app.tenants.asset') => $request->asset && $assetsEnabled
                     ? [
                         'label' => $this->resources->localized(
                             $request->asset->title_en,
@@ -117,7 +143,10 @@ final class TenantRelatedPresenter
                         ) ?? '-',
                         'href' => route('assets.show', $request->asset),
                     ]
-                    : '-',
+                    : ($this->resources->localized(
+                        $request->asset?->title_en,
+                        $request->asset?->title_ar,
+                    ) ?? '-'),
                 trans('app.tenants.status') => trans("app.status.{$request->status}"),
                 trans('app.tenants.priority') => trans("app.status.{$request->priority}"),
             ])->all(),

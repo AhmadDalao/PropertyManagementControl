@@ -349,6 +349,9 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('app.locale', 'ar')
                 ->where('detailPage.header.eyebrow', 'حساب المحفظة')
                 ->where('detailPage.header.title', 'حساب التفاصيل العربية')
+                ->where('detailPage.header.actions.0.label', 'إنشاء أصل')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'إنشاء مستخدم')
                 ->where('detailPage.sections.0.title', 'ملف النشاط')
                 ->where('detailPage.sections.1.items', function ($items): bool {
                     $owner = collect($items)->firstWhere('label', 'المالك');
@@ -356,6 +359,57 @@ class PortfolioModuleSecurityTest extends TestCase
                     return is_array($owner)
                         && ($owner['href'] ?? null) === route('profile.index');
                 }));
+    }
+
+    public function test_portfolio_detail_prioritizes_creation_before_administration(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($owner)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->all() === ['Create asset', 'Create user', 'Edit portfolio'])
+                ->where('detailPage.header.actions.0.href', route('assets.create', [
+                    'portfolio_id' => $portfolio->id,
+                ]))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.href', route('users.create', [
+                    'portfolio_id' => $portfolio->id,
+                ]))
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+
+        $portfolio->update([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'assets' => false,
+            ],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Create user')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit portfolio')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->has('detailPage.header.actions', 2));
+    }
+
+    public function test_unassigned_manager_is_not_offered_dead_create_actions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+
+        $this->actingAs($manager)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('detailPage.header.actions', 0));
     }
 
     /** @param array<string, mixed> $overrides */

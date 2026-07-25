@@ -2,6 +2,7 @@
 
 namespace App\Modules\Tenants\Presenters;
 
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Tenants\Data\TenantDetailData;
 
 final class TenantDetailHeaderPresenter
@@ -10,23 +11,36 @@ final class TenantDetailHeaderPresenter
     public function present(TenantDetailData $data): array
     {
         $tenant = $data->tenant;
-        $actions = [
-            [
-                'label' => trans('app.tenants.edit_tenant'),
-                'href' => route('tenants.edit', $tenant),
-                'variant' => 'primary',
-            ],
-            [
-                'label' => trans('app.tenants.create_lease'),
-                'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
-                'variant' => 'secondary',
-            ],
-        ];
+        $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
+        $paymentsEnabled = PortfolioModules::enabledForUser($data->actor, 'payments');
+        $canCreateLease = $leasesEnabled && $tenant->status === 'active';
+        $canRecordPayment = $paymentsEnabled && $data->payableLease !== null;
+        $actions = [];
 
-        if ($data->payableLease) {
+        if ($canRecordPayment) {
             $actions[] = [
                 'label' => trans('app.tenants.record_payment'),
                 'href' => route('payments.create', ['lease_id' => $data->payableLease->id]),
+                'variant' => 'primary',
+            ];
+        } elseif ($canCreateLease) {
+            $actions[] = [
+                'label' => trans('app.tenants.create_lease'),
+                'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
+                'variant' => 'primary',
+            ];
+        }
+
+        $actions[] = [
+            'label' => trans('app.tenants.edit_tenant'),
+            'href' => route('tenants.edit', $tenant),
+            'variant' => ($canRecordPayment || $canCreateLease) ? 'secondary' : 'primary',
+        ];
+
+        if ($canRecordPayment && $canCreateLease) {
+            $actions[] = [
+                'label' => trans('app.tenants.create_lease'),
+                'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
                 'variant' => 'secondary',
             ];
         }

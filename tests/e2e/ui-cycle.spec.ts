@@ -754,6 +754,31 @@ test.describe('authenticated administration', () => {
         await expect(page).toHaveURL(/\/$/);
         await login(page, 'owner@propertycontrol.test', 'password');
         await page.setViewportSize(viewports.mobile);
+
+        await page.goto('/tenants/1?locale=en');
+        const recordPaymentAction = page.getByRole('link', {
+            name: 'Record payment',
+            exact: true,
+        });
+        await expect(recordPaymentAction).toBeVisible();
+        expect(
+            (await recordPaymentAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            page.getByRole('link', { name: 'Edit tenant', exact: true }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/tenants/1?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('link', { name: 'تسجيل دفعة', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تعديل المستأجر', exact: true }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
         await page.goto('/dashboard?locale=en');
 
         await page.getByRole('link', { name: 'Start tenancy' }).click();
@@ -1253,6 +1278,17 @@ test.describe('authenticated administration', () => {
 
         await page.goto(`${portfolioHref}?locale=ar`);
         await expect(page.getByText('حساب المحفظة')).toBeVisible();
+        const createAssetAction = page.getByRole('link', {
+            name: 'إنشاء أصل',
+            exact: true,
+        });
+        await expect(createAssetAction).toBeVisible();
+        expect(
+            (await createAssetAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            page.getByRole('link', { name: 'إنشاء مستخدم', exact: true }),
+        ).toBeVisible();
         await expect(page.getByText('ملف النشاط')).toBeVisible();
         await expectNoHorizontalOverflow(page);
 

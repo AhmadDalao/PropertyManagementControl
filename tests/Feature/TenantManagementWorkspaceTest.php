@@ -56,6 +56,18 @@ class TenantManagementWorkspaceTest extends TestCase
                 ->where('tenants.data.0.leases_count', fn ($value) => is_numeric($value))
             );
 
+        $this->actingAs($owner)
+            ->get(route('tenants.show', $tenant))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Create lease')
+                ->where('detailPage.header.actions.0.href', route('leases.create', [
+                    'tenant_profile_id' => $tenant->id,
+                ]))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit tenant')
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+
         $this->assertSame('active', $tenant->fresh()->status);
     }
 

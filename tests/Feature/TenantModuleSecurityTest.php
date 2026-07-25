@@ -2,11 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\Document;
+use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -83,6 +87,88 @@ class TenantModuleSecurityTest extends TestCase
         $sheet = $this->xlsxWorksheetXml($export);
         $this->assertStringContainsString('Visible Tenant', $sheet);
         $this->assertStringNotContainsString('Hidden Tenant', $sheet);
+    }
+
+    public function test_tenant_detail_does_not_leak_disabled_operational_modules(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'assets' => false,
+                'leases' => false,
+                'payments' => false,
+                'maintenance' => false,
+                'documents' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio, ['code' => 'HIDDEN-TENANT-ASSET']);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, [
+            'code' => 'HIDDEN-TENANT-LEASE',
+        ]);
+        Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'HIDDEN-TENANT-PAYMENT',
+            'type' => 'rent',
+            'method' => 'bank_transfer',
+            'status' => 'posted',
+            'received_on' => now()->toDateString(),
+            'amount' => 500,
+            'currency' => 'SAR',
+        ]);
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'plumbing',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => 'HIDDEN-TENANT-MAINTENANCE',
+            'description' => 'Disabled module detail must remain private.',
+            'requested_at' => now(),
+        ]);
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease::class,
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => 'HIDDEN-TENANT-DOCUMENT',
+            'title_ar' => 'مستند مستأجر مخفي',
+            'disk' => 'local',
+            'file_path' => 'documents/hidden-tenant-document.pdf',
+            'original_name' => 'hidden-tenant-document.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('tenants.show', $tenant));
+
+        $response
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Edit tenant')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->has('detailPage.header.actions', 1)
+                ->has('detailPage.decisionCards', 1)
+                ->has('detailPage.stats', 1)
+                ->has('detailPage.sections', 1)
+                ->has('detailPage.related', 0)
+                ->has('detailPage.documents', 0));
+        $response->assertDontSee('HIDDEN-TENANT-ASSET');
+        $response->assertDontSee('HIDDEN-TENANT-LEASE');
+        $response->assertDontSee('HIDDEN-TENANT-PAYMENT');
+        $response->assertDontSee('HIDDEN-TENANT-MAINTENANCE');
+        $response->assertDontSee('HIDDEN-TENANT-DOCUMENT');
     }
 
     public function test_owner_cannot_create_a_tenant_in_another_portfolio(): void
@@ -415,6 +501,9 @@ class TenantModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
                 ->where('detailPage.header.eyebrow', 'سجل المستأجر')
+                ->where('detailPage.header.actions.0.label', 'إنشاء عقد')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'تعديل المستأجر')
                 ->where('detailPage.sections.0.title', 'الملف وبيانات الاتصال')
                 ->where('detailPage.sections.1.tab', 'financial'));
     }

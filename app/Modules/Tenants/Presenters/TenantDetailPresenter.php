@@ -4,6 +4,7 @@ namespace App\Modules\Tenants\Presenters;
 
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Tenants\Queries\TenantDetailQuery;
 
@@ -27,6 +28,7 @@ final class TenantDetailPresenter
             ...$this->overview->present($data),
             'related' => $this->related->present($data),
             'documents' => $data->activeLease
+                && PortfolioModules::enabledForUser($actor, 'documents')
                 ? $this->resources->documentStrip($data->activeLease->documents)
                 : [],
             'timeline' => $this->resources->activityTimeline($data->tenant),
