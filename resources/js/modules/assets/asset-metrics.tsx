@@ -41,6 +41,7 @@ export function AssetMetrics({ insights, locale }: AssetMetricsProps) {
                     }),
                     icon: 'bi-house-check',
                     tone: 'teal',
+                    href: '/assets?occupancy_status=vacant&rentable=yes',
                 },
                 {
                     label: t('assets.assignment_gaps_label'),

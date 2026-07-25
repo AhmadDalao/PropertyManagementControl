@@ -141,7 +141,7 @@ final readonly class AssetLeaseRelatedPresenter
         }
 
         return trans($data->asset->rentable
-            ? 'app.assets.create_lease'
+            ? 'app.assets.start_tenancy'
             : 'app.assets.choose_vacant_space');
     }
 

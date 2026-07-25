@@ -27,10 +27,7 @@ final class LeaseFormOptionsQuery
     public function get(User $actor, ?Lease $lease = null, array $defaults = []): LeaseFormData
     {
         $portfolios = $this->activePortfolios($actor);
-        $requested = filter_var($defaults['portfolio_id'] ?? $actor->portfolio_id, FILTER_VALIDATE_INT);
-        $portfolioId = collect($portfolios)->contains('value', $requested)
-            ? (int) $requested
-            : $this->defaultPortfolioId($actor, $portfolios);
+        $portfolioId = $this->contextPortfolioId($actor, $defaults, $portfolios);
         $includeAssetId = filter_var(
             $defaults['include_asset_id'] ?? null,
             FILTER_VALIDATE_INT,
@@ -122,6 +119,55 @@ final class LeaseFormOptionsQuery
                 'value' => $asset->id,
                 'label' => trim(($this->resources->localized($asset->title_en, $asset->title_ar) ?? '').' · '.$asset->code),
             ])->all();
+    }
+
+    /**
+     * @param  array<string, mixed>  $defaults
+     * @param  array<int, array{value:int,label:string}>  $portfolios
+     */
+    private function contextPortfolioId(User $actor, array $defaults, array $portfolios): ?int
+    {
+        $allowedPortfolioIds = collect($portfolios)->pluck('value');
+        $assetId = filter_var(
+            $defaults['asset_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
+
+        if ($assetId) {
+            $assetPortfolioId = $this->assignments
+                ->assets(Asset::query()->whereKey($assetId), $actor)
+                ->value('portfolio_id');
+
+            if ($assetPortfolioId && $allowedPortfolioIds->contains((int) $assetPortfolioId)) {
+                return (int) $assetPortfolioId;
+            }
+        }
+
+        $tenantId = filter_var(
+            $defaults['tenant_profile_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
+
+        if ($tenantId) {
+            $tenantPortfolioId = $this->assignments
+                ->tenants(TenantProfile::query()->whereKey($tenantId), $actor)
+                ->value('portfolio_id');
+
+            if ($tenantPortfolioId && $allowedPortfolioIds->contains((int) $tenantPortfolioId)) {
+                return (int) $tenantPortfolioId;
+            }
+        }
+
+        $requested = filter_var(
+            $defaults['portfolio_id'] ?? $actor->portfolio_id,
+            FILTER_VALIDATE_INT,
+        );
+
+        return $requested && $allowedPortfolioIds->contains((int) $requested)
+            ? (int) $requested
+            : $this->defaultPortfolioId($actor, $portfolios);
     }
 
     /** @param array<int, array{value:int,label:string}> $portfolios */

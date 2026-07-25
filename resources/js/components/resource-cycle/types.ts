@@ -152,6 +152,7 @@ export type ResourceFormShellProps = {
     description: string;
     backHref: string;
     backLabel: string;
+    headerActions?: ResourceAction[];
     action: string;
     method: 'post' | 'put';
     submitLabel: string;

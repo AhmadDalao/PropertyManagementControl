@@ -305,7 +305,7 @@ class AssetWorkspaceTest extends TestCase
                 ]))
                 ->where('detailPage.decisionCards.0.tone', 'teal')
                 ->where('detailPage.decisionCards.1.title', 'Collection health')
-                ->where('detailPage.header.actions.3.label', 'Create lease')
+                ->where('detailPage.header.actions.3.label', 'Start tenancy')
             );
     }
 

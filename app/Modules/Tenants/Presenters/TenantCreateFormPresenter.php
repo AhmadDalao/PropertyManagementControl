@@ -17,6 +17,11 @@ final class TenantCreateFormPresenter
     {
         $form = $this->definition->present(new TenantFormData($actor, defaults: $defaults));
         $continueToLease = ($defaults['next'] ?? null) === 'lease';
+        $assetId = filter_var(
+            $defaults['asset_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
 
         if ($continueToLease) {
             array_unshift($form['fields'], [
@@ -27,6 +32,17 @@ final class TenantCreateFormPresenter
                 'sectionDescription' => trans('app.tenants.portal_account_help'),
             ]);
             $form['initialValues']['next'] = 'lease';
+
+            if ($assetId) {
+                array_unshift($form['fields'], [
+                    'name' => 'asset_id',
+                    'label' => trans('app.leases.rental_asset'),
+                    'type' => 'hidden',
+                    'section' => trans('app.tenants.portal_account'),
+                    'sectionDescription' => trans('app.tenants.portal_account_help'),
+                ]);
+                $form['initialValues']['asset_id'] = (string) $assetId;
+            }
         }
 
         return [

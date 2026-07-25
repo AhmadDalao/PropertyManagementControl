@@ -17,6 +17,7 @@ export function ResourceFormShell({
     description,
     backHref,
     backLabel,
+    headerActions = [],
     action,
     method,
     submitLabel,
@@ -73,6 +74,7 @@ export function ResourceFormShell({
                 description={description}
                 backHref={backHref}
                 backLabel={backLabel}
+                actions={headerActions}
             />
 
             <section className="pmc-resource-form-shell">

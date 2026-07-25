@@ -3,6 +3,7 @@
 namespace App\Modules\Leases\Presenters;
 
 use App\Modules\Leases\Data\LeaseFormData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class LeaseCreateFormPresenter
 {
@@ -14,6 +15,11 @@ final class LeaseCreateFormPresenter
         $tenantId = $this->selected($data->defaults['tenant_profile_id'] ?? null, $data->tenants);
         $assetId = $this->selected($data->defaults['asset_id'] ?? null, $data->assets);
         $onboarding = (string) ($data->defaults['onboarding'] ?? '') === '1';
+        $tenantOnboardingQuery = array_filter([
+            'next' => 'lease',
+            'portfolio_id' => $data->portfolioId,
+            'asset_id' => $this->requestedSelection($data->defaults['asset_id'] ?? null, $data->assets),
+        ], fn (mixed $value): bool => $value !== null);
 
         return [
             'title' => trans($onboarding
@@ -24,6 +30,13 @@ final class LeaseCreateFormPresenter
                 : 'app.leases.create_description'),
             'backHref' => route('leases.index'),
             'backLabel' => trans('app.leases.all_leases'),
+            'headerActions' => PortfolioModules::enabledForUser($data->actor, 'tenants')
+                ? [[
+                    'label' => trans('app.leases.add_new_tenant'),
+                    'href' => route('tenants.create', $tenantOnboardingQuery),
+                    'variant' => 'secondary',
+                ]]
+                : [],
             'action' => route('leases.store'),
             'method' => 'post',
             'submitLabel' => trans($onboarding
@@ -59,8 +72,18 @@ final class LeaseCreateFormPresenter
     {
         $id = filter_var($requested, FILTER_VALIDATE_INT);
 
-        return $id && collect($options)->contains('value', $id)
-            ? (int) $id
-            : ($options[0]['value'] ?? '');
+        if ($id) {
+            return collect($options)->contains('value', $id) ? (int) $id : '';
+        }
+
+        return $options[0]['value'] ?? '';
+    }
+
+    /** @param array<int, array{value:int,label:string}> $options */
+    private function requestedSelection(mixed $requested, array $options): ?int
+    {
+        $id = filter_var($requested, FILTER_VALIDATE_INT);
+
+        return $id && collect($options)->contains('value', $id) ? (int) $id : null;
     }
 }

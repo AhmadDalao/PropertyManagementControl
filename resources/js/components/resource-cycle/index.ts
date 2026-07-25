@@ -9,6 +9,7 @@ export type {
     ResourceAction,
     ResourceDetailTab,
     ResourceField,
+    ResourceFormShellProps,
     ResourceFormValues,
     ResourceHeaderProps,
     ResourceProgress,

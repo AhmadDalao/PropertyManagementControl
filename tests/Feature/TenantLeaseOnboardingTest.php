@@ -27,15 +27,24 @@ class TenantLeaseOnboardingTest extends TestCase
         $asset = $this->createAsset($portfolio);
 
         $this->actingAs($owner)
-            ->get(route('tenants.create', ['next' => 'lease']))
+            ->get(route('tenants.create', [
+                'next' => 'lease',
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $asset->id,
+            ]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-form')
                 ->where('formPage.title', 'Add tenant and start tenancy')
                 ->where('formPage.submitLabel', 'Continue to lease')
                 ->where('formPage.initialValues.next', 'lease')
+                ->where('formPage.initialValues.asset_id', (string) $asset->id)
                 ->where('formPage.fields', fn ($fields) => collect($fields)->contains(
                     fn (array $field): bool => ($field['name'] ?? null) === 'next'
+                        && ($field['type'] ?? null) === 'hidden',
+                ))
+                ->where('formPage.fields', fn ($fields) => collect($fields)->contains(
+                    fn (array $field): bool => ($field['name'] ?? null) === 'asset_id'
                         && ($field['type'] ?? null) === 'hidden',
                 )));
 
@@ -50,6 +59,7 @@ class TenantLeaseOnboardingTest extends TestCase
                 'profile_type' => 'individual',
                 'status' => 'active',
                 'next' => 'lease',
+                'asset_id' => $asset->id,
             ]);
 
         $tenant = $portfolio->tenantProfiles()
@@ -58,6 +68,7 @@ class TenantLeaseOnboardingTest extends TestCase
         $leaseUrl = route('leases.create', [
             'tenant_profile_id' => $tenant->id,
             'onboarding' => 1,
+            'asset_id' => $asset->id,
         ]);
 
         $response
@@ -74,6 +85,88 @@ class TenantLeaseOnboardingTest extends TestCase
                 ->where('formPage.initialValues.tenant_profile_id', (string) $tenant->id)
                 ->where('formPage.initialValues.asset_id', (string) $asset->id)
                 ->where('formPage.initialValues.status', 'draft'));
+    }
+
+    public function test_asset_context_selects_the_correct_superadmin_portfolio_and_new_tenant_action(): void
+    {
+        $firstPortfolio = $this->createPortfolio(['name_en' => 'Alpha Portfolio']);
+        $secondPortfolio = $this->createPortfolio(['name_en' => 'Zulu Portfolio']);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $this->createAsset($firstPortfolio);
+        $selectedAsset = $this->createAsset($secondPortfolio);
+
+        $this->actingAs($superadmin)
+            ->get(route('leases.create', ['asset_id' => $selectedAsset->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where('formPage.initialValues.portfolio_id', (string) $secondPortfolio->id)
+                ->where('formPage.initialValues.asset_id', (string) $selectedAsset->id)
+                ->where('formPage.headerActions.0.label', 'Add a new tenant')
+                ->where(
+                    'formPage.headerActions.0.href',
+                    route('tenants.create', [
+                        'next' => 'lease',
+                        'portfolio_id' => $secondPortfolio->id,
+                        'asset_id' => $selectedAsset->id,
+                    ]),
+                ));
+    }
+
+    public function test_unavailable_asset_context_never_silently_selects_another_rental(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $otherPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $availableAsset = $this->createAsset($portfolio);
+        $unavailableAsset = $this->createAsset($otherPortfolio);
+
+        $this->actingAs($owner)
+            ->get(route('leases.create', ['asset_id' => $unavailableAsset->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.portfolio_id', (string) $portfolio->id)
+                ->where('formPage.initialValues.asset_id', '')
+                ->where('formPage.headerActions.0.href', route('tenants.create', [
+                    'next' => 'lease',
+                    'portfolio_id' => $portfolio->id,
+                ])));
+
+        $this->actingAs($owner)
+            ->post(route('tenants.store'), [
+                'portfolio_id' => $portfolio->id,
+                'name' => 'Blocked Context Tenant',
+                'email' => 'blocked-context@example.test',
+                'preferred_locale' => 'en',
+                'password' => 'Safe-Password-123!',
+                'profile_type' => 'individual',
+                'status' => 'active',
+                'next' => 'lease',
+                'asset_id' => $unavailableAsset->id,
+            ])
+            ->assertSessionHasErrors('asset_id');
+
+        $this->assertDatabaseMissing('users', ['email' => 'blocked-context@example.test']);
+        $this->assertDatabaseHas('assets', ['id' => $availableAsset->id]);
+    }
+
+    public function test_lease_form_hides_tenant_onboarding_when_the_module_is_disabled(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                'tenants' => false,
+                'leases' => true,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $asset = $this->createAsset($portfolio);
+
+        $this->actingAs($owner)
+            ->get(route('leases.create', ['asset_id' => $asset->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.asset_id', (string) $asset->id)
+                ->where('formPage.headerActions', []));
     }
 
     public function test_tenant_continuation_rejects_untrusted_destinations(): void
@@ -197,6 +290,7 @@ class TenantLeaseOnboardingTest extends TestCase
             $owner,
             ['status' => 'draft'],
         );
+        $vacantAsset = $this->createAsset($portfolio);
 
         $this->actingAs($owner)
             ->get(route('tenants.create', ['next' => 'lease', 'locale' => 'ar']))
@@ -204,6 +298,16 @@ class TenantLeaseOnboardingTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('formPage.title', 'إضافة مستأجر وبدء التأجير')
                 ->where('formPage.submitLabel', 'متابعة إلى العقد'));
+
+        $this->actingAs($owner)
+            ->get(route('leases.create', [
+                'asset_id' => $vacantAsset->id,
+                'locale' => 'ar',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.asset_id', (string) $vacantAsset->id)
+                ->where('formPage.headerActions.0.label', 'إضافة مستأجر جديد'));
 
         $this->actingAs($owner)
             ->get(route('leases.show', ['lease' => $lease, 'locale' => 'ar']))

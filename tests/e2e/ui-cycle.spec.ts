@@ -774,6 +774,13 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', { name: 'Set up the tenancy' }),
         ).toBeVisible();
         await expect(page.getByLabel('Status')).toHaveValue('draft');
+        const addTenantAction = page.getByRole('link', {
+            name: 'Add a new tenant',
+        });
+        await expect(addTenantAction).toBeVisible();
+        expect(
+            (await addTenantAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases/1?locale=en');
@@ -838,6 +845,9 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases/create?locale=ar');
+        await expect(
+            page.getByRole('link', { name: 'إضافة مستأجر جديد' }),
+        ).toBeVisible();
         await expect(
             page.getByRole('heading', { name: 'إنشاء عقد', exact: true }),
         ).toBeVisible();

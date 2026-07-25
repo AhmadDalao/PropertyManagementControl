@@ -57,7 +57,7 @@ class AssetDetailOverviewPresenter
 
         if ($leasesEnabled && $asset->rentable && ! $lease) {
             $actions[] = [
-                'label' => trans('app.assets.create_lease'),
+                'label' => trans('app.assets.start_tenancy'),
                 'href' => route('leases.create', ['asset_id' => $asset->id]),
                 'variant' => 'secondary',
             ];
