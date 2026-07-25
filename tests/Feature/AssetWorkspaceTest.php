@@ -305,7 +305,13 @@ class AssetWorkspaceTest extends TestCase
                 ]))
                 ->where('detailPage.decisionCards.0.tone', 'teal')
                 ->where('detailPage.decisionCards.1.title', 'Collection health')
-                ->where('detailPage.header.actions.3.label', 'Start tenancy')
+                ->where('detailPage.header.actions.0.label', 'Start tenancy')
+                ->where('detailPage.header.actions.0.href', route('leases.create', [
+                    'asset_id' => $asset->id,
+                ]))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit asset')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
             );
     }
 
@@ -381,6 +387,11 @@ class AssetWorkspaceTest extends TestCase
                 ->where('detailPage.decisionCards.2.tone', 'danger')
                 ->where('detailPage.decisionCards.3.title', 'Service health')
                 ->where('detailPage.decisionCards.3.value', 1)
+                ->where('detailPage.header.actions.0.label', 'Edit asset')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions', fn ($actions): bool => ! collect($actions)->contains(
+                    fn (array $action): bool => $action['label'] === 'Start tenancy',
+                ))
                 ->where('detailPage.related.2.title', 'Leases')
                 ->where('detailPage.related.2.rows.0.Lease', $lease->code)
                 ->where('detailPage.related.2.rows.0.Open.href', route('leases.show', $lease))

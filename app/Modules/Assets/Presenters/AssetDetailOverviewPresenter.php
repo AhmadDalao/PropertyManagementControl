@@ -42,23 +42,32 @@ class AssetDetailOverviewPresenter
         ]);
         $reportsEnabled = PortfolioModules::enabledForUser($data->actor, 'reports');
         $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
-        $actions = [
-            ['label' => trans('app.assets.edit_asset_action'), 'href' => route('assets.edit', $asset), 'variant' => 'primary'],
-            ['label' => trans('app.assets.create_child'), 'href' => route('assets.create', ['parent_id' => $asset->id]), 'variant' => 'secondary'],
+        $canStartTenancy = $leasesEnabled && $asset->rentable && ! $lease;
+        $actions = [];
+
+        if ($canStartTenancy) {
+            $actions[] = [
+                'label' => trans('app.assets.start_tenancy'),
+                'href' => route('leases.create', ['asset_id' => $asset->id]),
+                'variant' => 'primary',
+            ];
+        }
+
+        $actions[] = [
+            'label' => trans('app.assets.edit_asset_action'),
+            'href' => route('assets.edit', $asset),
+            'variant' => $canStartTenancy ? 'secondary' : 'primary',
+        ];
+        $actions[] = [
+            'label' => trans('app.assets.create_child'),
+            'href' => route('assets.create', ['parent_id' => $asset->id]),
+            'variant' => 'secondary',
         ];
 
         if ($reportsEnabled) {
             $actions[] = [
                 'label' => trans('app.assets.property_report'),
                 'href' => $propertyReportHref,
-                'variant' => 'secondary',
-            ];
-        }
-
-        if ($leasesEnabled && $asset->rentable && ! $lease) {
-            $actions[] = [
-                'label' => trans('app.assets.start_tenancy'),
-                'href' => route('leases.create', ['asset_id' => $asset->id]),
                 'variant' => 'secondary',
             ];
         }
