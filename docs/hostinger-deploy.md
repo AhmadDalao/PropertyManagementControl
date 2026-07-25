@@ -87,6 +87,8 @@ php /path/to/artisan schedule:run >> /dev/null 2>&1
 
 The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` treats a stale heartbeat as a production blocker.
 
+Shared hosting can terminate a worker without releasing Laravel's overlap mutex. The heartbeat lock expires after 5 minutes, the queue-worker lock after 10 minutes, and the daily status-sync lock after 120 minutes. If a killed worker left an older lock from a previous release, run `php artisan schedule:clear-cache` once, then confirm the queue count decreases in `/system/readiness`.
+
 ## First production checks
 
 - `https://property.ahmaddalao.com/up`

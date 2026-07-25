@@ -178,12 +178,12 @@ Artisan::command('property:record-scheduler-heartbeat', function (RecordSchedule
 
 Schedule::command('property:record-scheduler-heartbeat')
     ->everyMinute()
-    ->withoutOverlapping();
+    ->withoutOverlapping(5);
 
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()
-    ->withoutOverlapping();
+    ->withoutOverlapping(10);
 
 Schedule::command('property:sync-operational-statuses')
     ->dailyAt('00:05')
-    ->withoutOverlapping();
+    ->withoutOverlapping(120);

@@ -134,6 +134,7 @@ final class SystemHealthQuery
                     'connection' => (string) config('queue.default'),
                     'pending' => $this->locale->number($pending),
                     'failed' => $this->locale->number($failed),
+                    'oldest' => $this->locale->number($oldestMinutes),
                 ]),
                 [
                     'pending' => $pending,

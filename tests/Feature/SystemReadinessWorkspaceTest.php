@@ -6,9 +6,12 @@ use App\Models\AssetStakeholder;
 use App\Models\OperationalReadinessCheck;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use App\Modules\SystemReadiness\Notifications\ReadinessTestNotification;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Testing\PendingCommand;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -66,8 +69,7 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->where('portfolioReadiness.metrics.tenants', 1)
                 ->where('portfolioReadiness.metrics.properties', 1)
                 ->where('portfolioReadiness.metrics.assignment_gaps', 0)
-                ->where('systemChecks', fn ($checks): bool => collect($checks)
-                    ->firstWhere('key', 'scheduler')['status'] === 'ready'));
+                ->where('systemChecks', fn (mixed $checks): bool => ($this->systemCheck($checks, 'scheduler')['status'] ?? null) === 'ready'));
 
         $this->actingAs($owner)
             ->get(route('system-readiness.index'))
@@ -217,10 +219,80 @@ final class SystemReadinessWorkspaceTest extends TestCase
     {
         Cache::forget(RecordSchedulerHeartbeat::CACHE_KEY);
 
-        $this->artisan('property:record-scheduler-heartbeat')
+        $command = $this->artisan('property:record-scheduler-heartbeat');
+
+        $this->assertInstanceOf(PendingCommand::class, $command);
+        $command
             ->expectsOutput('Scheduler heartbeat recorded.')
             ->assertSuccessful();
+        $this->assertSame(0, $command->run());
 
         $this->assertIsString(Cache::get(RecordSchedulerHeartbeat::CACHE_KEY));
+    }
+
+    public function test_shared_hosting_schedule_locks_expire_quickly_after_a_killed_process(): void
+    {
+        $events = collect(app(Schedule::class)->events());
+        $heartbeat = $events->first(
+            fn ($event): bool => str_contains((string) $event->command, 'property:record-scheduler-heartbeat'),
+        );
+        $queue = $events->first(
+            fn ($event): bool => str_contains((string) $event->command, 'queue:work --stop-when-empty'),
+        );
+        $statusSync = $events->first(
+            fn ($event): bool => str_contains((string) $event->command, 'property:sync-operational-statuses'),
+        );
+
+        $this->assertNotNull($heartbeat);
+        $this->assertNotNull($queue);
+        $this->assertNotNull($statusSync);
+        $this->assertSame(5, $heartbeat->expiresAt);
+        $this->assertSame(10, $queue->expiresAt);
+        $this->assertSame(120, $statusSync->expiresAt);
+    }
+
+    public function test_queue_readiness_explains_the_age_of_stuck_work(): void
+    {
+        config(['queue.default' => 'database']);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $createdAt = now()->subHour()->getTimestamp();
+
+        DB::table('jobs')->insert([
+            'queue' => 'default',
+            'payload' => '{}',
+            'attempts' => 0,
+            'reserved_at' => null,
+            'available_at' => $createdAt,
+            'created_at' => $createdAt,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('systemChecks', function (mixed $checks): bool {
+                    $queue = $this->systemCheck($checks, 'queue');
+                    $detail = $queue['detail'] ?? null;
+
+                    return ($queue['status'] ?? null) === 'blocked'
+                        && is_string($detail)
+                        && str_contains($detail, 'oldest pending job 60 minutes');
+                }));
+    }
+
+    /** @return array<string, mixed>|null */
+    private function systemCheck(mixed $checks, string $key): ?array
+    {
+        if (! is_iterable($checks)) {
+            return null;
+        }
+
+        foreach ($checks as $check) {
+            if (is_array($check) && ($check['key'] ?? null) === $key) {
+                return $check;
+            }
+        }
+
+        return null;
     }
 }

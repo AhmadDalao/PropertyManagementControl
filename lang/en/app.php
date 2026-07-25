@@ -2635,7 +2635,7 @@ return [
         'mail_blocked' => 'The :mailer mailer cannot deliver password-reset email.',
         'scheduler_missing' => 'No scheduler heartbeat has been recorded.',
         'scheduler_seen' => 'The last scheduler heartbeat was :minutes minutes ago.',
-        'queue_detail' => 'Connection :connection · :pending pending · :failed failed.',
+        'queue_detail' => 'Connection :connection · :pending pending · :failed failed · oldest pending job :oldest minutes.',
         'queue_unavailable' => 'Queue tables could not be inspected.',
         'storage_ready' => 'Private and public storage are writable and the public storage path is available.',
         'storage_blocked' => 'One or more storage paths are missing or not writable.',

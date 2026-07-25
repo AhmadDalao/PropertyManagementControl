@@ -23,7 +23,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, removes the closed drawer from keyboard navigation, restores focus, and keeps the topbar at 64px. Desktop collapse preference persists, while resize recovery clears stale drawer state.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 435 PHP tests with 21,255 assertions and 40 Playwright/axe scenarios pass.
+- Automated status: 437 PHP tests with 21,272 assertions and 40 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
 - The main CSS bundle is 323.76 KB before gzip. Its former 736-line component, 626-line table, and 542-line workspace stylesheets are thin facades over bounded layers. Property Map, Showcase Data, Documentation, Page Wording, Profile, Media, and Launch Readiness styles remain route-loaded as separate 26.09 KB, 10.63 KB, 11.17 KB, 8.90 KB, 5.77 KB, 3.22 KB, and 8.94 KB chunks.
 - PHPStan has 15 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Public Site, Media, Report, Audit, Search, Export, Wording, Dashboard, Documentation, Authentication, Localization, and shared-module extractions add zero findings in their touched slices.
