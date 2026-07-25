@@ -20,6 +20,13 @@ export type LaunchReadinessStatus = {
     showcase_users: number;
 };
 
+export type PropertyFocusOption = {
+    id: number;
+    code: string;
+    title_en: string;
+    title_ar?: string | null;
+};
+
 export type CollectionQueueItem = {
     id: number;
     lease_id: number | null;

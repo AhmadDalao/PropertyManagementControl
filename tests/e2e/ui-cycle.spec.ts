@@ -1459,6 +1459,64 @@ test.describe('local role dashboards', () => {
         },
     } as const;
 
+    test('property focus scopes drill-downs, resets, and stays usable in Arabic', async ({
+        page,
+    }) => {
+        await login(
+            page,
+            process.env.E2E_SUPERADMIN_EMAIL ?? localAccounts[0].email,
+            process.env.E2E_PASSWORD ?? 'password',
+        );
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard?locale=en');
+
+        const selector = page.locator('#dashboard-property-focus');
+        await expect(selector).toBeVisible();
+        expect(await selector.locator('option').count()).toBeGreaterThan(2);
+
+        const propertyId = await selector
+            .locator('option')
+            .nth(1)
+            .getAttribute('value');
+        expect(propertyId).toBeTruthy();
+
+        await selector.selectOption(propertyId!);
+        await expect(page).toHaveURL(
+            new RegExp(`[?&]property_id=${propertyId}(?:&|$)`),
+        );
+        await expect(
+            page.locator('.pmc-dashboard-focus-controls > a'),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-metric-card').first()).toHaveAttribute(
+            'href',
+            new RegExp(`[?&]property_id=${propertyId}(?:&|$)`),
+        );
+        await expectMinimumTouchHeight(
+            page,
+            '#dashboard-property-focus, .pmc-dashboard-focus-controls > a',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await selector.selectOption('');
+        await page.waitForFunction(
+            () =>
+                !new URL(window.location.href).searchParams.has('property_id'),
+        );
+        await expect(
+            page.locator('.pmc-dashboard-focus-controls > a'),
+        ).toHaveCount(0);
+
+        await page.goto('/dashboard?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.locator('label[for="dashboard-property-focus"]'),
+        ).toHaveText('نطاق مركز التحكم');
+        await expect(selector.locator('option').first()).toHaveText(
+            'جميع العقارات',
+        );
+        await expectNoHorizontalOverflow(page);
+    });
+
     for (const account of localAccounts) {
         test(`${account.role} dashboard is scoped and responsive`, async ({
             page,
@@ -1473,6 +1531,17 @@ test.describe('local role dashboards', () => {
             await page.goto('/dashboard');
 
             await expect(page.locator('.pmc-console-main')).toBeVisible();
+
+            if (account.role === 'tenant') {
+                await expect(
+                    page.locator('#dashboard-property-focus'),
+                ).toHaveCount(0);
+            } else {
+                await expect(
+                    page.locator('#dashboard-property-focus'),
+                ).toBeVisible();
+            }
+
             await page.locator('.pmc-menu-trigger').click();
 
             const navigation = page.locator('.pmc-console-nav');

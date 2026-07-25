@@ -14,10 +14,10 @@ class DashboardPresenter
     ) {}
 
     /** @return array<string, mixed> */
-    public function forUser(User $user): array
+    public function forUser(User $user, ?int $propertyId = null): array
     {
         return $user->hasRole('tenant')
             ? $this->tenant->present($user)
-            : $this->operations->present($user);
+            : $this->operations->present($user, $propertyId);
     }
 }

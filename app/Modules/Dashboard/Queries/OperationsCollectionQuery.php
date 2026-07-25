@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 
 final readonly class OperationsCollectionQuery
@@ -13,10 +14,10 @@ final readonly class OperationsCollectionQuery
     public function __construct(private PortfolioScope $portfolios) {}
 
     /** @return array<int, array<string, mixed>> */
-    public function forUser(User $actor): array
+    public function forUser(User $actor, DashboardPropertyContext $context): array
     {
-        $leaseIds = $this->portfolios
-            ->apply(Lease::query(), $actor)
+        $leaseIds = $context
+            ->leases($this->portfolios->apply(Lease::query(), $actor))
             ->whereIn('status', ['active', 'expired'])
             ->select('id');
 

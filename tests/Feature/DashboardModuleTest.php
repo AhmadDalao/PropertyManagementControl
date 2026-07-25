@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Asset;
 use App\Models\CmsPage;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
@@ -231,6 +232,222 @@ class DashboardModuleTest extends TestCase
                 ->where('nextActions.0.href', '/rent-collection?status=overdue'));
     }
 
+    public function test_owner_can_focus_the_entire_dashboard_on_one_authorized_property(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $firstRoot = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Alpha Tower',
+            'rentable' => false,
+            'valuation_amount' => 1000000,
+            'meta_json' => ['map' => [
+                'latitude' => 24.7136,
+                'longitude' => 46.6753,
+                'zone_en' => 'Central',
+                'zone_ar' => 'الوسط',
+                'land_number' => 'A-100',
+            ]],
+        ]);
+        $firstUnit = $this->createAsset($portfolio, [
+            'parent_id' => $firstRoot->id,
+            'title_en' => 'Alpha Unit',
+            'occupancy_status' => 'occupied',
+            'valuation_amount' => 200000,
+        ]);
+        $secondRoot = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Beta Tower',
+            'rentable' => false,
+            'valuation_amount' => 2000000,
+        ]);
+        $secondUnit = $this->createAsset($portfolio, [
+            'parent_id' => $secondRoot->id,
+            'title_en' => 'Beta Unit',
+            'occupancy_status' => 'occupied',
+            'valuation_amount' => 400000,
+        ]);
+        $inactiveRoot = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Closed Tower',
+            'rentable' => false,
+            'status' => 'inactive',
+        ]);
+        $foreignRoot = $this->createAsset($foreignPortfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Foreign Tower',
+            'rentable' => false,
+        ]);
+        $firstTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $secondTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $firstLease = $this->createLease(
+            $portfolio,
+            $firstTenant,
+            $firstUnit,
+            $owner,
+            ['ends_at' => now()->addDays(45)->toDateString()],
+            syncInstallments: false,
+        );
+        $secondLease = $this->createLease(
+            $portfolio,
+            $secondTenant,
+            $secondUnit,
+            $owner,
+            syncInstallments: false,
+        );
+        $firstInstallment = LeaseInstallment::query()->create([
+            'lease_id' => $firstLease->id,
+            'sequence' => 1,
+            'line_type' => 'rent',
+            'label' => 'Alpha rent',
+            'due_date' => now()->subDays(2)->toDateString(),
+            'amount_due' => 1000,
+            'amount_paid' => 650,
+            'status' => 'partial',
+        ]);
+        LeaseInstallment::query()->create([
+            'lease_id' => $secondLease->id,
+            'sequence' => 1,
+            'line_type' => 'rent',
+            'label' => 'Beta rent',
+            'due_date' => now()->subDays(2)->toDateString(),
+            'amount_due' => 9000,
+            'amount_paid' => 0,
+            'status' => 'overdue',
+        ]);
+        $firstPayment = $this->payment(
+            $portfolio,
+            $firstTenant,
+            $firstLease,
+            $owner,
+            'ALPHA-PAID',
+            'posted',
+            650,
+        );
+        $this->payment(
+            $portfolio,
+            $secondTenant,
+            $secondLease,
+            $owner,
+            'BETA-PAID',
+            'posted',
+            5000,
+        );
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $firstUnit->id,
+            'created_by_user_id' => $owner->id,
+            'category' => 'general',
+            'title' => 'Alpha service',
+            'incurred_on' => now()->toDateString(),
+            'amount' => 100,
+            'currency' => 'SAR',
+            'status' => 'posted',
+        ]);
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $secondUnit->id,
+            'created_by_user_id' => $owner->id,
+            'category' => 'general',
+            'title' => 'Beta service',
+            'incurred_on' => now()->toDateString(),
+            'amount' => 900,
+            'currency' => 'SAR',
+            'status' => 'posted',
+        ]);
+        $firstRequest = $this->maintenanceRequest(
+            $portfolio,
+            $firstUnit,
+            $firstTenant,
+            $owner,
+            'Alpha leak',
+        );
+        $this->maintenanceRequest(
+            $portfolio,
+            $secondUnit,
+            $secondTenant,
+            $owner,
+            'Beta leak',
+        );
+
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['property_id' => $firstRoot->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('propertyFocus.selected.id', $firstRoot->id)
+                ->has('propertyFocus.options', 2)
+                ->where('propertyFocus.options.0.id', $firstRoot->id)
+                ->where('propertyFocus.options.1.id', $secondRoot->id)
+                ->where('stats.totalAssets', 2)
+                ->where('stats.totalValue', fn (int|float $value): bool => (float) $value === 1200000.0)
+                ->where('stats.activeLeases', 1)
+                ->where('stats.monthlyRevenue', fn (int|float $value): bool => (float) $value === 650.0)
+                ->where('stats.monthlyExpenses', fn (int|float $value): bool => (float) $value === 100.0)
+                ->where('stats.openRequests', 1)
+                ->where('stats.arrears', fn (int|float $value): bool => (float) $value === 350.0)
+                ->where('financial.scheduledDue', fn (int|float $value): bool => (float) $value === 1000.0)
+                ->where('financial.scheduledPaid', fn (int|float $value): bool => (float) $value === 650.0)
+                ->where('financial.net', fn (int|float $value): bool => (float) $value === 550.0)
+                ->where('charts.occupancy.occupied', 1)
+                ->has('propertyPerformance', 1)
+                ->where('propertyPerformance.0.id', $firstRoot->id)
+                ->has('collectionQueue', 1)
+                ->where('collectionQueue.0.id', $firstInstallment->id)
+                ->has('expiringLeases', 1)
+                ->where('expiringLeases.0.id', $firstLease->id)
+                ->has('recentPayments', 1)
+                ->where('recentPayments.0.id', $firstPayment->id)
+                ->has('recentMaintenance', 1)
+                ->where('recentMaintenance.0.id', $firstRequest->id)
+                ->where('propertyMap.summary.total', 1)
+                ->where('propertyMap.assets.0.id', $firstRoot->id)
+                ->where(
+                    'nextActions.0.href',
+                    '/rent-collection?status=overdue&property_id='.$firstRoot->id,
+                )
+                ->where(
+                    'nextActions.1.href',
+                    '/maintenance-requests?status=open&property_id='.$firstRoot->id,
+                ));
+
+        $this->actingAs($owner)
+            ->get(route('dashboard', [
+                'property_id' => $secondRoot->id,
+                'locale' => 'ar',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('propertyFocus.selected.id', $secondRoot->id)
+                ->where('nextActions.2.href', '/assets/'.$secondRoot->id)
+                ->where(
+                    'nextActions.2.description',
+                    fn (string $value): bool => str_contains($value, 'أصلح')
+                        && ! str_contains($value, 'Fix'),
+                ));
+
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['property_id' => $firstUnit->id]))
+            ->assertNotFound();
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['property_id' => $foreignRoot->id]))
+            ->assertNotFound();
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['property_id' => $inactiveRoot->id]))
+            ->assertNotFound();
+        $this->actingAs($owner)
+            ->get('/dashboard?property_id=invalid')
+            ->assertRedirect()
+            ->assertSessionHasErrors('property_id');
+    }
+
     public function test_tenant_dashboard_excludes_unposted_payments_and_returns_arabic_document_titles(): void
     {
         $portfolio = $this->createPortfolio();
@@ -267,7 +484,29 @@ class DashboardModuleTest extends TestCase
                 ->where('tenantPortal.payments.0.id', $posted->id)
                 ->where('tenantPortal.documents.0.id', $document->id)
                 ->where('tenantPortal.documents.0.title_ar', 'عقد الإيجار')
+                ->missing('propertyFocus')
                 ->missing('tenantPortal.tenant'));
+    }
+
+    private function maintenanceRequest(
+        Portfolio $portfolio,
+        Asset $asset,
+        TenantProfile $tenant,
+        User $owner,
+        string $title,
+    ): MaintenanceRequest {
+        return MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $owner->id,
+            'category' => 'plumbing',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => $title,
+            'description' => 'Needs service',
+            'requested_at' => now(),
+        ]);
     }
 
     /** @return array{TenantProfile, Lease} */

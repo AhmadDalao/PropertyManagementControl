@@ -10,6 +10,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -18,13 +19,23 @@ class OperationsStatsQuery
     public function __construct(private readonly PortfolioScope $portfolios) {}
 
     /** @return array<string, int|float> */
-    public function forUser(User $user): array
+    public function forUser(User $user, DashboardPropertyContext $context): array
     {
-        $assets = $this->portfolios->apply(Asset::query(), $user);
-        $leases = $this->portfolios->apply(Lease::query(), $user);
-        $payments = $this->portfolios->apply(Payment::query(), $user);
-        $maintenance = $this->portfolios->apply(MaintenanceRequest::query(), $user);
-        $expenses = $this->portfolios->apply(ExpenseEntry::query(), $user);
+        $assets = $context->assets(
+            $this->portfolios->apply(Asset::query(), $user),
+        );
+        $leases = $context->leases(
+            $this->portfolios->apply(Lease::query(), $user),
+        );
+        $payments = $context->leaseRecords(
+            $this->portfolios->apply(Payment::query(), $user),
+        );
+        $maintenance = $context->assetRecords(
+            $this->portfolios->apply(MaintenanceRequest::query(), $user),
+        );
+        $expenses = $context->assetRecords(
+            $this->portfolios->apply(ExpenseEntry::query(), $user),
+        );
 
         return [
             'totalUsers' => $this->userCount($user),
@@ -39,7 +50,7 @@ class OperationsStatsQuery
             'openRequests' => (clone $maintenance)
                 ->whereIn('status', ['open', 'in_progress'])
                 ->count(),
-            'arrears' => $this->arrearsTotal($user),
+            'arrears' => $this->arrearsTotal($user, $context),
             'vacantUnits' => (clone $assets)
                 ->where('rentable', true)
                 ->where('occupancy_status', 'vacant')
@@ -64,10 +75,10 @@ class OperationsStatsQuery
             ->sum('amount');
     }
 
-    private function arrearsTotal(User $user): float
+    private function arrearsTotal(User $user, DashboardPropertyContext $context): float
     {
-        $leaseIds = $this->portfolios
-            ->apply(Lease::query(), $user)
+        $leaseIds = $context
+            ->leases($this->portfolios->apply(Lease::query(), $user))
             ->whereIn('status', ['active', 'expired'])
             ->select('id');
 

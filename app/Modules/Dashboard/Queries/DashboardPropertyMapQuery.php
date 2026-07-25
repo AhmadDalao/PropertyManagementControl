@@ -5,6 +5,7 @@ namespace App\Modules\Dashboard\Queries;
 use App\Models\Asset;
 use App\Models\User;
 use App\Modules\Assets\PropertyMapPresenter;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 
 class DashboardPropertyMapQuery
@@ -15,10 +16,12 @@ class DashboardPropertyMapQuery
     ) {}
 
     /** @return array<string, mixed> */
-    public function forUser(User $user): array
+    public function forUser(User $user, DashboardPropertyContext $context): array
     {
         return $this->propertyMap->forQuery(
-            $this->portfolios->apply(Asset::query(), $user),
+            $context->assets(
+                $this->portfolios->apply(Asset::query(), $user),
+            ),
         );
     }
 }

@@ -12,6 +12,7 @@ export function PropertyPerformanceGrid({
     props: OperationsDashboardProps;
 }) {
     const { locale, t } = useTranslator();
+    const selectedProperty = props.propertyFocus.selected;
 
     if (props.propertyPerformance.length === 0) {
         return null;
@@ -24,8 +25,12 @@ export function PropertyPerformanceGrid({
             title={t('dashboard.property_performance')}
             description={t('dashboard.property_performance_description')}
             action={{
-                label: t('dashboard.open_all_properties'),
-                href: '/assets',
+                label: selectedProperty
+                    ? t('dashboard.open_focused_property')
+                    : t('dashboard.open_all_properties'),
+                href: selectedProperty
+                    ? `/assets/${selectedProperty.id}`
+                    : '/assets',
             }}
         >
             <div className="pmc-property-performance-grid">

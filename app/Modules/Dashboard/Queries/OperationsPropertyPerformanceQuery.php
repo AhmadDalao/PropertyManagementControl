@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Assets\Support\AssetHierarchy;
 use App\Modules\Assets\Support\AssetRootMap;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Dashboard\Support\PropertyPerformanceScorer;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Support\Collection;
@@ -25,9 +26,10 @@ final readonly class OperationsPropertyPerformanceQuery
     ) {}
 
     /** @return array<int, array<string, mixed>> */
-    public function forUser(User $actor): array
+    public function forUser(User $actor, DashboardPropertyContext $context): array
     {
-        $assets = $this->portfolios->apply(Asset::query(), $actor)
+        $assets = $context
+            ->assets($this->portfolios->apply(Asset::query(), $actor))
             ->get([
                 'id', 'portfolio_id', 'parent_id', 'title_en', 'title_ar',
                 'code', 'rentable', 'occupancy_status', 'currency',
@@ -39,7 +41,7 @@ final readonly class OperationsPropertyPerformanceQuery
 
         $rootByAsset = $this->rootMap->build($assets);
         $rows = $this->initialRows($assets);
-        $leases = $this->leases($actor, $assets->pluck('id')->all());
+        $leases = $this->leases($actor, $context, $assets->pluck('id')->all());
         $rootByLease = [];
 
         foreach ($assets->where('rentable', true) as $asset) {
@@ -117,9 +119,10 @@ final readonly class OperationsPropertyPerformanceQuery
      * @param  array<int, int>  $assetIds
      * @return Collection<int, Lease>
      */
-    private function leases(User $actor, array $assetIds): Collection
+    private function leases(User $actor, DashboardPropertyContext $context, array $assetIds): Collection
     {
-        return $this->portfolios->apply(Lease::query(), $actor)
+        return $context
+            ->leases($this->portfolios->apply(Lease::query(), $actor))
             ->whereIn('leaseable_type', $this->hierarchy->leaseableTypes())
             ->whereIn('leaseable_id', $assetIds)
             ->get(['id', 'leaseable_id', 'status', 'ends_at']);

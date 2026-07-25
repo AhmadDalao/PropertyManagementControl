@@ -5,6 +5,7 @@ namespace App\Modules\Dashboard\Queries;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -18,9 +19,11 @@ class OperationsLeaseQuery
      *     arrearsLeases:array<int, array<string, mixed>>
      * }
      */
-    public function forUser(User $user): array
+    public function forUser(User $user, DashboardPropertyContext $context): array
     {
-        $leases = $this->portfolios->apply(Lease::query(), $user);
+        $leases = $context->leases(
+            $this->portfolios->apply(Lease::query(), $user),
+        );
 
         return [
             'expiringLeases' => $this->expiring($leases),

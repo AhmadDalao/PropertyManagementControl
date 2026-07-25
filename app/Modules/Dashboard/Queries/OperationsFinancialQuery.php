@@ -8,6 +8,7 @@ use App\Models\LeaseInstallment;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -16,10 +17,10 @@ final readonly class OperationsFinancialQuery
     public function __construct(private PortfolioScope $portfolios) {}
 
     /** @return array<string, float|string> */
-    public function forUser(User $actor): array
+    public function forUser(User $actor, DashboardPropertyContext $context): array
     {
-        $leaseIds = $this->portfolios
-            ->apply(Lease::query(), $actor)
+        $leaseIds = $context
+            ->leases($this->portfolios->apply(Lease::query(), $actor))
             ->whereIn('status', ['active', 'expired'])
             ->select('id');
         $installments = LeaseInstallment::query()
@@ -31,11 +32,15 @@ final readonly class OperationsFinancialQuery
         $scheduledDue = (float) (clone $installments)->sum('amount_due');
         $scheduledPaid = (float) (clone $installments)->sum('amount_paid');
         $revenue = $this->monthlyTotal(
-            $this->portfolios->apply(Payment::query(), $actor),
+            $context->leaseRecords(
+                $this->portfolios->apply(Payment::query(), $actor),
+            ),
             'received_on',
         );
         $expenses = $this->monthlyTotal(
-            $this->portfolios->apply(ExpenseEntry::query(), $actor),
+            $context->assetRecords(
+                $this->portfolios->apply(ExpenseEntry::query(), $actor),
+            ),
             'incurred_on',
         );
 

@@ -8,12 +8,14 @@ import {
 } from '@/lib/utils';
 
 import type { OperationsDashboardProps } from '../types';
+import { propertyFocusUrl } from './property-focus-url';
 
 export function portfolioMetrics(
     props: OperationsDashboardProps,
     locale: string,
     t: Translator,
 ): WorkspaceMetric[] {
+    const propertyId = props.propertyFocus.selected?.id;
     const occupied =
         Number(props.charts.occupancy.occupied ?? 0) +
         Number(props.charts.occupancy.partially_occupied ?? 0);
@@ -40,7 +42,10 @@ export function portfolioMetrics(
             }),
             icon: 'bi-calendar2-check',
             tone: 'ink',
-            href: '/rent-collection?status=actionable',
+            href: propertyFocusUrl(
+                '/rent-collection?status=actionable',
+                propertyId,
+            ),
         },
         {
             label: t('dashboard.collection_rate'),
@@ -54,7 +59,10 @@ export function portfolioMetrics(
             }),
             icon: 'bi-wallet2',
             tone: props.financial.collectionRate >= 80 ? 'teal' : 'amber',
-            href: '/rent-collection?status=overdue',
+            href: propertyFocusUrl(
+                '/rent-collection?status=overdue',
+                propertyId,
+            ),
         },
         {
             label: t('dashboard.net_cash_flow'),
@@ -77,7 +85,7 @@ export function portfolioMetrics(
             }),
             icon: 'bi-graph-up-arrow',
             tone: props.financial.net >= 0 ? 'blue' : 'red',
-            href: '/reports?tab=overview',
+            href: propertyFocusUrl('/reports?tab=overview', propertyId),
         },
         {
             label: t('dashboard.occupancy_rate'),
@@ -88,7 +96,7 @@ export function portfolioMetrics(
             }),
             icon: 'bi-building-check',
             tone: occupancyRate >= 70 ? 'teal' : 'amber',
-            href: '/assets?rentable=1',
+            href: propertyFocusUrl('/assets?rentable=1', propertyId),
         },
     ];
 }

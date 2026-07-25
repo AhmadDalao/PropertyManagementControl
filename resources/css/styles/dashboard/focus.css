@@ -1,0 +1,104 @@
+.pmc-dashboard-focus {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.8fr);
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #dedbd4;
+    border-radius: 0.9rem;
+    background: #fff;
+}
+
+.pmc-dashboard-focus > div:first-child {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-dashboard-focus > div:first-child span,
+.pmc-dashboard-focus-controls label {
+    color: #775800;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-dashboard-focus > div:first-child strong {
+    overflow: hidden;
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-dashboard-focus > div:first-child small {
+    color: #666469;
+    font-size: 0.75rem;
+}
+
+.pmc-dashboard-focus-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.4rem 0.65rem;
+}
+
+.pmc-dashboard-focus-controls label {
+    grid-column: 1 / -1;
+}
+
+.pmc-dashboard-focus-controls select {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0 2.4rem 0 0.8rem;
+    border: 1px solid #d8d5ce;
+    border-radius: 0.72rem;
+    background-color: #fbfaf7;
+    color: #111;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+[dir='rtl'] .pmc-dashboard-focus-controls select {
+    padding-right: 0.8rem;
+    padding-left: 2.4rem;
+}
+
+.pmc-dashboard-focus-controls > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.85rem;
+    border: 1px solid #d8d5ce;
+    border-radius: 0.72rem;
+    color: #111;
+    font-size: 0.73rem;
+    font-weight: 900;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-dashboard-focus {
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-dashboard-focus-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-dashboard-focus-controls > a,
+    .pmc-dashboard-focus-controls label {
+        grid-column: 1;
+    }
+
+    .pmc-dashboard-focus-controls > a {
+        justify-content: center;
+    }
+}

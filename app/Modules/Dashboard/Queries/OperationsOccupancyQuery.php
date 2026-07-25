@@ -4,6 +4,7 @@ namespace App\Modules\Dashboard\Queries;
 
 use App\Models\Asset;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 
 class OperationsOccupancyQuery
@@ -11,10 +12,10 @@ class OperationsOccupancyQuery
     public function __construct(private readonly PortfolioScope $portfolios) {}
 
     /** @return array<string, int> */
-    public function forUser(User $user): array
+    public function forUser(User $user, DashboardPropertyContext $context): array
     {
-        return $this->portfolios
-            ->apply(Asset::query(), $user)
+        return $context
+            ->assets($this->portfolios->apply(Asset::query(), $user))
             ->where('rentable', true)
             ->selectRaw('occupancy_status, COUNT(*) as total')
             ->groupBy('occupancy_status')

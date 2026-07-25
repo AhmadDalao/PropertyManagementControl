@@ -10,15 +10,19 @@ class DashboardActionPresenter
      * @param  array<string, mixed>  $mapSummary
      * @return array<int, array{label:string, description:string, href:string, icon:string}>
      */
-    public function operations(array $checklist, array $stats, array $mapSummary): array
-    {
+    public function operations(
+        array $checklist,
+        array $stats,
+        array $mapSummary,
+        ?int $propertyId = null,
+    ): array {
         $actions = [];
 
         if ((float) ($stats['arrears'] ?? 0) > 0) {
             $actions[] = $this->action(
                 'Collect outstanding rent',
                 'Open payment and arrears views before balances get stale.',
-                '/rent-collection?status=overdue',
+                $this->focused('/rent-collection?status=overdue', $propertyId),
                 'bi-cash-stack',
             );
         }
@@ -27,7 +31,7 @@ class DashboardActionPresenter
             $actions[] = $this->action(
                 'Triage maintenance backlog',
                 'Assign priority, publish tenant updates, and record service cost.',
-                '/maintenance-requests?status=open',
+                $this->focused('/maintenance-requests?status=open', $propertyId),
                 'bi-tools',
             );
         }
@@ -35,12 +39,11 @@ class DashboardActionPresenter
         if ((int) ($mapSummary['total'] ?? 0) > 0 && (float) ($mapSummary['coverage_percent'] ?? 100) < 100) {
             $actions[] = $this->action(
                 'Complete property map',
-                sprintf(
-                    'Fix %d missing positions and %d missing zone/land labels before relying on the owner map.',
-                    (int) ($mapSummary['needs_position'] ?? 0),
-                    (int) ($mapSummary['needs_identity'] ?? 0),
-                ),
-                '/property-map',
+                trans('app.dashboard.map_action_description', [
+                    'positions' => (int) ($mapSummary['needs_position'] ?? 0),
+                    'identities' => (int) ($mapSummary['needs_identity'] ?? 0),
+                ]),
+                $propertyId === null ? '/property-map' : '/assets/'.$propertyId,
                 'bi-map',
             );
         }
@@ -98,5 +101,14 @@ class DashboardActionPresenter
     private function action(string $label, string $description, string $href, string $icon): array
     {
         return compact('label', 'description', 'href', 'icon');
+    }
+
+    private function focused(string $href, ?int $propertyId): string
+    {
+        if ($propertyId === null) {
+            return $href;
+        }
+
+        return $href.(str_contains($href, '?') ? '&' : '?').'property_id='.$propertyId;
     }
 }

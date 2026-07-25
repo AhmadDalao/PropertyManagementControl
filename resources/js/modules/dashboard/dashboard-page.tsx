@@ -1,5 +1,7 @@
 import { usePage } from '@inertiajs/react';
 
+import '../../../css/styles/dashboard.css';
+
 import type { DashboardPageProps } from './types';
 import { OperationsDashboard } from './views/operations-dashboard';
 import { TenantDashboard } from './views/tenant-dashboard';

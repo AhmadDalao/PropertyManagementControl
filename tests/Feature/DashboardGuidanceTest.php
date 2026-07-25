@@ -152,6 +152,10 @@ class DashboardGuidanceTest extends TestCase
             'code' => 'UNMAPPED-OWNER',
             'rentable' => false,
         ]);
+        $expectedDescription = trans('app.dashboard.map_action_description', [
+            'positions' => 1,
+            'identities' => 1,
+        ]);
 
         $this->actingAs($owner)
             ->get(route('dashboard'))
@@ -160,8 +164,7 @@ class DashboardGuidanceTest extends TestCase
                 ->component('dashboard')
                 ->where('nextActions', fn ($actions) => collect($actions)->contains(fn ($action) => $action['label'] === 'Complete property map'
                     && $action['href'] === '/property-map'
-                    && str_contains($action['description'], 'missing positions')
-                    && str_contains($action['description'], 'missing zone/land labels')))
+                    && $action['description'] === $expectedDescription))
                 ->where('propertyMap.summary.coverage_percent', fn (int|float $value) => (float) $value === 0.0)
                 ->where('propertyMap.assets.0.code', 'UNMAPPED-OWNER')
                 ->where('propertyMap.assets.0.href', route('assets.show', $asset))

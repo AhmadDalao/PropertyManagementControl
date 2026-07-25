@@ -3,6 +3,7 @@
 namespace App\Modules\Dashboard\Presenters;
 
 use App\Models\User;
+use App\Modules\Dashboard\Queries\DashboardPropertyContextQuery;
 use App\Modules\Dashboard\Queries\DashboardPropertyMapQuery;
 use App\Modules\Dashboard\Queries\LaunchReadinessSummaryQuery;
 use App\Modules\Dashboard\Queries\OperationsActivityQuery;
@@ -17,6 +18,7 @@ use App\Modules\Dashboard\Queries\PlatformStatusQuery;
 class OperationsDashboardPresenter
 {
     public function __construct(
+        private readonly DashboardPropertyContextQuery $propertyContext,
         private readonly OperationsStatsQuery $stats,
         private readonly OperationsOccupancyQuery $occupancy,
         private readonly OperationsLeaseQuery $leases,
@@ -32,24 +34,31 @@ class OperationsDashboardPresenter
     ) {}
 
     /** @return array<string, mixed> */
-    public function present(User $user): array
+    public function present(User $user, ?int $propertyId = null): array
     {
-        $stats = $this->stats->forUser($user);
+        $context = $this->propertyContext->forUser($user, $propertyId);
+        $stats = $this->stats->forUser($user, $context);
         $checklist = $this->checklist->present($user, $stats);
-        $propertyMap = $this->propertyMap->forUser($user);
+        $propertyMap = $this->propertyMap->forUser($user, $context);
 
         return [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
+            'propertyFocus' => $context->payload(),
             'stats' => $stats,
-            'financial' => $this->financial->forUser($user),
-            'nextActions' => $this->actions->operations($checklist, $stats, $propertyMap['summary']),
-            'charts' => ['occupancy' => $this->occupancy->forUser($user)],
+            'financial' => $this->financial->forUser($user, $context),
+            'nextActions' => $this->actions->operations(
+                $checklist,
+                $stats,
+                $propertyMap['summary'],
+                $context->selected['id'] ?? null,
+            ),
+            'charts' => ['occupancy' => $this->occupancy->forUser($user, $context)],
             'setupChecklist' => $checklist,
             'propertyMap' => $propertyMap,
-            'propertyPerformance' => $this->properties->forUser($user),
-            'collectionQueue' => $this->collections->forUser($user),
-            ...$this->leases->forUser($user),
-            ...$this->activity->forUser($user),
+            'propertyPerformance' => $this->properties->forUser($user, $context),
+            'collectionQueue' => $this->collections->forUser($user, $context),
+            ...$this->leases->forUser($user, $context),
+            ...$this->activity->forUser($user, $context),
             'cmsStatus' => $this->platformStatus->forUser($user),
             'readinessStatus' => $this->launchReadiness->forUser($user),
         ];

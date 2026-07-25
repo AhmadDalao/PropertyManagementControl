@@ -5,6 +5,7 @@ import { currency, humanDate, localizedNumber } from '@/lib/utils';
 import { HealthSignals } from '../shared/health-signals';
 import { DashboardRecordList } from '../shared/record-list';
 import type { OperationsDashboardProps } from '../types';
+import { propertyFocusUrl } from './property-focus-url';
 
 export function OperationsInsightPanels({
     props,
@@ -12,6 +13,7 @@ export function OperationsInsightPanels({
     props: OperationsDashboardProps;
 }) {
     const { locale, t, text } = useTranslator();
+    const propertyId = props.propertyFocus.selected?.id;
     const completedSetup = props.setupChecklist.filter(
         (item) => item.done,
     ).length;
@@ -51,12 +53,14 @@ export function OperationsInsightPanels({
                         {
                             label: t('dashboard.occupancy_rate'),
                             value: occupancyRate,
-                            href: '/assets',
+                            href: propertyFocusUrl('/assets', propertyId),
                         },
                         {
                             label: t('dashboard.map_coverage'),
                             value: props.propertyMap.summary.coverage_percent,
-                            href: '/property-map',
+                            href: propertyId
+                                ? `/assets/${propertyId}?tab=overview`
+                                : '/property-map',
                         },
                     ]}
                 />
@@ -68,7 +72,10 @@ export function OperationsInsightPanels({
                 description={t('dashboard.lease_expiry_description')}
                 action={{
                     label: t('dashboard.open_expiry_report'),
-                    href: '/lease-renewals?queue=all',
+                    href: propertyFocusUrl(
+                        '/lease-renewals?queue=all',
+                        propertyId,
+                    ),
                 }}
             >
                 <DashboardRecordList
@@ -97,7 +104,7 @@ export function OperationsInsightPanels({
                 description={t('dashboard.recent_payments_description')}
                 action={{
                     label: t('actions.view_all'),
-                    href: '/payments',
+                    href: propertyFocusUrl('/payments', propertyId),
                 }}
             >
                 <DashboardRecordList

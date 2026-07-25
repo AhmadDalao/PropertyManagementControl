@@ -10,6 +10,7 @@ import { OperationsInsightPanels } from '../operations/operations-insight-panels
 import { OperationsMetrics } from '../operations/operations-metrics';
 import { OperationsPriorityPanels } from '../operations/operations-priority-panels';
 import { PlatformStatusPanel } from '../operations/platform-status-panel';
+import { PropertyFocus } from '../operations/property-focus';
 import { PropertyPerformanceGrid } from '../operations/property-performance-grid';
 import type { OperationsDashboardProps } from '../types';
 
@@ -24,6 +25,7 @@ export function OperationsDashboard({
         <AdminLayout>
             <Head title={text('Dashboard')} />
             <OperationsHeader mode={props.mode} />
+            <PropertyFocus focus={props.propertyFocus} />
             <OperationsMetrics props={props} />
             <OperationsActionQueue actions={props.nextActions} />
             {props.mode === 'superadmin' && props.readinessStatus ? (

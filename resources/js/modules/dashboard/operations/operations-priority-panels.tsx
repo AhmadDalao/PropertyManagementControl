@@ -4,6 +4,7 @@ import { currency, humanDate, localizedNumber } from '@/lib/utils';
 
 import { DashboardRecordList } from '../shared/record-list';
 import type { OperationsDashboardProps } from '../types';
+import { propertyFocusUrl } from './property-focus-url';
 
 export function OperationsPriorityPanels({
     props,
@@ -11,6 +12,7 @@ export function OperationsPriorityPanels({
     props: OperationsDashboardProps;
 }) {
     const { locale, t, text } = useTranslator();
+    const propertyId = props.propertyFocus.selected?.id;
 
     return (
         <div className="pmc-command-grid">
@@ -20,7 +22,10 @@ export function OperationsPriorityPanels({
                 description={t('dashboard.collection_queue_description')}
                 action={{
                     label: t('dashboard.open_collections'),
-                    href: '/rent-collection?status=actionable',
+                    href: propertyFocusUrl(
+                        '/rent-collection?status=actionable',
+                        propertyId,
+                    ),
                 }}
             >
                 <DashboardRecordList
@@ -47,7 +52,10 @@ export function OperationsPriorityPanels({
                 description={t('dashboard.maintenance_queue_description')}
                 action={{
                     label: t('dashboard.open_queue'),
-                    href: '/maintenance-requests?status=open',
+                    href: propertyFocusUrl(
+                        '/maintenance-requests?status=open',
+                        propertyId,
+                    ),
                 }}
             >
                 <DashboardRecordList

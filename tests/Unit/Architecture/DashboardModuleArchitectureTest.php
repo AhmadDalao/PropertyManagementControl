@@ -29,6 +29,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'Presenters/SetupChecklistPresenter.php',
             'Presenters/TenantDashboardPresenter.php',
             'Queries/DashboardPropertyMapQuery.php',
+            'Queries/DashboardPropertyContextQuery.php',
             'Queries/LaunchReadinessSummaryQuery.php',
             'Queries/OperationsActivityQuery.php',
             'Queries/OperationsCollectionQuery.php',
@@ -38,6 +39,8 @@ class DashboardModuleArchitectureTest extends TestCase
             'Queries/OperationsStatsQuery.php',
             'Queries/PlatformStatusQuery.php',
             'Queries/TenantDashboardQuery.php',
+            'Requests/DashboardIndexRequest.php',
+            'Support/DashboardPropertyContext.php',
         ] as $file) {
             $path = "app/Modules/Dashboard/{$file}";
             $source = $this->source($path);
@@ -90,8 +93,11 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/platform-status-panel.tsx',
             'operations/platform-metrics.ts',
             'operations/portfolio-metrics.ts',
+            'operations/property-focus-url.ts',
+            'operations/property-focus.tsx',
             'operations/property-performance-grid.tsx',
             'operations-types.ts',
+            'shared-types.ts',
             'shared/health-signals.tsx',
             'shared/record-list.tsx',
             'tenant/tenant-header.tsx',
@@ -99,6 +105,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'tenant/tenant-maintenance-panel.tsx',
             'tenant/tenant-metrics.tsx',
             'tenant/tenant-payment-history.tsx',
+            'tenant-types.ts',
             'types.ts',
         ] as $file) {
             $path = "resources/js/modules/dashboard/{$file}";
@@ -115,9 +122,26 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(10, substr_count($stylesheet, "\n") + 1);
         $this->assertStringContainsString('./dashboard/metrics.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/actions.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/focus.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/panels.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
+
+        $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');
+        $appStyles = $this->source('resources/css/app.css');
+
+        $this->assertStringContainsString(
+            "import '../../../css/styles/dashboard.css';",
+            $entry,
+        );
+        $this->assertStringNotContainsString(
+            "@import './styles/dashboard.css';",
+            $appStyles,
+        );
+        $this->assertLessThanOrEqual(
+            180,
+            substr_count($this->source('resources/css/styles/dashboard/focus.css'), "\n") + 1,
+        );
     }
 
     private function source(string $relativePath): string

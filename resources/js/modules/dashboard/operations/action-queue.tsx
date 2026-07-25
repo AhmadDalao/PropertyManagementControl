@@ -46,7 +46,7 @@ function actionDescription(
     t: ReturnType<typeof useTranslator>['t'],
     translate: (value: string) => string,
 ): string {
-    if (action.href !== '/property-map') {
+    if (action.label !== 'Complete property map') {
         return translate(action.description);
     }
 

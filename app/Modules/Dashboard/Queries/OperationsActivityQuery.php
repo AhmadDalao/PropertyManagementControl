@@ -5,6 +5,7 @@ namespace App\Modules\Dashboard\Queries;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Shared\PortfolioScope;
 
 class OperationsActivityQuery
@@ -17,9 +18,10 @@ class OperationsActivityQuery
      *     recentMaintenance:array<int, array<string, mixed>>
      * }
      */
-    public function forUser(User $user): array
+    public function forUser(User $user, DashboardPropertyContext $context): array
     {
-        $payments = $this->portfolios->apply(Payment::query(), $user)
+        $payments = $context
+            ->leaseRecords($this->portfolios->apply(Payment::query(), $user))
             ->with('tenantProfile.user')
             ->where('status', 'posted')
             ->latest('received_on')
@@ -35,7 +37,8 @@ class OperationsActivityQuery
                 ],
             ])
             ->all();
-        $maintenance = $this->portfolios->apply(MaintenanceRequest::query(), $user)
+        $maintenance = $context
+            ->assetRecords($this->portfolios->apply(MaintenanceRequest::query(), $user))
             ->with('asset')
             ->whereIn('status', ['open', 'in_progress'])
             ->latest()

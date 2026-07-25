@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Modules\Dashboard\DashboardPresenter;
-use Illuminate\Http\Request;
+use App\Modules\Dashboard\Requests\DashboardIndexRequest;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request, DashboardPresenter $dashboard): Response
+    public function index(DashboardIndexRequest $request, DashboardPresenter $dashboard): Response
     {
         return Inertia::render(
             'dashboard',
-            $dashboard->forUser($this->actor($request)),
+            $dashboard->forUser($this->actor($request), $request->propertyId()),
         );
     }
 }

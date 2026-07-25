@@ -3,18 +3,21 @@ import type { Translator } from '@/lib/i18n';
 import { compactCurrency, currency, localizedNumber } from '@/lib/utils';
 
 import type { OperationsDashboardProps } from '../types';
+import { propertyFocusUrl } from './property-focus-url';
 
 export function platformMetrics(
     props: OperationsDashboardProps,
     locale: string,
     t: Translator,
 ): WorkspaceMetric[] {
+    const propertyId = props.propertyFocus.selected?.id;
+
     return [
         {
             label: t('dashboard.managed_assets'),
             value: localizedNumber(props.stats.totalAssets, locale),
             detail:
-                props.mode === 'superadmin'
+                props.mode === 'superadmin' && !propertyId
                     ? t('dashboard.portfolios_users', undefined, {
                           portfolios: localizedNumber(
                               props.stats.totalPortfolios,
@@ -33,7 +36,7 @@ export function platformMetrics(
                       }),
             icon: 'bi-buildings',
             tone: 'ink',
-            href: '/assets',
+            href: propertyFocusUrl('/assets', propertyId),
         },
         {
             label: t('dashboard.portfolio_value'),
@@ -43,7 +46,7 @@ export function platformMetrics(
             }),
             icon: 'bi-bank',
             tone: 'blue',
-            href: '/assets',
+            href: propertyFocusUrl('/assets', propertyId),
         },
         {
             label: t('dashboard.collected_this_month'),
@@ -53,7 +56,7 @@ export function platformMetrics(
             }),
             icon: 'bi-cash-stack',
             tone: 'teal',
-            href: '/payments',
+            href: propertyFocusUrl('/payments', propertyId),
         },
         {
             label: t('dashboard.outstanding_rent'),
@@ -63,7 +66,10 @@ export function platformMetrics(
             }),
             icon: 'bi-exclamation-circle',
             tone: props.stats.arrears > 0 ? 'red' : 'amber',
-            href: '/rent-collection?status=overdue',
+            href: propertyFocusUrl(
+                '/rent-collection?status=overdue',
+                propertyId,
+            ),
         },
     ];
 }
