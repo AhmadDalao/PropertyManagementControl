@@ -92,7 +92,7 @@ export function BuildingSetupForm({
 
                 <div className="pmc-building-setup-actions">
                     <Link href={payload.backHref} className="btn btn-light">
-                        {t('common.cancel')}
+                        {t('actions.cancel')}
                     </Link>
                     <button
                         className="btn btn-primary"

@@ -309,6 +309,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('Unit 101 - Unit 105', { exact: true }),
         ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'Cancel', exact: true }),
+        ).toBeVisible();
         await expectMinimumTouchHeight(
             page,
             '.pmc-building-setup-actions .btn',
@@ -325,7 +328,11 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('إرسال واحد وهيكل مكتمل', { exact: true }),
         ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'إلغاء', exact: true }),
+        ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('assets.builder.');
+        await expect(page.locator('body')).not.toContainText('common.cancel');
         await expectNoHorizontalOverflow(page);
     });
 
