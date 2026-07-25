@@ -45,6 +45,7 @@ final class PaymentDetailOverviewPresenter
         return [[
             'title' => trans('app.payments.payment_record'),
             'description' => trans('app.payments.payment_record_help'),
+            'tab' => 'overview',
             'items' => $this->resources->detailItems([
                 [
                     'label' => trans('app.payments.tenant'),

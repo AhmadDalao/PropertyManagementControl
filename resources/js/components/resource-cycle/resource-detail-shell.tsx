@@ -229,12 +229,5 @@ function buildAvailableTabs({
 }
 
 function isFinancialSection(section: DetailSection): boolean {
-    return (
-        section.tab === 'financial' ||
-        (section.tab === undefined &&
-            financialSectionPattern.test(section.title))
-    );
+    return section.tab === 'financial';
 }
-
-const financialSectionPattern =
-    /finance|financial|payment|rent|balance|contract|lease|expense|valuation|allocation|installment|deposit/i;

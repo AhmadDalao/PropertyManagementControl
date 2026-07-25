@@ -935,6 +935,12 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('غير الموزع', { exact: true }).first(),
         ).toBeVisible();
+        await expect(
+            page.getByRole('option', { name: 'البيانات المالية' }),
+        ).toHaveCount(0);
+        await expect(
+            page.getByText('سجل الدفعة', { exact: true }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/payments/create?locale=ar');

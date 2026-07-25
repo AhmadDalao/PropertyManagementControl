@@ -91,6 +91,11 @@ class SharedFrontendArchitectureTest extends TestCase
 
         $this->assertStringNotContainsString('HistoryTimeline', $form);
         $this->assertStringNotContainsString('useForm', $detail);
+        $this->assertStringNotContainsString(
+            'financialSectionPattern',
+            $detail,
+            'Detail tabs must use explicit section metadata, not translated titles.',
+        );
     }
 
     #[Test]

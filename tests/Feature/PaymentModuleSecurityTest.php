@@ -303,6 +303,7 @@ class PaymentModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.1.label', 'Review payment')
                 ->where('detailPage.header.actions.1.href', route('payments.edit', $payment))
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.sections.0.tab', 'overview')
                 ->has('detailPage.documents', 0));
     }
 
@@ -548,6 +549,7 @@ class PaymentModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.1.label', 'مراجعة الدفعة')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'سجل الدفعة')
+                ->where('detailPage.sections.0.tab', 'overview')
                 ->where('detailPage.related.0.title', 'التوزيعات'));
     }
 
