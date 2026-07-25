@@ -31,11 +31,9 @@ export function OperationsPriorityPanels({
                 <DashboardRecordList
                     empty={t('dashboard.no_collection_work')}
                     rows={props.collectionQueue.slice(0, 5).map((item) => ({
-                        href: item.lease_id
-                            ? `/payments/create?lease_id=${item.lease_id}`
-                            : '/payments/create',
+                        href: `/rent-collection/${item.id}/follow-up`,
                         title: `${item.tenant ?? text('No tenant')} · ${item.lease_code ?? ''}`,
-                        meta: `${(locale === 'ar' ? item.asset_ar || item.asset_en : item.asset_en || item.asset_ar) ?? text('No asset')} · ${humanDate(item.due_date, props.app.locale)}${item.days_overdue > 0 ? ` · ${t('dashboard.days_overdue', undefined, { count: localizedNumber(item.days_overdue, locale) })}` : ''}`,
+                        meta: `${(locale === 'ar' ? item.asset_ar || item.asset_en : item.asset_en || item.asset_ar) ?? text('No asset')} · ${humanDate(item.due_date, props.app.locale)}${item.days_overdue > 0 ? ` · ${t('dashboard.days_overdue', undefined, { count: localizedNumber(item.days_overdue, locale) })}` : ''} · ${t(`rent_collection.follow_up_state_${item.follow_up_state}`)}`,
                         value: currency(
                             item.outstanding_amount,
                             props.app.locale,

@@ -6,6 +6,7 @@ use App\Models\Portfolio;
 use App\Models\ShowcaseDataset;
 use App\Models\User;
 use App\Modules\ShowcaseData\Generators\ShowcaseBuildingBuilder;
+use App\Modules\ShowcaseData\Generators\ShowcaseCollectionFollowUpBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseDocumentBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseExpenseBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseLeaseBuilder;
@@ -25,6 +26,7 @@ class BuildShowcaseProperty
         private readonly ShowcaseUnitBuilder $units,
         private readonly ShowcaseLeaseBuilder $leases,
         private readonly ShowcasePaymentBuilder $payments,
+        private readonly ShowcaseCollectionFollowUpBuilder $collectionFollowUps,
         private readonly ShowcaseMaintenanceBuilder $maintenance,
         private readonly ShowcaseExpenseBuilder $expenses,
         private readonly ShowcaseDocumentBuilder $documents,
@@ -52,6 +54,13 @@ class BuildShowcaseProperty
             $units = $this->units->build($dataset, $portfolio, $building, $buildingIndex);
             $leases = $this->leases->build($dataset, $portfolio, $manager, $units, $buildingIndex);
             $this->payments->build($dataset, $portfolio, $manager, $leases, $buildingIndex);
+            $this->collectionFollowUps->build(
+                $dataset,
+                $portfolio,
+                $manager,
+                array_column($leases, 'lease'),
+                $buildingIndex,
+            );
             $maintenance = $this->maintenance->build($portfolio, $manager, $leases, $buildingIndex);
             $this->expenses->build($portfolio, $manager, $building, $maintenance, $buildingIndex);
             $this->documents->build($dataset, $portfolio, $manager, $leases);

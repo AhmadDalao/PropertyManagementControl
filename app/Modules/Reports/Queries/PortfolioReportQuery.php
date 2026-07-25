@@ -22,6 +22,7 @@ final readonly class PortfolioReportQuery
         private ReportPaymentRowsPresenter $paymentRows,
         private ReportExpenseRowsPresenter $expenseRows,
         private ReportMaintenanceRowsPresenter $maintenanceRows,
+        private ReportCollectionControlQuery $collectionControl,
     ) {}
 
     /**
@@ -36,10 +37,14 @@ final readonly class PortfolioReportQuery
             ->whereIn('status', ['open', 'in_progress'])
             ->sortByDesc('created_at')
             ->values();
+        $summary = $this->summary->present($data, $leaseSnapshot, $maintenanceBacklog);
 
         return [
             'mode' => $actor->hasRole('superadmin') ? 'superadmin' : 'portfolio',
-            'summary' => $this->summary->present($data, $leaseSnapshot, $maintenanceBacklog),
+            'summary' => [
+                ...$summary,
+                ...$this->collectionControl->handle($actor, $filters),
+            ],
             'charts' => $this->charts->present($data),
             'arrearsLeases' => $this->leaseRows->present($leaseSnapshot),
             ...$this->paymentRows->present($data),

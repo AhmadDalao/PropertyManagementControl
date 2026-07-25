@@ -38,6 +38,10 @@ export type CollectionQueueItem = {
     outstanding_amount: number;
     days_overdue: number;
     currency: string;
+    follow_up_state: 'untracked' | 'due' | 'promised' | 'broken' | 'scheduled';
+    next_follow_up_on?: string | null;
+    promised_on?: string | null;
+    assigned_to?: string | null;
 };
 
 export type PropertyPerformance = {

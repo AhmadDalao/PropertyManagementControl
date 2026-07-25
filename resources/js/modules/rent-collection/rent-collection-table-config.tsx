@@ -46,6 +46,34 @@ export function useRentCollectionTableConfig(locale: string): {
                 <span>{t('rent_collection.post_payment')}</span>
             </Link>
         ) : null;
+    const manageFollowUp = (installment: RentCollectionRecord) => (
+        <Link
+            href={`/rent-collection/${installment.id}/follow-up`}
+            className="btn btn-primary btn-sm"
+        >
+            <i className="bi bi-telephone-forward" />
+            <span>{t('rent_collection.manage_follow_up')}</span>
+        </Link>
+    );
+    const followUp = (installment: RentCollectionRecord) => (
+        <div className="pmc-badge-stack">
+            <StatusBadge
+                value={installment.follow_up.state}
+                label={t(
+                    `rent_collection.follow_up_state_${installment.follow_up.state}` as UiTranslationKey,
+                )}
+                tone={followUpTone(installment.follow_up.state)}
+            />
+            <span>{followUpTiming(installment, t, locale)}</span>
+            {installment.follow_up.assigned_to ? (
+                <span>
+                    {t('rent_collection.assigned_person', undefined, {
+                        name: installment.follow_up.assigned_to.name,
+                    })}
+                </span>
+            ) : null}
+        </div>
+    );
     const actions = (installment: RentCollectionRecord) => (
         <RecordActions
             showHref={
@@ -54,6 +82,7 @@ export function useRentCollectionTableConfig(locale: string): {
                     : '/leases'
             }
         >
+            {manageFollowUp(installment)}
             {postPayment(installment)}
         </RecordActions>
     );
@@ -135,6 +164,11 @@ export function useRentCollectionTableConfig(locale: string): {
             ),
         },
         {
+            key: 'follow_up',
+            label: t('rent_collection.follow_up_status'),
+            render: followUp,
+        },
+        {
             key: 'actions',
             label: t('rent_collection.actions'),
             className: 'text-end',
@@ -147,14 +181,7 @@ export function useRentCollectionTableConfig(locale: string): {
         mobileCard: {
             title: (installment) => installment.label,
             subtitle: tenantLease,
-            status: (installment) => (
-                <StatusBadge
-                    value={installment.status}
-                    label={t(
-                        `rent_collection.status_${installment.status}` as UiTranslationKey,
-                    )}
-                />
-            ),
+            status: followUp,
             meta: [
                 {
                     label: t('rent_collection.property_asset'),
@@ -175,9 +202,68 @@ export function useRentCollectionTableConfig(locale: string): {
                         ),
                 },
             ],
-            actions: (installment) => postPayment(installment),
+            actions: (installment) => (
+                <>
+                    {manageFollowUp(installment)}
+                    {postPayment(installment)}
+                </>
+            ),
         },
     };
+}
+
+function followUpTiming(
+    installment: RentCollectionRecord,
+    t: ReturnType<typeof useTranslator>['t'],
+    locale: string,
+): string {
+    const followUp = installment.follow_up;
+
+    if (followUp.state === 'untracked') {
+        return t('rent_collection.follow_up_not_started');
+    }
+
+    if (followUp.state === 'broken' && followUp.promised_on) {
+        return t('rent_collection.promise_missed_on', undefined, {
+            date: humanDate(followUp.promised_on, locale),
+        });
+    }
+
+    if (followUp.state === 'promised' && followUp.promised_on) {
+        return t('rent_collection.promise_due_on', undefined, {
+            date: humanDate(followUp.promised_on, locale),
+        });
+    }
+
+    if (followUp.next_follow_up_on) {
+        return t('rent_collection.follow_up_on', undefined, {
+            date: humanDate(followUp.next_follow_up_on, locale),
+        });
+    }
+
+    return t('rent_collection.follow_up_complete');
+}
+
+function followUpTone(
+    state: RentCollectionRecord['follow_up']['state'],
+): 'success' | 'warning' | 'danger' | 'neutral' | 'blue' {
+    if (state === 'settled') {
+        return 'success';
+    }
+
+    if (state === 'broken' || state === 'due') {
+        return 'danger';
+    }
+
+    if (state === 'promised') {
+        return 'blue';
+    }
+
+    if (state === 'untracked') {
+        return 'warning';
+    }
+
+    return 'neutral';
 }
 
 function localizedRecord(

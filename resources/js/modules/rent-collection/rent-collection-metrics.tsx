@@ -59,6 +59,30 @@ export function RentCollectionMetrics({
                     href: '/rent-collection?status=overdue',
                 },
                 {
+                    label: t('rent_collection.follow_ups_due'),
+                    value: localizedNumber(
+                        collectionInsights.follow_up_due_count,
+                        app.locale,
+                    ),
+                    detail: t('rent_collection.follow_up_health', undefined, {
+                        broken: localizedNumber(
+                            collectionInsights.broken_promises_count,
+                            app.locale,
+                        ),
+                        untracked: localizedNumber(
+                            collectionInsights.untracked_overdue_count,
+                            app.locale,
+                        ),
+                    }),
+                    icon: 'bi-telephone-forward',
+                    tone:
+                        collectionInsights.follow_up_due_count > 0 ||
+                        collectionInsights.broken_promises_count > 0
+                            ? 'red'
+                            : 'teal',
+                    href: '/rent-collection?status=open&follow_up=due',
+                },
+                {
                     label: t('rent_collection.due_next_30'),
                     value: money(collectionInsights.due_next_30_amount),
                     detail: t('rent_collection.prepare_collection'),

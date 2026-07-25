@@ -1,0 +1,43 @@
+.pmc-collection-form-panel > form {
+    display: grid;
+    min-width: 0;
+    gap: 0.8rem;
+}
+
+.pmc-collection-form-panel .pmc-resource-field {
+    min-width: 0;
+}
+
+.pmc-collection-form-panel .form-control,
+.pmc-collection-form-panel .form-select {
+    min-height: 2.85rem;
+    border-radius: 0.68rem;
+}
+
+.pmc-collection-form-panel textarea.form-control {
+    min-height: 7.5rem;
+    resize: vertical;
+}
+
+.pmc-collection-form-panel .pmc-form-error-summary,
+.pmc-collection-form-panel .is-wide,
+.pmc-collection-form-actions {
+    grid-column: 1 / -1;
+}
+
+.pmc-collection-form-actions {
+    position: sticky;
+    z-index: 5;
+    bottom: 0.75rem;
+    display: grid;
+    padding-top: 0.2rem;
+}
+
+.pmc-collection-form-actions .btn {
+    display: inline-flex;
+    min-height: 2.9rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-weight: 900;
+}

@@ -7,6 +7,7 @@ use App\Models\AssetStakeholder;
 use App\Models\CmsPage;
 use App\Models\CmsPageSection;
 use App\Models\CmsSection;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\LabelOverride;
@@ -62,6 +63,7 @@ class AppServiceProvider extends ServiceProvider
             'lease' => Lease::class,
             'lease_installment' => LeaseInstallment::class,
             'lease_move_out' => LeaseMoveOut::class,
+            'collection_follow_up' => CollectionFollowUp::class,
             'payment' => Payment::class,
             'payment_allocation' => PaymentAllocation::class,
             'tenant_profile' => TenantProfile::class,

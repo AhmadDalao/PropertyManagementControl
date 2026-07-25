@@ -6,6 +6,7 @@ import type { PropertyOption } from '@/types';
 type RentCollectionFilterOptions = {
     statuses: string[];
     lineTypes: string[];
+    followUps: string[];
     portfolios: Array<{ id: number; name: string }>;
     properties: PropertyOption[];
     includePortfolio: boolean;
@@ -15,6 +16,7 @@ export function rentCollectionFilterFields(
     {
         statuses,
         lineTypes,
+        followUps,
         portfolios,
         properties,
         includePortfolio,
@@ -35,6 +37,22 @@ export function rentCollectionFilterFields(
                         `rent_collection.status_${status}` as UiTranslationKey,
                     ),
                     value: status,
+                })),
+            ],
+        },
+        {
+            name: 'follow_up',
+            label: t('rent_collection.follow_up_status'),
+            options: [
+                {
+                    label: t('rent_collection.follow_up_state_all'),
+                    value: 'all',
+                },
+                ...followUps.map((state) => ({
+                    label: t(
+                        `rent_collection.follow_up_state_${state}` as UiTranslationKey,
+                    ),
+                    value: state,
                 })),
             ],
         },

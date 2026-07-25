@@ -97,6 +97,10 @@ export type ReportsPageProps = SharedProps & {
         leasesInArrears: number;
         openRequests: number;
         resolvedRequests: number;
+        openCollectionCount: number;
+        untrackedOverdueCount: number;
+        followUpDueCount: number;
+        brokenPromisesCount: number;
     };
     charts: {
         revenueByMonth: Record<string, number>;

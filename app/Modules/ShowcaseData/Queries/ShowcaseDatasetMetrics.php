@@ -3,6 +3,7 @@
 namespace App\Modules\ShowcaseData\Queries;
 
 use App\Models\Asset;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
@@ -38,6 +39,7 @@ class ShowcaseDatasetMetrics
             'tenants' => TenantProfile::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'leases' => $leaseIds->count(),
             'installments' => LeaseInstallment::query()->whereIn('lease_id', $leaseIds)->count(),
+            'collection_follow_ups' => CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count(),
             'payments' => Payment::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'maintenance' => MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'expenses' => ExpenseEntry::query()->whereIn('portfolio_id', $portfolioIds)->count(),

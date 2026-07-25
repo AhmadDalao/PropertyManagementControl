@@ -4,10 +4,13 @@ namespace App\Modules\RentCollection\Queries;
 
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
+use App\Modules\RentCollection\Support\CollectionFollowUpQueryState;
 use Illuminate\Database\Eloquent\Builder;
 
-final class RentCollectionInsightsQuery
+final readonly class RentCollectionInsightsQuery
 {
+    public function __construct(private CollectionFollowUpQueryState $followUpStates) {}
+
     /**
      * @param  Builder<LeaseInstallment>  $query
      * @return array<string, int|float|string|bool|null>
@@ -26,6 +29,19 @@ final class RentCollectionInsightsQuery
         ]);
         $scheduledThisMonth = (float) (clone $thisMonth)->sum('amount_due');
         $paidThisMonth = (float) (clone $thisMonth)->sum('amount_paid');
+        $untrackedOverdue = (clone $overdue)->whereDoesntHave('collectionFollowUps');
+        $followUpDue = (clone $open)->whereHas(
+            'latestCollectionFollowUp',
+            fn (Builder $followUps) => $followUps
+                ->whereDate('next_follow_up_on', '<=', today()),
+        )->whereDoesntHave(
+            'latestCollectionFollowUp',
+            fn (Builder $followUps) => $this->followUpStates->broken($followUps),
+        );
+        $brokenPromises = (clone $open)->whereHas(
+            'latestCollectionFollowUp',
+            fn (Builder $followUps) => $this->followUpStates->broken($followUps),
+        );
         $currencies = Lease::query()
             ->whereIn('id', (clone $query)->select('lease_id'))
             ->distinct()
@@ -44,6 +60,9 @@ final class RentCollectionInsightsQuery
             'collection_rate' => $scheduledThisMonth > 0
                 ? round(min(100, ($paidThisMonth / $scheduledThisMonth) * 100), 1)
                 : 0.0,
+            'untracked_overdue_count' => $untrackedOverdue->count(),
+            'follow_up_due_count' => $followUpDue->count(),
+            'broken_promises_count' => $brokenPromises->count(),
             'currency' => $currencies->count() === 1 ? (string) $currencies->first() : 'SAR',
             'mixed_currencies' => $currencies->count() > 1,
         ];

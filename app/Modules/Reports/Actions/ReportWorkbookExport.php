@@ -54,7 +54,7 @@ class ReportWorkbookExport
         foreach ($report['summary'] as $metric => $value) {
             $rows[] = [
                 $this->copy('Summary'),
-                $this->copy(str($metric)->snake(' ')->title()->toString()),
+                $this->metric((string) $metric),
                 $value,
             ];
         }
@@ -112,6 +112,15 @@ class ReportWorkbookExport
     private function copy(string $value): string
     {
         return $this->translations->text($value);
+    }
+
+    private function metric(string $metric): string
+    {
+        $key = "app.reports.metric_{$metric}";
+
+        return trans()->has($key)
+            ? trans($key)
+            : $this->copy(str($metric)->snake(' ')->title()->toString());
     }
 
     private function option(string $value): string

@@ -8,6 +8,8 @@ use App\Models\LeaseInstallment;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\RentCollection\Support\CollectionFollowUpOptions;
+use App\Modules\RentCollection\Support\CollectionFollowUpQueryState;
 use App\Modules\RentCollection\Support\RentCollectionAccess;
 use App\Modules\RentCollection\Support\RentCollectionOptions;
 use App\Modules\Shared\Authorization\AssignedPropertyScope;
@@ -23,6 +25,7 @@ final readonly class RentCollectionDirectoryQuery
         private PropertyScope $properties,
         private TableQuery $tables,
         private AssignedPropertyScope $assignments,
+        private CollectionFollowUpQueryState $followUpStates,
     ) {}
 
     /** @return array<string, mixed> */
@@ -31,6 +34,7 @@ final readonly class RentCollectionDirectoryQuery
         $filters = $this->tables->filters($request, [
             'status' => 'actionable',
             'line_type' => 'all',
+            'follow_up' => 'all',
             'date_from' => '',
             'date_to' => '',
             'property_id' => 'all',
@@ -44,6 +48,10 @@ final readonly class RentCollectionDirectoryQuery
 
         if (! in_array($filters['line_type'], ['all', ...RentCollectionOptions::LINE_TYPES], true)) {
             $filters['line_type'] = 'all';
+        }
+
+        if (! in_array($filters['follow_up'], ['all', ...CollectionFollowUpOptions::STATES], true)) {
+            $filters['follow_up'] = 'all';
         }
 
         foreach (['date_from', 'date_to'] as $field) {
@@ -103,7 +111,10 @@ final readonly class RentCollectionDirectoryQuery
                 'lease.tenantProfile:id,user_id',
                 'lease.tenantProfile.user:id,name,email,phone',
                 'lease.leaseable',
-            ]);
+                'latestCollectionFollowUp.assignedTo:id,name',
+                'latestCollectionFollowUp.recordedBy:id,name',
+            ])
+            ->withCount('collectionFollowUps');
     }
 
     /**
@@ -114,6 +125,7 @@ final readonly class RentCollectionDirectoryQuery
     {
         $this->applyScope($query, $filters, $actor);
         $this->applyStatus($query, (string) $filters['status']);
+        $this->applyFollowUpState($query, (string) $filters['follow_up']);
         $this->tables->exact($query, $filters, 'line_type');
         $this->tables->dateRange($query, $filters, 'due_date');
         $this->tables->search($query, (string) $filters['search'], [
@@ -129,6 +141,15 @@ final readonly class RentCollectionDirectoryQuery
                     ->where('name', 'like', $like)
                     ->orWhere('email', 'like', $like)
                     ->orWhere('phone', 'like', $like),
+            ),
+            fn (Builder $installments, string $search, string $like) => $installments->orWhereHas(
+                'collectionFollowUps',
+                fn (Builder $followUps) => $followUps
+                    ->where('note', 'like', $like)
+                    ->orWhereHas(
+                        'assignedTo',
+                        fn (Builder $users) => $users->where('name', 'like', $like),
+                    ),
             ),
             fn (Builder $installments, string $search, string $like) => $installments->orWhereHas(
                 'lease',
@@ -191,6 +212,56 @@ final readonly class RentCollectionDirectoryQuery
                 ->where('amount_paid', '>', 0)
                 ->whereColumn('amount_paid', '<', 'amount_due'),
             'paid' => $query->whereColumn('amount_paid', '>=', 'amount_due'),
+            default => null,
+        };
+    }
+
+    /** @param Builder<LeaseInstallment> $query */
+    public function applyFollowUpState(Builder $query, string $state): void
+    {
+        if ($state === 'all') {
+            return;
+        }
+
+        $query->whereColumn('amount_paid', '<', 'amount_due');
+
+        match ($state) {
+            'untracked' => $query->whereDoesntHave('collectionFollowUps'),
+            'broken' => $query->whereHas(
+                'latestCollectionFollowUp',
+                fn (Builder $followUps) => $this->followUpStates->broken($followUps),
+            ),
+            'due' => $query
+                ->whereHas(
+                    'latestCollectionFollowUp',
+                    fn (Builder $followUps) => $followUps
+                        ->whereDate('next_follow_up_on', '<=', today()),
+                )
+                ->whereDoesntHave(
+                    'latestCollectionFollowUp',
+                    fn (Builder $followUps) => $this->followUpStates->broken($followUps),
+                ),
+            'promised' => $query->whereHas(
+                'latestCollectionFollowUp',
+                fn (Builder $followUps) => $this->followUpStates->unfulfilled(
+                    $followUps
+                        ->where('outcome', 'promise_to_pay')
+                        ->whereDate('promised_on', '>=', today()),
+                ),
+            ),
+            'scheduled' => $query->whereHas(
+                'latestCollectionFollowUp',
+                fn (Builder $followUps) => $followUps
+                    ->whereDate('next_follow_up_on', '>', today())
+                    ->where(function (Builder $states): void {
+                        $states
+                            ->where('outcome', '!=', 'promise_to_pay')
+                            ->orWhere(function (Builder $promise): void {
+                                $promise->where('outcome', 'promise_to_pay');
+                                $this->followUpStates->fulfilled($promise);
+                            });
+                    }),
+            ),
             default => null,
         };
     }

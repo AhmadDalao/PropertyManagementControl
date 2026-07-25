@@ -14,6 +14,7 @@ type RentCollectionTableProps = Pick<
     | 'propertyOptions'
     | 'statusOptions'
     | 'lineTypeOptions'
+    | 'followUpOptions'
     | 'auth'
     | 'app'
 >;
@@ -25,6 +26,7 @@ export function RentCollectionTable(props: RentCollectionTableProps) {
         {
             statuses: props.statusOptions,
             lineTypes: props.lineTypeOptions,
+            followUps: props.followUpOptions,
             portfolios: props.portfolioOptions,
             properties: props.propertyOptions,
             includePortfolio:
@@ -42,9 +44,7 @@ export function RentCollectionTable(props: RentCollectionTableProps) {
             counts={props.counts}
             basePath="/rent-collection"
             rowHref={(installment) =>
-                installment.lease
-                    ? `/leases/${installment.lease.id}`
-                    : '/leases'
+                `/rent-collection/${installment.id}/follow-up`
             }
             exportHref={exportUrl('/exports/rent-collection', props.filters)}
             filterFields={filters}

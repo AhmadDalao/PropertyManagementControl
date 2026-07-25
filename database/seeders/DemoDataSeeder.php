@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Asset;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
@@ -266,6 +267,29 @@ class DemoDataSeeder extends Seeder
 
         $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-001", now()->startOfMonth()->subMonths(2), (float) $activeLease->rent_amount + (float) $activeLease->deposit_amount, 'First rent and deposit.');
         $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-002", now()->startOfMonth()->subMonth(), (float) $activeLease->rent_amount, 'Second month rent.');
+        $overdueInstallment = $activeLease->installments()
+            ->whereColumn('amount_paid', '<', 'amount_due')
+            ->whereDate('due_date', '<', today())
+            ->orderBy('due_date')
+            ->first();
+
+        if ($overdueInstallment) {
+            CollectionFollowUp::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'lease_id' => $activeLease->id,
+                'lease_installment_id' => $overdueInstallment->id,
+                'recorded_by_user_id' => $manager->id,
+                'assigned_to_user_id' => $manager->id,
+                'contact_method' => 'phone',
+                'outcome' => 'promise_to_pay',
+                'contacted_at' => now()->subDays(4),
+                'outstanding_amount_at_contact' => $overdueInstallment->remaining_amount,
+                'promised_amount' => $overdueInstallment->remaining_amount,
+                'promised_on' => today()->subDay(),
+                'next_follow_up_on' => today(),
+                'note' => 'Tenant promised payment after salary deposit; follow-up is now due.',
+            ]);
+        }
 
         $expiredLease = $this->lease($portfolio, $tenant, $unitB, $manager, [
             'code' => "{$prefix}-LEASE-OLD",

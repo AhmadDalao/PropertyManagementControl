@@ -1,0 +1,82 @@
+.pmc-collection-summary,
+.pmc-collection-follow-up-workspace,
+.pmc-collection-form-panel,
+.pmc-collection-history {
+    min-width: 0;
+}
+
+.pmc-collection-follow-up-workspace {
+    display: grid;
+    align-items: start;
+    gap: 1rem;
+}
+
+.pmc-collection-form-panel,
+.pmc-collection-history,
+.pmc-collection-closed {
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+}
+
+.pmc-collection-form-panel > header,
+.pmc-collection-history > header {
+    margin-bottom: 1rem;
+}
+
+.pmc-collection-form-panel > header > span,
+.pmc-collection-history > header span {
+    color: #856a00;
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-collection-form-panel h2,
+.pmc-collection-history h2 {
+    margin: 0.18rem 0 0;
+    color: #111;
+    font-size: 1.05rem;
+    font-weight: 950;
+    letter-spacing: -0.025em;
+}
+
+.pmc-collection-form-panel header p,
+.pmc-collection-history header p {
+    margin: 0.35rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    line-height: 1.55;
+}
+
+.pmc-collection-closed {
+    display: grid;
+    justify-items: center;
+    gap: 0.35rem;
+    padding-block: 2rem;
+    text-align: center;
+}
+
+.pmc-collection-closed > i {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    place-items: center;
+    border-radius: 999px;
+    background: #fff3bd;
+    color: #745d00;
+    font-size: 1.15rem;
+}
+
+.pmc-collection-closed strong {
+    font-size: 0.82rem;
+}
+
+.pmc-collection-closed p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.5;
+}

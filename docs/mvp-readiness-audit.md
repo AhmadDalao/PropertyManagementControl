@@ -13,6 +13,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Tenants see only their own lease, posted payments, public PDF documents, contract balance/days remaining, and maintenance requests.
 - Active or expired leases can create one linked renewal draft. Renewal dates, source lineage, status, and occupancy activation are guarded at the action layer.
 - Active or expired leases use a controlled move-out plan instead of direct termination. The handover requires returned keys, a deposit decision, termination and inspection PDFs, and a reached move-out date; completion snapshots remaining debt, releases occupancy, and remains visible in lease history.
+- Owners and managers have a durable collection-control cycle for every open installment: assign the account, record each contact, capture promises, schedule the next action, identify missed promises, and keep the history visible from the collection queue, lease, dashboard, reports, and XLSX export.
 - Lease, payment, maintenance, and expense details expose a role-aware Next Step panel instead of hiding lifecycle actions across edit forms and index menus.
 - Public pages, authentication, admin, forms, tables, reports, documentation, CMS, map, validation, and statuses support English and Arabic with RTL rendering.
 
@@ -20,7 +21,7 @@ The product is an operational MVP release candidate. It does not need another br
 
 - Playwright and axe cover 44 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
-- The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 330 maintenance requests, 250 expenses, 972 documents, and 15,282 audit events.
+- The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
 - The main CSS bundle is 318.37 KB before gzip, below the 325 KB release ceiling. Map and other heavy route styles/scripts remain lazy chunks.
 - The Playwright PHP server now runs with a 1 GB test memory limit; the previous 128 MB long-suite process accumulated memory and died during the repeated route sweep.

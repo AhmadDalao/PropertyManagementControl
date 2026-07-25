@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\Lease;
 use App\Models\LeaseMoveOut;
@@ -35,6 +36,7 @@ class DemoDataSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(2, TenantProfile::query()->count());
         $this->assertGreaterThanOrEqual(4, Lease::query()->count());
         $this->assertGreaterThanOrEqual(2, LeaseMoveOut::query()->count());
+        $this->assertGreaterThanOrEqual(2, CollectionFollowUp::query()->count());
         $this->assertGreaterThanOrEqual(4, Payment::query()->count());
         $this->assertGreaterThanOrEqual(4, MaintenanceRequest::query()->count());
         $this->assertGreaterThanOrEqual(4, Document::query()->count());

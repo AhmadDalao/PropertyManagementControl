@@ -4,6 +4,7 @@ namespace App\Modules\Audit\Support;
 
 use App\Models\Asset;
 use App\Models\AssetStakeholder;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\LabelOverride;
@@ -65,6 +66,7 @@ class AuditPortfolioScope
             $this->orSubjectIds($query, 'lease', clone $portfolioLeases);
             $this->orSubjectIds($query, 'lease_installment', LeaseInstallment::query()->whereIn('lease_id', clone $portfolioLeases)->select('id'));
             $this->orSubjectIds($query, 'lease_move_out', LeaseMoveOut::query()->whereIn('lease_id', clone $portfolioLeases)->select('id'));
+            $this->orSubjectIds($query, 'collection_follow_up', CollectionFollowUp::query()->whereIn('lease_id', clone $portfolioLeases)->select('id'));
             $this->orSubjectIds($query, 'payment', clone $portfolioPayments);
             $this->orSubjectIds($query, 'payment_allocation', PaymentAllocation::query()->whereIn('payment_id', clone $portfolioPayments)->select('id'));
             $this->orSubjectIds($query, 'maintenance_request', clone $portfolioMaintenance);
@@ -132,6 +134,11 @@ class AuditPortfolioScope
                 $query,
                 'lease_move_out',
                 LeaseMoveOut::query()->whereIn('lease_id', clone $leases)->select('id'),
+            );
+            $this->orSubjectIds(
+                $query,
+                'collection_follow_up',
+                CollectionFollowUp::query()->whereIn('lease_id', clone $leases)->select('id'),
             );
             $this->orSubjectIds($query, 'payment', clone $payments);
             $this->orSubjectIds(

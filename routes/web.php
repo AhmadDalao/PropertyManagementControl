@@ -104,6 +104,12 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::get('/rent-collection', [RentCollectionController::class, 'index'])
         ->name('rent-collection.index')
         ->middleware('portfolio.module:payments');
+    Route::get('/rent-collection/{leaseInstallment}/follow-up', [RentCollectionController::class, 'followUp'])
+        ->name('rent-collection.follow-up')
+        ->middleware('portfolio.module:payments');
+    Route::post('/rent-collection/{leaseInstallment}/follow-ups', [RentCollectionController::class, 'storeFollowUp'])
+        ->name('rent-collection.follow-ups.store')
+        ->middleware('portfolio.module:payments');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
 

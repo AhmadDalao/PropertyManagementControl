@@ -26,6 +26,7 @@ class ShowcaseTargets
             'tenants' => 480,
             'leases' => 480,
             'installments' => 5760,
+            'collection_follow_ups' => 120,
             'payments' => 1600,
             'maintenance' => 320,
             'expenses' => 240,

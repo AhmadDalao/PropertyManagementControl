@@ -122,6 +122,9 @@
 .bi-cash-stack::before {
     content: '\f246';
 }
+.bi-chat-left-text::before {
+    content: '\f252';
+}
 .bi-check-circle::before {
     content: '\f26b';
 }
@@ -178,6 +181,9 @@
 }
 .bi-download::before {
     content: '\f30a';
+}
+.bi-envelope::before {
+    content: '\f32f';
 }
 .bi-exclamation-circle::before {
     content: '\f333';
@@ -359,6 +365,12 @@
 .bi-stars::before {
     content: '\f589';
 }
+.bi-telephone-forward::before {
+    content: '\f5b6';
+}
+.bi-telephone::before {
+    content: '\f5c1';
+}
 .bi-three-dots::before {
     content: '\f5d4';
 }
@@ -382,6 +394,9 @@
 }
 .bi-wallet2::before {
     content: '\f615';
+}
+.bi-whatsapp::before {
+    content: '\f618';
 }
 .bi-window-fullscreen::before {
     content: '\f6cf';

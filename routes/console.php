@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Modules\Leases\LeaseLifecycle;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
+use App\Modules\ShowcaseData\Actions\BackfillShowcaseCollectionFollowUps;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseMoveOuts;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
@@ -164,6 +165,13 @@ Artisan::command('property:backfill-showcase-move-outs', function (BackfillShowc
 
     return 0;
 })->purpose('Idempotently add one move-out example per tagged showcase property.');
+
+Artisan::command('property:backfill-showcase-collection-follow-ups', function (BackfillShowcaseCollectionFollowUps $backfill) {
+    $count = $backfill->handle();
+    $this->info("Prepared {$count} tagged showcase collection follow-ups.");
+
+    return 0;
+})->purpose('Idempotently add collection follow-up examples to tagged showcase arrears.');
 
 Artisan::command('property:sync-operational-statuses', function (LeaseLifecycle $lifecycle) {
     $result = $lifecycle->synchronize();

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\AssetPropertyContext;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\RentCollection\Presenters\RentCollectionRowPresenter;
+use App\Modules\RentCollection\Support\CollectionFollowUpOptions;
 use App\Modules\RentCollection\Support\RentCollectionOptions;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
@@ -63,6 +64,7 @@ final readonly class RentCollectionIndexQuery
             'propertyOptions' => $this->properties->options($actor),
             'statusOptions' => RentCollectionOptions::STATUSES,
             'lineTypeOptions' => RentCollectionOptions::LINE_TYPES,
+            'followUpOptions' => CollectionFollowUpOptions::STATES,
         ];
     }
 

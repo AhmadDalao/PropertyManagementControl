@@ -52,6 +52,7 @@ class LeaseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Leases/Presenters/LeaseMoveInProgressPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseRenewalFormPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseTableRowPresenter.php'),
+            $this->path('app/Modules/Leases/Presenters/LeaseTimelinePresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseWorkflowPresenter.php'),
             $this->path('app/Modules/Leases/Queries/LeaseDetailQuery.php'),
             $this->path('app/Modules/Leases/Queries/LeaseDirectoryQuery.php'),

@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read Model|null $leaseable
  * @property-read Collection<int, LeaseInstallment> $installments
  * @property-read Collection<int, Payment> $payments
+ * @property-read Collection<int, CollectionFollowUp> $collectionFollowUps
  * @property-read Collection<int, Document> $documents
  * @property CarbonInterface|null $started_at
  * @property CarbonInterface|null $ends_at
@@ -109,6 +110,12 @@ class Lease extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    /** @return HasMany<CollectionFollowUp, $this> */
+    public function collectionFollowUps(): HasMany
+    {
+        return $this->hasMany(CollectionFollowUp::class);
     }
 
     /** @return MorphMany<Document, $this> */

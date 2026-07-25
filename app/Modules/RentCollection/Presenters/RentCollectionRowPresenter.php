@@ -8,7 +8,10 @@ use App\Modules\Leases\Presenters\LeaseInstallmentLabelPresenter;
 
 final readonly class RentCollectionRowPresenter
 {
-    public function __construct(private LeaseInstallmentLabelPresenter $labels) {}
+    public function __construct(
+        private LeaseInstallmentLabelPresenter $labels,
+        private CollectionFollowUpPresenter $followUps,
+    ) {}
 
     /** @return array<string, mixed> */
     public function present(LeaseInstallment $installment, ?Asset $property): array
@@ -36,6 +39,7 @@ final readonly class RentCollectionRowPresenter
             'days_until_due' => $days !== null && $days > 0 ? $days : 0,
             'currency' => $lease?->currency ?: 'SAR',
             'is_showcase' => $lease?->getIsShowcaseAttribute() ?? false,
+            'follow_up' => $this->followUps->latest($installment),
             'lease' => $lease ? [
                 'id' => $lease->id,
                 'code' => $lease->code,

@@ -40,6 +40,11 @@ final class LeaseDetailQuery
             ->latest('id')
             ->limit(self::PAYMENT_LIMIT)
             ->get());
+        $lease->setRelation('collectionFollowUps', $lease->collectionFollowUps()
+            ->latest('contacted_at')
+            ->latest('id')
+            ->limit(8)
+            ->get());
         $this->access->ensureCanAccess($actor, $lease);
 
         return new LeaseDetailData(

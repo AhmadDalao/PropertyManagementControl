@@ -1,4 +1,4 @@
-import { WorkspacePanel } from '@/components/operations';
+import { MetricGrid, WorkspacePanel } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate, localizedNumber } from '@/lib/utils';
 
@@ -10,6 +10,64 @@ export function ReportCollections({ props }: { props: ReportsPageProps }) {
 
     return (
         <>
+            <MetricGrid
+                metrics={[
+                    {
+                        label: t('reports.open_collection_accounts'),
+                        value: localizedNumber(
+                            props.summary.openCollectionCount,
+                            locale,
+                        ),
+                        detail: t('reports.open_collection_accounts_help'),
+                        icon: 'bi-wallet2',
+                        tone: 'ink',
+                        href: collectionHref(props, 'open'),
+                    },
+                    {
+                        label: t('reports.untracked_overdue_accounts'),
+                        value: localizedNumber(
+                            props.summary.untrackedOverdueCount,
+                            locale,
+                        ),
+                        detail: t('reports.untracked_overdue_accounts_help'),
+                        icon: 'bi-telephone-forward',
+                        tone:
+                            props.summary.untrackedOverdueCount > 0
+                                ? 'amber'
+                                : 'teal',
+                        href: collectionHref(props, 'overdue', 'untracked'),
+                    },
+                    {
+                        label: t('reports.follow_ups_due'),
+                        value: localizedNumber(
+                            props.summary.followUpDueCount,
+                            locale,
+                        ),
+                        detail: t('reports.follow_ups_due_help'),
+                        icon: 'bi-calendar-check',
+                        tone:
+                            props.summary.followUpDueCount > 0
+                                ? 'amber'
+                                : 'teal',
+                        href: collectionHref(props, 'open', 'due'),
+                    },
+                    {
+                        label: t('reports.broken_promises'),
+                        value: localizedNumber(
+                            props.summary.brokenPromisesCount,
+                            locale,
+                        ),
+                        detail: t('reports.broken_promises_help'),
+                        icon: 'bi-exclamation-circle',
+                        tone:
+                            props.summary.brokenPromisesCount > 0
+                                ? 'red'
+                                : 'teal',
+                        href: collectionHref(props, 'open', 'broken'),
+                    },
+                ]}
+            />
+
             <div className="pmc-report-breakdown-grid is-single">
                 <WorkspacePanel
                     eyebrow={t('reports.revenue_eyebrow')}
@@ -76,4 +134,26 @@ export function ReportCollections({ props }: { props: ReportsPageProps }) {
             </div>
         </>
     );
+}
+
+function collectionHref(
+    props: ReportsPageProps,
+    status: string,
+    followUp?: string,
+): string {
+    const query = new URLSearchParams({ status });
+
+    if (followUp) {
+        query.set('follow_up', followUp);
+    }
+
+    if (props.filters.portfolio_id) {
+        query.set('portfolio_id', String(props.filters.portfolio_id));
+    }
+
+    if (props.filters.property_id) {
+        query.set('property_id', String(props.filters.property_id));
+    }
+
+    return `/rent-collection?${query.toString()}`;
 }

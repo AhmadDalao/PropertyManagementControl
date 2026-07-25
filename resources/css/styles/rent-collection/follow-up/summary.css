@@ -1,0 +1,101 @@
+.pmc-collection-summary {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+}
+
+.pmc-collection-state {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    justify-items: start;
+    gap: 0.65rem;
+    padding: 1rem;
+    border-radius: 0.9rem;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-collection-state > span:first-child {
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-collection-state > strong {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: clamp(1.55rem, 7vw, 2.3rem);
+    font-weight: 950;
+    letter-spacing: -0.055em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-collection-state > small {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.73rem;
+    line-height: 1.55;
+}
+
+.pmc-collection-state .pmc-table-showcase-badge {
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.pmc-collection-summary > dl {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: 0;
+    margin: 0;
+}
+
+.pmc-collection-summary > dl > div {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.2rem;
+    padding: 0.8rem;
+    border-bottom: 1px solid #efede9;
+}
+
+.pmc-collection-summary dt {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.045em;
+    text-transform: uppercase;
+}
+
+.pmc-collection-summary dd {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: #111;
+    font-size: 0.82rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-collection-summary dd a {
+    color: inherit;
+}
+
+.pmc-collection-summary dl small {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -115,6 +115,12 @@ class User extends Authenticatable
         return $this->hasMany(Payment::class, 'recorded_by_user_id');
     }
 
+    /** @return HasMany<CollectionFollowUp, $this> */
+    public function assignedCollectionFollowUps(): HasMany
+    {
+        return $this->hasMany(CollectionFollowUp::class, 'assigned_to_user_id');
+    }
+
     /** @return HasMany<MaintenanceRequest, $this> */
     public function submittedMaintenanceRequests(): HasMany
     {

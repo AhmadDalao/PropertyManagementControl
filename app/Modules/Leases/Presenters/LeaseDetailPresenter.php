@@ -5,7 +5,6 @@ namespace App\Modules\Leases\Presenters;
 use App\Models\Lease;
 use App\Models\User;
 use App\Modules\LeaseMoveOuts\Presenters\LeaseMoveOutProgressPresenter;
-use App\Modules\Leases\Data\LeaseDetailData;
 use App\Modules\Leases\Queries\LeaseDetailQuery;
 use App\Modules\Leases\Support\LeaseOptions;
 use App\Modules\Shared\ResourcePresenter;
@@ -20,6 +19,7 @@ final class LeaseDetailPresenter
         private readonly LeaseMoveOutProgressPresenter $moveOutProgress,
         private readonly LeaseDetailOverviewPresenter $overview,
         private readonly LeaseRelatedPresenter $related,
+        private readonly LeaseTimelinePresenter $timeline,
         private readonly ResourcePresenter $resources,
     ) {}
 
@@ -42,26 +42,7 @@ final class LeaseDetailPresenter
             'sections' => $this->overview->sections($data),
             'related' => $this->related->present($data),
             'documents' => $this->resources->documentStrip($documents),
-            'timeline' => $data->adminMode ? $this->timeline($data) : [],
+            'timeline' => $data->adminMode ? $this->timeline->present($data) : [],
         ];
-    }
-
-    /** @return array<int, array<string, mixed>> */
-    private function timeline(LeaseDetailData $data): array
-    {
-        $items = $this->resources->activityTimeline($data->lease);
-
-        if ($data->lease->moveOut) {
-            $items = [
-                ...$items,
-                ...$this->resources->activityTimeline($data->lease->moveOut),
-            ];
-        }
-
-        return collect($items)
-            ->sortByDesc('created_at')
-            ->take(8)
-            ->values()
-            ->all();
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
+use App\Models\CollectionFollowUp;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
@@ -50,6 +51,7 @@ class ShowcaseDatasetTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/showcase-data/index')
                 ->where('targets.buildings', 40)
+                ->where('targets.collection_follow_ups', 120)
                 ->where('targets.documents', 960)
                 ->where('canGenerate', true)
                 ->has('datasets.data'));
@@ -204,6 +206,7 @@ class ShowcaseDatasetTest extends TestCase
         $terminated = Lease::query()->whereIn('id', $leaseIds)->where('status', 'terminated')->firstOrFail();
         $this->assertTrue($terminated->ends_at->isAfter($terminated->started_at));
         $this->assertSame(5760, LeaseInstallment::query()->whereIn('lease_id', $leaseIds)->count());
+        $this->assertSame(120, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(320, MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(240, ExpenseEntry::query()->whereIn('portfolio_id', $portfolioIds)->count());
@@ -217,6 +220,7 @@ class ShowcaseDatasetTest extends TestCase
         $builder->handle($dataset->id, 0);
         $this->assertSame(840, Asset::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(480, Lease::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(120, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
 
         Queue::fake();
@@ -262,6 +266,7 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame('purged', $dataset->status);
         $this->assertSame(0, Portfolio::query()->where('showcase_dataset_id', $dataset->id)->count());
         $this->assertSame(0, User::query()->where('showcase_dataset_id', $dataset->id)->count());
+        $this->assertSame(0, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(0, LeaseMoveOut::query()->whereIn('lease_id', $leaseIds)->count());
         Storage::disk('local')->assertMissing("showcase/{$dataset->key}");
     }
