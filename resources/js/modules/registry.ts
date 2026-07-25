@@ -143,6 +143,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin'],
             },
             {
+                labelKey: 'nav.system_readiness',
+                href: '/system/readiness',
+                icon: 'bi-shield-check',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.media',
                 href: '/media-files',
                 icon: 'bi-images',

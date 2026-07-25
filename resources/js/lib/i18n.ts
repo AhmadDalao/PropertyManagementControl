@@ -33,6 +33,7 @@ export type UiTranslationKey =
     | `public.${string}`
     | `reports.${string}`
     | `rent_collection.${string}`
+    | `readiness.${string}`
     | `resource.${string}`
     | `roles.${string}`
     | `search.${string}`

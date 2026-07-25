@@ -251,6 +251,8 @@ $authChecks = [
     '/wording' => 'admin/wording/index',
     '/system/showcase-data' => 'admin/showcase-data/index',
     '/system/showcase-data?locale=ar' => 'admin/showcase-data/index',
+    '/system/readiness' => 'admin/system-readiness/index',
+    '/system/readiness?locale=ar' => 'admin/system-readiness/index',
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',

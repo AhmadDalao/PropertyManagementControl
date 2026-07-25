@@ -1,6 +1,6 @@
 # Property Control System Status
 
-Updated: July 24, 2026
+Updated: July 25, 2026
 
 ## Current position
 
@@ -8,7 +8,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Working product scope
 
-- Superadmin can manage platform users, portfolios, assets, CMS content, wording, showcase data, reports, media, and audit history.
+- Superadmin can manage platform users, portfolios, assets, CMS content, wording, showcase data, launch readiness, reports, media, and audit history.
 - Owners and property managers can manage their scoped assets, tenants, leases, manual payments, maintenance, expenses, documents, and reports.
 - Tenants can see their active rental, contract period, paid and remaining amounts, PDF documents, payment history, and maintenance requests.
 - Assets support property, building, floor, unit, and space hierarchies with ownership, management, valuation, occupancy, and map coordinates.
@@ -16,15 +16,16 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Contracts, statements, and receipts are private PDF documents with bilingual Arabic shaping. Reports export as real `.xlsx` workbooks.
 - English and Arabic administration, public content, RTL layout, editable wording, localized map data, and CMS content are supported.
 - Resource indexes use server pagination, scoped search and filters, desktop tables, compact mobile cards, exports, and detail pages.
+- Launch readiness is measured in `/system/readiness`: automatic environment, scheduler, queue, storage, and private-document checks are combined with auditable evidence for SMTP delivery, backups, restore drills, legal approval, opening data, billing rules, retention, and role pilots.
 
 ## UI and quality status
 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, removes the closed drawer from keyboard navigation, restores focus, and keeps the topbar at 64px. Desktop collapse preference persists, while resize recovery clears stale drawer state.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 411 PHP tests with 18,758 assertions and 37 Playwright/axe scenarios pass.
+- Automated status: 435 PHP tests with 21,255 assertions and 40 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
-- The main CSS bundle is 320.69 KB before gzip. Its former 736-line component, 626-line table, and 542-line workspace stylesheets are thin facades over bounded layers. Property Map, Showcase Data, Documentation, Page Wording, Profile, and Media styles remain route-loaded as separate 26.09 KB, 10.63 KB, 11.17 KB, 8.90 KB, 5.77 KB, and 3.22 KB chunks.
+- The main CSS bundle is 323.76 KB before gzip. Its former 736-line component, 626-line table, and 542-line workspace stylesheets are thin facades over bounded layers. Property Map, Showcase Data, Documentation, Page Wording, Profile, Media, and Launch Readiness styles remain route-loaded as separate 26.09 KB, 10.63 KB, 11.17 KB, 8.90 KB, 5.77 KB, 3.22 KB, and 8.94 KB chunks.
 - PHPStan has 15 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Public Site, Media, Report, Audit, Search, Export, Wording, Dashboard, Documentation, Authentication, Localization, and shared-module extractions add zero findings in their touched slices.
 - Assets are the first complete vertical feature module: its controller is now a thin 94-line adapter and its React index is a 42-line composer.
 - Maintenance is the second complete vertical feature module: its controller is a 106-line adapter; action, form, index, and detail facades are 32, 25, 72, and 33 lines; and its React index/table composers are 51 and 39 lines. Scoped directories and exports share filters, KPI totals use SQL aggregates, writes use transactions and row locks, forms/details are fully EN/AR, and tenant responses omit internal notes, expenses, update threads on indexes, and audit history at the server boundary.
@@ -51,6 +52,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - Every Bootstrap Icon referenced by React or Blade must now exist in the local optimized subset. Architecture and browser tests prevent blank menu, form, CMS, or Data Lab controls from returning.
 - Documentation is modular. Its controller is a 33-line adapter over focused access, configuration, localization, scoping, and presentation services; its former 332-line index and 138-line guide page are one-line route adapters over focused frontend modules. Role and disabled-module policies now remove inaccessible guides, shortcuts, workflow steps, and direct routes; EN/AR search, guide navigation, route-loaded CSS, accessibility, and zero overflow are regression-tested.
 - Showcase Data is modular. The former 902-line service is replaced by focused lifecycle actions, idempotent generators, target/location support, metrics queries, and a safe page presenter; its controller is a 59-line adapter and its React entry is a 46-line composer. Its module-owned access policy protects page reads and direct lifecycle action calls, generation start is locked, progress/failure/purge transitions use row locks, completed retries cannot become stuck, dataset history is paginated, and terminated showcase leases now have valid end dates. The compact EN/AR workspace exposes four useful metrics, a collapsed target plan, responsive dataset cards, and an accessible destructive-action dialog.
+- Launch Readiness is a superadmin-only modular control surface. Automatic checks inspect production safety, runtime extensions, SMTP configuration, scheduler heartbeat, database queue health, storage writability, and a bounded private-document sample. Manual evidence checks and portfolio-specific onboarding gates are persisted with actor and timestamp history, while the responsive EN/AR workspace links each blocker to its actual fix page without exposing server secrets.
 - Public Site is modular. Its controller is a 28-line route adapter; published reads, empty-database fallback, navigation, and idempotent landing seeding live under `app/Modules/PublicSite`. The old 401-line React fallback is gone, the renderer and public layout are composed from focused units, and the 707-line stylesheet is now a five-line facade over five bounded public layers. Public pages still enforce published/visible CMS state, while the shared EN/AR default catalog prevents an empty deployment from rendering a blank homepage.
 - Authentication is modular. Session login, logout, throttling, inactive-account rejection, reset-link delivery, and password replacement live in seven bounded actions and requests under `app/Modules/Authentication`; all three route controllers are 44 lines or fewer. The former 209-line login route page and shared auth shell are replaced by three one-line Inertia entries over nine focused React units, while auth styling now owns two layers outside Public Site. Normalized email login, last-login tracking, EN/AR rendering, accessibility, password recovery, and logout are covered by feature, architecture, and browser tests.
 - Localization is modular. Locale resolution, supported-language rules, wording overrides, session persistence, authenticated preferences, and safe previous-page redirects live under `app/Modules/Localization`; the route controller and middleware are 20 and 24 lines. English/Arabic precedence and RTL behavior remain covered for guests and authenticated users.
@@ -59,13 +61,16 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Required before real tenant onboarding
 
-1. Run production on PHP 8.4.1 or newer with `calendar` and `mbstring` enabled.
-2. Configure and test production SMTP so password-reset links are delivered.
-3. Run Laravel's scheduler every minute. It drains the database queue and synchronizes expired leases, occupancy, and overdue installments.
-4. Verify automated database and private document backups, then perform one restore drill.
-5. Approve the English and Arabic lease clauses with the property owner's legal adviser. The system intentionally does not invent legal wording.
-6. Confirm each portfolio's opening balances, currency, billing rules, user permissions, and document retention policy.
-7. Complete production acceptance tests with one superadmin, owner, manager, and tenant account before inviting real users.
+Use `/system/readiness` as the release gate. It must show that:
+
+1. Production runs on PHP 8.4.1 or newer with `calendar` and `mbstring` enabled.
+2. Production SMTP delivers a readiness test email and password-reset links.
+3. Laravel's scheduler heartbeat is current, queued jobs drain, and no failed jobs remain.
+4. Database and private-document backups exist and one restore drill has been recorded.
+5. English and Arabic lease clauses have written approval from the property owner's legal adviser.
+6. Each live portfolio has reconciled opening balances, currency, billing rules, user permissions, ownership/management assignments, and document retention rules.
+7. Showcase records are purged or explicitly accepted before operational KPIs are trusted.
+8. One superadmin, owner, manager, and tenant complete the controlled production pilot before invitations are opened.
 
 ## Deliberate MVP limits
 
@@ -77,4 +82,4 @@ The application is an operational MVP release candidate. Core property, tenant, 
 
 ## Next goal
 
-Stop rewriting screens and finish production onboarding: configure and verify SMTP, prove database and private-document restore, approve bilingual legal templates, validate one real portfolio's opening balances and permissions, then run a controlled owner/manager/tenant pilot. Those are the remaining MVP risks; another broad UI overhaul would be avoidance, not progress.
+Clear every required item in `/system/readiness`, launch one real portfolio for a controlled 30-day pilot, and build only what measured pilot failures prove is missing. Another broad UI overhaul would be avoidance, not progress.

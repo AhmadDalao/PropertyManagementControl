@@ -1,6 +1,6 @@
 # MVP Readiness Audit
 
-Updated: July 24, 2026
+Updated: July 25, 2026
 
 ## Decision
 
@@ -17,11 +17,11 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## UI and scale evidence
 
-- Playwright and axe cover 37 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
+- Playwright and axe cover 40 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 330 maintenance requests, 250 expenses, 972 documents, and 15,282 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
-- The main CSS bundle is 320.66 KB before gzip, below the 325 KB release ceiling. Map and other heavy route styles/scripts remain lazy chunks.
+- The main CSS bundle is 323.76 KB before gzip, below the 325 KB release ceiling. Map and other heavy route styles/scripts remain lazy chunks.
 - The Playwright PHP server now runs with a 1 GB test memory limit; the previous 128 MB long-suite process accumulated memory and died during the repeated route sweep.
 
 ## Data and security integrity
@@ -36,6 +36,8 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## Required before real users
 
+These are enforced as auditable launch gates in the superadmin-only `/system/readiness` workspace. Automatic checks refresh from live system state; manual approvals require notes and record the confirming actor and time.
+
 1. Configure production SMTP and prove password-reset delivery to a real mailbox.
 2. Confirm the one-minute scheduler cron is active and that queued jobs drain without failed jobs.
 3. Back up MySQL and private document storage, then complete one documented restore drill. An untested backup is just optimism with a filename.
@@ -43,6 +45,8 @@ The product is an operational MVP release candidate. It does not need another br
 5. Import and reconcile one real portfolio's opening balances, deposits, active leases, unit occupancy, currencies, and due dates.
 6. Purge or clearly isolate showcase data before real KPIs are used for operating decisions.
 7. Run a controlled acceptance pilot with one superadmin, owner, manager, and tenant using real devices and one real maintenance/payment cycle.
+
+The workspace also evaluates each portfolio for an active owner, manager coverage, tenant access, property inventory, assignment gaps, bilingual current lease terms, and showcase contamination. A green server does not make an unprepared portfolio operational.
 
 ## Deliberate MVP limits
 
@@ -54,4 +58,4 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## Next delivery goal
 
-Make one real portfolio operational for 30 days. Configure SMTP, scheduler, and backups; approve legal templates; reconcile opening data; train four pilot roles; record every defect; then build only what the pilot proves is missing. Another visual overhaul now would be motion without progress.
+Clear `/system/readiness`, make one real portfolio operational for 30 days, record every pilot defect, then build only what that evidence proves is missing. Another visual overhaul now would be motion without progress.

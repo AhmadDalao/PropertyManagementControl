@@ -28,6 +28,7 @@ use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ShowcaseDataController;
+use App\Http\Controllers\SystemReadinessController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WordingController;
@@ -104,6 +105,11 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::post('/system/showcase-data', [ShowcaseDataController::class, 'store'])->name('showcase-data.store');
     Route::post('/system/showcase-data/{showcaseDataset}/retry', [ShowcaseDataController::class, 'retry'])->name('showcase-data.retry');
     Route::delete('/system/showcase-data/{showcaseDataset}', [ShowcaseDataController::class, 'destroy'])->name('showcase-data.destroy');
+    Route::get('/system/readiness', [SystemReadinessController::class, 'index'])->name('system-readiness.index');
+    Route::put('/system/readiness/checks', [SystemReadinessController::class, 'update'])->name('system-readiness.update');
+    Route::post('/system/readiness/test-email', [SystemReadinessController::class, 'testEmail'])
+        ->middleware('throttle:3,10')
+        ->name('system-readiness.test-email');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
     Route::get('/cms/sections/create', [CmsSectionController::class, 'create'])->name('cms.sections.create');
     Route::get('/cms/sections/{cmsSection}/edit', [CmsSectionController::class, 'edit'])->name('cms.sections.edit');

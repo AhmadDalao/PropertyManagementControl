@@ -43,6 +43,7 @@ const primaryAdminRoutes = [
     '/cms',
     '/wording',
     '/system/showcase-data',
+    '/system/readiness',
     '/reports',
     '/documentation',
 ] as const;
@@ -439,6 +440,69 @@ test.describe('authenticated administration', () => {
             }),
         ).toBeVisible();
         await expect(page.getByText('سجل مجموعات البيانات')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('launch readiness is measured, evidence-led, responsive, and bilingual', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/system/readiness?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Launch readiness',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-readiness-check')).toHaveCount(15);
+            await expect(
+                page
+                    .locator('.pmc-readiness-evidence-grid')
+                    .first()
+                    .locator(':scope > article'),
+            ).toHaveCount(4);
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        const backupCard = page
+            .locator('.pmc-readiness-evidence-grid > article')
+            .filter({ hasText: 'Database backup verified' });
+        const evidenceTrigger = backupCard.getByRole('button', {
+            name: 'Add evidence',
+        });
+        await evidenceTrigger.click();
+
+        const dialog = page.getByRole('dialog', {
+            name: 'Database backup verified',
+        });
+        await expect(dialog).toBeVisible();
+        await expect(page.getByLabel('Evidence note')).toBeFocused();
+        expect(
+            await page.locator('body').evaluate((node) => node.style.overflow),
+        ).toBe('hidden');
+        await expectNoHorizontalOverflow(page);
+
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expect(evidenceTrigger).toBeFocused();
+
+        await page.goto('/system/readiness?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'جاهزية الإطلاق',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                name: 'سلامة البنية التشغيلية',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText('readiness.');
         await expectNoHorizontalOverflow(page);
     });
 
@@ -1314,6 +1378,7 @@ test.describe('authenticated administration', () => {
                 '/cms/sections/create',
                 '/wording',
                 '/system/showcase-data',
+                '/system/readiness',
             ]) {
                 await page.goto(path);
                 const results = await new AxeBuilder({ page })
@@ -1336,6 +1401,7 @@ test.describe('local role dashboards', () => {
                 '/cms',
                 '/wording',
                 '/system/showcase-data',
+                '/system/readiness',
             ],
             hidden: [] as string[],
         },
@@ -1347,7 +1413,12 @@ test.describe('local role dashboards', () => {
                 '/payments',
                 '/users',
             ],
-            hidden: ['/cms', '/wording', '/system/showcase-data'],
+            hidden: [
+                '/cms',
+                '/wording',
+                '/system/showcase-data',
+                '/system/readiness',
+            ],
         },
         manager: {
             visible: [
@@ -1357,7 +1428,12 @@ test.describe('local role dashboards', () => {
                 '/payments',
                 '/users',
             ],
-            hidden: ['/cms', '/wording', '/system/showcase-data'],
+            hidden: [
+                '/cms',
+                '/wording',
+                '/system/showcase-data',
+                '/system/readiness',
+            ],
         },
         tenant: {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
@@ -1368,6 +1444,7 @@ test.describe('local role dashboards', () => {
                 '/payments',
                 '/users',
                 '/cms',
+                '/system/readiness',
             ],
         },
     } as const;

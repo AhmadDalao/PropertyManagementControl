@@ -30,6 +30,7 @@ class AuditSubjectRegistry
         'cms_section',
         'cms_page_section',
         'navigation_item',
+        'operational_readiness_check',
     ];
 
     /** @var array<int, string> */
@@ -149,6 +150,9 @@ class AuditSubjectRegistry
             'cms_section' => route('cms.sections.edit', $subject),
             'cms_page_section' => $this->relatedRoute('cms.pages.show', 'cmsPage', $subject->getAttribute('cms_page_id')),
             'navigation_item' => route('cms.navigation.edit', $subject),
+            'operational_readiness_check' => route('system-readiness.index', array_filter([
+                'portfolio_id' => $subject->getAttribute('portfolio_id'),
+            ])),
             default => null,
         };
     }

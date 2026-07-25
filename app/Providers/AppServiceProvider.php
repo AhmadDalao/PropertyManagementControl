@@ -16,6 +16,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
 use App\Models\MediaFile;
 use App\Models\NavigationItem;
+use App\Models\OperationalReadinessCheck;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Portfolio;
@@ -73,6 +74,7 @@ class AppServiceProvider extends ServiceProvider
             'media_file' => MediaFile::class,
             'label_override' => LabelOverride::class,
             'report_preset' => ReportPreset::class,
+            'operational_readiness_check' => OperationalReadinessCheck::class,
         ]);
 
         Date::use(CarbonImmutable::class);

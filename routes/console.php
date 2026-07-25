@@ -4,6 +4,7 @@ use App\Models\User;
 use App\Modules\Leases\LeaseLifecycle;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
+use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -167,6 +168,17 @@ Artisan::command('property:sync-operational-statuses', function (LeaseLifecycle 
 
     return 0;
 })->purpose('Expire ended leases, release their assets, and refresh overdue installment states.');
+
+Artisan::command('property:record-scheduler-heartbeat', function (RecordSchedulerHeartbeat $heartbeat) {
+    $heartbeat->handle();
+    $this->info('Scheduler heartbeat recorded.');
+
+    return 0;
+})->purpose('Record evidence that the Laravel scheduler is running.');
+
+Schedule::command('property:record-scheduler-heartbeat')
+    ->everyMinute()
+    ->withoutOverlapping();
 
 Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --timeout=90')
     ->everyMinute()
