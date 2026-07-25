@@ -552,6 +552,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             $asset->id,
             $tenant->id,
             $tenantUser->id,
+            ['category' => 'hvac'],
         );
 
         $this->actingAs($owner)
@@ -571,6 +572,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.eyebrow', 'طلب صيانة')
+                ->where('detailPage.header.description', 'التكييف والتهوية · متوسط · مفتوح')
                 ->where('detailPage.header.backLabel', 'قائمة الصيانة')
                 ->where('detailPage.sections.0.title', 'سياق الطلب')
                 ->where('detailPage.related.0.title', 'التحديثات')

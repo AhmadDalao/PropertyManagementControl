@@ -2750,6 +2750,7 @@ return [
         'electricity' => 'Electricity',
         'plumbing' => 'Plumbing',
         'ac' => 'Air conditioning',
+        'hvac' => 'HVAC',
         'general' => 'General',
         'urgent' => 'Urgent',
         'high' => 'High',
