@@ -349,6 +349,7 @@ return [
         'status' => 'Status',
         'modules' => 'Modules',
         'owner_not_assigned' => 'Owner not assigned',
+        'location' => 'Location',
         'location_not_set' => 'Location not set',
         'assets_users' => ':assets assets · :users users',
         'leases_service' => ':leases active leases · :service service requests',

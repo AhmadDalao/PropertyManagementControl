@@ -349,6 +349,7 @@ return [
         'status' => 'الحالة',
         'modules' => 'الوحدات',
         'owner_not_assigned' => 'لم يتم تعيين مالك',
+        'location' => 'الموقع',
         'location_not_set' => 'لم يتم تحديد الموقع',
         'assets_users' => ':assets أصول · :users مستخدمون',
         'leases_service' => ':leases عقود نشطة · :service طلبات خدمة',

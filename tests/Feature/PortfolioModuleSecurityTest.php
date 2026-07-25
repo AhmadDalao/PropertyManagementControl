@@ -353,6 +353,8 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'إنشاء مستخدم')
                 ->where('detailPage.sections.0.title', 'ملف النشاط')
+                ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
+                    ->contains('label', 'الموقع'))
                 ->where('detailPage.sections.1.items', function ($items): bool {
                     $owner = collect($items)->firstWhere('label', 'المالك');
 
@@ -380,7 +382,9 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.1.href', route('users.create', [
                     'portfolio_id' => $portfolio->id,
                 ]))
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
+                    ->contains('label', 'Location')));
 
         $portfolio->update([
             'module_settings' => [
