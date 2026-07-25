@@ -24,7 +24,7 @@ final class MaintenanceAttachmentFormPresenter
                 'required' => true,
                 'multiple' => true,
                 'accept' => '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
-                'help' => trans('app.maintenance.photos_help'),
+                'help' => trans('app.maintenance.photo_upload_help'),
             ]],
             'initialValues' => ['photos' => []],
         ];

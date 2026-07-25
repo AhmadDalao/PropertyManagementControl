@@ -1497,6 +1497,7 @@ return [
         'photos' => 'Evidence photos',
         'photo' => 'Photo',
         'photos_help' => 'Optional. Add up to 4 JPG, PNG, or WebP photos, 5 MB each. Photos stay private to people who can access this request.',
+        'photo_upload_help' => 'Choose 1 to 4 JPG, PNG, or WebP photos, 5 MB each. Photos stay private to people who can access this request.',
         'add_photos' => 'Add photos',
         'add_photos_help' => 'Add clear evidence to maintenance request #:id without placing it in the public media library.',
         'upload_photos' => 'Upload photos',

@@ -147,6 +147,10 @@ class MaintenanceAttachmentTest extends TestCase
                 ->component('admin/resource-form')
                 ->where('formPage.title', 'Add photos')
                 ->where('formPage.fields.0.name', 'photos')
+                ->where(
+                    'formPage.fields.0.help',
+                    'Choose 1 to 4 JPG, PNG, or WebP photos, 5 MB each. Photos stay private to people who can access this request.',
+                )
                 ->where('formPage.fields.0.multiple', true));
 
         $this->actingAs($tenantUser)
