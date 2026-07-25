@@ -40,7 +40,20 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        if (! $this->app->environment(['local', 'testing'])) {
+            return;
+        }
+
+        foreach ([
+            'Laravel\Pail\PailServiceProvider',
+            'Laravel\Pao\Laravel\ServiceProvider',
+            'Laravel\Sail\SailServiceProvider',
+            'NunoMaduro\Collision\Adapters\Laravel\CollisionServiceProvider',
+        ] as $provider) {
+            if (class_exists($provider)) {
+                $this->app->register($provider);
+            }
+        }
     }
 
     /**

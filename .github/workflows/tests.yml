@@ -61,6 +61,12 @@ jobs:
       - name: Generate Application Key
         run: php artisan key:generate
 
+      - name: Verify Production Composer Build
+        run: |
+          composer dump-autoload --no-dev --classmap-authoritative --no-interaction
+          php artisan about --only=environment
+          composer dump-autoload --optimize --no-interaction
+
       - name: Build Assets
         run: pnpm run build
 

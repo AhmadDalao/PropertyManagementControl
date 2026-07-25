@@ -77,6 +77,9 @@
             "@types:check",
             "@php artisan test"
         ],
+        "pre-autoload-dump": [
+            "@php -r \"is_file('bootstrap/cache/packages.php') && unlink('bootstrap/cache/packages.php');\""
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
@@ -98,7 +101,12 @@
     },
     "extra": {
         "laravel": {
-            "dont-discover": []
+            "dont-discover": [
+                "laravel/pail",
+                "laravel/pao",
+                "laravel/sail",
+                "nunomaduro/collision"
+            ]
         }
     },
     "config": {

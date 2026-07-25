@@ -75,6 +75,8 @@ php artisan property:record-scheduler-heartbeat
 
 If dependencies are uploaded instead of installed on Hostinger, run `composer dump-autoload --no-dev --classmap-authoritative --no-interaction` after the upload. Run the permissions seeder and storage-link command only during initial setup or when their configuration changes.
 
+The Composer lifecycle clears Laravel's generated package manifest before rebuilding the autoloader. This prevents development-only providers from a previous local build being loaded during a production `--no-dev` deployment. Do not bypass Composer scripts when preparing a release.
+
 6. Verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
 
 ## Cron
