@@ -20,51 +20,71 @@
     text-transform: uppercase;
 }
 
-.pmc-property-context > select {
+.pmc-property-context-trigger {
+    display: grid;
     width: 100%;
     min-height: 2.75rem;
-    padding: 0.55rem 2rem 0.55rem 0.65rem;
-    overflow: hidden;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.5rem 0.6rem;
     border: 1px solid #d8c9ad;
     border-radius: 0.65rem;
-    background-color: #fff;
+    background: #fff;
     color: var(--pmc-ink);
-    font-size: 0.74rem;
-    font-weight: 800;
+    text-align: start;
+}
+
+.pmc-property-context-trigger > i:first-child {
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-items: center;
+    border-radius: 0.5rem;
+    background: #fff2b9;
+    color: #5d4600;
+}
+
+.pmc-property-context-trigger > span {
+    display: grid;
+    min-width: 0;
+    gap: 0.05rem;
+}
+
+.pmc-property-context-trigger strong,
+.pmc-property-context-trigger small {
+    overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-[dir='rtl'] .pmc-property-context > select {
-    padding: 0.55rem 0.65rem 0.55rem 2rem;
+.pmc-property-context-trigger strong {
+    font-size: 0.72rem;
+    font-weight: 850;
 }
 
-.pmc-property-context > select:focus-visible {
+.pmc-property-context-trigger small {
+    color: var(--pmc-muted);
+    font-size: 0.61rem;
+}
+
+.pmc-property-context-trigger > i:last-child {
+    color: #7c705c;
+    font-size: 0.72rem;
+}
+
+.pmc-property-context-trigger:hover,
+.pmc-property-context-trigger:focus-visible {
     border-color: #b58b00;
-    outline: 3px solid rgba(255, 207, 0, 0.24);
+    background: #fffdf7;
+}
+
+.pmc-property-context-trigger:focus-visible {
+    outline: 3px solid rgb(255 207 0 / 24%);
 }
 
 .pmc-property-context > small {
     color: var(--pmc-muted);
     font-size: 0.64rem;
     line-height: 1.45;
-}
-
-.pmc-property-context-collapsed {
-    display: grid;
-    width: 2.75rem;
-    height: 2.75rem;
-    flex: 0 0 auto;
-    place-items: center;
-    margin: 0.65rem auto 0;
-    border: 1px solid #e0cfac;
-    border-radius: 0.72rem;
-    background: #fff7dc;
-    color: #4e3b09;
-}
-
-.pmc-property-context-collapsed:hover,
-.pmc-property-context-collapsed:focus-visible {
-    border-color: #c9a900;
-    background: #ffdf35;
-    color: #111;
 }

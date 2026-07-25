@@ -1,0 +1,118 @@
+.pmc-property-picker-results {
+    display: grid;
+    min-height: 0;
+    flex: 1 1 auto;
+    align-content: start;
+    gap: 0.6rem;
+    padding: 0.2rem 0.9rem 1rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.pmc-property-picker-results section {
+    display: grid;
+    gap: 0.25rem;
+}
+
+.pmc-property-picker-results h3 {
+    margin: 0;
+    padding: 0.5rem 0.55rem 0.2rem;
+    color: #7b746b;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+.pmc-property-picker-option {
+    display: grid;
+    width: 100%;
+    min-height: 3.25rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.55rem;
+    border: 1px solid transparent;
+    border-radius: 0.72rem;
+    background: transparent;
+    color: #111;
+    text-align: start;
+}
+
+.pmc-property-picker-option:hover,
+.pmc-property-picker-option:focus-visible {
+    border-color: #dfd7c8;
+    outline: 0;
+    background: #fbf9f4;
+}
+
+.pmc-property-picker-option.is-selected {
+    border-color: #e4bf00;
+    background: #fff8d5;
+}
+
+.pmc-property-picker-option > i:first-child {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: #f1eee8;
+    color: #625d55;
+}
+
+.pmc-property-picker-option.is-selected > i:first-child {
+    background: #111;
+    color: #fff;
+}
+
+.pmc-property-picker-option > span {
+    display: grid;
+    min-width: 0;
+    gap: 0.08rem;
+}
+
+.pmc-property-picker-option strong,
+.pmc-property-picker-option small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-picker-option strong {
+    font-size: 0.75rem;
+    font-weight: 850;
+}
+
+.pmc-property-picker-option small {
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+}
+
+.pmc-property-picker-empty {
+    display: grid;
+    min-height: 11rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.3rem;
+    padding: 1rem;
+    color: var(--pmc-muted);
+    text-align: center;
+}
+
+.pmc-property-picker-empty i {
+    font-size: 1.4rem;
+}
+
+.pmc-property-picker-empty strong {
+    color: #111;
+    font-size: 0.85rem;
+}
+
+.pmc-property-picker-empty small {
+    font-size: 0.7rem;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-property-picker-results {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}

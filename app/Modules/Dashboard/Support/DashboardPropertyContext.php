@@ -10,13 +10,12 @@ final readonly class DashboardPropertyContext
 {
     /**
      * @param  array{id:int,code:string,title_en:string,title_ar:?string}|null  $selected
-     * @param  list<array{id:int,code:string,title_en:string,title_ar:?string}>  $options
      * @param  list<int>  $assetIds
      * @param  list<string>  $leaseableTypes
      */
     public function __construct(
         public ?array $selected,
-        public array $options,
+        public int $propertyCount,
         private array $assetIds,
         private array $leaseableTypes,
         public bool $assignmentRestricted,
@@ -84,7 +83,7 @@ final readonly class DashboardPropertyContext
     {
         return [
             'selected' => $this->selected,
-            'options' => $this->options,
+            'property_count' => $this->propertyCount,
             'assignment_restricted' => $this->assignmentRestricted,
             'has_assignments' => $this->hasAssignments(),
         ];

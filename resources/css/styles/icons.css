@@ -149,6 +149,9 @@
 .bi-chevron-right::before {
     content: '\f285';
 }
+.bi-check-lg::before {
+    content: '\f633';
+}
 .bi-clock-history::before {
     content: '\f292';
 }
@@ -262,6 +265,9 @@
 }
 .bi-layout-sidebar-inset::before {
     content: '\f45d';
+}
+.bi-layout-sidebar::before {
+    content: '\f45f';
 }
 .bi-layout-text-sidebar::before {
     content: '\f462';

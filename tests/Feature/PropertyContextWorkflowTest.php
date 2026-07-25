@@ -85,9 +85,7 @@ class PropertyContextWorkflowTest extends TestCase
                 ->where('propertyContext.options', fn (mixed $options): bool => collect($options)
                     ->pluck('id')
                     ->all() === [$assigned->id])
-                ->where('propertyFocus.options', fn (mixed $options): bool => collect($options)
-                    ->pluck('id')
-                    ->doesntContain($hidden->id)));
+                ->where('propertyFocus.property_count', 1));
 
         $this->actingAs($tenant)
             ->get(route('dashboard', ['property_id' => $assigned->id]))

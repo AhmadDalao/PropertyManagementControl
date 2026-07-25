@@ -1,8 +1,9 @@
-import { router } from '@inertiajs/react';
-import { useState } from 'react';
-
 import { useTranslator } from '@/lib/i18n';
-import type { PropertyContext, PropertyContextOption } from '@/types';
+import type { PropertyContext } from '@/types';
+
+import { portfolioTitle, propertyLabel } from './property-context-options';
+import { PropertyContextPicker } from './property-context-picker';
+import { usePropertyContextSwitcher } from './use-property-context-switcher';
 
 export function PropertyContextSwitcher({
     context,
@@ -16,12 +17,24 @@ export function PropertyContextSwitcher({
     onExpand: () => void;
 }) {
     const { locale, t } = useTranslator();
-    const [updating, setUpdating] = useState(false);
+    const {
+        changeProperty,
+        closePicker,
+        openPicker,
+        pickerOpen,
+        search,
+        setSearch,
+        triggerRef,
+        updating,
+    } = usePropertyContextSwitcher(context, currentUrl);
     const selectedLabel = context.selected
-        ? optionLabel(context.selected, locale, context.options)
+        ? propertyLabel(context.selected, locale)
         : context.assignment_restricted
           ? t('shell.all_assigned_properties')
           : t('shell.all_properties');
+    const selectedPortfolio = context.selected
+        ? portfolioTitle(context.selected, locale)
+        : '';
 
     if (context.options.length === 0) {
         return null;
@@ -30,6 +43,7 @@ export function PropertyContextSwitcher({
     if (collapsed) {
         return (
             <button
+                ref={triggerRef}
                 type="button"
                 className="pmc-property-context-collapsed"
                 aria-label={t('shell.open_property_scope', undefined, {
@@ -43,73 +57,48 @@ export function PropertyContextSwitcher({
         );
     }
 
-    const changeProperty = (propertyId: string) => {
-        const url = new URL(currentUrl, window.location.origin);
-
-        url.searchParams.set('property_id', propertyId || 'all');
-        url.searchParams.delete('page');
-
-        if (propertyId) {
-            url.searchParams.delete('portfolio_id');
-        }
-
-        setUpdating(true);
-        router.get(
-            url.pathname,
-            Object.fromEntries(url.searchParams.entries()),
-            {
-                preserveScroll: true,
-                preserveState: false,
-                replace: true,
-                onFinish: () => setUpdating(false),
-            },
-        );
-    };
-
     return (
-        <label className="pmc-property-context">
+        <section className="pmc-property-context" aria-busy={updating}>
             <span>
                 <i className="bi bi-buildings" aria-hidden="true" />
                 {t('shell.property_scope')}
             </span>
-            <select
-                value={context.selected?.id ?? ''}
+            <button
+                ref={triggerRef}
+                type="button"
+                className="pmc-property-context-trigger"
+                aria-haspopup="dialog"
+                aria-expanded={pickerOpen}
+                aria-label={t('shell.open_property_scope', undefined, {
+                    property: selectedLabel,
+                })}
                 disabled={updating}
-                aria-busy={updating}
-                onChange={(event) => changeProperty(event.currentTarget.value)}
+                data-property-scope-trigger
+                data-selected-property={context.selected?.id ?? 'all'}
+                onClick={openPicker}
             >
-                <option value="">
-                    {context.assignment_restricted
-                        ? t('shell.all_assigned_properties')
-                        : t('shell.all_properties')}
-                </option>
-                {context.options.map((property) => (
-                    <option key={property.id} value={property.id}>
-                        {optionLabel(property, locale, context.options)}
-                    </option>
-                ))}
-            </select>
+                <i className="bi bi-building" aria-hidden="true" />
+                <span>
+                    <strong>{selectedLabel}</strong>
+                    <small>
+                        {selectedPortfolio ||
+                            t('shell.available_properties', undefined, {
+                                count: context.options.length,
+                            })}
+                    </small>
+                </span>
+                <i className="bi bi-chevron-down" aria-hidden="true" />
+            </button>
             <small>{t('shell.property_scope_help')}</small>
-        </label>
+            <PropertyContextPicker
+                context={context}
+                open={pickerOpen}
+                search={search}
+                updating={updating}
+                onSearch={setSearch}
+                onSelect={changeProperty}
+                onClose={closePicker}
+            />
+        </section>
     );
-}
-
-function optionLabel(
-    property: PropertyContextOption,
-    locale: string,
-    options: PropertyContextOption[],
-): string {
-    const title =
-        locale === 'ar'
-            ? property.title_ar || property.title_en
-            : property.title_en || property.title_ar;
-    const portfolioCount = new Set(
-        options.map((option) => option.portfolio_code).filter(Boolean),
-    ).size;
-    const portfolio =
-        portfolioCount > 1 && property.portfolio_code
-            ? ` · ${property.portfolio_code}`
-            : '';
-
-    return `${property.code} · ${title}${portfolio}`;
 }

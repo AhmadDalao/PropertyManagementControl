@@ -31,17 +31,12 @@ final readonly class DashboardPropertyContextQuery
             )
             ->orderBy($titleColumn)
             ->get(['id', 'portfolio_id', 'code', 'title_en', 'title_ar']);
-        $options = array_values(
-            $properties
-                ->map(fn (Asset $property): array => $this->option($property))
-                ->all(),
-        );
         $leaseableTypes = array_values($this->hierarchy->leaseableTypes());
 
         if ($propertyId === null) {
             return new DashboardPropertyContext(
                 selected: null,
-                options: $options,
+                propertyCount: $properties->count(),
                 assetIds: $this->assignments->assetIds($actor) ?? [],
                 leaseableTypes: $leaseableTypes,
                 assignmentRestricted: $this->assignments->restricts($actor),
@@ -56,7 +51,7 @@ final readonly class DashboardPropertyContextQuery
 
         return new DashboardPropertyContext(
             selected: $this->option($property),
-            options: $options,
+            propertyCount: $properties->count(),
             assetIds: $this->selectedAssetIds($actor, $property),
             leaseableTypes: $leaseableTypes,
             assignmentRestricted: $this->assignments->restricts($actor),

@@ -61,8 +61,9 @@ class PropertyManagerAssignmentScopeTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('propertyFocus.assignment_restricted', true)
                 ->where('propertyFocus.has_assignments', true)
-                ->has('propertyFocus.options', 1)
-                ->where('propertyFocus.options.0.id', $data['visibleRoot']->id)
+                ->where('propertyFocus.property_count', 1)
+                ->has('propertyContext.options', 1)
+                ->where('propertyContext.options.0.id', $data['visibleRoot']->id)
                 ->where('stats.totalAssets', 2)
                 ->where('stats.activeLeases', 1)
                 ->where('stats.totalUsers', 2)
@@ -183,7 +184,7 @@ class PropertyManagerAssignmentScopeTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('propertyFocus.assignment_restricted', true)
                 ->where('propertyFocus.has_assignments', false)
-                ->has('propertyFocus.options', 0)
+                ->where('propertyFocus.property_count', 0)
                 ->where('stats.totalAssets', 0)
                 ->where('stats.totalUsers', 1)
                 ->where('nextActions.0.href', '/portfolios'));

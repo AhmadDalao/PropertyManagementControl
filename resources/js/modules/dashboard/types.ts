@@ -78,7 +78,7 @@ export type OperationsDashboardProps = SharedProps & {
     mode: 'portfolio' | 'superadmin';
     propertyFocus: {
         selected: PropertyFocusOption | null;
-        options: PropertyFocusOption[];
+        property_count: number;
         assignment_restricted: boolean;
         has_assignments: boolean;
     };

@@ -199,22 +199,47 @@ test.describe('authenticated administration', () => {
         await page.setViewportSize(viewports.desktop);
         await page.goto('/dashboard?property_id=all&locale=en');
 
-        const selector = page.locator('.pmc-property-context select');
-        await expect(selector).toBeVisible();
+        const trigger = page.locator('[data-property-scope-trigger]');
+        await expect(trigger).toBeVisible();
+        await expect(trigger).toHaveAttribute('data-selected-property', 'all');
         await expect(
             page.locator('.pmc-property-context').getByText('Property scope'),
         ).toBeVisible();
-        expect(await selector.locator('option').count()).toBeGreaterThan(1);
+        await trigger.click();
 
+        const dialog = page.locator('[data-property-scope-dialog]');
+        const search = page.locator('[data-property-scope-search]');
+        const options = dialog.locator('[data-property-scope-option]');
+        await expect(dialog).toBeVisible();
+        await expect(search).toBeFocused();
+        const closeButton = dialog.getByRole('button', {
+            name: 'Close property picker',
+        });
+        await page.keyboard.press('Shift+Tab');
+        await expect(closeButton).toBeFocused();
+        await page.keyboard.press('Tab');
+        await expect(search).toBeFocused();
+        expect(await options.count()).toBeGreaterThan(1);
+        expect(await dialog.locator('section > h3').count()).toBeGreaterThan(0);
+
+        await search.fill('not-a-real-property');
+        await expect(options).toHaveCount(0);
+        await expect(
+            dialog.getByText('No properties found', { exact: true }),
+        ).toBeVisible();
+        await search.fill('');
+
+        const firstOption = options.first();
         const propertyId =
-            (await selector.locator('option').nth(1).getAttribute('value')) ??
+            (await firstOption.getAttribute('data-property-scope-option')) ??
             '';
         expect(propertyId).not.toBe('');
-        await selector.selectOption(propertyId);
-        await expect(page).toHaveURL(
-            new RegExp(`property_id=${propertyId}`),
+        await firstOption.click();
+        await expect(page).toHaveURL(new RegExp(`property_id=${propertyId}`));
+        await expect(trigger).toHaveAttribute(
+            'data-selected-property',
+            propertyId,
         );
-        await expect(selector).toHaveValue(propertyId);
 
         const assetsLink = page.locator(
             `.pmc-nav-link[href="/assets?property_id=${propertyId}"]`,
@@ -224,15 +249,15 @@ test.describe('authenticated administration', () => {
         await expect(page).toHaveURL(
             new RegExp(`/assets\\?property_id=${propertyId}`),
         );
-        await expect(page.locator('.pmc-property-context select')).toHaveValue(
-            propertyId,
-        );
+        await expect(
+            page.locator('[data-property-scope-trigger]'),
+        ).toHaveAttribute('data-selected-property', propertyId);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases?locale=en');
-        await expect(page.locator('.pmc-property-context select')).toHaveValue(
-            propertyId,
-        );
+        await expect(
+            page.locator('[data-property-scope-trigger]'),
+        ).toHaveAttribute('data-selected-property', propertyId);
         await expect(
             page.locator(
                 `.pmc-nav-link[href="/payments?property_id=${propertyId}"]`,
@@ -246,14 +271,30 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-property-context').getByText('نطاق العقار'),
         ).toBeVisible();
-        await expect(page.locator('.pmc-property-context select')).toHaveValue(
-            propertyId,
+        await expect(
+            page.locator('[data-property-scope-trigger]'),
+        ).toHaveAttribute('data-selected-property', propertyId);
+        await page.locator('[data-property-scope-trigger]').click();
+        await expect(
+            page.locator('[data-property-scope-search]'),
+        ).toHaveAttribute(
+            'placeholder',
+            'ابحث باسم العقار أو الرمز أو المحفظة...',
         );
         await expectMinimumTouchHeight(
             page,
-            '.pmc-property-context select',
+            '[data-property-scope-search], [data-property-scope-clear]',
         );
         await expectNoHorizontalOverflow(page);
+        const accessibility = await new AxeBuilder({ page })
+            .include('[data-property-scope-dialog]')
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+        await page.keyboard.press('Escape');
+        await expect(
+            page.locator('[data-property-scope-trigger]'),
+        ).toBeFocused();
     });
 
     test('global search is responsive, scoped, and localized', async ({
@@ -1930,7 +1971,7 @@ test.describe('local role dashboards', () => {
         },
     } as const;
 
-    test('property focus scopes drill-downs, resets, and stays usable in Arabic', async ({
+    test('dashboard uses one global property scope and stays usable in Arabic', async ({
         page,
     }) => {
         await login(
@@ -1941,50 +1982,50 @@ test.describe('local role dashboards', () => {
         await page.setViewportSize(viewports.mobile);
         await page.goto('/dashboard?locale=en');
 
-        const selector = page.locator('#dashboard-property-focus');
-        await expect(selector).toBeVisible();
-        expect(await selector.locator('option').count()).toBeGreaterThan(2);
-
-        const propertyId = await selector
-            .locator('option')
-            .nth(1)
-            .getAttribute('value');
+        await expect(page.locator('#dashboard-property-focus')).toHaveCount(0);
+        await page.locator('.pmc-menu-trigger').click();
+        const trigger = page.locator('[data-property-scope-trigger]');
+        await trigger.click();
+        const options = page.locator('[data-property-scope-option]');
+        expect(await options.count()).toBeGreaterThan(2);
+        const propertyId = await options
+            .first()
+            .getAttribute('data-property-scope-option');
         expect(propertyId).toBeTruthy();
 
-        await selector.selectOption(propertyId!);
+        await options.first().click();
         await expect(page).toHaveURL(
             new RegExp(`[?&]property_id=${propertyId}(?:&|$)`),
         );
-        await expect(
-            page.locator('.pmc-dashboard-focus-controls > a'),
-        ).toBeVisible();
+        await expect(page.locator('.pmc-dashboard-focus-action')).toBeVisible();
         await expect(page.locator('.pmc-metric-card').first()).toHaveAttribute(
             'href',
             new RegExp(`[?&]property_id=${propertyId}(?:&|$)`),
         );
         await expectMinimumTouchHeight(
             page,
-            '#dashboard-property-focus, .pmc-dashboard-focus-controls > a',
+            '[data-property-scope-trigger], .pmc-dashboard-focus-action',
         );
         await expectNoHorizontalOverflow(page);
 
-        await selector.selectOption('');
-        await page.waitForFunction(
-            () =>
-                !new URL(window.location.href).searchParams.has('property_id'),
+        await page.locator('.pmc-menu-trigger').click();
+        await trigger.click();
+        await page.locator('[data-property-scope-clear]').click();
+        await expect(trigger).toHaveAttribute('data-selected-property', 'all');
+        await expect(page.locator('.pmc-dashboard-focus-action')).toHaveCount(
+            0,
         );
-        await expect(
-            page.locator('.pmc-dashboard-focus-controls > a'),
-        ).toHaveCount(0);
 
         await page.goto('/dashboard?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await page.locator('.pmc-menu-trigger').click();
         await expect(
-            page.locator('label[for="dashboard-property-focus"]'),
-        ).toHaveText('نطاق مركز التحكم');
-        await expect(selector.locator('option').first()).toHaveText(
-            'جميع العقارات',
-        );
+            page.locator('.pmc-property-context').getByText('نطاق العقار'),
+        ).toBeVisible();
+        await trigger.click();
+        await expect(
+            page.locator('[data-property-scope-clear] strong'),
+        ).toHaveText('جميع العقارات');
         await expectNoHorizontalOverflow(page);
     });
 
@@ -2005,11 +2046,11 @@ test.describe('local role dashboards', () => {
 
             if (account.role === 'tenant') {
                 await expect(
-                    page.locator('#dashboard-property-focus'),
+                    page.locator('[data-property-scope-trigger]'),
                 ).toHaveCount(0);
             } else {
                 await expect(
-                    page.locator('#dashboard-property-focus'),
+                    page.locator('[data-property-scope-trigger]'),
                 ).toBeVisible();
             }
 

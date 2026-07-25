@@ -383,9 +383,10 @@ class DashboardModuleTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('propertyFocus.selected.id', $firstRoot->id)
-                ->has('propertyFocus.options', 2)
-                ->where('propertyFocus.options.0.id', $firstRoot->id)
-                ->where('propertyFocus.options.1.id', $secondRoot->id)
+                ->where('propertyFocus.property_count', 2)
+                ->has('propertyContext.options', 2)
+                ->where('propertyContext.options.0.id', $firstRoot->id)
+                ->where('propertyContext.options.1.id', $secondRoot->id)
                 ->where('stats.totalAssets', 2)
                 ->where('stats.totalValue', fn (int|float $value): bool => (float) $value === 1200000.0)
                 ->where('stats.activeLeases', 1)

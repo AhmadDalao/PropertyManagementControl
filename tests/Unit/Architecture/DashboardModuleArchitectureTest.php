@@ -129,6 +129,9 @@ class DashboardModuleArchitectureTest extends TestCase
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');
         $appStyles = $this->source('resources/css/app.css');
+        $propertyFocus = $this->source(
+            'resources/js/modules/dashboard/operations/property-focus.tsx',
+        );
 
         $this->assertStringContainsString(
             "import '../../../css/styles/dashboard.css';",
@@ -138,6 +141,8 @@ class DashboardModuleArchitectureTest extends TestCase
             "@import './styles/dashboard.css';",
             $appStyles,
         );
+        $this->assertStringNotContainsString('<select', $propertyFocus);
+        $this->assertStringContainsString('pmc-dashboard-focus-action', $propertyFocus);
         $this->assertLessThanOrEqual(
             180,
             substr_count($this->source('resources/css/styles/dashboard/focus.css'), "\n") + 1,

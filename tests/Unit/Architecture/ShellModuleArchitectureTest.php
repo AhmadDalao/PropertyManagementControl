@@ -31,9 +31,13 @@ class ShellModuleArchitectureTest extends TestCase
             'admin-sidebar.tsx',
             'admin-topbar.tsx',
             'navigation-access.ts',
+            'property-context-options.ts',
+            'property-context-picker.tsx',
+            'property-context-results.tsx',
             'property-context-switcher.tsx',
             'temporary-password-notice.tsx',
             'use-admin-shell.ts',
+            'use-property-context-switcher.ts',
         ] as $file) {
             $path = "resources/js/modules/shell/{$file}";
             $source = $this->source($path);
@@ -50,6 +54,8 @@ class ShellModuleArchitectureTest extends TestCase
         $sidebar = $this->source('resources/js/modules/shell/admin-sidebar.tsx');
         $account = $this->source('resources/js/modules/shell/account-menu.tsx');
         $propertyContext = $this->source('resources/js/modules/shell/property-context-switcher.tsx');
+        $propertyPicker = $this->source('resources/js/modules/shell/property-context-picker.tsx');
+        $propertyState = $this->source('resources/js/modules/shell/use-property-context-switcher.ts');
 
         $this->assertStringContainsString('matchMedia', $state);
         $this->assertStringContainsString('localStorage', $state);
@@ -61,8 +67,12 @@ class ShellModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('aria-current', $sidebar);
         $this->assertStringContainsString('inert={drawerHidden}', $sidebar);
         $this->assertStringContainsString('PropertyContextSwitcher', $sidebar);
-        $this->assertStringContainsString("url.searchParams.set('property_id'", $propertyContext);
-        $this->assertStringContainsString("url.searchParams.delete('portfolio_id'", $propertyContext);
+        $this->assertStringContainsString("url.searchParams.set('property_id'", $propertyState);
+        $this->assertStringContainsString("url.searchParams.delete('portfolio_id'", $propertyState);
+        $this->assertStringContainsString('data-property-scope-trigger', $propertyContext);
+        $this->assertStringNotContainsString('<select', $propertyContext);
+        $this->assertStringContainsString('createPortal', $propertyPicker);
+        $this->assertStringContainsString('pmc-property-picker-open', $propertyPicker);
         $this->assertStringContainsString('closeOutside', $account);
         $this->assertStringContainsString('closeOnEscape', $account);
     }
@@ -78,6 +88,7 @@ class ShellModuleArchitectureTest extends TestCase
             'layout.css',
             'sidebar.css',
             'property-context.css',
+            'property-context-collapsed.css',
             'topbar.css',
             'search.css',
             'account.css',
@@ -94,8 +105,29 @@ class ShellModuleArchitectureTest extends TestCase
         }
 
         $account = $this->source('resources/css/styles/shell/account.css');
+        $picker = $this->source(
+            'resources/js/modules/shell/property-context-picker.tsx',
+        );
         $this->assertStringContainsString('.pmc-account-trigger', $account);
         $this->assertStringNotContainsString('.pmc-account-menu > summary', $account);
+
+        foreach ([
+            'property-context-picker.css',
+            'property-context-results.css',
+        ] as $file) {
+            $this->assertStringContainsString(
+                "../../../css/styles/shell/{$file}",
+                $picker,
+            );
+            $this->assertLessThanOrEqual(
+                200,
+                substr_count(
+                    $this->source("resources/css/styles/shell/{$file}"),
+                    "\n",
+                ) + 1,
+                "shell/{$file} is becoming a stylesheet monolith.",
+            );
+        }
     }
 
     private function source(string $relativePath): string

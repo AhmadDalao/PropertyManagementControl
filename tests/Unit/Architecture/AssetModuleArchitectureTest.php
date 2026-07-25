@@ -121,6 +121,7 @@ class AssetModuleArchitectureTest extends TestCase
         $query = $this->source($this->path('app/Modules/Assets/Queries/PropertyContextQuery.php'));
         $routes = $this->source($this->path('app/Modules/Assets/Support/PropertyContextRoutes.php'));
         $switcher = $this->source($this->path('resources/js/modules/shell/property-context-switcher.tsx'));
+        $switcherState = $this->source($this->path('resources/js/modules/shell/use-property-context-switcher.ts'));
         $styles = $this->source($this->path('resources/css/styles/shell/property-context.css'));
 
         $this->assertLinesAtMost($middleware, 100);
@@ -128,12 +129,13 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertLinesAtMost($query, 150);
         $this->assertLinesAtMost($routes, 50);
         $this->assertLinesAtMost($switcher, 130);
+        $this->assertLinesAtMost($switcherState, 100);
         $this->assertLinesAtMost($styles, 100);
         $this->assertStringContainsString('PropertyContextQuery', $middleware);
         $this->assertStringContainsString('PortfolioModules::enabledForUser', $presenter);
         $this->assertStringContainsString('AssignedPropertyScope', $query);
         $this->assertStringContainsString('exports.resource', $routes);
-        $this->assertStringContainsString("url.searchParams.set('property_id'", $switcher);
+        $this->assertStringContainsString("url.searchParams.set('property_id'", $switcherState);
         $this->assertStringNotContainsString('Asset::query()', $middleware);
     }
 

@@ -1,8 +1,8 @@
 .pmc-dashboard-focus {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(22rem, 0.8fr);
-    align-items: end;
-    gap: 1rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.85rem;
     margin-bottom: 1rem;
     padding: 1rem;
     border: 1px solid #dedbd4;
@@ -71,14 +71,23 @@
     white-space: nowrap;
 }
 
-.pmc-dashboard-focus > div:first-child {
+.pmc-dashboard-focus-icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-dashboard-focus-copy {
     display: grid;
     min-width: 0;
     gap: 0.2rem;
 }
 
-.pmc-dashboard-focus > div:first-child span,
-.pmc-dashboard-focus-controls label {
+.pmc-dashboard-focus-copy > span {
     color: #775800;
     font-size: 0.68rem;
     font-weight: 900;
@@ -86,48 +95,20 @@
     text-transform: uppercase;
 }
 
-.pmc-dashboard-focus > div:first-child strong {
+.pmc-dashboard-focus-copy > strong {
     overflow: hidden;
     font-size: 1rem;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.pmc-dashboard-focus > div:first-child small {
+.pmc-dashboard-focus-copy > small {
     color: #666469;
     font-size: 0.75rem;
 }
 
-.pmc-dashboard-focus-controls {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: end;
-    gap: 0.4rem 0.65rem;
-}
-
-.pmc-dashboard-focus-controls label {
-    grid-column: 1 / -1;
-}
-
-.pmc-dashboard-focus-controls select {
-    width: 100%;
-    min-width: 0;
-    min-height: 2.75rem;
-    padding: 0 2.4rem 0 0.8rem;
-    border: 1px solid #d8d5ce;
-    border-radius: 0.72rem;
-    background-color: #fbfaf7;
-    color: #111;
-    font-size: 0.78rem;
-    font-weight: 800;
-}
-
-[dir='rtl'] .pmc-dashboard-focus-controls select {
-    padding-right: 0.8rem;
-    padding-left: 2.4rem;
-}
-
-.pmc-dashboard-focus-controls > a {
+.pmc-dashboard-focus-action,
+.pmc-dashboard-focus-hint {
     display: inline-flex;
     min-height: 2.75rem;
     align-items: center;
@@ -142,10 +123,22 @@
     white-space: nowrap;
 }
 
+.pmc-dashboard-focus-hint {
+    max-width: 18rem;
+    border-color: transparent;
+    color: #68635b;
+    white-space: normal;
+}
+
 @media (max-width: 991.98px) {
     .pmc-dashboard-focus {
-        grid-template-columns: 1fr;
-        align-items: stretch;
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-dashboard-focus-action,
+    .pmc-dashboard-focus-hint {
+        grid-column: 1 / -1;
+        justify-content: center;
     }
 }
 
@@ -159,16 +152,7 @@
         justify-content: center;
     }
 
-    .pmc-dashboard-focus-controls {
-        grid-template-columns: 1fr;
-    }
-
-    .pmc-dashboard-focus-controls > a,
-    .pmc-dashboard-focus-controls label {
-        grid-column: 1;
-    }
-
-    .pmc-dashboard-focus-controls > a {
-        justify-content: center;
+    .pmc-dashboard-focus {
+        padding: 0.85rem;
     }
 }

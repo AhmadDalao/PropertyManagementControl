@@ -1,5 +1,4 @@
-import { Link, router } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link } from '@inertiajs/react';
 
 import { useTranslator } from '@/lib/i18n';
 import { localizedNumber } from '@/lib/utils';
@@ -12,25 +11,11 @@ export function PropertyFocus({
     focus: OperationsDashboardProps['propertyFocus'];
 }) {
     const { locale, t } = useTranslator();
-    const [updating, setUpdating] = useState(false);
     const selectedTitle = focus.selected
         ? propertyTitle(focus.selected, locale)
         : focus.assignment_restricted
           ? t('dashboard.all_assigned_properties')
           : t('dashboard.all_properties');
-
-    const changeProperty = (value: string) => {
-        setUpdating(true);
-        router.get(
-            '/dashboard',
-            value === '' ? {} : { property_id: Number(value) },
-            {
-                preserveState: true,
-                replace: true,
-                onFinish: () => setUpdating(false),
-            },
-        );
-    };
 
     if (focus.assignment_restricted && !focus.has_assignments) {
         return (
@@ -55,9 +40,11 @@ export function PropertyFocus({
         <section
             className="pmc-dashboard-focus"
             aria-labelledby="dashboard-property-focus-title"
-            aria-busy={updating}
         >
-            <div>
+            <span className="pmc-dashboard-focus-icon">
+                <i className="bi bi-building-check" aria-hidden="true" />
+            </span>
+            <div className="pmc-dashboard-focus-copy">
                 <span>{t('dashboard.property_focus_eyebrow')}</span>
                 <strong id="dashboard-property-focus-title">
                     {selectedTitle}
@@ -70,7 +57,7 @@ export function PropertyFocus({
                               undefined,
                               {
                                   count: localizedNumber(
-                                      focus.options.length,
+                                      focus.property_count,
                                       locale,
                                   ),
                               },
@@ -78,41 +65,20 @@ export function PropertyFocus({
                 </small>
             </div>
 
-            <div className="pmc-dashboard-focus-controls">
-                <label htmlFor="dashboard-property-focus">
-                    {t('dashboard.property_focus_label')}
-                </label>
-                <select
-                    id="dashboard-property-focus"
-                    value={focus.selected?.id ?? ''}
-                    disabled={updating}
-                    onChange={(event) => changeProperty(event.target.value)}
+            {focus.selected ? (
+                <Link
+                    className="pmc-dashboard-focus-action"
+                    href={`/assets/${focus.selected.id}`}
                 >
-                    <option value="">
-                        {focus.assignment_restricted
-                            ? t('dashboard.all_assigned_properties')
-                            : t('dashboard.all_properties')}
-                    </option>
-                    {focus.options.map((property) => (
-                        <option key={property.id} value={property.id}>
-                            {property.code} · {propertyTitle(property, locale)}
-                        </option>
-                    ))}
-                </select>
-                {focus.selected ? (
-                    <Link href={`/assets/${focus.selected.id}`}>
-                        {t('dashboard.open_focused_property')}
-                        <i
-                            className="bi bi-arrow-up-right"
-                            aria-hidden="true"
-                        />
-                    </Link>
-                ) : null}
-            </div>
-
-            <span className="visually-hidden" role="status" aria-live="polite">
-                {updating ? t('dashboard.updating_property_focus') : ''}
-            </span>
+                    {t('dashboard.open_focused_property')}
+                    <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                </Link>
+            ) : (
+                <span className="pmc-dashboard-focus-hint">
+                    <i className="bi bi-layout-sidebar" aria-hidden="true" />
+                    {t('shell.property_scope_help')}
+                </span>
+            )}
         </section>
     );
 }
