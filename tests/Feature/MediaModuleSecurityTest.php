@@ -422,8 +422,24 @@ class MediaModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.title', 'صورة المحفظة المؤرشفة')
+                ->where('detailPage.header.actions.0.label', 'فتح الصورة')
+                ->where('detailPage.header.actions.0.href', route('media-files.file', $mediaFile))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.0.external', true)
+                ->where('detailPage.header.actions.1.label', 'تعديل الوسائط')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'سجل الوسائط')
                 ->where('detailPage.sections.0.items.4.value', 'محفظة مؤرشفة'));
+
+        $this->actingAs($superadmin)
+            ->withSession(['locale' => 'en'])
+            ->get(route('media-files.show', $mediaFile))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Open image')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit media')
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
     }
 
     /** @param array<string, mixed> $overrides */

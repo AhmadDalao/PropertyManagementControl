@@ -22,8 +22,8 @@ final class MediaFileDetailHeaderPresenter
             'backHref' => route('media-files.index'),
             'backLabel' => trans('app.media.all_media'),
             'actions' => [
-                ['label' => trans('app.media.edit_media'), 'href' => route('media-files.edit', $mediaFile), 'variant' => 'primary'],
-                ['label' => trans('app.media.open_image'), 'href' => $data->fileUrl, 'variant' => 'secondary', 'external' => true],
+                ['label' => trans('app.media.open_image'), 'href' => $data->fileUrl, 'variant' => 'primary', 'external' => true],
+                ['label' => trans('app.media.edit_media'), 'href' => route('media-files.edit', $mediaFile), 'variant' => 'secondary'],
             ],
         ];
     }

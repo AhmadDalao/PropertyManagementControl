@@ -474,6 +474,49 @@ class DocumentLibraryManagementTest extends TestCase
                 }));
     }
 
+    public function test_document_detail_prioritizes_the_pdf_download_in_english_and_arabic(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $asset = $this->createAsset($portfolio);
+        $document = Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $asset->getMorphClass(),
+            'documentable_id' => $asset->id,
+            'type' => 'owner_report',
+            'title_en' => 'Owner operating report',
+            'title_ar' => 'تقرير تشغيل المالك',
+            'disk' => 'local',
+            'file_path' => 'documents/owner-operating-report.pdf',
+            'original_name' => 'owner-operating-report.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Download PDF')
+                ->where('detailPage.header.actions.0.href', route('documents.download', $document))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.0.external', true)
+                ->where('detailPage.header.actions.1.label', 'Edit document')
+                ->where('detailPage.header.actions.1.href', route('documents.edit', $document))
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('documents.show', $document))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'تنزيل PDF')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'تعديل المستند')
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+    }
+
     public function test_internal_document_type_cannot_be_marked_portal_visible(): void
     {
         Storage::fake('local');

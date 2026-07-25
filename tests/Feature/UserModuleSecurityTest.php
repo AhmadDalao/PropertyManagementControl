@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\AssetStakeholder;
+use App\Models\Document;
 use App\Models\MaintenanceRequest;
 use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Users\Support\UserAccess;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -103,6 +105,101 @@ class UserModuleSecurityTest extends TestCase
 
         $this->actingAs($owner)->get(route('users.show', $otherOwner))->assertForbidden();
         $this->actingAs($owner)->get(route('users.show', $foreignTenant))->assertForbidden();
+    }
+
+    public function test_tenant_user_detail_prioritizes_the_profile_before_account_editing(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+
+        $this->actingAs($owner)
+            ->get(route('users.show', $tenantUser))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Open tenant profile')
+                ->where('detailPage.header.actions.0.href', route('tenants.show', $tenant))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit user')
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('users.show', $tenantUser))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'فتح ملف المستأجر')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'تعديل المستخدم')
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
+    }
+
+    public function test_user_detail_payload_obeys_disabled_portfolio_modules(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'assets' => false,
+                'documents' => false,
+                'leases' => false,
+                'maintenance' => false,
+                'payments' => false,
+                'tenants' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+
+        AssetStakeholder::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'user_id' => $tenantUser->id,
+            'relationship_type' => 'owner',
+            'is_primary' => true,
+        ]);
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'assigned_to_user_id' => $tenantUser->id,
+            'category' => 'general',
+            'priority' => 'medium',
+            'status' => 'open',
+            'title' => 'Hidden disabled-module request',
+            'description' => 'This record must not enter the user detail payload.',
+            'requested_at' => now(),
+        ]);
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $tenantUser->id,
+            'documentable_type' => $asset->getMorphClass(),
+            'documentable_id' => $asset->id,
+            'type' => 'tenant_statement',
+            'title_en' => 'Hidden disabled-module document',
+            'disk' => 'local',
+            'file_path' => 'documents/hidden-user-detail.pdf',
+            'original_name' => 'hidden-user-detail.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('users.show', $tenantUser))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Edit user',
+                    'Suspend user',
+                ])
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->has('detailPage.decisionCards', 2)
+                ->has('detailPage.stats', 2)
+                ->has('detailPage.related', 0)
+                ->has('detailPage.documents', 0));
     }
 
     public function test_cross_module_user_links_follow_the_same_access_policy(): void

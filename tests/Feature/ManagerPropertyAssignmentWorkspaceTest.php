@@ -44,13 +44,13 @@ class ManagerPropertyAssignmentWorkspaceTest extends TestCase
         $this->actingAs($owner)
             ->get(route('users.show', $manager))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->where(
-                'detailPage.header.actions',
-                fn ($actions): bool => collect($actions)->contains(
-                    'href',
-                    route('users.property-assignments.edit', $manager),
-                ),
-            ));
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Manage property assignments')
+                ->where('detailPage.header.actions.0.href', route('users.property-assignments.edit', $manager))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'Edit user')
+                ->where('detailPage.header.actions.1.href', route('users.edit', $manager))
+                ->where('detailPage.header.actions.1.variant', 'secondary'));
 
         $this->actingAs($owner)
             ->get(route('users.property-assignments.edit', $manager))

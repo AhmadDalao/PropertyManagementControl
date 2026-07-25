@@ -1108,9 +1108,17 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('سجل الملف', { exact: true }),
         ).toBeVisible();
+        const downloadAction = page.getByRole('link', {
+            name: 'تنزيل PDF',
+        });
+        await expect(downloadAction).toBeVisible();
+        await expect(downloadAction).toHaveClass(/btn-primary/);
+        expect(
+            (await downloadAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
         await expect(
-            page.getByRole('link', { name: 'تنزيل PDF' }),
-        ).toBeVisible();
+            page.getByRole('link', { name: 'تعديل المستند' }),
+        ).toHaveClass(/btn-outline-secondary/);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/documents/create?locale=ar');
@@ -1223,8 +1231,38 @@ test.describe('authenticated administration', () => {
             name: 'Manage property assignments',
         });
         await expect(assignmentLink).toBeVisible();
+        await expect(assignmentLink).toHaveClass(/btn-primary/);
+        expect(
+            (await assignmentLink.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(page.getByRole('link', { name: 'Edit user' })).toHaveClass(
+            /btn-outline-secondary/,
+        );
         const assignmentHref = await assignmentLink.getAttribute('href');
         expect(assignmentHref).toBeTruthy();
+
+        await page.goto(
+            `/users?search=${encodeURIComponent(localAccounts[3].email)}&per_page=10&locale=ar`,
+        );
+        const tenantUserLink = page
+            .locator('.pmc-mobile-record-card a[href^="/users/"]')
+            .first();
+        await expect(tenantUserLink).toBeVisible();
+        const tenantUserHref = await tenantUserLink.getAttribute('href');
+        expect(tenantUserHref).toBeTruthy();
+        await page.goto(`${tenantUserHref}?locale=ar`);
+        const tenantProfileLink = page.getByRole('link', {
+            name: 'فتح ملف المستأجر',
+        });
+        await expect(tenantProfileLink).toHaveClass(/btn-primary/);
+        expect(
+            (await tenantProfileLink.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            page.getByRole('link', { name: 'تعديل المستخدم' }),
+        ).toHaveClass(/btn-outline-secondary/);
+        await expectNoHorizontalOverflow(page);
+
         await page.goto(`${assignmentHref}?locale=ar`);
 
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
@@ -1326,6 +1364,16 @@ test.describe('authenticated administration', () => {
             expect(mediaDetailHref).toBeTruthy();
             await page.goto(`${mediaDetailHref}?locale=ar`);
             await expect(page.getByText('سجل الوسائط')).toBeVisible();
+            const openImageAction = page.getByRole('link', {
+                name: 'فتح الصورة',
+            });
+            await expect(openImageAction).toHaveClass(/btn-primary/);
+            expect(
+                (await openImageAction.boundingBox())?.height ?? 0,
+            ).toBeGreaterThanOrEqual(44);
+            await expect(
+                page.getByRole('link', { name: 'تعديل الوسائط' }),
+            ).toHaveClass(/btn-outline-secondary/);
             await expect(page.locator('body')).not.toContainText('media.');
             await expectNoHorizontalOverflow(page);
         } else {

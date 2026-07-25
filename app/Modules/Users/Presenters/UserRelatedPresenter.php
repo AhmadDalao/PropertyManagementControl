@@ -4,6 +4,8 @@ namespace App\Modules\Users\Presenters;
 
 use App\Models\AssetStakeholder;
 use App\Models\MaintenanceRequest;
+use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use Illuminate\Support\Collection;
 
@@ -16,12 +18,22 @@ final class UserRelatedPresenter
      * @param  Collection<int, MaintenanceRequest>  $maintenance
      * @return array<int, array<string, mixed>>
      */
-    public function present(Collection $stakeholders, Collection $maintenance): array
-    {
-        return [
-            $this->stakeholders($stakeholders),
-            $this->maintenance($maintenance),
-        ];
+    public function present(
+        Collection $stakeholders,
+        Collection $maintenance,
+        User $actor,
+    ): array {
+        $related = [];
+
+        if (PortfolioModules::enabledForUser($actor, 'assets')) {
+            $related[] = $this->stakeholders($stakeholders);
+        }
+
+        if (PortfolioModules::enabledForUser($actor, 'maintenance')) {
+            $related[] = $this->maintenance($maintenance);
+        }
+
+        return $related;
     }
 
     /**

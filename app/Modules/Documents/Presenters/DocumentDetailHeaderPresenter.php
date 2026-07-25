@@ -19,8 +19,8 @@ final class DocumentDetailHeaderPresenter
             'backHref' => route('documents.index'),
             'backLabel' => trans('app.documents.all_documents'),
             'actions' => [
-                ['label' => trans('app.documents.edit_document'), 'href' => route('documents.edit', $document), 'variant' => 'primary'],
-                ['label' => trans('app.documents.download_pdf'), 'href' => route('documents.download', $document), 'variant' => 'secondary', 'external' => true],
+                ['label' => trans('app.documents.download_pdf'), 'href' => route('documents.download', $document), 'variant' => 'primary', 'external' => true],
+                ['label' => trans('app.documents.edit_document'), 'href' => route('documents.edit', $document), 'variant' => 'secondary'],
             ],
         ];
     }
