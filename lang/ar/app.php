@@ -3096,6 +3096,7 @@ return [
             'view_portfolio' => 'فتح المحفظة',
             'configure_portfolio' => 'إعداد المحفظة',
             'open_owner' => 'فتح المالك',
+            'configure_owner' => 'إعداد المالك',
             'create_owner' => 'إنشاء مالك',
             'review_team' => 'مراجعة الفريق',
             'create_manager' => 'إنشاء مدير',

@@ -3096,6 +3096,7 @@ return [
             'view_portfolio' => 'Open portfolio',
             'configure_portfolio' => 'Configure portfolio',
             'open_owner' => 'Open owner',
+            'configure_owner' => 'Configure owner',
             'create_owner' => 'Create owner',
             'review_team' => 'Review team',
             'create_manager' => 'Create manager',

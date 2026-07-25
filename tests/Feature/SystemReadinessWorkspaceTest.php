@@ -135,6 +135,36 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 }));
     }
 
+    public function test_inactive_owner_readiness_action_is_localized_and_opens_the_owner_record(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, ['status' => 'inactive']);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $portfolio->update(['owner_user_id' => $owner->id]);
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index', ['portfolio_id' => $portfolio->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portfolioReadiness.checks', function (mixed $checks) use ($owner): bool {
+                    $ownerCheck = $this->systemCheck($checks, 'portfolio_owner');
+
+                    return ($ownerCheck['href'] ?? null) === route('users.edit', $owner)
+                        && ($ownerCheck['action_label'] ?? null) === 'Configure owner';
+                }));
+
+        $this->actingAs($superadmin)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('system-readiness.index', ['portfolio_id' => $portfolio->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portfolioReadiness.checks', function (mixed $checks): bool {
+                    $ownerCheck = $this->systemCheck($checks, 'portfolio_owner');
+
+                    return ($ownerCheck['action_label'] ?? null) === 'إعداد المالك';
+                }));
+    }
+
     public function test_confirmations_require_evidence_and_stay_in_their_scope(): void
     {
         $portfolio = $this->createPortfolio();
