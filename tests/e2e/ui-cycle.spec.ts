@@ -861,6 +861,13 @@ test.describe('authenticated administration', () => {
             .locator('.pmc-mobile-record-card .pmc-record-open')
             .first()
             .click();
+        const contractAction = page.getByRole('link', {
+            name: 'العقد PDF',
+        });
+        await expect(contractAction).toHaveClass(/btn-primary/);
+        expect(
+            (await contractAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
         await expect(
             page.getByText('إجمالي المستحق', { exact: true }),
         ).toBeVisible();
@@ -906,6 +913,16 @@ test.describe('authenticated administration', () => {
         const detailLink = paymentCards.locator('.pmc-record-open').first();
         await expect(detailLink).toBeVisible();
         await detailLink.click();
+        const receiptAction = page.getByRole('link', {
+            name: 'تنزيل الإيصال',
+        });
+        await expect(receiptAction).toHaveClass(/btn-primary/);
+        expect(
+            (await receiptAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            page.getByRole('link', { name: 'مراجعة الدفعة' }),
+        ).toHaveClass(/btn-outline-secondary/);
         await expect(
             page.getByText('تفاصيل الدفعة', { exact: true }),
         ).toBeVisible();

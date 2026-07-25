@@ -6,16 +6,18 @@ import type { MaintenanceIndexPageProps } from './types';
 
 type MaintenanceMetricsProps = Pick<
     MaintenanceIndexPageProps,
-    'maintenanceInsights' | 'mode' | 'app'
+    'maintenanceInsights' | 'mode' | 'financialsEnabled' | 'app'
 >;
 
 export function MaintenanceMetrics({
     maintenanceInsights: insights,
     mode,
+    financialsEnabled,
     app,
 }: MaintenanceMetricsProps) {
     const { t } = useTranslator();
     const activeCount = insights.open + insights.in_progress;
+    const showFinancials = mode === 'manager' && financialsEnabled;
 
     return (
         <MetricGrid
@@ -52,21 +54,16 @@ export function MaintenanceMetrics({
                     tone: insights.overdue > 0 ? 'amber' : 'blue',
                 },
                 {
-                    label:
-                        mode === 'manager'
-                            ? t('maintenance.posted_service_cost')
-                            : t('maintenance.request_history'),
-                    value:
-                        mode === 'manager'
-                            ? currency(insights.posted_expenses, app.locale)
-                            : insights.total,
+                    label: showFinancials
+                        ? t('maintenance.posted_service_cost')
+                        : t('maintenance.request_history'),
+                    value: showFinancials
+                        ? currency(insights.posted_expenses, app.locale)
+                        : insights.total,
                     detail: t('maintenance.total_requests', undefined, {
                         count: insights.total,
                     }),
-                    icon:
-                        mode === 'manager'
-                            ? 'bi-cash-coin'
-                            : 'bi-clock-history',
+                    icon: showFinancials ? 'bi-cash-coin' : 'bi-clock-history',
                     tone: 'teal',
                 },
             ]}

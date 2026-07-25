@@ -9,6 +9,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Payments\Actions\ManagePayments;
 use App\Modules\Payments\Actions\PaymentAllocator;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
@@ -262,6 +263,49 @@ class PaymentModuleSecurityTest extends TestCase
                 ->where('detailPage.documents.0.href', route('documents.download', $receipt)));
     }
 
+    public function test_payment_detail_prioritizes_the_receipt_and_hides_disabled_documents(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'documents' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
+            'status' => 'posted',
+        ]);
+        $this->createPaymentDocument(
+            $payment,
+            $owner,
+            'receipt',
+            'payments/disabled-module-receipt.pdf',
+        );
+
+        $this->actingAs($owner)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Download receipt')
+                ->where('detailPage.header.actions.0.href', route('payments.receipt', $payment))
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.0.external', true)
+                ->where('detailPage.header.actions.1.label', 'Review payment')
+                ->where('detailPage.header.actions.1.href', route('payments.edit', $payment))
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->has('detailPage.documents', 0));
+    }
+
     public function test_payment_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
     {
         $ownerPortfolio = $this->createPortfolio();
@@ -469,7 +513,9 @@ class PaymentModuleSecurityTest extends TestCase
             $this->createAsset($portfolio),
             $owner,
         );
-        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
+            'status' => 'posted',
+        ]);
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
@@ -497,6 +543,10 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.eyebrow', 'تفاصيل الدفعة')
+                ->where('detailPage.header.actions.0.label', 'تنزيل الإيصال')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'مراجعة الدفعة')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'سجل الدفعة')
                 ->where('detailPage.related.0.title', 'التوزيعات'));
     }

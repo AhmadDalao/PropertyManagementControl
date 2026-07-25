@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Maintenance\Presenters\MaintenanceTableRowPresenter;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,6 +29,8 @@ class MaintenanceIndexQuery
     {
         $filters = $this->directory->filters($request);
         $tenantMode = $actor->hasRole('tenant');
+        $financialsEnabled = ! $tenantMode
+            && PortfolioModules::enabledForUser($actor, 'expenses');
         $baseQuery = $tenantMode
             ? $this->directory->tenantBase($actor)
             : $this->directory->managerBase($actor);
@@ -37,7 +40,7 @@ class MaintenanceIndexQuery
             $this->directory->applyManagerScope($summaryQuery, $filters, $actor);
         }
 
-        $requests = $this->directory->listing(clone $baseQuery, ! $tenantMode);
+        $requests = $this->directory->listing(clone $baseQuery, $financialsEnabled);
 
         if ($tenantMode) {
             $this->directory->applyTenantFilters($requests, $filters);
@@ -54,9 +57,10 @@ class MaintenanceIndexQuery
                 'priority',
                 'category',
             ])->through(
-                fn (MaintenanceRequest $item): array => $this->rows->present($item, ! $tenantMode),
+                fn (MaintenanceRequest $item): array => $this->rows->present($item, $financialsEnabled),
             ),
-            'maintenanceInsights' => $this->insights->get($summaryQuery, ! $tenantMode),
+            'maintenanceInsights' => $this->insights->get($summaryQuery, $financialsEnabled),
+            'financialsEnabled' => $financialsEnabled,
             'filters' => $filters,
             'counts' => $this->tables->statusCounts(
                 $summaryQuery,

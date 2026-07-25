@@ -27,7 +27,7 @@ export default function MaintenanceIndexPage() {
                         : t('maintenance.manager_description')
                 }
                 actions={[
-                    ...(props.mode === 'manager'
+                    ...(props.mode === 'manager' && props.financialsEnabled
                         ? [
                               {
                                   label: t('maintenance.expenses_action'),

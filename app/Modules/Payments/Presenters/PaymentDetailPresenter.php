@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Payments\Queries\PaymentDetailQuery;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 
 final class PaymentDetailPresenter
@@ -23,11 +24,15 @@ final class PaymentDetailPresenter
     public function present(Payment $payment, User $actor): array
     {
         $data = $this->query->get($payment, $actor);
-        $documents = $data->adminMode
-            ? $payment->documents
-            : $payment->documents
-                ->where('is_public', true)
-                ->whereIn('type', PaymentOptions::TENANT_DOCUMENT_TYPES);
+        $documents = collect();
+
+        if (PortfolioModules::enabledForUser($actor, 'documents')) {
+            $documents = $data->adminMode
+                ? $payment->documents
+                : $payment->documents
+                    ->where('is_public', true)
+                    ->whereIn('type', PaymentOptions::TENANT_DOCUMENT_TYPES);
+        }
 
         return [
             'header' => $this->header->present($data),

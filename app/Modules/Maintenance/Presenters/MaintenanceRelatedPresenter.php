@@ -5,6 +5,7 @@ namespace App\Modules\Maintenance\Presenters;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceUpdate;
 use App\Modules\Maintenance\Data\MaintenanceDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 class MaintenanceRelatedPresenter
 {
@@ -13,7 +14,10 @@ class MaintenanceRelatedPresenter
     {
         $panels = [$this->updates($data)];
 
-        if (! $data->tenantMode) {
+        if (
+            ! $data->tenantMode
+            && PortfolioModules::enabledForUser($data->actor, 'expenses')
+        ) {
             $panels[] = $this->expenses($data);
         }
 

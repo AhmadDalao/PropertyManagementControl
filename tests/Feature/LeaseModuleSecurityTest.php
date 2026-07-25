@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Document;
 use App\Models\Lease;
 use App\Modules\Leases\Actions\ManageLeases;
 use App\Modules\Portfolios\Support\PortfolioModules;
@@ -430,11 +431,30 @@ final class LeaseModuleSecurityTest extends TestCase
             $this->createAsset($portfolio),
             $owner,
         );
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'lease_contract',
+            'title_en' => 'Hidden lease document',
+            'disk' => 'local',
+            'file_path' => 'documents/hidden-lease-document.pdf',
+            'original_name' => 'hidden-lease-document.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+            'is_public' => true,
+        ]);
 
         $this->actingAs($owner)
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions.0.label', 'Contract PDF')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.0.external', true)
+                ->where('detailPage.header.actions.1.label', 'Edit lease')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.workflow.actions', function ($actions): bool {
                     $labels = collect($actions)->pluck('label');
 
@@ -442,7 +462,12 @@ final class LeaseModuleSecurityTest extends TestCase
                         && ! $labels->contains(trans('app.leases.upload_signed_pdf'))
                         && $labels->contains(trans('app.leases.prepare_renewal'))
                         && $labels->contains(trans('app.leases.tenant_statement'));
-                }));
+                })
+                ->has('detailPage.related', 1)
+                ->where('detailPage.related.0.title', 'Installments')
+                ->where('detailPage.related.0.columns', fn ($columns): bool => ! collect($columns)
+                    ->contains(trans('app.rent_collection.follow_up_status')))
+                ->has('detailPage.documents', 0));
     }
 
     public function test_lease_list_minimizes_personal_data_and_normalizes_filters(): void
@@ -512,6 +537,10 @@ final class LeaseModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.eyebrow', 'سجل العقد')
+                ->where('detailPage.header.actions.0.label', 'العقد PDF')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.1.label', 'تعديل العقد')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'العقد')
                 ->where('detailPage.sections.1.title', 'المبالغ')
                 ->where('detailPage.sections.1.tab', 'financial'));

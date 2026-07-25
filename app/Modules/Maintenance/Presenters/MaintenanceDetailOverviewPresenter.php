@@ -14,6 +14,30 @@ class MaintenanceDetailOverviewPresenter
     public function present(MaintenanceDetailData $data): array
     {
         $request = $data->request;
+        $stats = [
+            [
+                'label' => trans('app.maintenance.status'),
+                'value' => trans("app.status.{$request->status}"),
+                'tone' => $request->status === 'resolved' ? 'teal' : 'primary',
+            ],
+            [
+                'label' => trans('app.maintenance.priority'),
+                'value' => trans("app.status.{$request->priority}"),
+                'tone' => in_array($request->priority, ['high', 'urgent'], true) ? 'danger' : 'muted',
+            ],
+            ['label' => trans('app.maintenance.updates'), 'value' => $data->updates->count()],
+        ];
+
+        if (
+            ! $data->tenantMode
+            && PortfolioModules::enabledForUser($data->actor, 'expenses')
+        ) {
+            $stats[] = [
+                'label' => trans('app.maintenance.cost'),
+                'value' => number_format($data->postedExpenseTotal, 2),
+                'tone' => 'primary',
+            ];
+        }
 
         return [
             'header' => [
@@ -28,24 +52,7 @@ class MaintenanceDetailOverviewPresenter
                 'backLabel' => trans('app.maintenance.queue_title'),
                 'actions' => $this->actions($data),
             ],
-            'stats' => $this->resources->detailItems([
-                [
-                    'label' => trans('app.maintenance.status'),
-                    'value' => trans("app.status.{$request->status}"),
-                    'tone' => $request->status === 'resolved' ? 'teal' : 'primary',
-                ],
-                [
-                    'label' => trans('app.maintenance.priority'),
-                    'value' => trans("app.status.{$request->priority}"),
-                    'tone' => in_array($request->priority, ['high', 'urgent'], true) ? 'danger' : 'muted',
-                ],
-                ['label' => trans('app.maintenance.updates'), 'value' => $data->updates->count()],
-                [
-                    'label' => trans('app.maintenance.cost'),
-                    'value' => $data->tenantMode ? null : number_format($data->postedExpenseTotal, 2),
-                    'tone' => 'primary',
-                ],
-            ]),
+            'stats' => $this->resources->detailItems($stats),
             'sections' => [[
                 'title' => trans('app.maintenance.request_context'),
                 'description' => trans('app.maintenance.request_context_help'),

@@ -4,6 +4,7 @@ namespace App\Modules\Leases\Presenters;
 
 use App\Models\CollectionFollowUp;
 use App\Modules\Leases\Data\LeaseDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 
 final class LeaseTimelinePresenter
@@ -24,7 +25,9 @@ final class LeaseTimelinePresenter
             ];
         }
 
-        $followUpIds = $data->lease->collectionFollowUps->pluck('id')->all();
+        $followUpIds = PortfolioModules::enabledForUser($data->actor, 'payments')
+            ? $data->lease->collectionFollowUps->pluck('id')->all()
+            : [];
         if ($followUpIds !== []) {
             $items = [
                 ...$items,

@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Modules\Maintenance\Actions\ManageMaintenance;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -95,6 +96,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('maintenanceInsights.total', 1)
                 ->where('maintenanceInsights.in_progress', 1)
                 ->where('maintenanceInsights.posted_expenses', 350)
+                ->where('financialsEnabled', true)
                 ->has('categoryOptions', 4)
                 ->has('priorityOptions', 4)
                 ->has('statusOptions', 4));
@@ -148,6 +150,62 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             'tenant_profile_id' => $tenant->id,
             'title' => 'Panel sparks',
         ]);
+    }
+
+    public function test_maintenance_detail_hides_expense_data_when_the_module_is_disabled(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                ...PortfolioModules::defaults(),
+                'expenses' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+        $requestItem = $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+        );
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'maintenance_request_id' => $requestItem->id,
+            'created_by_user_id' => $owner->id,
+            'category' => 'maintenance',
+            'title' => 'Hidden disabled-module expense',
+            'incurred_on' => now()->toDateString(),
+            'amount' => 750,
+            'currency' => 'SAR',
+            'status' => 'posted',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.show', $requestItem))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.stats', fn ($stats): bool => ! collect($stats)
+                    ->pluck('label')
+                    ->contains('Posted cost'))
+                ->where('detailPage.related', fn ($related): bool => collect($related)
+                    ->pluck('title')
+                    ->all() === ['Updates'])
+                ->where('detailPage.workflow.actions', fn ($actions): bool => ! collect($actions)
+                    ->pluck('label')
+                    ->contains('Add expense')));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.index', ['search' => $requestItem->title]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('financialsEnabled', false)
+                ->where('requests.total', 1)
+                ->where('requests.data.0.expense_total', 0)
+                ->where('requests.data.0.expense_count', 0)
+                ->where('maintenanceInsights.posted_expenses', 0));
     }
 
     public function test_manager_update_preserves_due_date_until_priority_changes(): void

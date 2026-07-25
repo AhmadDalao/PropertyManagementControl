@@ -43,6 +43,7 @@ export type MaintenanceInsights = {
 
 export type MaintenanceIndexPageProps = SharedProps & {
     mode: 'tenant' | 'manager';
+    financialsEnabled: boolean;
     requests: PaginatedData<MaintenanceRecord>;
     maintenanceInsights: MaintenanceInsights;
     filters: TableFilters;
@@ -57,6 +58,7 @@ export type MaintenanceIndexPageProps = SharedProps & {
 export type MaintenanceTableProps = Pick<
     MaintenanceIndexPageProps,
     | 'mode'
+    | 'financialsEnabled'
     | 'requests'
     | 'filters'
     | 'counts'

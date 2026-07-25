@@ -44,8 +44,10 @@ export function MaintenanceAssetTenant({ request }: MaintenanceCellProps) {
 export function MaintenanceAssignment({
     request,
     mode,
+    financialsEnabled,
     app,
-}: MaintenanceCellProps & Pick<MaintenanceTableProps, 'mode' | 'app'>) {
+}: MaintenanceCellProps &
+    Pick<MaintenanceTableProps, 'mode' | 'financialsEnabled' | 'app'>) {
     const { t } = useTranslator();
 
     return (
@@ -54,7 +56,7 @@ export function MaintenanceAssignment({
                 {request.assigned_to?.name ?? t('maintenance.unassigned_label')}
             </strong>
             <span>
-                {mode === 'manager'
+                {mode === 'manager' && financialsEnabled
                     ? `${currency(request.expense_total, app.locale)} ${t(
                           'maintenance.cost_entries',
                           undefined,

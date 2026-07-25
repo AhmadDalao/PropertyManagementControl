@@ -6,6 +6,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Maintenance\Data\MaintenanceDetailData;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 class MaintenanceDetailQuery
 {
@@ -15,6 +16,8 @@ class MaintenanceDetailQuery
     {
         $this->access->ensureCanAccess($actor, $request);
         $tenantMode = $actor->hasRole('tenant');
+        $expensesEnabled = ! $tenantMode
+            && PortfolioModules::enabledForUser($actor, 'expenses');
 
         $request->loadMissing([
             'portfolio',
@@ -30,9 +33,9 @@ class MaintenanceDetailQuery
             ->when($tenantMode, fn ($query) => $query->where('is_public_comment', true))
             ->latest()
             ->get();
-        $expenses = $tenantMode
-            ? collect()
-            : $request->expenses()->latest('incurred_on')->get();
+        $expenses = $expensesEnabled
+            ? $request->expenses()->latest('incurred_on')->get()
+            : collect();
 
         return new MaintenanceDetailData(
             request: $request,
@@ -40,9 +43,9 @@ class MaintenanceDetailQuery
             tenantMode: $tenantMode,
             updates: $updates,
             expenses: $expenses,
-            postedExpenseTotal: $tenantMode
-                ? 0
-                : (float) $expenses->where('status', 'posted')->sum('amount'),
+            postedExpenseTotal: $expensesEnabled
+                ? (float) $expenses->where('status', 'posted')->sum('amount')
+                : 0,
         );
     }
 }

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\LeaseMoveOuts\Presenters\LeaseMoveOutProgressPresenter;
 use App\Modules\Leases\Queries\LeaseDetailQuery;
 use App\Modules\Leases\Support\LeaseOptions;
+use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 
 final class LeaseDetailPresenter
@@ -27,11 +28,15 @@ final class LeaseDetailPresenter
     public function present(Lease $target, User $actor): array
     {
         $data = $this->query->get($target, $actor);
-        $documents = $data->adminMode
-            ? $data->lease->documents
-            : $data->lease->documents
-                ->where('is_public', true)
-                ->whereIn('type', LeaseOptions::TENANT_DOCUMENT_TYPES);
+        $documents = collect();
+
+        if (PortfolioModules::enabledForUser($actor, 'documents')) {
+            $documents = $data->adminMode
+                ? $data->lease->documents
+                : $data->lease->documents
+                    ->where('is_public', true)
+                    ->whereIn('type', LeaseOptions::TENANT_DOCUMENT_TYPES);
+        }
 
         return [
             'header' => $this->header->present($data),

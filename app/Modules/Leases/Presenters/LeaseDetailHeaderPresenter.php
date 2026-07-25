@@ -18,18 +18,20 @@ final class LeaseDetailHeaderPresenter
         $assetTitle = $this->resources->localized($asset?->title_en, $asset?->title_ar)
             ?? trans('app.leases.no_asset');
         $tenant = $lease->tenantProfile?->user->name ?? trans('app.leases.no_tenant');
-        $actions = [];
-
-        if ($data->adminMode && $lease->status !== 'draft') {
-            $actions[] = ['label' => trans('app.leases.edit_action'), 'href' => route('leases.edit', $lease), 'variant' => 'primary'];
-        }
-
-        $actions[] = [
+        $actions = [[
             'label' => trans('app.leases.contract_pdf'),
             'href' => route('leases.contract', $lease),
-            'variant' => 'secondary',
+            'variant' => 'primary',
             'external' => true,
-        ];
+        ]];
+
+        if ($data->adminMode && $lease->status !== 'draft') {
+            $actions[] = [
+                'label' => trans('app.leases.edit_action'),
+                'href' => route('leases.edit', $lease),
+                'variant' => 'secondary',
+            ];
+        }
 
         return [
             'eyebrow' => trans('app.leases.detail_eyebrow'),

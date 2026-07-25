@@ -5,6 +5,7 @@ namespace App\Modules\Leases\Presenters;
 use App\Models\LeaseInstallment;
 use App\Models\Payment;
 use App\Modules\Leases\Data\LeaseDetailData;
+use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class LeaseRelatedPresenter
 {
@@ -14,6 +15,8 @@ final class LeaseRelatedPresenter
     public function present(LeaseDetailData $data): array
     {
         $lease = $data->lease;
+        $paymentsEnabled = PortfolioModules::enabledForUser($data->actor, 'payments');
+        $canManagePayments = $data->adminMode && $paymentsEnabled;
         $installmentColumns = [
             trans('app.leases.sequence'),
             trans('app.leases.installment'),
@@ -23,41 +26,42 @@ final class LeaseRelatedPresenter
             trans('app.leases.paid'),
         ];
 
-        if ($data->adminMode) {
+        if ($canManagePayments) {
             $installmentColumns[] = trans('app.rent_collection.follow_up_status');
         }
 
-        return [
-            [
-                'title' => trans('app.leases.installments'),
-                'description' => trans('app.leases.installments_help'),
-                'columns' => $installmentColumns,
-                'rows' => $lease->installments
-                    ->map(function (LeaseInstallment $installment) use ($data): array {
-                        $row = [
-                            trans('app.leases.sequence') => $installment->sequence,
-                            trans('app.leases.installment') => $this->labels->present($installment),
-                            trans('app.leases.due_date') => $installment->due_date?->toDateString(),
-                            trans('app.leases.status') => trans("app.status.{$installment->status}"),
-                            trans('app.leases.due') => number_format((float) $installment->amount_due, 2),
-                            trans('app.leases.paid') => number_format((float) $installment->amount_paid, 2),
-                        ];
+        $related = [[
+            'title' => trans('app.leases.installments'),
+            'description' => trans('app.leases.installments_help'),
+            'columns' => $installmentColumns,
+            'rows' => $lease->installments
+                ->map(function (LeaseInstallment $installment) use ($canManagePayments): array {
+                    $row = [
+                        trans('app.leases.sequence') => $installment->sequence,
+                        trans('app.leases.installment') => $this->labels->present($installment),
+                        trans('app.leases.due_date') => $installment->due_date?->toDateString(),
+                        trans('app.leases.status') => trans("app.status.{$installment->status}"),
+                        trans('app.leases.due') => number_format((float) $installment->amount_due, 2),
+                        trans('app.leases.paid') => number_format((float) $installment->amount_paid, 2),
+                    ];
 
-                        if ($data->adminMode) {
-                            $row[trans('app.rent_collection.follow_up_status')] = $installment->remaining_amount > 0
-                                ? [
-                                    'label' => trans('app.rent_collection.manage_follow_up'),
-                                    'href' => route('rent-collection.follow-up', $installment),
-                                ]
-                                : trans('app.rent_collection.follow_up_state_settled');
-                        }
+                    if ($canManagePayments) {
+                        $row[trans('app.rent_collection.follow_up_status')] = $installment->remaining_amount > 0
+                            ? [
+                                'label' => trans('app.rent_collection.manage_follow_up'),
+                                'href' => route('rent-collection.follow-up', $installment),
+                            ]
+                            : trans('app.rent_collection.follow_up_state_settled');
+                    }
 
-                        return $row;
-                    })
-                    ->all(),
-                'emptyText' => trans('app.leases.no_installments'),
-            ],
-            [
+                    return $row;
+                })
+                ->all(),
+            'emptyText' => trans('app.leases.no_installments'),
+        ]];
+
+        if ($paymentsEnabled) {
+            $related[] = [
                 'title' => trans('app.leases.payments'),
                 'description' => trans('app.leases.payments_help'),
                 'columns' => [
@@ -75,7 +79,9 @@ final class LeaseRelatedPresenter
                 'emptyText' => trans('app.leases.no_payments'),
                 'actionHref' => $data->adminMode ? route('payments.create', ['lease_id' => $lease->id]) : null,
                 'actionLabel' => $data->adminMode ? trans('app.leases.record_payment') : null,
-            ],
-        ];
+            ];
+        }
+
+        return $related;
     }
 }
