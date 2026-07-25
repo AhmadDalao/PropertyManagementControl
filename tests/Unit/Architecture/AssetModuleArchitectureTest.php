@@ -86,10 +86,40 @@ class AssetModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function building_setup_stays_a_bounded_asset_owned_workflow(): void
+    {
+        $controller = $this->source($this->path('app/Http/Controllers/AssetStructureController.php'));
+        $action = $this->source($this->path('app/Modules/Assets/Actions/CreateBuildingStructure.php'));
+        $factory = $this->source($this->path('app/Modules/Assets/Actions/BuildingStructureFactory.php'));
+        $input = $this->source($this->path('app/Modules/Assets/Support/BuildingStructureInputGuard.php'));
+        $references = $this->source($this->path('app/Modules/Assets/Support/BuildingStructureReferenceGuard.php'));
+        $presenter = $this->source($this->path('app/Modules/Assets/Presenters/BuildingStructureFormPresenter.php'));
+        $entry = $this->source($this->path('resources/js/modules/assets/building-setup/index-page.tsx'));
+        $form = $this->source($this->path('resources/js/modules/assets/building-setup/building-setup-form.tsx'));
+
+        $this->assertLinesAtMost($controller, 50);
+        $this->assertLinesAtMost($action, 100);
+        $this->assertLinesAtMost($factory, 180);
+        $this->assertLinesAtMost($input, 210);
+        $this->assertLinesAtMost($references, 60);
+        $this->assertLinesAtMost($presenter, 100);
+        $this->assertLinesAtMost($entry, 50);
+        $this->assertLinesAtMost($form, 130);
+        $this->assertStringContainsString('BuildingStructureInputGuard', $action);
+        $this->assertStringContainsString('BuildingStructureReferenceGuard', $action);
+        $this->assertStringContainsString('BuildingStructureFactory', $action);
+        $this->assertStringContainsString('BuildingSetupPreview', $form);
+        $this->assertStringNotContainsString('Asset::query()', $controller);
+        $this->assertStringNotContainsString('DB::', $controller);
+    }
+
+    #[Test]
     public function asset_module_owns_each_resource_responsibility(): void
     {
         foreach ([
             $this->path('app/Modules/Assets/Actions/ArchiveAsset.php'),
+            $this->path('app/Modules/Assets/Actions/BuildingStructureFactory.php'),
+            $this->path('app/Modules/Assets/Actions/CreateBuildingStructure.php'),
             $this->path('app/Modules/Assets/Actions/CreateAsset.php'),
             $this->path('app/Modules/Assets/Actions/ManageAssets.php'),
             $this->path('app/Modules/Assets/Actions/UpdateAsset.php'),
@@ -111,6 +141,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/AssetStructureRelatedPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetWorkflowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetTableRowPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/BuildingStructureFormPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetDetailQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetDirectoryQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetFormOptionsQuery.php'),
@@ -123,6 +154,7 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Requests/HasAssetValidationAttributes.php'),
             $this->path('app/Modules/Assets/Requests/PropertyMapRequest.php'),
             $this->path('app/Modules/Assets/Requests/StoreAssetRequest.php'),
+            $this->path('app/Modules/Assets/Requests/StoreBuildingStructureRequest.php'),
             $this->path('app/Modules/Assets/Requests/UpdateAssetRequest.php'),
             $this->path('app/Modules/Assets/Support/AssetAttributes.php'),
             $this->path('app/Modules/Assets/Support/AssetInputGuard.php'),
@@ -130,12 +162,17 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Support/AssetOptions.php'),
             $this->path('app/Modules/Assets/Support/AssetReferenceGuard.php'),
             $this->path('app/Modules/Assets/Support/AssetStakeholderManager.php'),
+            $this->path('app/Modules/Assets/Support/BuildingStructureInputGuard.php'),
+            $this->path('app/Modules/Assets/Support/BuildingStructurePlan.php'),
+            $this->path('app/Modules/Assets/Support/BuildingStructureReferenceGuard.php'),
             $this->path('app/Modules/Assets/Support/PropertyScope.php'),
             $this->path('resources/js/modules/assets/asset-filters.ts'),
             $this->path('resources/js/modules/assets/asset-metrics.tsx'),
             $this->path('resources/js/modules/assets/asset-table-cells.tsx'),
             $this->path('resources/js/modules/assets/asset-table-config.tsx'),
             $this->path('resources/js/modules/assets/asset-table.tsx'),
+            $this->path('resources/js/modules/assets/building-setup/index-page.tsx'),
+            $this->path('resources/js/modules/assets/building-setup/types.ts'),
             $this->path('resources/js/modules/assets/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);

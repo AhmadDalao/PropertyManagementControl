@@ -13,6 +13,10 @@ export default function AssetsIndexPage() {
     const { props } = usePage<AssetIndexPageProps>();
     const { t } = useTranslator();
     const canCreate = canCreateOperationalRecord(props.auth.user);
+    const canSetupBuilding =
+        props.auth.user?.roles.some((role) =>
+            ['superadmin', 'owner'].includes(role),
+        ) ?? false;
 
     return (
         <AdminLayout>
@@ -31,9 +35,21 @@ export default function AssetsIndexPage() {
                     ...(canCreate
                         ? [
                               {
-                                  label: t('assets.create_asset'),
+                                  label: t('assets.builder.single_asset'),
                                   href: '/assets/create',
                                   icon: 'bi-plus-lg',
+                                  tone: canSetupBuilding
+                                      ? ('secondary' as const)
+                                      : ('primary' as const),
+                              },
+                          ]
+                        : []),
+                    ...(canSetupBuilding
+                        ? [
+                              {
+                                  label: t('assets.builder.setup_building'),
+                                  href: '/assets/building-setup',
+                                  icon: 'bi-buildings',
                                   tone: 'primary' as const,
                               },
                           ]

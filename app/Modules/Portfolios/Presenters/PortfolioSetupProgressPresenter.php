@@ -106,12 +106,12 @@ final class PortfolioSetupProgressPresenter
                     ? route('assets.index', ['portfolio_id' => $portfolio->id])
                     : $this->createRoute(
                         $settings['assets'] ?? true,
-                        route('assets.create', ['portfolio_id' => $portfolio->id]),
+                        route('assets.structure.create', ['portfolio_id' => $portfolio->id]),
                         $portfolioEdit,
                     ),
                 $ready['property']
                     ? 'review_properties'
-                    : (($settings['assets'] ?? true) ? 'create_property' : 'configure_portfolio'),
+                    : (($settings['assets'] ?? true) ? 'setup_building' : 'configure_portfolio'),
                 'bi-buildings',
             ),
             $this->step(

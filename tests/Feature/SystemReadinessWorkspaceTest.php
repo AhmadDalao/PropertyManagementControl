@@ -122,10 +122,10 @@ final class SystemReadinessWorkspaceTest extends TestCase
                             'role' => 'property_manager',
                         ])
                         && ($manager['action_label'] ?? null) === 'Create manager'
-                        && ($property['href'] ?? null) === route('assets.create', [
+                        && ($property['href'] ?? null) === route('assets.structure.create', [
                             'portfolio_id' => $portfolio->id,
                         ])
-                        && ($property['action_label'] ?? null) === 'Create property'
+                        && ($property['action_label'] ?? null) === 'Set up building'
                         && ($tenant['href'] ?? null) === route('tenants.create', [
                             'portfolio_id' => $portfolio->id,
                             'next' => 'lease',

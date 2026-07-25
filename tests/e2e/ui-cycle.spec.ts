@@ -31,6 +31,7 @@ const primaryAdminRoutes = [
     '/portfolios',
     '/users',
     '/assets',
+    '/assets/building-setup',
     '/tenants',
     '/leases',
     '/lease-renewals',
@@ -282,6 +283,50 @@ test.describe('authenticated administration', () => {
                 await expect(mobileCards.first()).toBeVisible();
             }
         }
+    });
+
+    test('building setup is direct, responsive, and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/assets/building-setup?locale=en');
+
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'Set up a building',
+            }),
+        ).toBeVisible();
+        await page.getByLabel('Building name (English)').fill('E2E Tower');
+        await page.getByLabel('Building code prefix').fill('E2E-TOWER');
+        await page.getByLabel('Number of floors').fill('3');
+        await page.getByLabel('Units per floor').fill('5');
+
+        const totalMetric = page
+            .locator('.pmc-building-setup-metrics > div')
+            .filter({ hasText: 'Total records' });
+        await expect(totalMetric.locator('strong')).toHaveText('19');
+        await expect(
+            page.getByText('Unit 101 - Unit 105', { exact: true }),
+        ).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-building-setup-actions .btn',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/assets/building-setup?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'إعداد مبنى' }),
+        ).toBeVisible();
+        await expect(page.getByLabel('اسم المبنى بالإنجليزية')).toBeVisible();
+        await expect(page.getByLabel('عدد الطوابق')).toBeVisible();
+        await expect(
+            page.getByText('إرسال واحد وهيكل مكتمل', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText('assets.builder.');
+        await expectNoHorizontalOverflow(page);
     });
 
     test('rent collection stays direct, touch-safe, and bilingual', async ({

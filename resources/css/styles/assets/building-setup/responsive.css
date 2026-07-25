@@ -1,0 +1,75 @@
+@media (max-width: 1199.98px) {
+    .pmc-building-setup-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-building-setup-preview {
+        position: static;
+        order: -1;
+    }
+
+    .pmc-building-setup-metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-building-setup-fields {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-building-setup-field:has(textarea) {
+        grid-column: 1;
+    }
+
+    .pmc-building-setup-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-building-setup {
+        gap: 0.75rem;
+        margin-inline: -0.75rem;
+    }
+
+    .pmc-building-setup > .pmc-resource-header {
+        margin-inline: 0.75rem;
+    }
+
+    .pmc-building-setup-layout {
+        gap: 0.75rem;
+    }
+
+    .pmc-building-setup-section,
+    .pmc-building-setup-preview {
+        border-inline: 0;
+        border-radius: 0;
+    }
+
+    .pmc-building-setup-section {
+        padding: 0.85rem 0.75rem;
+    }
+
+    .pmc-building-setup-preview {
+        padding: 0.9rem 0.75rem;
+    }
+
+    .pmc-building-setup-actions {
+        right: 0.75rem;
+        left: 0.75rem;
+        display: grid;
+        grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.28fr);
+    }
+
+    .pmc-building-setup-actions .btn {
+        min-width: 0;
+        font-size: 0.72rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-building-setup-actions {
+        backdrop-filter: none;
+    }
+}

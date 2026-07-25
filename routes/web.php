@@ -3,6 +3,7 @@
 use App\Http\Controllers\ActionCenterController;
 use App\Http\Controllers\AdminExportController;
 use App\Http\Controllers\AssetController;
+use App\Http\Controllers\AssetStructureController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -79,6 +80,12 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::put('/users/{user}/property-assignments', [ManagerPropertyAssignmentController::class, 'update'])
         ->name('users.property-assignments.update')
         ->middleware('portfolio.module:users');
+    Route::get('/assets/building-setup', [AssetStructureController::class, 'create'])
+        ->name('assets.structure.create')
+        ->middleware('portfolio.module:assets');
+    Route::post('/assets/building-setup', [AssetStructureController::class, 'store'])
+        ->name('assets.structure.store')
+        ->middleware('portfolio.module:assets');
     Route::resource('assets', AssetController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:assets')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::resource('tenants', TenantController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:tenants')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::resource('leases', LeaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:leases')->middlewareFor(['create', 'store'], 'property.assigned');

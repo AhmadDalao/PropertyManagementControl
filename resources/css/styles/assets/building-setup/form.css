@@ -1,0 +1,131 @@
+.pmc-building-setup {
+    display: grid;
+    gap: 1rem;
+    padding-bottom: 5rem;
+}
+
+.pmc-building-setup-layout {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.34fr);
+    align-items: start;
+    gap: 1rem;
+}
+
+.pmc-building-setup-form {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
+}
+
+.pmc-building-setup-section {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: var(--pmc-surface);
+}
+
+.pmc-building-setup-section > legend {
+    width: auto;
+    margin: 0;
+    color: var(--pmc-ink);
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.pmc-building-setup-section > p {
+    max-width: 48rem;
+    margin: 0 0 0.75rem;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    line-height: 1.55;
+}
+
+.pmc-building-setup-fields {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+}
+
+.pmc-building-setup-field {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.35rem;
+    margin: 0;
+}
+
+.pmc-building-setup-field:has(textarea) {
+    grid-column: 1 / -1;
+}
+
+.pmc-building-setup-field > span {
+    color: #514d46;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.035em;
+    text-transform: uppercase;
+}
+
+.pmc-building-setup-field > span strong {
+    margin-inline-start: 0.2rem;
+    color: var(--pmc-red);
+}
+
+.pmc-building-setup-field .form-control,
+.pmc-building-setup-field .form-select {
+    min-width: 0;
+    min-height: 2.9rem;
+    border-radius: 0.7rem;
+    background: #fff;
+}
+
+.pmc-building-setup-field textarea.form-control {
+    min-height: 5.5rem;
+    resize: vertical;
+}
+
+.pmc-building-setup-field > small {
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    line-height: 1.45;
+}
+
+.pmc-building-setup-field > em {
+    color: var(--pmc-red);
+    font-size: 0.65rem;
+    font-style: normal;
+    font-weight: 750;
+}
+
+.pmc-building-setup-actions {
+    position: sticky;
+    z-index: 10;
+    bottom: 0.75rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    padding: 0.7rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: rgb(255 255 255 / 94%);
+    box-shadow: var(--pmc-shadow);
+    backdrop-filter: blur(14px);
+}
+
+.pmc-building-setup-actions .btn {
+    min-height: 44px;
+    min-width: 9rem;
+}
+
+.pmc-building-setup-actions .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+}

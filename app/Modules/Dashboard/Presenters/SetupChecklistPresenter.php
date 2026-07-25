@@ -39,7 +39,13 @@ class SetupChecklistPresenter
                 'href' => '/portfolios/create',
             ],
             ['label' => 'Create users', 'done' => $stats['totalUsers'] > 1, 'href' => '/users/create'],
-            ['label' => 'Create assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets/create'],
+            [
+                'label' => 'Create assets',
+                'done' => $stats['totalAssets'] > 0,
+                'href' => $user->hasAnyRole(['superadmin', 'owner'])
+                    ? '/assets/building-setup'
+                    : '/assets/create',
+            ],
             [
                 'label' => 'Create profiles',
                 'done' => $this->assignments

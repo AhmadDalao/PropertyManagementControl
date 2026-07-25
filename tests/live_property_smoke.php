@@ -222,6 +222,7 @@ $authChecks = [
     '/users/create' => 'admin/resource-form',
     '/assets' => 'admin/assets/index',
     '/assets/create' => 'admin/resource-form',
+    '/assets/building-setup' => 'admin/assets/structure-create',
     '/tenants' => 'admin/tenants/index',
     '/leases' => 'admin/leases/index',
     '/leases?locale=ar' => 'admin/leases/index',

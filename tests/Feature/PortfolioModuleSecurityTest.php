@@ -381,6 +381,10 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.progress.steps.1.href', route('users.create', [
                     'portfolio_id' => $portfolio->id,
                     'role' => 'owner',
+                ]))
+                ->where('detailPage.progress.steps.3.actionLabel', 'Set up building')
+                ->where('detailPage.progress.steps.3.href', route('assets.structure.create', [
+                    'portfolio_id' => $portfolio->id,
                 ])));
 
         $owner = $this->createUserWithRole('owner', $portfolio);

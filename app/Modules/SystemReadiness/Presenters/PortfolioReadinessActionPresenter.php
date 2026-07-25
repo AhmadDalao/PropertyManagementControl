@@ -59,8 +59,8 @@ final class PortfolioReadinessActionPresenter
         return $this->action(
             $ready
                 ? route('assets.index', ['portfolio_id' => $portfolio->id])
-                : route('assets.create', ['portfolio_id' => $portfolio->id]),
-            $ready ? 'review_properties' : 'create_property',
+                : route('assets.structure.create', ['portfolio_id' => $portfolio->id]),
+            $ready ? 'review_properties' : 'setup_building',
         );
     }
 

@@ -39,10 +39,12 @@ class DocumentationWorkspaceTest extends TestCase
                 ->where('roleGuide.routes', fn ($routes) => ! collect($routes)->contains('/payments'))
                 ->missing('roleGuides')
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/assets')
+                    && collect($shortcuts)->contains('route', '/assets/building-setup')
                     && ! collect($shortcuts)->contains('route', '/users')
                     && ! collect($shortcuts)->contains('route', '/payments')
                     && ! collect($shortcuts)->contains('route', '/cms'))
-                ->where('quickStarts', fn ($quickStarts) => ! collect($quickStarts)->contains('route', '/payments'))
+                ->where('quickStarts', fn ($quickStarts) => collect($quickStarts)->contains('route', '/assets/building-setup')
+                    && ! collect($quickStarts)->contains('route', '/payments'))
                 ->where('guides', fn ($guides) => ! collect($guides)->contains('route', '/payments'))
                 ->where('workflowTracks', fn ($workflows) => collect($workflows)->contains('key', 'asset_to_lease')
                     && ! collect($workflows)->contains('key', 'rent_collection')
@@ -56,6 +58,23 @@ class DocumentationWorkspaceTest extends TestCase
         $this->actingAs($owner)
             ->get(route('documentation.show', 'payments-and-receipts'))
             ->assertNotFound();
+    }
+
+    public function test_manager_documentation_keeps_scoped_asset_workflow_without_owner_builder(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+
+        $this->actingAs($manager)
+            ->get(route('documentation.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('audience', 'property_manager')
+                ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/assets')
+                    && ! collect($shortcuts)->contains('route', '/assets/building-setup'))
+                ->where('quickStarts', fn ($quickStarts) => ! collect($quickStarts)->contains('route', '/assets/building-setup'))
+                ->where('workflowTracks', fn ($workflows) => collect($workflows)->contains('key', 'asset_to_lease'))
+            );
     }
 
     public function test_tenant_documentation_only_exposes_tenant_safe_workflows(): void
@@ -118,12 +137,16 @@ class DocumentationWorkspaceTest extends TestCase
                 ->where('workflowTracks.0.title', 'إطلاق محفظة عقارية مُدارة')
                 ->where('workflowTracks.1.title', 'إدارة قائمة إجراءات العقارات اليومية')
                 ->where('quickStarts', fn ($quickStarts) => collect($quickStarts)
-                    ->contains('title', 'ضم مستأجر جديد'))
+                    ->contains('title', 'ضم مستأجر جديد')
+                    && collect($quickStarts)->contains('route', '/assets/building-setup'))
                 ->where(
                     'workflowTracks.2.steps.2.label',
                     'اختيار مستأجر حالي أو إضافة مستأجر جديد',
                 )
-                ->where('pageShortcuts.1.label', 'مركز الإجراءات')
+                ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains(
+                    fn ($shortcut) => $shortcut['route'] === '/assets/building-setup'
+                        && $shortcut['label'] === 'إعداد المبنى',
+                ))
                 ->where('guides.0.title', 'إدارة الأصول'));
     }
 }

@@ -33,7 +33,7 @@ class DashboardGuidanceTest extends TestCase
                     && collect($actions)->contains('label', 'Create assets')
                     && collect($actions)->contains('label', 'Create profiles')
                     && collect($actions)->contains('href', '/users/create')
-                    && collect($actions)->contains('href', '/assets/create')
+                    && collect($actions)->contains('href', '/assets/building-setup')
                     && collect($actions)->contains('href', '/tenants/create')
                     && ! collect($actions)->contains('label', 'Create portfolio'))
             );
