@@ -121,7 +121,7 @@ final readonly class RenewalActionSource implements ActionCenterSource
             'type' => $this->type(),
             'priority' => $priority,
             'title' => $lease->code,
-            'subtitle' => $lease->status,
+            'subtitle' => trans("app.status.{$lease->status}"),
             'tenant' => $lease->tenantProfile?->user?->name,
             'asset' => $this->asset($asset),
             'portfolio' => $this->portfolio($lease->portfolio),

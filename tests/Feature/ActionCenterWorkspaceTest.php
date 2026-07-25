@@ -110,6 +110,12 @@ final class ActionCenterWorkspaceTest extends TestCase
                         && $rows->every(
                             fn ($row): bool => data_get($row, 'asset.id') !== null,
                         )
+                        && data_get($rows->firstWhere('type', 'maintenance'), 'subtitle')
+                            === 'Electricity'
+                        && data_get($rows->firstWhere('type', 'move_out'), 'subtitle')
+                            === 'Tenant notice'
+                        && data_get($rows->firstWhere('type', 'renewal'), 'subtitle')
+                            === 'Active'
                         && $rows->contains(
                             fn ($row): bool => data_get($row, 'asset.id') !== $property->id,
                         );
@@ -236,7 +242,9 @@ final class ActionCenterWorkspaceTest extends TestCase
                 ->where('actionItems.total', 13)
                 ->has('actionItems.data', 12)
                 ->where('actionItems.current_page', 1)
-                ->where('actionItems.last_page', 2));
+                ->where('actionItems.last_page', 2)
+                ->where('actionItems.links', fn ($links): bool => data_get($links, '0.label') === 'Previous'
+                    && data_get($links, (count($links) - 1).'.label') === 'Next'));
 
         $export = $this->actingAs($owner)
             ->get(route('action-center.export', $filters))
@@ -279,6 +287,7 @@ final class ActionCenterWorkspaceTest extends TestCase
                 ->where('app.translations.action_center.title', 'مركز الإجراءات')
                 ->where('app.translations.action_center.type_maintenance', 'الصيانة')
                 ->where('actionItems.data.0.record_id', $request->id)
+                ->where('actionItems.data.0.subtitle', 'كهرباء')
                 ->where('actionItems.data.0.asset.title_ar', 'وحدة عربية'));
 
         $this->actingAs($tenantUser)

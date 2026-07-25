@@ -13,8 +13,8 @@ return [
     |
     */
 
-    'previous' => '&laquo; Previous',
-    'next' => 'Next &raquo;',
+    'previous' => 'Previous',
+    'next' => 'Next',
     'navigation' => 'Pagination',
     'page_of' => 'Page :page of :pages',
 

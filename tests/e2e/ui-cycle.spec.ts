@@ -346,6 +346,12 @@ test.describe('authenticated administration', () => {
             'display',
             'grid',
         );
+        await expect(page.locator('.pmc-action-card-grid')).not.toContainText(
+            'tenant_notice',
+        );
+        await expect(page.locator('.pmc-action-card-grid')).not.toContainText(
+            'natural_expiry',
+        );
         await expectNoHorizontalOverflow(page);
 
         await page.setViewportSize(viewports.mobile);

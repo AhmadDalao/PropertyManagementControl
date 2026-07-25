@@ -129,7 +129,7 @@ final readonly class MoveOutActionSource implements ActionCenterSource
             'type' => $this->type(),
             'priority' => $priority,
             'title' => $lease?->code ?: '#'.$moveOut->id,
-            'subtitle' => $moveOut->reason,
+            'subtitle' => trans("app.lease_move_outs.reason_{$moveOut->reason}"),
             'tenant' => $lease?->tenantProfile?->user?->name,
             'asset' => $this->asset($asset),
             'portfolio' => $this->portfolio($lease?->portfolio),

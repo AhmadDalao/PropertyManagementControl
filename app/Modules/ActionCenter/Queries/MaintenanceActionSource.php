@@ -142,7 +142,7 @@ final readonly class MaintenanceActionSource implements ActionCenterSource
             'type' => $this->type(),
             'priority' => $priority,
             'title' => $request->title,
-            'subtitle' => $request->category,
+            'subtitle' => trans("app.status.{$request->category}"),
             'tenant' => $request->tenantProfile?->user?->name,
             'asset' => $this->asset($request->asset),
             'portfolio' => $this->portfolio($request->portfolio),
