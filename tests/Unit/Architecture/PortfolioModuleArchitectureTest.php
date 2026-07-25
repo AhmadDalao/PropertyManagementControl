@@ -94,6 +94,7 @@ class PortfolioModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Portfolios/Requests/UpdatePortfolioRequest.php'),
             $this->path('app/Modules/Portfolios/Support/PortfolioAccess.php'),
             $this->path('app/Modules/Portfolios/Support/PortfolioOptions.php'),
+            $this->path('app/Modules/Portfolios/Support/PortfolioSetupContinuation.php'),
             $this->path('resources/js/modules/portfolios/portfolio-filters.ts'),
             $this->path('resources/js/modules/portfolios/portfolio-metrics.tsx'),
             $this->path('resources/js/modules/portfolios/portfolio-table-cells.tsx'),
@@ -111,12 +112,14 @@ class PortfolioModuleArchitectureTest extends TestCase
         $presenter = $this->source($this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'));
         $steps = $this->source($this->path('app/Modules/Portfolios/Presenters/PortfolioSetupStepsPresenter.php'));
         $query = $this->source($this->path('app/Modules/Portfolios/Queries/PortfolioSetupQuery.php'));
+        $continuation = $this->source($this->path('app/Modules/Portfolios/Support/PortfolioSetupContinuation.php'));
 
         $this->assertStringContainsString('PortfolioSetupStepsPresenter', $presenter);
         $this->assertStringNotContainsString('::query()', $presenter);
         $this->assertStringContainsString('PortfolioSetupQuery', $steps);
         $this->assertStringNotContainsString('::query()', $steps);
         $this->assertLessThanOrEqual(140, substr_count($steps, "\n") + 1);
+        $this->assertLessThanOrEqual(80, substr_count($continuation, "\n") + 1);
         $this->assertStringContainsString('Asset::query()', $query);
         $this->assertStringContainsString('Lease::query()', $query);
         $this->assertStringContainsString('User::query()', $query);

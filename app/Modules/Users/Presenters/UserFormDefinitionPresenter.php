@@ -2,6 +2,7 @@
 
 namespace App\Modules\Users\Presenters;
 
+use App\Modules\Portfolios\Support\PortfolioSetupContinuation;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Data\UserFormData;
 use App\Modules\Users\Queries\UserFormOptionsQuery;
@@ -18,6 +19,9 @@ final class UserFormDefinitionPresenter
     public function present(UserFormData $data): array
     {
         $target = $data->target;
+        $setupPortfolioId = isset($data->defaults[PortfolioSetupContinuation::QUERY_KEY])
+            ? (int) $data->defaults[PortfolioSetupContinuation::QUERY_KEY]
+            : null;
         $fields = [];
 
         if ($data->actor->hasRole('superadmin') && ! $target) {
@@ -27,8 +31,11 @@ final class UserFormDefinitionPresenter
                 'type' => 'select',
                 'help' => trans('app.users.portfolio_help'),
                 'options' => [
-                    ['value' => '', 'label' => trans('app.users.no_portfolio')],
-                    ...$this->options->activePortfolios(),
+                    ...($setupPortfolioId ? [] : [[
+                        'value' => '',
+                        'label' => trans('app.users.no_portfolio'),
+                    ]]),
+                    ...$this->options->activePortfolios($setupPortfolioId),
                 ],
             ];
         }

@@ -21,14 +21,18 @@ export default function BuildingSetupIndexPage() {
                     title={props.buildingSetup.title}
                     description={props.buildingSetup.description}
                     backHref={props.buildingSetup.backHref}
-                    backLabel={t('assets.all_assets')}
-                    actions={[
-                        {
-                            label: t('assets.builder.single_asset'),
-                            href: '/assets/create',
-                            variant: 'light',
-                        },
-                    ]}
+                    backLabel={props.buildingSetup.backLabel}
+                    actions={
+                        props.buildingSetup.isSetup
+                            ? []
+                            : [
+                                  {
+                                      label: t('assets.builder.single_asset'),
+                                      href: '/assets/create',
+                                      variant: 'light',
+                                  },
+                              ]
+                    }
                 />
                 <BuildingSetupForm payload={props.buildingSetup} />
             </div>

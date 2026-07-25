@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Modules\Portfolios\Support\PortfolioSetupContinuation;
 use App\Modules\Users\Actions\ManageUsers;
 use App\Modules\Users\Presenters\UserDetailPresenter;
 use App\Modules\Users\Presenters\UserFormPresenter;
@@ -21,6 +22,7 @@ class UserController extends Controller
         private readonly UserFormPresenter $formPresenter,
         private readonly UserDetailPresenter $detailPresenter,
         private readonly ManageUsers $users,
+        private readonly PortfolioSetupContinuation $setup,
     ) {}
 
     public function index(Request $request): Response
@@ -36,7 +38,11 @@ class UserController extends Controller
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present(
                 $this->actor($request),
-                defaults: $request->only(['portfolio_id', 'role']),
+                defaults: $request->only([
+                    'portfolio_id',
+                    'role',
+                    PortfolioSetupContinuation::QUERY_KEY,
+                ]),
             ),
         ]);
     }
@@ -57,7 +63,25 @@ class UserController extends Controller
 
     public function store(StoreUserRequest $request): RedirectResponse
     {
-        $user = $this->users->create($this->actor($request), $request->validated());
+        $actor = $this->actor($request);
+        $setup = $this->setup->fromRequest($request, $actor);
+        $data = $request->validated();
+        if ($setup) {
+            abort_unless(in_array($data['role'] ?? null, ['owner', 'property_manager'], true), 404);
+            $this->setup->ensureMatches($setup, $data['portfolio_id'] ?? null);
+        }
+
+        $user = $this->users->create($actor, $data);
+        if (
+            $this->setup->matches($setup, $user->portfolio_id)
+            && $user->hasAnyRole(['owner', 'property_manager'])
+        ) {
+            return to_route('portfolios.show', $setup)
+                ->with('success', trans('app.messages.portfolio_setup_continue', [
+                    'name' => $user->name,
+                    'portfolio' => $this->setup->name($setup),
+                ]));
+        }
 
         return to_route('users.show', $user)
             ->with('success', trans('app.messages.user_created', ['name' => $user->name]));

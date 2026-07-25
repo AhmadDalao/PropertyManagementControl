@@ -88,6 +88,66 @@ class BuildingStructureSetupTest extends TestCase
                     ->all() === [(string) $active->id]));
     }
 
+    public function test_portfolio_setup_locks_building_creation_and_returns_to_the_next_step(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Setup Portfolio',
+            'name_ar' => 'محفظة الإعداد',
+        ]);
+        $foreign = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreign);
+        $foreignManager = $this->createUserWithRole('property_manager', $foreign);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $setupQuery = ['setup_portfolio_id' => $portfolio->id];
+
+        $this->actingAs($superadmin)
+            ->get(route('assets.structure.create', [
+                'portfolio_id' => $portfolio->id,
+                ...$setupQuery,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('buildingSetup.isSetup', true)
+                ->where('buildingSetup.title', 'Register the first property for Setup Portfolio')
+                ->where('buildingSetup.backHref', route('portfolios.show', $portfolio))
+                ->where('buildingSetup.backLabel', 'Back to portfolio setup')
+                ->where('buildingSetup.action', route('assets.structure.store', $setupQuery))
+                ->where('buildingSetup.submitLabel', 'Create structure and continue')
+                ->where('buildingSetup.options.portfolios', [[
+                    'value' => (string) $portfolio->id,
+                    'label' => 'Setup Portfolio',
+                ]]));
+
+        $this->actingAs($superadmin)
+            ->post(
+                route('assets.structure.store', $setupQuery),
+                $this->payload($portfolio->id, $owner->id, $manager->id),
+            )
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('portfolios.show', $portfolio))
+            ->assertSessionHas(
+                'success',
+                'Business Tower was created. Continue setting up Setup Portfolio.',
+            );
+
+        $before = Asset::query()->count();
+        $this->actingAs($superadmin)
+            ->post(
+                route('assets.structure.store', $setupQuery),
+                $this->payload(
+                    $foreign->id,
+                    $foreignOwner->id,
+                    $foreignManager->id,
+                    ['code_prefix' => 'FORGED'],
+                ),
+            )
+            ->assertNotFound();
+        $this->assertSame($before, Asset::query()->count());
+    }
+
     public function test_owner_creates_a_complete_building_hierarchy_in_one_transaction(): void
     {
         $portfolio = $this->createPortfolio();

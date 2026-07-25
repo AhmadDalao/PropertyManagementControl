@@ -381,14 +381,39 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.progress.steps.1.href', route('users.create', [
                     'portfolio_id' => $portfolio->id,
                     'role' => 'owner',
+                    'setup_portfolio_id' => $portfolio->id,
                 ]))
+                ->where('detailPage.progress.steps.3.actionLabel', null)
+                ->where('detailPage.progress.steps.3.href', null));
+
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+
+        $this->actingAs($superadmin)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.progress.steps.2.state', 'current')
+                ->where('detailPage.progress.steps.2.href', route('users.create', [
+                    'portfolio_id' => $portfolio->id,
+                    'role' => 'property_manager',
+                    'setup_portfolio_id' => $portfolio->id,
+                ]))
+                ->where('detailPage.progress.steps.3.href', null));
+
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+
+        $this->actingAs($superadmin)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.progress.steps.3.state', 'current')
                 ->where('detailPage.progress.steps.3.actionLabel', 'Set up building')
                 ->where('detailPage.progress.steps.3.href', route('assets.structure.create', [
                     'portfolio_id' => $portfolio->id,
+                    'setup_portfolio_id' => $portfolio->id,
                 ])));
 
-        $owner = $this->createUserWithRole('owner', $portfolio);
-        $manager = $this->createUserWithRole('property_manager', $portfolio);
         $tenantUser = $this->createUserWithRole('tenant', $portfolio);
         $tenant = $this->createTenantProfile($portfolio, $tenantUser);
         $property = $this->createAsset($portfolio, [
@@ -396,8 +421,6 @@ class PortfolioModuleSecurityTest extends TestCase
             'parent_id' => null,
         ]);
         $this->createLease($portfolio, $tenant, $property, $manager);
-        $portfolio->update(['owner_user_id' => $owner->id]);
-
         $this->actingAs($superadmin)
             ->get(route('portfolios.show', $portfolio))
             ->assertOk()
@@ -437,6 +460,8 @@ class PortfolioModuleSecurityTest extends TestCase
                 'assets' => false,
             ],
         ]);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
 
         $this->actingAs($owner)
             ->get(route('portfolios.show', $portfolio))

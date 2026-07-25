@@ -38,6 +38,7 @@ class DashboardGuidanceTest extends TestCase
                 ->where('setupTarget.next.href', route('users.create', [
                     'portfolio_id' => $portfolio->id,
                     'role' => 'property_manager',
+                    'setup_portfolio_id' => $portfolio->id,
                 ]))
                 ->where('nextActions', fn ($actions) => collect($actions)->contains('label', 'Add the operating manager')
                     && collect($actions)->contains('label', 'Register the first property')

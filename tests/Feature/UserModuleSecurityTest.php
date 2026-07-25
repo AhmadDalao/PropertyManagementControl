@@ -283,6 +283,80 @@ class UserModuleSecurityTest extends TestCase
                 ->where('formPage.initialValues.role', 'tenant'));
     }
 
+    public function test_portfolio_setup_locks_user_creation_and_returns_to_the_next_step(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Setup Portfolio',
+            'name_ar' => 'محفظة الإعداد',
+        ]);
+        $foreign = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+        $setupQuery = ['setup_portfolio_id' => $portfolio->id];
+
+        $this->actingAs($superadmin)
+            ->get(route('users.create', [
+                'portfolio_id' => $portfolio->id,
+                'role' => 'owner',
+                ...$setupQuery,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.title', 'Add Owner to Setup Portfolio')
+                ->where('formPage.backHref', route('portfolios.show', $portfolio))
+                ->where('formPage.backLabel', 'Back to portfolio setup')
+                ->where('formPage.action', route('users.store', $setupQuery))
+                ->where('formPage.submitLabel', 'Create Owner and continue')
+                ->where('formPage.initialValues.portfolio_id', (string) $portfolio->id)
+                ->where('formPage.initialValues.role', 'owner')
+                ->where('formPage.fields', fn ($fields): bool => collect($fields)
+                    ->firstWhere('name', 'portfolio_id')['options'] === [[
+                        'value' => $portfolio->id,
+                        'label' => "Setup Portfolio · {$portfolio->code}",
+                    ]]));
+
+        $this->actingAs($superadmin)
+            ->post(route('users.store', $setupQuery), $this->userPayload([
+                'portfolio_id' => $portfolio->id,
+                'email' => 'setup-owner@example.test',
+                'name' => 'Setup Owner',
+                'role' => 'owner',
+            ]))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('portfolios.show', $portfolio))
+            ->assertSessionHas(
+                'success',
+                'Setup Owner was created. Continue setting up Setup Portfolio.',
+            );
+
+        $owner = User::query()->where('email', 'setup-owner@example.test')->firstOrFail();
+        $this->assertSame($owner->id, $portfolio->fresh()->owner_user_id);
+
+        $this->actingAs($superadmin)
+            ->post(route('users.store', $setupQuery), $this->userPayload([
+                'portfolio_id' => $portfolio->id,
+                'email' => 'setup-manager@example.test',
+                'name' => 'Setup Manager',
+                'role' => 'property_manager',
+            ]))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('portfolios.show', $portfolio));
+        $this->assertTrue(
+            User::query()
+                ->where('email', 'setup-manager@example.test')
+                ->firstOrFail()
+                ->hasRole('property_manager'),
+        );
+
+        $this->actingAs($superadmin)
+            ->post(route('users.store', $setupQuery), $this->userPayload([
+                'portfolio_id' => $foreign->id,
+                'email' => 'forged-manager@example.test',
+                'role' => 'property_manager',
+            ]))
+            ->assertNotFound();
+        $this->assertDatabaseMissing('users', ['email' => 'forged-manager@example.test']);
+    }
+
     public function test_disabled_accounts_are_removed_from_existing_authenticated_sessions(): void
     {
         $portfolio = $this->createPortfolio();

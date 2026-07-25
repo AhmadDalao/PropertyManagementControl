@@ -34,7 +34,10 @@ export type BuildingSetupPayload = {
     title: string;
     description: string;
     backHref: string;
+    backLabel: string;
     action: string;
+    submitLabel: string;
+    isSetup: boolean;
     options: {
         portfolios: BuildingSetupOption[];
         usages: BuildingSetupOption[];

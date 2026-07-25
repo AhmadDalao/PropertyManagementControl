@@ -99,7 +99,7 @@ export function BuildingSetupForm({
                         disabled={form.processing || exceedsLimit}
                     >
                         <i className="bi bi-buildings" />
-                        <span>{t('assets.builder.create_button')}</span>
+                        <span>{payload.submitLabel}</span>
                     </button>
                 </div>
             </form>

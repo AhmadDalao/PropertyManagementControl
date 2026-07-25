@@ -48,6 +48,11 @@ final class PortfolioSetupProgressPresenter
 
                 unset($step['done']);
 
+                if ($state === 'pending') {
+                    $step['href'] = null;
+                    $step['actionLabel'] = null;
+                }
+
                 return ['state' => $state, ...$step];
             }, $steps),
         ];

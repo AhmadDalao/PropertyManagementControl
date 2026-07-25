@@ -101,6 +101,7 @@ class UserModuleArchitectureTest extends TestCase
             'app/Modules/Users/Actions/ManageUsers.php' => 40,
             'app/Modules/Users/Presenters/UserDetailPresenter.php' => 45,
             'app/Modules/Users/Presenters/UserFormPresenter.php' => 45,
+            'app/Modules/Users/Presenters/UserCreateFormPresenter.php' => 75,
             'app/Modules/Users/Queries/UserIndexQuery.php' => 90,
             'resources/js/modules/users/user-table.tsx' => 65,
             'resources/js/modules/users/user-table-config.tsx' => 100,

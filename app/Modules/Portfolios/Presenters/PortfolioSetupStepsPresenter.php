@@ -5,10 +5,14 @@ namespace App\Modules\Portfolios\Presenters;
 use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Portfolios\Queries\PortfolioSetupQuery;
+use App\Modules\Portfolios\Support\PortfolioSetupContinuation;
 
 final class PortfolioSetupStepsPresenter
 {
-    public function __construct(private readonly PortfolioSetupQuery $setup) {}
+    public function __construct(
+        private readonly PortfolioSetupQuery $setup,
+        private readonly PortfolioSetupContinuation $continuation,
+    ) {}
 
     /**
      * @param  array<string, bool>  $settings
@@ -33,7 +37,10 @@ final class PortfolioSetupStepsPresenter
                 $ready['owner']
                     ? route('users.show', $portfolio->owner)
                     : ($actor->hasRole('superadmin')
-                        ? route('users.create', ['portfolio_id' => $portfolio->id, 'role' => 'owner'])
+                        ? route('users.create', $this->continuation->query($portfolio, [
+                            'portfolio_id' => $portfolio->id,
+                            'role' => 'owner',
+                        ]))
                         : null),
                 $ready['owner'] ? 'open_owner' : 'create_owner',
                 'bi-person-badge',
@@ -45,7 +52,10 @@ final class PortfolioSetupStepsPresenter
                     ? route('users.index', ['portfolio_id' => $portfolio->id, 'role' => 'property_manager'])
                     : $this->createRoute(
                         $settings['users'] ?? true,
-                        route('users.create', ['portfolio_id' => $portfolio->id, 'role' => 'property_manager']),
+                        route('users.create', $this->continuation->query($portfolio, [
+                            'portfolio_id' => $portfolio->id,
+                            'role' => 'property_manager',
+                        ])),
                         $portfolioEdit,
                     ),
                 $ready['manager']
@@ -60,7 +70,9 @@ final class PortfolioSetupStepsPresenter
                     ? route('assets.index', ['portfolio_id' => $portfolio->id])
                     : $this->createRoute(
                         $settings['assets'] ?? true,
-                        route('assets.structure.create', ['portfolio_id' => $portfolio->id]),
+                        route('assets.structure.create', $this->continuation->query($portfolio, [
+                            'portfolio_id' => $portfolio->id,
+                        ])),
                         $portfolioEdit,
                     ),
                 $ready['property']

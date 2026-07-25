@@ -94,6 +94,8 @@ class AssetModuleArchitectureTest extends TestCase
         $input = $this->source($this->path('app/Modules/Assets/Support/BuildingStructureInputGuard.php'));
         $references = $this->source($this->path('app/Modules/Assets/Support/BuildingStructureReferenceGuard.php'));
         $presenter = $this->source($this->path('app/Modules/Assets/Presenters/BuildingStructureFormPresenter.php'));
+        $continuation = $this->source($this->path('app/Modules/Assets/Presenters/BuildingSetupContinuationPresenter.php'));
+        $initialValues = $this->source($this->path('app/Modules/Assets/Presenters/BuildingStructureInitialValuesPresenter.php'));
         $entry = $this->source($this->path('resources/js/modules/assets/building-setup/index-page.tsx'));
         $form = $this->source($this->path('resources/js/modules/assets/building-setup/building-setup-form.tsx'));
 
@@ -103,6 +105,8 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertLinesAtMost($input, 210);
         $this->assertLinesAtMost($references, 60);
         $this->assertLinesAtMost($presenter, 100);
+        $this->assertLinesAtMost($continuation, 70);
+        $this->assertLinesAtMost($initialValues, 50);
         $this->assertLinesAtMost($entry, 50);
         $this->assertLinesAtMost($form, 130);
         $this->assertStringContainsString('BuildingStructureInputGuard', $action);
@@ -168,6 +172,8 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/AssetWorkflowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetTableRowPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/BuildingStructureFormPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/BuildingSetupContinuationPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/BuildingStructureInitialValuesPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/PropertyContextPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetDetailQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetDirectoryQuery.php'),

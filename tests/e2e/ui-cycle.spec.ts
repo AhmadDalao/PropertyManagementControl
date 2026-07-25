@@ -1501,12 +1501,17 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('body')).not.toContainText('portfolios.');
         await expectNoHorizontalOverflow(page);
 
-        const portfolioDetailLink = page
-            .locator('.pmc-mobile-record-card a[href^="/portfolios/"]')
+        const livePortfolioCard = portfolioCards
+            .filter({ hasNotText: 'بيانات استعراضية' })
+            .first();
+        const portfolioDetailLink = livePortfolioCard
+            .locator('a[href^="/portfolios/"]')
             .first();
         await expect(portfolioDetailLink).toBeVisible();
         const portfolioHref = await portfolioDetailLink.getAttribute('href');
         expect(portfolioHref).toBeTruthy();
+        const portfolioId = portfolioHref?.split('/').filter(Boolean).pop();
+        expect(portfolioId).toBeTruthy();
 
         await page.goto(`${portfolioHref}?locale=ar`);
         await expect(page.getByText('حساب المحفظة')).toBeVisible();
@@ -1522,6 +1527,44 @@ test.describe('authenticated administration', () => {
             page.getByRole('link', { name: 'إنشاء مستخدم', exact: true }),
         ).toBeVisible();
         await expect(page.getByText('ملف النشاط')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto(
+            `/users/create?portfolio_id=${portfolioId}&role=property_manager&setup_portfolio_id=${portfolioId}&locale=ar`,
+        );
+        await expect(
+            page.getByRole('heading', {
+                name: /إضافة مدير عقار إلى/,
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'العودة إلى إعداد المحفظة' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', {
+                name: 'إنشاء مدير عقار والمتابعة',
+            }),
+        ).toBeVisible();
+        const setupPortfolio = page.getByLabel(/^المحفظة/);
+        await expect(setupPortfolio.locator('option')).toHaveCount(1);
+        await expect(setupPortfolio).toHaveValue(String(portfolioId));
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto(
+            `/assets/building-setup?portfolio_id=${portfolioId}&setup_portfolio_id=${portfolioId}&locale=ar`,
+        );
+        await expect(
+            page.getByRole('heading', { name: /تسجيل أول عقار في/ }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'العودة إلى إعداد المحفظة' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'إنشاء الهيكل والمتابعة' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'إنشاء أصل منفرد' }),
+        ).toHaveCount(0);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/portfolios/create?locale=ar');

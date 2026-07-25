@@ -10,12 +10,13 @@ final class UserFormOptionsQuery
     public function __construct(private readonly ResourcePresenter $resources) {}
 
     /** @return array<int, array{value:int,label:string}> */
-    public function activePortfolios(): array
+    public function activePortfolios(?int $portfolioId = null): array
     {
         $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
 
         return Portfolio::query()
             ->where('status', 'active')
+            ->when($portfolioId, fn ($query) => $query->whereKey($portfolioId))
             ->orderBy($nameColumn)
             ->get(['id', 'name_en', 'name_ar', 'code'])
             ->map(fn (Portfolio $portfolio): array => [
