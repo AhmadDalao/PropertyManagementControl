@@ -1,10 +1,11 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import type { ChangeEvent } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 
 import { AutomaticCheckGrid } from './automatic-check-grid';
 import type {
+    PortfolioLaunch,
     PortfolioOption,
     PortfolioReadiness,
     ReadinessConfirmation,
@@ -14,11 +15,13 @@ export function PortfolioReadinessPanel({
     options,
     readiness,
     confirmations,
+    launch,
     renderConfirmations,
 }: {
     options: PortfolioOption[];
     readiness: PortfolioReadiness | null;
     confirmations: ReadinessConfirmation[];
+    launch: PortfolioLaunch;
     renderConfirmations: (checks: ReadinessConfirmation[]) => React.ReactNode;
 }) {
     const { locale, t } = useTranslator();
@@ -78,6 +81,22 @@ export function PortfolioReadinessPanel({
                     </select>
                 </label>
             </div>
+
+            {launch.needs_live_portfolio ? (
+                <div className="pmc-readiness-live-callout">
+                    <span aria-hidden="true">
+                        <i className="bi bi-buildings" />
+                    </span>
+                    <div>
+                        <strong>{t('readiness.live_portfolio_title')}</strong>
+                        <p>{t('readiness.live_portfolio_description')}</p>
+                    </div>
+                    <Link className="btn btn-primary" href={launch.create_href}>
+                        <i className="bi bi-plus-lg" aria-hidden="true" />
+                        {t('readiness.create_live_portfolio')}
+                    </Link>
+                </div>
+            ) : null}
 
             {readiness ? (
                 <>

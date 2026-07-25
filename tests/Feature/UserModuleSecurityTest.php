@@ -256,6 +256,33 @@ class UserModuleSecurityTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'inactive-user@example.test']);
     }
 
+    public function test_create_form_safely_prefills_an_assignable_role(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+        $owner = $this->createUserWithRole('owner', $portfolio);
+
+        $this->actingAs($superadmin)
+            ->get(route('users.create', [
+                'portfolio_id' => $portfolio->id,
+                'role' => 'owner',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.portfolio_id', (string) $portfolio->id)
+                ->where('formPage.initialValues.role', 'owner'));
+
+        $this->actingAs($owner)
+            ->get(route('users.create', [
+                'portfolio_id' => $portfolio->id,
+                'role' => 'owner',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.portfolio_id', (string) $portfolio->id)
+                ->where('formPage.initialValues.role', 'tenant'));
+    }
+
     public function test_disabled_accounts_are_removed_from_existing_authenticated_sessions(): void
     {
         $portfolio = $this->createPortfolio();

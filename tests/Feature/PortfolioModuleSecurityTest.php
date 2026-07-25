@@ -352,6 +352,7 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.label', 'إنشاء أصل')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'إنشاء مستخدم')
+                ->where('detailPage.progress.title', 'أكمل أساس التشغيل')
                 ->where('detailPage.sections.0.title', 'ملف النشاط')
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains('label', 'الموقع'))
@@ -361,6 +362,46 @@ class PortfolioModuleSecurityTest extends TestCase
                     return is_array($owner)
                         && ($owner['href'] ?? null) === route('profile.index');
                 }));
+    }
+
+    public function test_live_portfolio_detail_guides_the_complete_setup_sequence(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.progress.completed', 1)
+                ->where('detailPage.progress.total', 6)
+                ->where('detailPage.progress.steps.0.state', 'complete')
+                ->where('detailPage.progress.steps.1.state', 'current')
+                ->where('detailPage.progress.steps.1.actionLabel', 'Create owner')
+                ->where('detailPage.progress.steps.1.href', route('users.create', [
+                    'portfolio_id' => $portfolio->id,
+                    'role' => 'owner',
+                ])));
+
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'parent_id' => null,
+        ]);
+        $this->createLease($portfolio, $tenant, $property, $manager);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+
+        $this->actingAs($superadmin)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.progress.completed', 6)
+                ->where('detailPage.progress.summary', '6 of 6 complete')
+                ->where('detailPage.progress.steps', fn ($steps): bool => collect($steps)
+                    ->every(fn (array $step): bool => $step['state'] === 'complete')));
     }
 
     public function test_portfolio_detail_prioritizes_creation_before_administration(): void
@@ -401,6 +442,8 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Edit portfolio')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.progress.steps.3.href', route('portfolios.edit', $portfolio))
+                ->where('detailPage.progress.steps.3.actionLabel', 'Configure portfolio')
                 ->has('detailPage.header.actions', 2));
     }
 

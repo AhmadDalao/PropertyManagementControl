@@ -25,12 +25,14 @@ export function AutomaticCheckGrid({
                         <ReadinessStatusBadge status={check.status} />
                     </header>
                     <p>{check.description}</p>
-                    <div className="pmc-readiness-check-detail">
-                        {check.detail}
-                    </div>
+                    {check.detail ? (
+                        <div className="pmc-readiness-check-detail">
+                            {check.detail}
+                        </div>
+                    ) : null}
                     {check.href ? (
                         <Link href={check.href}>
-                            {t('readiness.open_fix')}
+                            {check.action_label ?? t('readiness.open_fix')}
                             <i
                                 className="bi bi-arrow-up-right"
                                 aria-hidden="true"

@@ -43,6 +43,7 @@ class PortfolioModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(45, substr_count($detail, "\n") + 1);
         $this->assertStringContainsString('PortfolioDetailQuery', $detail);
         $this->assertStringContainsString('PortfolioOverviewPresenter', $detail);
+        $this->assertStringContainsString('PortfolioSetupProgressPresenter', $detail);
         $this->assertStringContainsString('PortfolioRelatedPresenter', $detail);
         $this->assertStringNotContainsString('->assets()', $detail);
         $this->assertStringNotContainsString('selectRaw(', $detail);
@@ -81,10 +82,12 @@ class PortfolioModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Portfolios/Presenters/PortfolioFormPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioOverviewPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioRelatedPresenter.php'),
+            $this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDetailQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDirectoryQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioIndexQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioInsightsQuery.php'),
+            $this->path('app/Modules/Portfolios/Queries/PortfolioSetupQuery.php'),
             $this->path('app/Modules/Portfolios/Requests/HasPortfolioValidationAttributes.php'),
             $this->path('app/Modules/Portfolios/Requests/StorePortfolioRequest.php'),
             $this->path('app/Modules/Portfolios/Requests/UpdatePortfolioRequest.php'),
@@ -99,6 +102,19 @@ class PortfolioModuleArchitectureTest extends TestCase
         ] as $path) {
             $this->assertFileExists($path);
         }
+    }
+
+    #[Test]
+    public function portfolio_setup_keeps_state_queries_out_of_the_presenter(): void
+    {
+        $presenter = $this->source($this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'));
+        $query = $this->source($this->path('app/Modules/Portfolios/Queries/PortfolioSetupQuery.php'));
+
+        $this->assertStringContainsString('PortfolioSetupQuery', $presenter);
+        $this->assertStringNotContainsString('::query()', $presenter);
+        $this->assertStringContainsString('Asset::query()', $query);
+        $this->assertStringContainsString('Lease::query()', $query);
+        $this->assertStringContainsString('User::query()', $query);
     }
 
     private function source(string $path): string

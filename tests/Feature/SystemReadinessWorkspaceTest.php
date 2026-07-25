@@ -63,6 +63,8 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->has('systemConfirmations', 4)
                 ->has('portfolioConfirmations', 6)
                 ->where('summary.total', 25)
+                ->where('portfolioLaunch.live_portfolios', 1)
+                ->where('portfolioLaunch.needs_live_portfolio', false)
                 ->where('portfolioReadiness.portfolio.id', $portfolio->id)
                 ->where('portfolioReadiness.metrics.owners', 1)
                 ->where('portfolioReadiness.metrics.managers', 1)
@@ -78,6 +80,59 @@ final class SystemReadinessWorkspaceTest extends TestCase
         $this->actingAs($tenant)
             ->get(route('system-readiness.index'))
             ->assertForbidden();
+    }
+
+    public function test_readiness_exposes_a_direct_live_portfolio_launch_path(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portfolioLaunch.live_portfolios', 0)
+                ->where('portfolioLaunch.needs_live_portfolio', true)
+                ->where('portfolioLaunch.create_href', route('portfolios.create'))
+                ->where('portfolioReadiness', null));
+    }
+
+    public function test_portfolio_blockers_open_exact_scoped_setup_actions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index', ['portfolio_id' => $portfolio->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('portfolioReadiness.checks', function (mixed $checks) use ($portfolio): bool {
+                    $owner = $this->systemCheck($checks, 'portfolio_owner');
+                    $manager = $this->systemCheck($checks, 'operations_team');
+                    $property = $this->systemCheck($checks, 'property_register');
+                    $tenant = $this->systemCheck($checks, 'tenant_access');
+                    $showcase = $this->systemCheck($checks, 'showcase');
+
+                    return ($owner['href'] ?? null) === route('users.create', [
+                        'portfolio_id' => $portfolio->id,
+                        'role' => 'owner',
+                    ])
+                        && ($owner['action_label'] ?? null) === 'Create owner'
+                        && ($manager['href'] ?? null) === route('users.create', [
+                            'portfolio_id' => $portfolio->id,
+                            'role' => 'property_manager',
+                        ])
+                        && ($manager['action_label'] ?? null) === 'Create manager'
+                        && ($property['href'] ?? null) === route('assets.create', [
+                            'portfolio_id' => $portfolio->id,
+                        ])
+                        && ($property['action_label'] ?? null) === 'Create property'
+                        && ($tenant['href'] ?? null) === route('tenants.create', [
+                            'portfolio_id' => $portfolio->id,
+                            'next' => 'lease',
+                        ])
+                        && ($tenant['action_label'] ?? null) === 'Onboard tenant'
+                        && ($showcase['href'] ?? null) === route('portfolios.show', $portfolio);
+                }));
     }
 
     public function test_confirmations_require_evidence_and_stay_in_their_scope(): void
@@ -211,6 +266,7 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->where('app.direction', 'rtl')
                 ->where('app.translations.nav.system_readiness', 'جاهزية الإطلاق')
                 ->where('app.translations.readiness.title', 'جاهزية الإطلاق')
+                ->where('app.translations.readiness.create_live_portfolio', 'إنشاء محفظة فعلية')
                 ->where('systemConfirmations.0.label', 'تم استلام بريد SMTP')
                 ->where('portfolioConfirmations.0.label', 'اعتماد الصياغة القانونية الإنجليزية'));
     }

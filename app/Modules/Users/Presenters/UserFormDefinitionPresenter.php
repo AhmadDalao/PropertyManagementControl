@@ -73,6 +73,10 @@ final class UserFormDefinitionPresenter
         ]);
         $assignableRoles = UserOptions::assignableRoles($data->actor, $target);
         $currentRole = $target?->roles->first()?->name;
+        $requestedRole = $data->defaults['role'] ?? null;
+        $defaultRole = is_string($requestedRole) && in_array($requestedRole, $assignableRoles, true)
+            ? $requestedRole
+            : (in_array('tenant', $assignableRoles, true) ? 'tenant' : $assignableRoles[0]);
         $initialValues = $target
             ? [
                 'portfolio_id' => (string) ($target->portfolio_id ?? ''),
@@ -91,7 +95,7 @@ final class UserFormDefinitionPresenter
                 'phone' => '',
                 'preferred_locale' => 'en',
                 'status' => 'active',
-                'role' => in_array('tenant', $assignableRoles, true) ? 'tenant' : $assignableRoles[0],
+                'role' => $defaultRole,
                 'password' => '',
             ];
 

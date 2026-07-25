@@ -6,14 +6,24 @@ use App\Models\Asset;
 use App\Models\Lease;
 use App\Models\Portfolio;
 use App\Models\User;
+use App\Modules\SystemReadiness\Presenters\PortfolioReadinessActionPresenter;
 use App\Modules\SystemReadiness\Support\ReadinessLocale;
 use Illuminate\Database\Eloquent\Builder;
 
 final class PortfolioReadinessQuery
 {
-    public function __construct(private readonly ReadinessLocale $locale) {}
+    public function __construct(
+        private readonly ReadinessLocale $locale,
+        private readonly PortfolioReadinessActionPresenter $actions,
+    ) {}
 
-    /** @return array{options: array<int, array<string, mixed>>, selected: ?array<string, mixed>} */
+    /**
+     * @return array{
+     *     options: array<int, array<string, mixed>>,
+     *     selected: ?array<string, mixed>,
+     *     launch: array{live_portfolios: int, needs_live_portfolio: bool, create_href: string}
+     * }
+     */
     public function handle(?int $requestedPortfolioId): array
     {
         $portfolios = Portfolio::query()
@@ -21,10 +31,15 @@ final class PortfolioReadinessQuery
             ->orderByRaw('showcase_dataset_id is not null')
             ->orderBy('name_en')
             ->get();
+        $livePortfolioCount = $portfolios
+            ->reject(fn (Portfolio $portfolio): bool => $portfolio->is_showcase)
+            ->count();
 
         $selected = $requestedPortfolioId
             ? $portfolios->firstWhere('id', $requestedPortfolioId)
-            : $portfolios->first();
+            : $portfolios->first(
+                fn (Portfolio $portfolio): bool => ! $portfolio->is_showcase,
+            ) ?? $portfolios->first();
 
         return [
             'options' => $portfolios
@@ -37,6 +52,11 @@ final class PortfolioReadinessQuery
                 ->values()
                 ->all(),
             'selected' => $selected ? $this->present($selected) : null,
+            'launch' => [
+                'live_portfolios' => $livePortfolioCount,
+                'needs_live_portfolio' => $livePortfolioCount === 0,
+                'create_href' => route('portfolios.create'),
+            ],
         ];
     }
 
@@ -62,6 +82,7 @@ final class PortfolioReadinessQuery
         $missingEnglishTerms = $leases->filter(fn (Lease $lease): bool => trim((string) data_get($lease->terms_json, 'en')) === '')->count();
         $missingArabicTerms = $leases->filter(fn (Lease $lease): bool => trim((string) data_get($lease->terms_json, 'ar')) === '')->count();
         $hasOwner = $portfolio->owner !== null && $portfolio->owner->status === 'active';
+        $ownerReady = $hasOwner && $owners > 0;
 
         return [
             'portfolio' => [
@@ -80,15 +101,35 @@ final class PortfolioReadinessQuery
                 'assignment_gaps' => $missingOwners + $missingManagers,
             ],
             'checks' => [
-                $this->check('portfolio_status', $portfolio->status === 'active' ? 'ready' : 'blocked', '/portfolios/'.$portfolio->id),
-                $this->check('portfolio_owner', $hasOwner && $owners > 0 ? 'ready' : 'blocked', '/users?portfolio_id='.$portfolio->id),
-                $this->check('operations_team', $managers > 0 ? 'ready' : 'blocked', '/users?portfolio_id='.$portfolio->id),
-                $this->check('tenant_access', $tenants > 0 ? 'ready' : 'attention', '/users?portfolio_id='.$portfolio->id),
-                $this->check('property_register', $assetCount > 0 ? 'ready' : 'blocked', '/assets?portfolio_id='.$portfolio->id),
+                $this->check(
+                    'portfolio_status',
+                    $portfolio->status === 'active' ? 'ready' : 'blocked',
+                    $this->actions->portfolio($portfolio, $portfolio->status === 'active'),
+                ),
+                $this->check(
+                    'portfolio_owner',
+                    $ownerReady ? 'ready' : 'blocked',
+                    $this->actions->owner($portfolio, $ownerReady),
+                ),
+                $this->check(
+                    'operations_team',
+                    $managers > 0 ? 'ready' : 'blocked',
+                    $this->actions->manager($portfolio, $managers > 0),
+                ),
+                $this->check(
+                    'tenant_access',
+                    $tenants > 0 ? 'ready' : 'attention',
+                    $this->actions->tenant($portfolio, $tenants > 0),
+                ),
+                $this->check(
+                    'property_register',
+                    $assetCount > 0 ? 'ready' : 'blocked',
+                    $this->actions->property($portfolio, $assetCount > 0),
+                ),
                 $this->check(
                     'asset_assignments',
                     $missingOwners + $missingManagers === 0 ? 'ready' : 'attention',
-                    '/assets?portfolio_id='.$portfolio->id,
+                    $this->actions->assignments($portfolio),
                     ['count' => $missingOwners + $missingManagers],
                 ),
                 $this->check(
@@ -96,10 +137,14 @@ final class PortfolioReadinessQuery
                     $leases->isEmpty()
                         ? 'attention'
                         : ($missingEnglishTerms + $missingArabicTerms === 0 ? 'ready' : 'blocked'),
-                    '/leases?portfolio_id='.$portfolio->id,
+                    $this->actions->leases($portfolio, $leases->isNotEmpty()),
                     ['count' => $missingEnglishTerms + $missingArabicTerms],
                 ),
-                $this->check('showcase', $portfolio->is_showcase ? 'blocked' : 'ready', '/system/showcase-data'),
+                $this->check(
+                    'showcase',
+                    $portfolio->is_showcase ? 'blocked' : 'ready',
+                    $this->actions->dataSource($portfolio),
+                ),
             ],
         ];
     }
@@ -126,11 +171,16 @@ final class PortfolioReadinessQuery
     }
 
     /**
+     * @param  array{href: string, label: string}  $action
      * @param  array<string, int>  $replacements
      * @return array<string, mixed>
      */
-    private function check(string $key, string $status, string $href, array $replacements = []): array
-    {
+    private function check(
+        string $key,
+        string $status,
+        array $action,
+        array $replacements = [],
+    ): array {
         $localized = array_map(
             fn (int $value): string => $this->locale->number($value),
             $replacements,
@@ -141,7 +191,8 @@ final class PortfolioReadinessQuery
             'label' => trans("app.readiness.portfolio_checks.{$key}.label"),
             'description' => trans("app.readiness.portfolio_checks.{$key}.description", $localized),
             'status' => $status,
-            'href' => $href,
+            'href' => $action['href'],
+            'action_label' => $action['label'],
         ];
     }
 }

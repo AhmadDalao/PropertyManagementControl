@@ -12,6 +12,7 @@ class PortfolioDetailPresenter
     public function __construct(
         private readonly PortfolioDetailQuery $details,
         private readonly PortfolioOverviewPresenter $overview,
+        private readonly PortfolioSetupProgressPresenter $setup,
         private readonly PortfolioRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
     ) {}
@@ -23,6 +24,7 @@ class PortfolioDetailPresenter
 
         return [
             ...$this->overview->present($data, $actor),
+            'progress' => $this->setup->present($data, $actor),
             'related' => $this->related->present($data, $actor),
             'documents' => $this->resources->documentStrip($data->documents),
             'timeline' => $this->resources->activityTimeline($data->portfolio),

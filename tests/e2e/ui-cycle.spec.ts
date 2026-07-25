@@ -570,6 +570,12 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
             await expect(page.locator('.pmc-readiness-check')).toHaveCount(15);
             await expect(
+                page.locator('.pmc-readiness-check-detail'),
+            ).toHaveCount(7);
+            await expect(
+                page.getByRole('link', { name: 'Open portfolio' }).first(),
+            ).toBeVisible();
+            await expect(
                 page
                     .locator('.pmc-readiness-evidence-grid')
                     .first()
@@ -613,6 +619,9 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', {
                 name: 'سلامة البنية التشغيلية',
             }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'فتح المحفظة' }).first(),
         ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('readiness.');
         await expectNoHorizontalOverflow(page);

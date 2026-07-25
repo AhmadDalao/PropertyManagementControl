@@ -91,6 +91,7 @@ export default function SystemReadinessIndexPage() {
                 options={props.portfolioOptions}
                 readiness={props.portfolioReadiness}
                 confirmations={props.portfolioConfirmations}
+                launch={props.portfolioLaunch}
                 renderConfirmations={(checks) => evidenceGrid(checks)}
             />
 

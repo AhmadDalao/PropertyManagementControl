@@ -7,8 +7,9 @@ export type AutomaticReadinessCheck = {
     label: string;
     description: string;
     status: ReadinessStatus;
-    detail: string;
+    detail?: string;
     href?: string;
+    action_label?: string;
     meta?: Record<string, string | number | null>;
 };
 
@@ -49,6 +50,12 @@ export type PortfolioReadiness = {
     checks: AutomaticReadinessCheck[];
 };
 
+export type PortfolioLaunch = {
+    live_portfolios: number;
+    needs_live_portfolio: boolean;
+    create_href: string;
+};
+
 export type SystemReadinessPageProps = SharedProps & {
     checkedAt: string;
     summary: {
@@ -62,6 +69,7 @@ export type SystemReadinessPageProps = SharedProps & {
     portfolioOptions: PortfolioOption[];
     portfolioReadiness: PortfolioReadiness | null;
     portfolioConfirmations: ReadinessConfirmation[];
+    portfolioLaunch: PortfolioLaunch;
     mailTest: {
         enabled: boolean;
         target: string;

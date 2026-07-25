@@ -348,6 +348,45 @@
     overflow-wrap: anywhere;
 }
 
+.pmc-readiness-live-callout {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    border: 1px solid #efd482;
+    border-radius: var(--pmc-radius-md);
+    background: linear-gradient(110deg, #fff9e8, #fff);
+}
+
+.pmc-readiness-live-callout > span {
+    display: grid;
+    width: 2.65rem;
+    height: 2.65rem;
+    place-items: center;
+    border-radius: 50%;
+    color: #111;
+    background: var(--pmc-amber);
+}
+
+.pmc-readiness-live-callout strong,
+.pmc-readiness-live-callout p {
+    display: block;
+}
+
+.pmc-readiness-live-callout p {
+    max-width: 56rem;
+    margin: 0.2rem 0 0;
+    color: var(--pmc-text-muted);
+    font-size: 0.82rem;
+}
+
+.pmc-readiness-live-callout .btn {
+    min-height: 2.75rem;
+    white-space: nowrap;
+}
+
 .pmc-readiness-portfolio-banner {
     display: flex;
     align-items: center;
@@ -520,6 +559,15 @@
     .pmc-readiness-mail-test {
         align-items: stretch;
         flex-direction: column;
+    }
+
+    .pmc-readiness-live-callout {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-readiness-live-callout .btn {
+        grid-column: 1 / -1;
+        justify-content: center;
     }
 
     .pmc-readiness-section-heading label {

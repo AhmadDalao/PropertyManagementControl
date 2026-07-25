@@ -21,13 +21,14 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - English and Arabic administration, public content, RTL layout, editable wording, localized map data, and CMS content are supported.
 - Resource indexes use server pagination, scoped search and filters, desktop tables, compact mobile cards, exports, and detail pages.
 - Launch readiness is measured in `/system/readiness`: automatic environment, scheduler, queue, storage, and private-document checks are combined with auditable evidence for SMTP delivery, backups, restore drills, legal approval, opening data, billing rules, retention, and role pilots.
+- Launch readiness now distinguishes live portfolios from showcase data and opens the exact next form for each blocker. Every live portfolio detail has one six-step setup path for activation, owner, manager, property, tenant, and first lease.
 
 ## UI and quality status
 
 - Browser coverage passes at 390px, 768px, 1024px, and 1440px with no page-level horizontal overflow.
 - Mobile navigation locks background scrolling, removes the closed drawer from keyboard navigation, restores focus, and keeps the topbar at 64px. Desktop collapse preference persists, while resize recovery clears stale drawer state.
 - Long reports are split into focused tabs and responsive card grids. Detail pages use query-backed tabs and single-column tablet/mobile layouts.
-- Automated status: 476 PHP tests with 24,603 assertions and 45 Playwright/axe scenarios pass.
+- Automated status: 492 PHP tests with 25,356 assertions and 45 Playwright/axe scenarios pass.
 - PHP syntax, Pint, TypeScript, ESLint, Prettier, Vite, Composer audit, pnpm audit, route discovery, and migrations pass.
 - The main CSS bundle is 318.55 KB before gzip. Action Center is route-loaded as a separate 10.50 KB chunk, alongside Dashboard, Property Map, Showcase Data, Documentation, Page Wording, Profile, Media, and Launch Readiness chunks. Its former 736-line component, 626-line table, and 542-line workspace stylesheets are thin facades over bounded layers.
 - PHPStan has 15 accepted legacy baseline entries, down from 872. The Asset, Maintenance, Lease, Payment, Document, Tenant, Expense, User, Portfolio, CMS, Public Site, Media, Report, Audit, Search, Export, Wording, Dashboard, Documentation, Authentication, Localization, and shared-module extractions add zero findings in their touched slices.

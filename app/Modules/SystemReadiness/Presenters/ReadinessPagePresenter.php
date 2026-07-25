@@ -50,6 +50,7 @@ final class ReadinessPagePresenter
             'portfolioOptions' => $portfolioData['options'],
             'portfolioReadiness' => $selected,
             'portfolioConfirmations' => $portfolioConfirmations,
+            'portfolioLaunch' => $portfolioData['launch'],
             'mailTest' => [
                 'enabled' => $this->mail->configured(),
                 'target' => $actor->email,
