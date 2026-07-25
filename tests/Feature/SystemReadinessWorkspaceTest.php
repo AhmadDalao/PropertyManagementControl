@@ -7,6 +7,7 @@ use App\Models\OperationalReadinessCheck;
 use App\Models\ShowcaseDataset;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use App\Modules\SystemReadiness\Notifications\ReadinessTestNotification;
+use Carbon\CarbonImmutable;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -53,7 +54,7 @@ final class SystemReadinessWorkspaceTest extends TestCase
             ]);
         }
 
-        app(RecordSchedulerHeartbeat::class)->handle();
+        $this->recordSchedulerCadence();
 
         $this->actingAs($superadmin)
             ->get(route('system-readiness.index', ['portfolio_id' => $portfolio->id]))
@@ -346,7 +347,66 @@ final class SystemReadinessWorkspaceTest extends TestCase
             ->assertSuccessful();
         $this->assertSame(0, $command->run());
 
-        $this->assertIsString(Cache::get(RecordSchedulerHeartbeat::CACHE_KEY));
+        $heartbeat = Cache::get(RecordSchedulerHeartbeat::CACHE_KEY);
+
+        $this->assertIsArray($heartbeat);
+        $this->assertSame(2, $heartbeat['version'] ?? null);
+        $this->assertCount(1, $heartbeat['samples'] ?? []);
+    }
+
+    public function test_one_fresh_heartbeat_cannot_make_cron_look_healthy(): void
+    {
+        Cache::forget(RecordSchedulerHeartbeat::CACHE_KEY);
+        app(RecordSchedulerHeartbeat::class)->handle();
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('systemChecks', function (mixed $checks): bool {
+                    $scheduler = $this->systemCheck($checks, 'scheduler');
+
+                    return ($scheduler['status'] ?? null) === 'attention'
+                        && ($scheduler['meta']['sample_count'] ?? null) === 1
+                        && ($scheduler['meta']['cadence_confirmed'] ?? null) === false
+                        && str_contains(
+                            (string) ($scheduler['detail'] ?? ''),
+                            'only 1 recent cadence samples',
+                        );
+                }));
+    }
+
+    public function test_legacy_heartbeat_builds_into_confirmed_cadence_history(): void
+    {
+        $now = CarbonImmutable::now();
+        Cache::forever(
+            RecordSchedulerHeartbeat::CACHE_KEY,
+            $now->subMinutes(2)->toIso8601String(),
+        );
+
+        try {
+            foreach ([$now->subMinute(), $now] as $recordedAt) {
+                CarbonImmutable::setTestNow($recordedAt);
+                app(RecordSchedulerHeartbeat::class)->handle();
+            }
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
+
+        $superadmin = $this->createUserWithRole('superadmin');
+
+        $this->actingAs($superadmin)
+            ->get(route('system-readiness.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('systemChecks', function (mixed $checks): bool {
+                    $scheduler = $this->systemCheck($checks, 'scheduler');
+
+                    return ($scheduler['status'] ?? null) === 'ready'
+                        && ($scheduler['meta']['sample_count'] ?? null) === 3
+                        && ($scheduler['meta']['cadence_confirmed'] ?? null) === true;
+                }));
     }
 
     public function test_shared_hosting_schedule_locks_expire_quickly_after_a_killed_process(): void
@@ -413,5 +473,20 @@ final class SystemReadinessWorkspaceTest extends TestCase
         }
 
         return null;
+    }
+
+    private function recordSchedulerCadence(): void
+    {
+        Cache::forget(RecordSchedulerHeartbeat::CACHE_KEY);
+        $now = CarbonImmutable::now();
+
+        try {
+            foreach ([$now->subMinutes(2), $now->subMinute(), $now] as $recordedAt) {
+                CarbonImmutable::setTestNow($recordedAt);
+                app(RecordSchedulerHeartbeat::class)->handle();
+            }
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
     }
 }

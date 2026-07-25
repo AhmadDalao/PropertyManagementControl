@@ -3216,6 +3216,7 @@ return [
         'mail_ready' => 'بريد :mailer يحتوي على إعدادات إرسال حقيقية.',
         'mail_blocked' => 'بريد :mailer لا يستطيع إرسال رسائل استعادة كلمة المرور.',
         'scheduler_missing' => 'لم يتم تسجيل أي نبضة لجدولة المهام.',
+        'scheduler_unconfirmed' => 'تم تسجيل :count عينات حديثة فقط من نبضات الجدولة. انتظر دقيقتين ثم حدّث الصفحة قبل اعتبار مهمة cron سليمة.',
         'scheduler_seen' => 'تم تسجيل آخر نبضة للجدولة قبل :minutes دقيقة.',
         'queue_detail' => 'الاتصال :connection · قيد الانتظار :pending · الفاشلة :failed · أقدم مهمة منذ :oldest دقيقة.',
         'queue_unavailable' => 'تعذر فحص جداول طابور المهام.',

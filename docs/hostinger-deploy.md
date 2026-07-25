@@ -70,7 +70,6 @@ php artisan migrate --force
 php artisan optimize:clear
 php artisan optimize
 php artisan property:sync-operational-statuses
-php artisan property:record-scheduler-heartbeat
 ```
 
 If dependencies are uploaded instead of installed on Hostinger, run `composer dump-autoload --no-dev --classmap-authoritative --no-interaction` after the upload. Run the permissions seeder and storage-link command only during initial setup or when their configuration changes.
@@ -87,7 +86,7 @@ Create a cron job that runs Laravel's scheduler every minute:
 php /path/to/artisan schedule:run >> /dev/null 2>&1
 ```
 
-The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` treats a stale heartbeat as a production blocker.
+The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy.
 
 Shared hosting can terminate a worker without releasing Laravel's overlap mutex. The heartbeat lock expires after 5 minutes, the queue-worker lock after 10 minutes, and the daily status-sync lock after 120 minutes. If a killed worker left an older lock from a previous release, run `php artisan schedule:clear-cache` once, then confirm the queue count decreases in `/system/readiness`.
 

@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use App\Modules\SystemReadiness\Support\MailReadiness;
 use App\Modules\SystemReadiness\Support\ReadinessLocale;
+use App\Modules\SystemReadiness\Support\SchedulerHeartbeatHistory;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -87,27 +88,37 @@ final class SystemHealthQuery
     /** @return array<string, mixed> */
     private function scheduler(): array
     {
-        $heartbeat = Cache::get(RecordSchedulerHeartbeat::CACHE_KEY);
-        $lastSeen = null;
-
-        try {
-            $lastSeen = is_string($heartbeat) ? CarbonImmutable::parse($heartbeat) : null;
-        } catch (Throwable) {
-            $lastSeen = null;
-        }
+        $history = SchedulerHeartbeatHistory::from(
+            Cache::get(RecordSchedulerHeartbeat::CACHE_KEY),
+        );
+        $lastSeen = $history->latest();
 
         if (! $lastSeen) {
             return $this->check('scheduler', 'blocked', trans('app.readiness.scheduler_missing'));
         }
 
         $minutes = max(0, (int) $lastSeen->diffInMinutes(now()));
-        $status = $minutes <= 3 ? 'ready' : ($minutes <= 15 ? 'attention' : 'blocked');
+        $cadenceConfirmed = $history->cadenceConfirmed();
+        $status = $minutes <= 3 && $cadenceConfirmed
+            ? 'ready'
+            : ($minutes <= 15 ? 'attention' : 'blocked');
+        $detail = $minutes <= 3 && ! $cadenceConfirmed
+            ? trans('app.readiness.scheduler_unconfirmed', [
+                'count' => $this->locale->number($history->sampleCount()),
+            ])
+            : trans('app.readiness.scheduler_seen', [
+                'minutes' => $this->locale->number($minutes),
+            ]);
 
         return $this->check(
             'scheduler',
             $status,
-            trans('app.readiness.scheduler_seen', ['minutes' => $this->locale->number($minutes)]),
-            ['last_seen_at' => $lastSeen->toIso8601String()],
+            $detail,
+            [
+                'last_seen_at' => $lastSeen->toIso8601String(),
+                'sample_count' => $history->sampleCount(),
+                'cadence_confirmed' => $cadenceConfirmed,
+            ],
         );
     }
 

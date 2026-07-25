@@ -3216,6 +3216,7 @@ return [
         'mail_ready' => 'The :mailer mailer has non-placeholder delivery settings.',
         'mail_blocked' => 'The :mailer mailer cannot deliver password-reset email.',
         'scheduler_missing' => 'No scheduler heartbeat has been recorded.',
+        'scheduler_unconfirmed' => 'The scheduler has only :count recent cadence samples. Wait two minutes and refresh before treating cron as healthy.',
         'scheduler_seen' => 'The last scheduler heartbeat was :minutes minutes ago.',
         'queue_detail' => 'Connection :connection · :pending pending · :failed failed · oldest pending job :oldest minutes.',
         'queue_unavailable' => 'Queue tables could not be inspected.',
