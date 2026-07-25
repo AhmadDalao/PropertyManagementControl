@@ -163,6 +163,61 @@
     white-space: nowrap;
 }
 
+.pmc-dashboard-data-context {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.8rem;
+    margin-top: 0.75rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid #eadba4;
+    border-radius: 0.8rem;
+    background: #fff9e9;
+}
+
+.pmc-dashboard-data-context > i {
+    display: grid;
+    width: 2.35rem;
+    height: 2.35rem;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #111;
+    color: #ffc107;
+}
+
+.pmc-dashboard-data-context > div {
+    min-width: 0;
+}
+
+.pmc-dashboard-data-context strong,
+.pmc-dashboard-data-context span {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 900;
+}
+
+.pmc-dashboard-data-context p {
+    margin: 0.25rem 0;
+    color: #59575a;
+    font-size: 0.75rem;
+}
+
+.pmc-dashboard-data-context span {
+    color: #775800;
+    font-size: 0.7rem;
+}
+
+.pmc-dashboard-data-context > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-self: center;
+    align-items: center;
+    gap: 0.35rem;
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 900;
+}
+
 @media (max-width: 1199.98px) {
     .pmc-command-grid.is-three {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -174,5 +229,14 @@
     .pmc-command-grid.is-three,
     .pmc-dashboard-status-grid {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-dashboard-data-context {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-dashboard-data-context > a {
+        grid-column: 1 / -1;
+        justify-content: center;
     }
 }

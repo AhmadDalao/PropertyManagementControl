@@ -14,6 +14,10 @@ export type LaunchReadinessStatus = {
     automatic_attention: number;
     automatic_blocked: number;
     evidence_remaining: number;
+    operational_portfolios: number;
+    showcase_portfolios: number;
+    showcase_assets: number;
+    showcase_users: number;
 };
 
 export type CollectionQueueItem = {

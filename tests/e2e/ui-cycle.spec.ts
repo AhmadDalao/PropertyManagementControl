@@ -587,6 +587,11 @@ test.describe('authenticated administration', () => {
                 .locator('.pmc-dashboard-launch-readiness')
                 .getByRole('heading', { name: 'ضبط الإطلاق' }),
         ).toBeVisible();
+        await expect(
+            page
+                .locator('.pmc-dashboard-data-context')
+                .getByText('بيانات العرض مشمولة في جميع الإجماليات'),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 

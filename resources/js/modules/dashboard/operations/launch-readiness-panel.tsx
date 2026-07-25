@@ -46,6 +46,53 @@ export function LaunchReadinessPanel({ status }: { status: ReadinessStatus }) {
                     </strong>
                 </Link>
             </div>
+            {status.showcase_portfolios > 0 ? (
+                <div className="pmc-dashboard-data-context" role="note">
+                    <i className="bi bi-database" aria-hidden="true" />
+                    <div>
+                        <strong>{t('dashboard.showcase_totals_title')}</strong>
+                        <p>
+                            {t(
+                                'dashboard.showcase_totals_description',
+                                undefined,
+                                {
+                                    portfolios: localizedNumber(
+                                        status.showcase_portfolios,
+                                        locale,
+                                    ),
+                                    assets: localizedNumber(
+                                        status.showcase_assets,
+                                        locale,
+                                    ),
+                                    users: localizedNumber(
+                                        status.showcase_users,
+                                        locale,
+                                    ),
+                                },
+                            )}
+                        </p>
+                        <span>
+                            {t(
+                                'dashboard.operational_portfolio_count',
+                                undefined,
+                                {
+                                    count: localizedNumber(
+                                        status.operational_portfolios,
+                                        locale,
+                                    ),
+                                },
+                            )}
+                        </span>
+                    </div>
+                    <Link href="/system/showcase-data">
+                        {t('dashboard.review_showcase_data')}
+                        <i
+                            className="bi bi-arrow-up-right"
+                            aria-hidden="true"
+                        />
+                    </Link>
+                </div>
+            ) : null}
         </WorkspacePanel>
     );
 }

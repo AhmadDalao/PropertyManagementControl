@@ -10,6 +10,7 @@ use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
+use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,6 +68,21 @@ class DashboardModuleTest extends TestCase
     public function test_superadmin_dashboard_exposes_platform_only_cms_status(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');
+        $this->createPortfolio();
+        $dataset = ShowcaseDataset::query()->create([
+            'key' => 'DASHBOARD-CONTEXT',
+            'name' => 'Dashboard context',
+            'status' => 'completed',
+            'target_properties' => 1,
+            'generated_properties' => 1,
+        ]);
+        $showcasePortfolio = $this->createPortfolio([
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+        $this->createAsset($showcasePortfolio);
+        $this->createUserWithRole('owner', $showcasePortfolio, [
+            'showcase_dataset_id' => $dataset->id,
+        ]);
         $homepage = CmsPage::query()->create([
             'slug' => 'home',
             'title_en' => 'Operations Home',
@@ -92,7 +108,11 @@ class DashboardModuleTest extends TestCase
                 ->where('cmsStatus.homepage', $homepage->title_en)
                 ->where('readinessStatus.status', 'blocked')
                 ->where('readinessStatus.automatic_blocked', fn (int $count): bool => $count >= 1)
-                ->where('readinessStatus.evidence_remaining', 4));
+                ->where('readinessStatus.evidence_remaining', 4)
+                ->where('readinessStatus.operational_portfolios', 1)
+                ->where('readinessStatus.showcase_portfolios', 1)
+                ->where('readinessStatus.showcase_assets', 1)
+                ->where('readinessStatus.showcase_users', 1));
     }
 
     public function test_owner_dashboard_returns_actionable_month_and_property_performance_data(): void
