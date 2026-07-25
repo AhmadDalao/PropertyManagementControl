@@ -86,6 +86,7 @@ final readonly class LeaseMoveOutDirectoryQuery
                         'id',
                         'portfolio_id',
                         'tenant_profile_id',
+                        'managed_by_user_id',
                         'leaseable_type',
                         'leaseable_id',
                         'code',
@@ -98,6 +99,8 @@ final readonly class LeaseMoveOutDirectoryQuery
                     ->with([
                         'tenantProfile:id,user_id',
                         'tenantProfile.user:id,name,email,phone',
+                        'managedBy:id,name',
+                        'portfolio:id,name_en,name_ar',
                         'leaseable',
                         'documents' => fn ($documents) => $documents
                             ->whereIn('type', LeaseMoveOutOptions::REQUIRED_DOCUMENT_TYPES)

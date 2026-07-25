@@ -21,6 +21,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-grid-1x2',
             },
             {
+                labelKey: 'nav.action_center',
+                href: '/action-center',
+                icon: 'bi-collection',
+                roles: ['superadmin', 'owner', 'property_manager'],
+            },
+            {
                 labelKey: 'nav.property_map',
                 href: '/property-map',
                 icon: 'bi-map',

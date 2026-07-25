@@ -29,14 +29,7 @@ final readonly class LeaseRenewalDirectoryQuery
     /** @return array<string, mixed> */
     public function filters(Request $request): array
     {
-        $filters = $this->tables->filters($request, [
-            'queue' => 'attention',
-            'horizon' => '90',
-            'lease_status' => 'all',
-            'property_id' => 'all',
-            'sort' => 'ends_at',
-            'direction' => 'asc',
-        ]);
+        $filters = $this->tables->filters($request, LeaseRenewalOptions::DEFAULT_FILTERS);
 
         if (! in_array($filters['queue'], ['all', ...LeaseRenewalOptions::QUEUES], true)) {
             $filters['queue'] = 'attention';
@@ -75,6 +68,7 @@ final readonly class LeaseRenewalDirectoryQuery
                 'id',
                 'portfolio_id',
                 'tenant_profile_id',
+                'managed_by_user_id',
                 'leaseable_type',
                 'leaseable_id',
                 'code',
@@ -90,6 +84,8 @@ final readonly class LeaseRenewalDirectoryQuery
             ->with([
                 'tenantProfile:id,user_id',
                 'tenantProfile.user:id,name,email,phone',
+                'managedBy:id,name',
+                'portfolio:id,name_en,name_ar',
                 'leaseable',
                 'renewalLease:id,renewed_from_lease_id,code,status,started_at,ends_at',
             ])

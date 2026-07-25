@@ -71,6 +71,22 @@ return [
             ],
         ],
         [
+            'key' => 'daily_operations',
+            'title' => 'Run the daily property action queue',
+            'audience' => 'Owner / Manager',
+            'roles' => ['superadmin', 'owner', 'property_manager'],
+            'route' => '/action-center',
+            'icon' => 'bi-collection',
+            'summary' => 'Start from one prioritized list instead of checking collections, maintenance, renewals, and move-outs separately.',
+            'outcome' => 'Critical work is handled first, every item has a responsible person, and property teams know exactly where to continue.',
+            'steps' => [
+                ['label' => 'Open the Action Center', 'route' => '/action-center', 'module' => null],
+                ['label' => 'Clear critical and overdue items', 'route' => '/action-center?priority=critical', 'module' => null],
+                ['label' => 'Assign unowned work', 'route' => '/action-center?assignee=unassigned', 'module' => null],
+                ['label' => 'Export the current queue for review', 'route' => '/action-center', 'module' => null],
+            ],
+        ],
+        [
             'key' => 'asset_to_lease',
             'title' => 'Turn a property into a rent-ready lease',
             'audience' => 'Owner / Manager',
@@ -160,6 +176,15 @@ return [
             'description' => 'Start here for KPIs, alerts, next actions, and today\'s operating picture.',
             'action' => 'Open control center',
             'icon' => 'bi-grid-1x2',
+        ],
+        [
+            'label' => 'Action Center',
+            'category' => 'Command',
+            'route' => '/action-center',
+            'description' => 'Work collections, maintenance, renewals, and move-outs from one property-scoped priority queue.',
+            'action' => 'Open daily queue',
+            'icon' => 'bi-collection',
+            'roles' => ['superadmin', 'owner', 'property_manager'],
         ],
         [
             'label' => 'Portfolios',

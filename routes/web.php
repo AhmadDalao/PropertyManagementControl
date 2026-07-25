@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActionCenterController;
 use App\Http\Controllers\AdminExportController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AuditLogController;
@@ -53,6 +54,10 @@ Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('loca
 Route::middleware(['auth', 'account.active', 'password.changed'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/action-center', [ActionCenterController::class, 'index'])
+        ->name('action-center.index');
+    Route::get('/action-center/export', [ActionCenterController::class, 'export'])
+        ->name('action-center.export');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])

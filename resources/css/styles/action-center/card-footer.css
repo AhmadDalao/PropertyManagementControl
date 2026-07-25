@@ -1,0 +1,51 @@
+.pmc-action-card-footer {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #eeeae3;
+}
+
+.pmc-action-assignee {
+    display: inline-flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.35rem;
+    color: #5f5b54;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.pmc-action-assignee span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-action-assignee.is-unassigned {
+    color: #a55a1b;
+}
+
+.pmc-action-open {
+    display: inline-flex;
+    min-height: 2.4rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.62rem;
+    background: #111;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-action-open:hover {
+    background: var(--pmc-amber);
+    color: #111;
+}

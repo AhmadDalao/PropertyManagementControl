@@ -1,0 +1,114 @@
+.pmc-action-center {
+    min-width: 0;
+}
+
+.pmc-action-center .pmc-workspace-heading h1 {
+    font-size: clamp(2rem, 3vw, 2.7rem);
+}
+
+.pmc-action-center .pmc-metric-grid {
+    gap: 0.7rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-action-center .pmc-metric-card {
+    min-height: 7.5rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.75rem;
+    padding: 0.85rem;
+}
+
+.pmc-action-center .pmc-metric-icon {
+    grid-row: 1 / 4;
+    width: 2.3rem;
+    height: 2.3rem;
+    margin: 0;
+}
+
+.pmc-action-center .pmc-metric-card > span,
+.pmc-action-center .pmc-metric-card > strong,
+.pmc-action-center .pmc-metric-card > small {
+    grid-column: 2;
+}
+
+.pmc-action-center .pmc-metric-card > strong {
+    margin-top: 0.12rem;
+    font-size: 1.7rem;
+}
+
+.pmc-action-center .pmc-metric-card > small {
+    margin-top: 0.15rem;
+    padding-top: 0;
+}
+
+.pmc-action-workspace {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+}
+
+.pmc-action-workspace > header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-action-workspace > header span {
+    color: #856a00;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-action-workspace > header h2 {
+    margin: 0.2rem 0 0;
+    font-size: 1.15rem;
+    font-weight: 950;
+    letter-spacing: -0.025em;
+}
+
+.pmc-action-workspace > header p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.74rem;
+    font-weight: 750;
+}
+
+.pmc-action-empty {
+    display: flex;
+    min-height: 15rem;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: start;
+}
+
+.pmc-action-empty > i {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 999px;
+    background: #e4f7ee;
+    color: var(--pmc-green);
+    font-size: 1.3rem;
+}
+
+.pmc-action-empty strong {
+    font-size: 0.95rem;
+}
+
+.pmc-action-empty p {
+    max-width: 30rem;
+    margin: 0.25rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.74rem;
+}

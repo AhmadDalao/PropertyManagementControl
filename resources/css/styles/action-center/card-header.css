@@ -1,0 +1,97 @@
+.pmc-action-card-head {
+    min-width: 0;
+}
+
+.pmc-action-card-badges {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.pmc-action-type,
+.pmc-action-priority {
+    display: inline-flex;
+    min-height: 1.65rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.59rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.pmc-action-type {
+    background: #eef1f5;
+    color: #3e4652;
+}
+
+.pmc-action-type.is-collection {
+    background: #e4f5f1;
+    color: #08786e;
+}
+
+.pmc-action-type.is-maintenance {
+    background: #fff1df;
+    color: #995220;
+}
+
+.pmc-action-type.is-renewal {
+    background: #e7edff;
+    color: #2856c6;
+}
+
+.pmc-action-type.is-move_out {
+    background: #f0eaf8;
+    color: #684695;
+}
+
+.pmc-action-priority.is-critical {
+    background: #ffe5df;
+    color: #a33625;
+}
+
+.pmc-action-priority.is-high {
+    background: #fff0bd;
+    color: #745900;
+}
+
+.pmc-action-priority.is-normal {
+    background: #ecebe8;
+    color: #5e5a53;
+}
+
+.pmc-action-card-head > a {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 2.75rem;
+    max-width: 100%;
+    align-items: center;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-action-card-head h3 {
+    max-width: 100%;
+    margin: 0;
+    overflow: hidden;
+    font-size: 1rem;
+    font-weight: 950;
+    letter-spacing: -0.025em;
+    line-height: 1.3;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-action-card-head > p {
+    margin: 0.25rem 0 0;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.4;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

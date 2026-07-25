@@ -214,6 +214,8 @@ if ($login['status'] !== 302 || ! str_contains((string) $login['location'], '/da
 
 $authChecks = [
     '/dashboard' => 'dashboard',
+    '/action-center?locale=en' => 'admin/action-center/index',
+    '/action-center?locale=ar' => 'admin/action-center/index',
     '/property-map' => 'admin/property-map/index',
     '/portfolios' => 'admin/portfolios/index',
     '/users' => 'admin/users/index',
@@ -356,6 +358,23 @@ if (! str_contains($rentCollectionExportHeaders, '.xlsx') || ! str_starts_with((
 }
 
 smoke_note('/exports/rent-collection Excel .xlsx');
+
+$actionCenterExport = smoke_request($baseUrl, $cookieFile, 'GET', '/action-center/export?locale=en');
+$actionCenterExportHeaders = strtolower((string) $actionCenterExport['headers']);
+
+if ($actionCenterExport['status'] !== 200) {
+    smoke_fail("Action Center export returned {$actionCenterExport['status']}.");
+}
+
+if (! str_contains($actionCenterExportHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')) {
+    smoke_fail('Action Center export did not return the Excel workbook content type.');
+}
+
+if (! str_contains($actionCenterExportHeaders, '.xlsx') || ! str_starts_with((string) $actionCenterExport['body'], 'PK')) {
+    smoke_fail('Action Center export was not a valid .xlsx download.');
+}
+
+smoke_note('/action-center/export Excel .xlsx');
 
 $paymentIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/payments?status=posted&per_page=10&locale=en');
 $paymentPayload = smoke_page_payload($paymentIndex['body']);

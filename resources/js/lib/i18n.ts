@@ -4,6 +4,7 @@ import type { SharedProps, TranslationMap } from '@/types';
 
 export type UiTranslationKey =
     | `actions.${string}`
+    | `action_center.${string}`
     | `assets.${string}`
     | `audit.${string}`
     | `auth.${string}`

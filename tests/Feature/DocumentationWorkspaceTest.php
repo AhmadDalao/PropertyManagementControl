@@ -116,6 +116,8 @@ class DocumentationWorkspaceTest extends TestCase
                 ->where('app.direction', 'rtl')
                 ->where('app.translations.nav.dashboard', 'لوحة التحكم')
                 ->where('workflowTracks.0.title', 'إطلاق محفظة عقارية مُدارة')
+                ->where('workflowTracks.1.title', 'إدارة قائمة إجراءات العقارات اليومية')
+                ->where('pageShortcuts.1.label', 'مركز الإجراءات')
                 ->where('guides.0.title', 'إدارة الأصول'));
     }
 }

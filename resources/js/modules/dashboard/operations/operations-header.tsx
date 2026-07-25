@@ -38,9 +38,9 @@ export function OperationsHeader({
                               icon: 'bi-person-plus',
                           },
                           {
-                              label: t('nav.reports'),
-                              href: '/reports',
-                              icon: 'bi-bar-chart-line',
+                              label: t('nav.action_center'),
+                              href: '/action-center',
+                              icon: 'bi-collection',
                               tone: 'quiet',
                           },
                       ]
@@ -68,9 +68,9 @@ export function OperationsHeader({
                                 icon: 'bi-cash-stack',
                             },
                             {
-                                label: t('dashboard.new_maintenance'),
-                                href: '/maintenance-requests/create',
-                                icon: 'bi-tools',
+                                label: t('nav.action_center'),
+                                href: '/action-center',
+                                icon: 'bi-collection',
                                 tone: 'quiet',
                             },
                         ]

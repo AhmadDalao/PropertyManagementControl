@@ -1,0 +1,48 @@
+.pmc-action-card-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+    gap: 0.75rem;
+    padding: 0.85rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-action-card-grid > div {
+    min-width: 0;
+}
+
+.pmc-action-card {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    height: 100%;
+    gap: 0.8rem;
+    padding: 0.9rem;
+    overflow: hidden;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(31, 27, 19, 0.035);
+}
+
+.pmc-action-card::before {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 0.22rem;
+    background: #9c978e;
+    content: '';
+}
+
+.pmc-action-card.is-critical::before {
+    background: var(--pmc-red);
+}
+
+.pmc-action-card.is-high::before {
+    background: var(--pmc-amber-strong);
+}
+
+.pmc-action-card:hover {
+    border-color: var(--pmc-line-strong);
+    box-shadow: 0 12px 28px rgba(31, 27, 19, 0.07);
+}

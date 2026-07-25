@@ -25,6 +25,7 @@ const localAccounts = [
 
 const primaryAdminRoutes = [
     '/dashboard',
+    '/action-center',
     '/profile',
     '/property-map',
     '/portfolios',
@@ -239,6 +240,7 @@ test.describe('authenticated administration', () => {
 
         for (const path of [
             '/dashboard',
+            '/action-center',
             '/portfolios',
             '/users',
             '/assets',
@@ -325,6 +327,58 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { name: 'تحصيل الإيجارات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('action center keeps daily work prioritized, card-first, and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/action-center?locale=en');
+
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'Action Center' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-action-filter-form')).toBeVisible();
+        await expect(page.locator('.pmc-action-card').first()).toBeVisible();
+        await expect(page.locator('.pmc-action-card-grid')).toHaveCSS(
+            'display',
+            'grid',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.setViewportSize(viewports.mobile);
+        await page.reload();
+
+        await expect(page.locator('.pmc-action-filter-form')).toBeHidden();
+        await expect(page.locator('.pmc-action-card').first()).toBeVisible();
+        await page.locator('.pmc-action-mobile-filter').click();
+        await expect(page.locator('.pmc-action-filter-form')).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            [
+                '.pmc-workspace-action',
+                '.pmc-action-type-chips a',
+                '.pmc-action-mobile-filter',
+                '.pmc-action-filter-form .form-control',
+                '.pmc-action-filter-form .form-select',
+                '.pmc-action-filter-actions .btn',
+                '.pmc-action-open',
+            ].join(', '),
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/action-center?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'مركز الإجراءات',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('قائمة الأولويات', { exact: true }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -1540,6 +1594,7 @@ test.describe('authenticated administration', () => {
 
             for (const path of [
                 '/dashboard',
+                '/action-center',
                 '/profile',
                 '/assets',
                 '/property-map',
@@ -1570,6 +1625,7 @@ test.describe('local role dashboards', () => {
     const roleNavigation = {
         superadmin: {
             visible: [
+                '/action-center',
                 '/assets',
                 '/rent-collection',
                 '/lease-renewals',
@@ -1582,6 +1638,7 @@ test.describe('local role dashboards', () => {
         },
         owner: {
             visible: [
+                '/action-center',
                 '/assets',
                 '/lease-renewals',
                 '/rent-collection',
@@ -1597,6 +1654,7 @@ test.describe('local role dashboards', () => {
         },
         manager: {
             visible: [
+                '/action-center',
                 '/assets',
                 '/lease-renewals',
                 '/rent-collection',
@@ -1613,6 +1671,7 @@ test.describe('local role dashboards', () => {
         tenant: {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
             hidden: [
+                '/action-center',
                 '/assets',
                 '/lease-renewals',
                 '/rent-collection',

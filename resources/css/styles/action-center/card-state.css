@@ -1,0 +1,71 @@
+.pmc-action-card-timing,
+.pmc-action-card-state {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    padding: 0.7rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-action-card-timing > div,
+.pmc-action-card-state > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-action-card-timing span,
+.pmc-action-card-state span {
+    color: #7d786f;
+    font-size: 0.57rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.pmc-action-card-timing strong,
+.pmc-action-card-state strong {
+    overflow: hidden;
+    color: #111;
+    font-size: 0.72rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-action-card-timing > span {
+    display: inline-flex;
+    min-height: 1.7rem;
+    flex: 0 0 auto;
+    align-items: center;
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+}
+
+.pmc-action-card-timing > span.is-overdue,
+.pmc-action-card-timing > span.is-today {
+    background: #ffe5df;
+    color: #a33625;
+}
+
+.pmc-action-card-timing > span.is-upcoming {
+    background: #e4f5f1;
+    color: #08786e;
+}
+
+.pmc-action-card-timing > span.is-unscheduled {
+    background: #ecebe8;
+    color: #5e5a53;
+}
+
+.pmc-action-card-state {
+    align-items: flex-start;
+    padding: 0;
+    background: transparent;
+}
+
+.pmc-action-card-state > div:last-child {
+    text-align: end;
+}
