@@ -55,6 +55,7 @@ class DashboardModuleTest extends TestCase
                 ->where('stats.totalAssets', 1)
                 ->where('stats.monthlyRevenue', 700)
                 ->where('cmsStatus', null)
+                ->where('readinessStatus', null)
                 ->has('recentPayments', 1)
                 ->where('recentPayments.0.id', $posted->id)
                 ->has('charts.occupancy')
@@ -88,7 +89,10 @@ class DashboardModuleTest extends TestCase
                 ->where('mode', 'superadmin')
                 ->where('cmsStatus.published', 1)
                 ->where('cmsStatus.draft', 1)
-                ->where('cmsStatus.homepage', $homepage->title_en));
+                ->where('cmsStatus.homepage', $homepage->title_en)
+                ->where('readinessStatus.status', 'blocked')
+                ->where('readinessStatus.automatic_blocked', fn (int $count): bool => $count >= 1)
+                ->where('readinessStatus.evidence_remaining', 4));
     }
 
     public function test_owner_dashboard_returns_actionable_month_and_property_performance_data(): void

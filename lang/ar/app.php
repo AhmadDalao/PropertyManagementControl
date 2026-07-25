@@ -2098,6 +2098,12 @@ return [
     ],
     'dashboard' => [
         'system_overview' => 'نظرة عامة على النظام',
+        'launch_control_title' => 'ضبط الإطلاق',
+        'launch_control_description' => 'أبقِ سلامة بيئة الإنتاج وأدلة التشغيل ظاهرة قبل إضافة مستخدمين حقيقيين.',
+        'platform_gate_status' => 'بوابة المنصة',
+        'automatic_blockers' => 'العوائق التلقائية',
+        'automatic_attention' => 'تنبيهات تلقائية',
+        'evidence_remaining' => 'الأدلة المتبقية',
         'portfolio_overview' => 'نظرة عامة على المحفظة',
         'tenant_overview' => 'نظرة عامة على المستأجر',
         'total_users' => 'إجمالي المستخدمين',

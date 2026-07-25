@@ -2098,6 +2098,12 @@ return [
     ],
     'dashboard' => [
         'system_overview' => 'System overview',
+        'launch_control_title' => 'Launch control',
+        'launch_control_description' => 'Keep production infrastructure and operating evidence visible before real users are onboarded.',
+        'platform_gate_status' => 'Platform gate',
+        'automatic_blockers' => 'Automatic blockers',
+        'automatic_attention' => 'Automatic attention',
+        'evidence_remaining' => 'Evidence remaining',
         'portfolio_overview' => 'Portfolio overview',
         'tenant_overview' => 'Tenant overview',
         'total_users' => 'Total users',

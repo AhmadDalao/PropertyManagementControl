@@ -6,12 +6,14 @@ import type { SharedProps } from '@/types';
 
 import type {
     CollectionQueueItem,
+    LaunchReadinessStatus,
     OperationsFinancial,
     PropertyPerformance,
 } from './operations-types';
 
 export type {
     CollectionQueueItem,
+    LaunchReadinessStatus,
     OperationsFinancial,
     PropertyPerformance,
 } from './operations-types';
@@ -74,6 +76,7 @@ export type OperationsDashboardProps = SharedProps & {
         draft: number;
         homepage?: string | null;
     } | null;
+    readinessStatus: LaunchReadinessStatus | null;
     propertyMap: {
         assets: PropertyMapAsset[];
         summary: PropertyMapSummary;

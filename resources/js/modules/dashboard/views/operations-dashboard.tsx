@@ -4,6 +4,7 @@ import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 
 import { OperationsActionQueue } from '../operations/action-queue';
+import { LaunchReadinessPanel } from '../operations/launch-readiness-panel';
 import { OperationsHeader } from '../operations/operations-header';
 import { OperationsInsightPanels } from '../operations/operations-insight-panels';
 import { OperationsMetrics } from '../operations/operations-metrics';
@@ -25,6 +26,9 @@ export function OperationsDashboard({
             <OperationsHeader mode={props.mode} />
             <OperationsMetrics props={props} />
             <OperationsActionQueue actions={props.nextActions} />
+            {props.mode === 'superadmin' && props.readinessStatus ? (
+                <LaunchReadinessPanel status={props.readinessStatus} />
+            ) : null}
             <PropertyPerformanceGrid props={props} />
             <OperationsPriorityPanels props={props} />
             <OperationsInsightPanels props={props} />

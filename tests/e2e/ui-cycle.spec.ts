@@ -582,6 +582,11 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
+        await expect(
+            page
+                .locator('.pmc-dashboard-launch-readiness')
+                .getByRole('heading', { name: 'ضبط الإطلاق' }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 
@@ -1482,6 +1487,17 @@ test.describe('local role dashboards', () => {
             await expect(
                 navigation.locator('a[href="/dashboard"]'),
             ).toHaveAttribute('aria-current', 'page');
+
+            if (account.role === 'superadmin') {
+                await expect(
+                    page.locator('.pmc-dashboard-launch-readiness'),
+                ).toBeVisible();
+            } else {
+                await expect(
+                    page.locator('.pmc-dashboard-launch-readiness'),
+                ).toHaveCount(0);
+            }
+
             await expectNoHorizontalOverflow(page);
         });
     }

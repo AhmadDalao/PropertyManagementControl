@@ -8,6 +8,14 @@ export type OperationsFinancial = {
     currency: string;
 };
 
+export type LaunchReadinessStatus = {
+    status: 'ready' | 'attention' | 'blocked';
+    automatic_ready: number;
+    automatic_attention: number;
+    automatic_blocked: number;
+    evidence_remaining: number;
+};
+
 export type CollectionQueueItem = {
     id: number;
     lease_id: number | null;

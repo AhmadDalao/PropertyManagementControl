@@ -4,6 +4,7 @@ namespace App\Modules\Dashboard\Presenters;
 
 use App\Models\User;
 use App\Modules\Dashboard\Queries\DashboardPropertyMapQuery;
+use App\Modules\Dashboard\Queries\LaunchReadinessSummaryQuery;
 use App\Modules\Dashboard\Queries\OperationsActivityQuery;
 use App\Modules\Dashboard\Queries\OperationsCollectionQuery;
 use App\Modules\Dashboard\Queries\OperationsFinancialQuery;
@@ -25,6 +26,7 @@ class OperationsDashboardPresenter
         private readonly OperationsActivityQuery $activity,
         private readonly DashboardPropertyMapQuery $propertyMap,
         private readonly PlatformStatusQuery $platformStatus,
+        private readonly LaunchReadinessSummaryQuery $launchReadiness,
         private readonly SetupChecklistPresenter $checklist,
         private readonly DashboardActionPresenter $actions,
     ) {}
@@ -49,6 +51,7 @@ class OperationsDashboardPresenter
             ...$this->leases->forUser($user),
             ...$this->activity->forUser($user),
             'cmsStatus' => $this->platformStatus->forUser($user),
+            'readinessStatus' => $this->launchReadiness->forUser($user),
         ];
     }
 }
