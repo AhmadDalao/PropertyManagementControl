@@ -10,6 +10,7 @@ use App\Modules\ShowcaseData\Generators\ShowcaseDocumentBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseExpenseBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseLeaseBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseMaintenanceBuilder;
+use App\Modules\ShowcaseData\Generators\ShowcaseMoveOutBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcasePaymentBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseUnitBuilder;
 use App\Modules\ShowcaseData\Support\ShowcaseTargets;
@@ -27,6 +28,7 @@ class BuildShowcaseProperty
         private readonly ShowcaseMaintenanceBuilder $maintenance,
         private readonly ShowcaseExpenseBuilder $expenses,
         private readonly ShowcaseDocumentBuilder $documents,
+        private readonly ShowcaseMoveOutBuilder $moveOuts,
         private readonly RefreshShowcaseDataset $progress,
     ) {}
 
@@ -53,6 +55,13 @@ class BuildShowcaseProperty
             $maintenance = $this->maintenance->build($portfolio, $manager, $leases, $buildingIndex);
             $this->expenses->build($portfolio, $manager, $building, $maintenance, $buildingIndex);
             $this->documents->build($dataset, $portfolio, $manager, $leases);
+            $this->moveOuts->build(
+                $dataset,
+                $portfolio,
+                $manager,
+                array_column($leases, 'lease'),
+                $buildingIndex,
+            );
 
             return true;
         }, 3);

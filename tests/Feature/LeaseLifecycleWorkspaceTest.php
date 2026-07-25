@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Payment;
+use App\Models\Portfolio;
+use App\Models\User;
 use App\Modules\Leases\Actions\ManageLeases;
 use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -364,7 +366,20 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->assertSessionHasErrors('asset_id');
 
         $this->actingAs($owner)
-            ->delete(route('leases.destroy', $lease))
+            ->put(route('leases.move-out.update', $lease), [
+                'move_out_date' => today()->toDateString(),
+                'reason' => 'mutual_agreement',
+                'deposit_disposition' => 'refund_full',
+                'deposit_deduction_amount' => 0,
+                'keys_returned' => true,
+            ])
+            ->assertRedirect(route('leases.show', $lease));
+        $lease->documents()->createMany([
+            $this->moveOutDocument($portfolio, $owner, 'termination_notice'),
+            $this->moveOutDocument($portfolio, $owner, 'move_out_inspection'),
+        ]);
+        $this->actingAs($owner)
+            ->post(route('leases.move-out.complete', $lease))
             ->assertRedirect(route('leases.show', $lease));
 
         $this->assertSame('terminated', $lease->fresh()->status);
@@ -648,5 +663,23 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             'documentable_id' => $payment->id,
             'type' => 'receipt',
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function moveOutDocument(Portfolio $portfolio, User $owner, string $type): array
+    {
+        return [
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'type' => $type,
+            'title_en' => $type,
+            'title_ar' => $type,
+            'disk' => 'local',
+            'file_path' => "tests/{$type}.pdf",
+            'original_name' => "{$type}.pdf",
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+            'is_public' => true,
+        ];
     }
 }

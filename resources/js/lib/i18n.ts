@@ -18,6 +18,7 @@ export type UiTranslationKey =
     | `filters.${string}`
     | `leases.${string}`
     | `lease_renewals.${string}`
+    | `lease_move_outs.${string}`
     | `map.${string}`
     | `login.${string}`
     | `messages.${string}`

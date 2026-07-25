@@ -3,6 +3,7 @@
 use App\Models\User;
 use App\Modules\Leases\LeaseLifecycle;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
+use App\Modules\ShowcaseData\Actions\BackfillShowcaseMoveOuts;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -156,6 +157,13 @@ Artisan::command('property:seed-showcase-data {--confirm-production : Allow tagg
 
     return 0;
 })->purpose('Queue a tagged, retryable 40-building showcase dataset.');
+
+Artisan::command('property:backfill-showcase-move-outs', function (BackfillShowcaseMoveOuts $backfill) {
+    $count = $backfill->handle();
+    $this->info("Prepared {$count} tagged showcase move-out records.");
+
+    return 0;
+})->purpose('Idempotently add one move-out example per tagged showcase property.');
 
 Artisan::command('property:sync-operational-statuses', function (LeaseLifecycle $lifecycle) {
     $result = $lifecycle->synchronize();

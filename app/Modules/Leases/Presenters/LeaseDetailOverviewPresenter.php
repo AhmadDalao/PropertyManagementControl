@@ -51,6 +51,8 @@ final class LeaseDetailOverviewPresenter
                     ['label' => trans('app.leases.frequency'), 'value' => trans("app.leases.frequency_{$lease->payment_frequency}")],
                     ['label' => trans('app.leases.previous_contract'), 'value' => $lease->previousLease?->code, 'href' => $data->adminMode && $lease->previousLease ? route('leases.show', $lease->previousLease) : null],
                     ['label' => trans('app.leases.renewal_contract'), 'value' => $lease->renewalLease?->code, 'href' => $data->adminMode && $lease->renewalLease ? route('leases.show', $lease->renewalLease) : null],
+                    ['label' => trans('app.lease_move_outs.move_out_date'), 'value' => $data->adminMode ? $lease->moveOut?->move_out_date?->toDateString() : null],
+                    ['label' => trans('app.lease_move_outs.state'), 'value' => $data->adminMode && $lease->moveOut ? trans("app.lease_move_outs.status_{$lease->moveOut->status}") : null],
                     ['label' => trans('app.leases.notes'), 'value' => $data->adminMode ? $lease->notes : null],
                 ]),
             ],

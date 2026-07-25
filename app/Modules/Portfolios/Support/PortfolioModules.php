@@ -80,6 +80,7 @@ class PortfolioModules
             'tenants' => 'tenants',
             'leases' => 'leases',
             'lease-renewals' => 'leases',
+            'lease-move-outs' => 'leases',
             'payments' => 'payments',
             'rent-collection' => 'payments',
             'maintenance-requests' => 'maintenance',

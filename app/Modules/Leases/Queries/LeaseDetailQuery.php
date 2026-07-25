@@ -25,6 +25,7 @@ final class LeaseDetailQuery
                 'managedBy',
                 'previousLease',
                 'renewalLease',
+                'moveOut',
                 'installments',
                 'documents',
             ])

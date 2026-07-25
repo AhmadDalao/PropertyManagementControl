@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
+use App\Models\User;
 use App\Modules\Payments\Actions\PaymentAllocator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -61,9 +63,7 @@ class OperationalArchiveTest extends TestCase
         $asset = $this->createAsset($portfolio, ['occupancy_status' => 'occupied']);
         $lease = $this->createLease($portfolio, $tenant, $asset, $owner);
 
-        $this->actingAs($owner)
-            ->delete(route('leases.destroy', $lease))
-            ->assertRedirect(route('leases.show', $lease));
+        $this->completeMoveOut($owner, $lease);
 
         $this->assertSame('terminated', $lease->fresh()->status);
         $this->assertSame('vacant', $asset->fresh()->occupancy_status);
@@ -153,5 +153,43 @@ class OperationalArchiveTest extends TestCase
 
         $this->assertSame('open', $otherRequest->fresh()->status);
         $this->assertSame('cancelled', $ownRequest->fresh()->status);
+    }
+
+    private function completeMoveOut(User $owner, Lease $lease): void
+    {
+        $this->actingAs($owner)
+            ->put(route('leases.move-out.update', $lease), [
+                'move_out_date' => today()->toDateString(),
+                'reason' => 'mutual_agreement',
+                'deposit_disposition' => 'refund_full',
+                'deposit_deduction_amount' => 0,
+                'keys_returned' => true,
+            ])
+            ->assertRedirect(route('leases.show', $lease));
+        $lease->documents()->createMany([
+            $this->moveOutDocument($owner, 'termination_notice'),
+            $this->moveOutDocument($owner, 'move_out_inspection'),
+        ]);
+        $this->actingAs($owner)
+            ->post(route('leases.move-out.complete', $lease))
+            ->assertRedirect(route('leases.show', $lease));
+    }
+
+    /** @return array<string, mixed> */
+    private function moveOutDocument(User $owner, string $type): array
+    {
+        return [
+            'portfolio_id' => $owner->portfolio_id,
+            'uploaded_by_user_id' => $owner->id,
+            'type' => $type,
+            'title_en' => $type,
+            'title_ar' => $type,
+            'disk' => 'local',
+            'file_path' => "tests/{$type}.pdf",
+            'original_name' => "{$type}.pdf",
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+            'is_public' => true,
+        ];
     }
 }

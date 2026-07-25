@@ -33,6 +33,7 @@ const primaryAdminRoutes = [
     '/tenants',
     '/leases',
     '/lease-renewals',
+    '/lease-move-outs',
     '/rent-collection',
     '/payments',
     '/maintenance-requests',
@@ -244,6 +245,7 @@ test.describe('authenticated administration', () => {
             '/tenants',
             '/leases',
             '/lease-renewals',
+            '/lease-move-outs',
             '/rent-collection',
             '/payments',
             '/maintenance-requests',
@@ -373,6 +375,56 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { name: 'تجديد العقود' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('move-outs expose a responsive bilingual handover queue', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/lease-move-outs?queue=all&horizon=all&locale=en');
+
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'Move-outs' }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-mobile-record-list')).toBeHidden();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/dashboard?locale=en');
+        await expect(
+            page.locator('a[href^="/lease-move-outs"]').first(),
+        ).toBeVisible();
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/lease-move-outs?queue=all&horizon=all&locale=en');
+
+        await expect(
+            page.locator('.pmc-operations-table > .pmc-table-scroll'),
+        ).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            [
+                '.pmc-workspace-action',
+                '.pmc-filter-chip',
+                '.pmc-table-search .form-control',
+                '.pmc-mobile-filter-trigger',
+                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-action-menu > summary',
+            ].join(', '),
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/lease-move-outs?queue=all&horizon=all&locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'إخلاء الوحدات' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });

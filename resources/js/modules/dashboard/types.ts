@@ -50,6 +50,17 @@ export type ArrearsLease = {
     currency: string;
 };
 
+export type MoveOutQueueItem = {
+    id: number;
+    lease_id: number;
+    code?: string | null;
+    tenant?: string | null;
+    asset_en?: string | null;
+    asset_ar?: string | null;
+    move_out_date?: string | null;
+    state: 'scheduled' | 'due_today' | 'overdue' | 'ready';
+};
+
 export type OperationsStats = {
     totalUsers: number;
     totalPortfolios: number;
@@ -89,6 +100,11 @@ export type OperationsDashboardProps = SharedProps & {
     expiringLeases: ExpiringLease[];
     arrearsLeases: ArrearsLease[];
     collectionQueue: CollectionQueueItem[];
+    moveOutQueue: {
+        attention: number;
+        ready: number;
+        items: MoveOutQueueItem[];
+    };
     propertyPerformance: PropertyPerformance[];
     recentPayments: Array<{
         id: number;

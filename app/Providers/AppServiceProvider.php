@@ -12,6 +12,7 @@ use App\Models\ExpenseEntry;
 use App\Models\LabelOverride;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
+use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
 use App\Models\MediaFile;
@@ -60,6 +61,7 @@ class AppServiceProvider extends ServiceProvider
             'asset_stakeholder' => AssetStakeholder::class,
             'lease' => Lease::class,
             'lease_installment' => LeaseInstallment::class,
+            'lease_move_out' => LeaseMoveOut::class,
             'payment' => Payment::class,
             'payment_allocation' => PaymentAllocation::class,
             'tenant_profile' => TenantProfile::class,

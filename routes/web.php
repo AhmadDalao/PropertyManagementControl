@@ -15,6 +15,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LeaseController;
+use App\Http\Controllers\LeaseMoveOutController;
 use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceRequestController;
@@ -80,6 +81,21 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement')->middleware('portfolio.module:leases');
+    Route::get('/lease-move-outs', [LeaseMoveOutController::class, 'index'])
+        ->name('lease-move-outs.index')
+        ->middleware('portfolio.module:leases');
+    Route::get('/leases/{lease}/move-out', [LeaseMoveOutController::class, 'edit'])
+        ->name('leases.move-out.edit')
+        ->middleware('portfolio.module:leases');
+    Route::put('/leases/{lease}/move-out', [LeaseMoveOutController::class, 'update'])
+        ->name('leases.move-out.update')
+        ->middleware('portfolio.module:leases');
+    Route::post('/leases/{lease}/move-out/complete', [LeaseMoveOutController::class, 'complete'])
+        ->name('leases.move-out.complete')
+        ->middleware('portfolio.module:leases');
+    Route::delete('/leases/{lease}/move-out', [LeaseMoveOutController::class, 'destroy'])
+        ->name('leases.move-out.destroy')
+        ->middleware('portfolio.module:leases');
 
     Route::get('/lease-renewals', [LeaseRenewalController::class, 'index'])
         ->name('lease-renewals.index')

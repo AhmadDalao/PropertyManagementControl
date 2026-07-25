@@ -9,6 +9,7 @@ use App\Models\ExpenseEntry;
 use App\Models\LabelOverride;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
+use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
 use App\Models\MediaFile;
@@ -63,6 +64,7 @@ class AuditPortfolioScope
             $this->orSubjectIds($query, 'tenant_profile', TenantProfile::query()->where('portfolio_id', $portfolioId)->select('id'));
             $this->orSubjectIds($query, 'lease', clone $portfolioLeases);
             $this->orSubjectIds($query, 'lease_installment', LeaseInstallment::query()->whereIn('lease_id', clone $portfolioLeases)->select('id'));
+            $this->orSubjectIds($query, 'lease_move_out', LeaseMoveOut::query()->whereIn('lease_id', clone $portfolioLeases)->select('id'));
             $this->orSubjectIds($query, 'payment', clone $portfolioPayments);
             $this->orSubjectIds($query, 'payment_allocation', PaymentAllocation::query()->whereIn('payment_id', clone $portfolioPayments)->select('id'));
             $this->orSubjectIds($query, 'maintenance_request', clone $portfolioMaintenance);
@@ -125,6 +127,11 @@ class AuditPortfolioScope
                 $query,
                 'lease_installment',
                 LeaseInstallment::query()->whereIn('lease_id', clone $leases)->select('id'),
+            );
+            $this->orSubjectIds(
+                $query,
+                'lease_move_out',
+                LeaseMoveOut::query()->whereIn('lease_id', clone $leases)->select('id'),
             );
             $this->orSubjectIds($query, 'payment', clone $payments);
             $this->orSubjectIds(

@@ -77,6 +77,35 @@ export function OperationsPriorityPanels({
                         }))}
                 />
             </WorkspacePanel>
+
+            <WorkspacePanel
+                eyebrow={t('dashboard.handover')}
+                title={t('dashboard.move_out_queue')}
+                description={t('dashboard.move_out_queue_description')}
+                action={{
+                    label: t('dashboard.open_move_outs'),
+                    href: propertyFocusUrl(
+                        '/lease-move-outs?queue=attention',
+                        propertyId,
+                    ),
+                }}
+            >
+                <DashboardRecordList
+                    empty={t('dashboard.no_move_out_work')}
+                    rows={props.moveOutQueue.items.map((moveOut) => ({
+                        href: `/leases/${moveOut.lease_id}`,
+                        title: `${moveOut.code ?? ''} · ${moveOut.tenant ?? text('No tenant')}`,
+                        meta: `${(locale === 'ar' ? moveOut.asset_ar || moveOut.asset_en : moveOut.asset_en || moveOut.asset_ar) ?? text('No asset')} · ${humanDate(moveOut.move_out_date, props.app.locale)}`,
+                        value: t(`lease_move_outs.state_${moveOut.state}`),
+                        tone:
+                            moveOut.state === 'ready'
+                                ? 'success'
+                                : moveOut.state === 'overdue'
+                                  ? 'danger'
+                                  : 'warning',
+                    }))}
+                />
+            </WorkspacePanel>
         </div>
     );
 }

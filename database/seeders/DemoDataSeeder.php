@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
+use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
 use App\Models\MediaFile;
 use App\Models\Payment;
@@ -266,7 +267,7 @@ class DemoDataSeeder extends Seeder
         $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-001", now()->startOfMonth()->subMonths(2), (float) $activeLease->rent_amount + (float) $activeLease->deposit_amount, 'First rent and deposit.');
         $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-002", now()->startOfMonth()->subMonth(), (float) $activeLease->rent_amount, 'Second month rent.');
 
-        $this->lease($portfolio, $tenant, $unitB, $manager, [
+        $expiredLease = $this->lease($portfolio, $tenant, $unitB, $manager, [
             'code' => "{$prefix}-LEASE-OLD",
             'status' => 'expired',
             'started_at' => now()->startOfMonth()->subMonths(15),
@@ -276,6 +277,19 @@ class DemoDataSeeder extends Seeder
             'deposit_amount' => 3200,
             'notes' => 'Historical lease used for report history.',
         ], false);
+
+        LeaseMoveOut::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $expiredLease->id,
+            'initiated_by_user_id' => $manager->id,
+            'status' => 'planned',
+            'move_out_date' => now()->subDays(3)->toDateString(),
+            'reason' => 'natural_expiry',
+            'deposit_disposition' => 'pending',
+            'deposit_deduction_amount' => 0,
+            'keys_returned' => false,
+            'notes' => 'Local demo handover requiring inspection, keys, and deposit review.',
+        ]);
 
         $this->maintenance($portfolio, $unitA, $activeLease, $tenant, $tenantUser, $manager, [
             'title' => 'Living room light issue',

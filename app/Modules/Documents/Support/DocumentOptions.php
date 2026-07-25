@@ -14,6 +14,8 @@ final class DocumentOptions
         'receipt',
         'owner_report',
         'tenant_statement',
+        'termination_notice',
+        'move_out_inspection',
         'identity_document',
         'other',
     ];
@@ -23,7 +25,13 @@ final class DocumentOptions
 
     /** @var array<string, array<int, string>> */
     private const PORTAL_TYPES = [
-        'lease' => ['lease_contract', 'signed_contract', 'tenant_statement'],
+        'lease' => [
+            'lease_contract',
+            'signed_contract',
+            'tenant_statement',
+            'termination_notice',
+            'move_out_inspection',
+        ],
         'payment' => ['receipt'],
         'asset' => [],
     ];

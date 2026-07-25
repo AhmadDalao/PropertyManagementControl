@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read User|null $managedBy
  * @property-read Lease|null $previousLease
  * @property-read Lease|null $renewalLease
+ * @property-read LeaseMoveOut|null $moveOut
  * @property-read Model|null $leaseable
  * @property-read Collection<int, LeaseInstallment> $installments
  * @property-read Collection<int, Payment> $payments
@@ -84,6 +85,12 @@ class Lease extends Model
     public function renewalLease(): HasOne
     {
         return $this->hasOne(self::class, 'renewed_from_lease_id');
+    }
+
+    /** @return HasOne<LeaseMoveOut, $this> */
+    public function moveOut(): HasOne
+    {
+        return $this->hasOne(LeaseMoveOut::class);
     }
 
     /** @return MorphTo<Model, $this> */

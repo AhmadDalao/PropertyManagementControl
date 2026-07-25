@@ -4,6 +4,8 @@ namespace App\Modules\Leases\Presenters;
 
 use App\Models\Lease;
 use App\Models\User;
+use App\Modules\LeaseMoveOuts\Presenters\LeaseMoveOutProgressPresenter;
+use App\Modules\Leases\Data\LeaseDetailData;
 use App\Modules\Leases\Queries\LeaseDetailQuery;
 use App\Modules\Leases\Support\LeaseOptions;
 use App\Modules\Shared\ResourcePresenter;
@@ -15,6 +17,7 @@ final class LeaseDetailPresenter
         private readonly LeaseDetailHeaderPresenter $header,
         private readonly LeaseWorkflowPresenter $workflow,
         private readonly LeaseMoveInProgressPresenter $moveInProgress,
+        private readonly LeaseMoveOutProgressPresenter $moveOutProgress,
         private readonly LeaseDetailOverviewPresenter $overview,
         private readonly LeaseRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
@@ -33,12 +36,32 @@ final class LeaseDetailPresenter
         return [
             'header' => $this->header->present($data),
             'workflow' => $this->workflow->present($data),
-            'progress' => $this->moveInProgress->present($data),
+            'progress' => $this->moveOutProgress->present($data)
+                ?? $this->moveInProgress->present($data),
             'stats' => $this->overview->stats($data),
             'sections' => $this->overview->sections($data),
             'related' => $this->related->present($data),
             'documents' => $this->resources->documentStrip($documents),
-            'timeline' => $data->adminMode ? $this->resources->activityTimeline($data->lease) : [],
+            'timeline' => $data->adminMode ? $this->timeline($data) : [],
         ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function timeline(LeaseDetailData $data): array
+    {
+        $items = $this->resources->activityTimeline($data->lease);
+
+        if ($data->lease->moveOut) {
+            $items = [
+                ...$items,
+                ...$this->resources->activityTimeline($data->lease->moveOut),
+            ];
+        }
+
+        return collect($items)
+            ->sortByDesc('created_at')
+            ->take(8)
+            ->values()
+            ->all();
     }
 }

@@ -10,6 +10,7 @@ use App\Modules\Dashboard\Queries\OperationsActivityQuery;
 use App\Modules\Dashboard\Queries\OperationsCollectionQuery;
 use App\Modules\Dashboard\Queries\OperationsFinancialQuery;
 use App\Modules\Dashboard\Queries\OperationsLeaseQuery;
+use App\Modules\Dashboard\Queries\OperationsMoveOutQuery;
 use App\Modules\Dashboard\Queries\OperationsOccupancyQuery;
 use App\Modules\Dashboard\Queries\OperationsPropertyPerformanceQuery;
 use App\Modules\Dashboard\Queries\OperationsStatsQuery;
@@ -22,6 +23,7 @@ class OperationsDashboardPresenter
         private readonly OperationsStatsQuery $stats,
         private readonly OperationsOccupancyQuery $occupancy,
         private readonly OperationsLeaseQuery $leases,
+        private readonly OperationsMoveOutQuery $moveOuts,
         private readonly OperationsCollectionQuery $collections,
         private readonly OperationsFinancialQuery $financial,
         private readonly OperationsPropertyPerformanceQuery $properties,
@@ -59,6 +61,7 @@ class OperationsDashboardPresenter
             'propertyMap' => $propertyMap,
             'propertyPerformance' => $this->properties->forUser($user, $context),
             'collectionQueue' => $this->collections->forUser($user, $context),
+            'moveOutQueue' => $this->moveOuts->forUser($user, $context),
             ...$this->leases->forUser($user, $context),
             ...$this->activity->forUser($user, $context),
             'cmsStatus' => $this->platformStatus->forUser($user),

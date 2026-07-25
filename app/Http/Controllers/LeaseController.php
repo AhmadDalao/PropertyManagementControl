@@ -94,7 +94,7 @@ class LeaseController extends Controller
         $this->leases->terminate($this->actor($request), $lease);
 
         return to_route('leases.show', $lease)
-            ->with('success', trans('app.messages.lease_terminated', ['code' => $lease->code]));
+            ->with('success', trans('app.messages.lease_draft_cancelled', ['code' => $lease->code]));
     }
 
     public function uploadSignedContract(

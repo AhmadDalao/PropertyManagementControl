@@ -8,6 +8,7 @@ use App\Modules\Cms\Actions\CmsPageWorkbookExport;
 use App\Modules\Documents\Actions\DocumentWorkbookExport;
 use App\Modules\Expenses\Actions\ExpenseWorkbookExport;
 use App\Modules\Exports\Contracts\ResourceExporter;
+use App\Modules\LeaseMoveOuts\Actions\LeaseMoveOutWorkbookExport;
 use App\Modules\LeaseRenewals\Actions\LeaseRenewalWorkbookExport;
 use App\Modules\Leases\Actions\LeaseWorkbookExport;
 use App\Modules\Maintenance\Actions\MaintenanceWorkbookExport;
@@ -30,6 +31,7 @@ class ResourceExportRegistry
         'tenants' => TenantWorkbookExport::class,
         'leases' => LeaseWorkbookExport::class,
         'lease-renewals' => LeaseRenewalWorkbookExport::class,
+        'lease-move-outs' => LeaseMoveOutWorkbookExport::class,
         'payments' => PaymentWorkbookExport::class,
         'rent-collection' => RentCollectionWorkbookExport::class,
         'maintenance-requests' => MaintenanceWorkbookExport::class,

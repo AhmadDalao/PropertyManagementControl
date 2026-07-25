@@ -13,7 +13,11 @@ final class LeaseMoveInProgressPresenter
     {
         $lease = $data->lease;
 
-        if (! $data->adminMode || ! in_array($lease->status, ['draft', 'active'], true)) {
+        if (
+            ! $data->adminMode
+            || ! in_array($lease->status, ['draft', 'active'], true)
+            || ($lease->moveOut && $lease->moveOut->status !== 'cancelled')
+        ) {
             return null;
         }
 

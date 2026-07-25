@@ -14,7 +14,13 @@ final class LeaseOptions
     public const PAYMENT_FREQUENCIES = ['monthly', 'quarterly', 'yearly'];
 
     /** @var array<int, string> */
-    public const TENANT_DOCUMENT_TYPES = ['lease_contract', 'signed_contract', 'tenant_statement'];
+    public const TENANT_DOCUMENT_TYPES = [
+        'lease_contract',
+        'signed_contract',
+        'tenant_statement',
+        'termination_notice',
+        'move_out_inspection',
+    ];
 
     private function __construct() {}
 }

@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
+use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
@@ -195,6 +196,7 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(480, $dataset->users()->role('tenant')->count());
         $this->assertSame(480, TenantProfile::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(480, $leaseIds->count());
+        $this->assertSame(40, LeaseMoveOut::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(400, Lease::query()->whereIn('id', $leaseIds)->where('status', 'active')->count());
         $this->assertSame(40, Lease::query()->whereIn('id', $leaseIds)->where('status', 'expired')->count());
         $this->assertSame(20, Lease::query()->whereIn('id', $leaseIds)->where('status', 'terminated')->count());
@@ -260,6 +262,7 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame('purged', $dataset->status);
         $this->assertSame(0, Portfolio::query()->where('showcase_dataset_id', $dataset->id)->count());
         $this->assertSame(0, User::query()->where('showcase_dataset_id', $dataset->id)->count());
+        $this->assertSame(0, LeaseMoveOut::query()->whereIn('lease_id', $leaseIds)->count());
         Storage::disk('local')->assertMissing("showcase/{$dataset->key}");
     }
 }

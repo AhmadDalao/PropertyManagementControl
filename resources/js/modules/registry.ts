@@ -73,6 +73,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'leases',
             },
+            {
+                labelKey: 'nav.lease_move_outs',
+                href: '/lease-move-outs',
+                icon: 'bi-box-arrow-right',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'leases',
+            },
         ],
     },
     {
