@@ -2,7 +2,9 @@
 
 namespace App\Modules\Maintenance\Requests;
 
+use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -10,7 +12,11 @@ class StoreMaintenanceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['superadmin', 'owner', 'property_manager', 'tenant']) ?? false;
+        $actor = $this->user();
+
+        return $actor instanceof User
+            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager', 'tenant'])
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /**

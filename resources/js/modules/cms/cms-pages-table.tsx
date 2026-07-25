@@ -79,8 +79,6 @@ export function CmsPagesTable({ pages, filters, counts }: CmsPagesTableProps) {
             filters={filters}
             counts={counts}
             basePath="/cms?view=pages"
-            createHref="/cms/pages/create"
-            createLabel={t('cms.create_page')}
             rowHref={(page) => `/cms/pages/${page.id}`}
             exportHref={exportUrl('/exports/cms-pages', filters)}
             filterFields={[

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Leases\Support\LeaseAccess;
 use App\Modules\Leases\Support\LeaseOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
@@ -24,6 +25,7 @@ final class LeaseDirectoryQuery
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
         private readonly MorphTypes $morphTypes,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -59,7 +61,10 @@ final class LeaseDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios->apply(Lease::query(), $actor);
+        return $this->assignments->leases(
+            $this->portfolios->apply(Lease::query(), $actor),
+            $actor,
+        );
     }
 
     /**

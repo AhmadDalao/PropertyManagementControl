@@ -33,8 +33,9 @@ final class CreateLease
 
         return DB::transaction(function () use ($actor, $data): Lease {
             $portfolioId = $this->portfolios->resolve($actor, $data['portfolio_id'] ?? null);
-            $asset = $this->participants->asset((int) $data['asset_id'], $portfolioId);
+            $asset = $this->participants->asset($actor, (int) $data['asset_id'], $portfolioId);
             $tenant = $this->participants->tenant(
+                $actor,
                 (int) $data['tenant_profile_id'],
                 $portfolioId,
                 allowInactivePortal: ! empty($data['renewed_from_lease_id']),

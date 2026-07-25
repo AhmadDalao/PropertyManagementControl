@@ -3,13 +3,14 @@
 namespace App\Modules\RentCollection\Queries;
 
 use App\Models\Asset;
+use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Payments\Support\PaymentOptions;
 use App\Modules\RentCollection\Support\RentCollectionAccess;
 use App\Modules\RentCollection\Support\RentCollectionOptions;
-use App\Modules\Shared\PortfolioScope;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\TableQuery;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,9 +20,9 @@ final readonly class RentCollectionDirectoryQuery
 {
     public function __construct(
         private RentCollectionAccess $access,
-        private PortfolioScope $portfolios,
         private PropertyScope $properties,
         private TableQuery $tables,
+        private AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -58,11 +59,18 @@ final readonly class RentCollectionDirectoryQuery
     public function base(User $actor): Builder
     {
         $this->access->ensureManager($actor);
+        $leaseIds = $this->assignments
+            ->leases(Lease::query(), $actor)
+            ->select('id');
 
         return LeaseInstallment::query()->whereHas(
             'lease',
-            fn (Builder $leases) => $this->portfolios
-                ->apply($leases, $actor)
+            fn (Builder $leases) => $leases
+                ->when(
+                    ! $actor->hasRole('superadmin'),
+                    fn (Builder $scoped) => $scoped->where('portfolio_id', $actor->portfolio_id),
+                )
+                ->whereIn('id', clone $leaseIds)
                 ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)
                 ->whereIn('leaseable_type', $this->properties->leaseableTypes()),
         );

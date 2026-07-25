@@ -29,7 +29,7 @@ final class CreateExpense
 
         return DB::transaction(function () use ($actor, $data): ExpenseEntry {
             $portfolio = $this->portfolios->active($actor, $data['portfolio_id'] ?? null);
-            $references = $this->references->withinPortfolio($data, $portfolio->id);
+            $references = $this->references->withinPortfolio($actor, $data, $portfolio->id);
 
             return ExpenseEntry::query()
                 ->create($this->attributes->forCreate($actor, $portfolio, $data, $references))

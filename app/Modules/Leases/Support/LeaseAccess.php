@@ -4,9 +4,12 @@ namespace App\Modules\Leases\Support;
 
 use App\Models\Lease;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 
 final class LeaseAccess
 {
+    public function __construct(private readonly AssignedPropertyScope $assignments) {}
+
     public function canManageSection(User $actor): bool
     {
         return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
@@ -15,7 +18,8 @@ final class LeaseAccess
     public function canManage(User $actor, Lease $lease): bool
     {
         return $this->canManageSection($actor)
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $lease->portfolio_id);
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $lease->portfolio_id)
+            && $this->assignments->allowsLease($actor, $lease);
     }
 
     public function canAccess(User $actor, Lease $lease): bool

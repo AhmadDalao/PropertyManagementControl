@@ -7,13 +7,24 @@ use App\Models\User;
 final class UserDetailHeaderPresenter
 {
     /** @return array<string, mixed> */
-    public function present(User $user): array
+    public function present(User $user, User $actor): array
     {
         $actions = [[
             'label' => trans('app.users.edit_user'),
             'href' => route('users.edit', $user),
             'variant' => 'primary',
         ]];
+
+        if (
+            $user->hasRole('property_manager')
+            && $actor->hasAnyRole(['superadmin', 'owner'])
+        ) {
+            $actions[] = [
+                'label' => trans('app.users.manage_property_assignments'),
+                'href' => route('users.property-assignments.edit', $user),
+                'variant' => 'secondary',
+            ];
+        }
 
         if ($user->tenantProfile) {
             $actions[] = [

@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import { ExpenseMetrics } from './expense-metrics';
@@ -11,6 +12,7 @@ import type { ExpenseIndexPageProps } from './types';
 export default function ExpensesIndexPage() {
     const { props } = usePage<ExpenseIndexPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -26,12 +28,16 @@ export default function ExpensesIndexPage() {
                         href: '/reports',
                         icon: 'bi-bar-chart-line',
                     },
-                    {
-                        label: t('expenses.record_expense'),
-                        href: '/expenses/create',
-                        icon: 'bi-plus-lg',
-                        tone: 'primary',
-                    },
+                    ...(canCreate
+                        ? [
+                              {
+                                  label: t('expenses.record_expense'),
+                                  href: '/expenses/create',
+                                  icon: 'bi-plus-lg',
+                                  tone: 'primary' as const,
+                              },
+                          ]
+                        : []),
                 ]}
             />
 

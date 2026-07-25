@@ -8,6 +8,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Expenses\Data\ExpenseFormData;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\ResourcePresenter;
 
@@ -16,6 +17,7 @@ final class ExpenseFormOptionsQuery
     public function __construct(
         private readonly PortfolioScope $portfolioScope,
         private readonly ResourcePresenter $resources,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $defaults */
@@ -31,8 +33,8 @@ final class ExpenseFormOptionsQuery
             portfolioId: $portfolioId,
             currency: $expense?->currency ?: $this->currency($portfolioId),
             portfolios: $portfolios,
-            assets: $this->assets($portfolioId),
-            maintenanceRequests: $this->maintenanceRequests($portfolioId),
+            assets: $this->assets($actor, $portfolioId),
+            maintenanceRequests: $this->maintenanceRequests($actor, $portfolioId),
         );
     }
 
@@ -94,7 +96,7 @@ final class ExpenseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function assets(?int $portfolioId): array
+    private function assets(User $actor, ?int $portfolioId): array
     {
         if (! $portfolioId) {
             return [];
@@ -102,8 +104,8 @@ final class ExpenseFormOptionsQuery
 
         $nameColumn = app()->isLocale('ar') ? 'title_ar' : 'title_en';
 
-        return Asset::query()
-            ->where('portfolio_id', $portfolioId)
+        return $this->assignments
+            ->assets(Asset::query()->where('portfolio_id', $portfolioId), $actor)
             ->orderBy($nameColumn)
             ->get(['id', 'title_en', 'title_ar', 'code'])
             ->map(fn (Asset $asset): array => [
@@ -114,14 +116,14 @@ final class ExpenseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function maintenanceRequests(?int $portfolioId): array
+    private function maintenanceRequests(User $actor, ?int $portfolioId): array
     {
         if (! $portfolioId) {
             return [];
         }
 
-        return MaintenanceRequest::query()
-            ->where('portfolio_id', $portfolioId)
+        return $this->assignments
+            ->maintenance(MaintenanceRequest::query()->where('portfolio_id', $portfolioId), $actor)
             ->with('asset:id,title_en,title_ar')
             ->latest('requested_at')
             ->get(['id', 'asset_id', 'title', 'status', 'requested_at'])

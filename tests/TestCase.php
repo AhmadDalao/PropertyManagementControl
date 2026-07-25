@@ -3,6 +3,7 @@
 namespace Tests;
 
 use App\Models\Asset;
+use App\Models\AssetStakeholder;
 use App\Models\Lease;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
@@ -79,6 +80,17 @@ abstract class TestCase extends BaseTestCase
             'valuation_amount' => 250000,
             'currency' => 'SAR',
         ], $attributes));
+    }
+
+    protected function assignManagerToAsset(User $manager, Asset $asset): AssetStakeholder
+    {
+        return AssetStakeholder::query()->create([
+            'asset_id' => $asset->id,
+            'portfolio_id' => $asset->portfolio_id,
+            'user_id' => $manager->id,
+            'relationship_type' => 'manager',
+            'is_primary' => true,
+        ]);
     }
 
     protected function createLease(

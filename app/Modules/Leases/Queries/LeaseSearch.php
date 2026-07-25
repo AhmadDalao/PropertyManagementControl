@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Search\Presenters\SearchResultPresenter;
 use App\Modules\Search\Support\ModuleSearchSource;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ class LeaseSearch extends ModuleSearchSource
         private readonly PortfolioScope $portfolios,
         private readonly TableQuery $tables,
         private readonly SearchResultPresenter $results,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     public function results(User $actor, string $query): array
@@ -94,6 +96,9 @@ class LeaseSearch extends ModuleSearchSource
             );
         }
 
-        return $this->portfolios->apply(Lease::query(), $actor);
+        return $this->assignments->leases(
+            $this->portfolios->apply(Lease::query(), $actor),
+            $actor,
+        );
     }
 }

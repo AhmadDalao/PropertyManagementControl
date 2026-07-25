@@ -53,3 +53,34 @@ export type UserTableProps = Pick<
     | 'auth'
     | 'app'
 >;
+
+export type ManagerPropertyAssignment = {
+    id: number;
+    title: string;
+    code: string;
+    asset_type: string;
+    usage_type: string;
+    status: string;
+    parent?: string | null;
+    children_count: number;
+    selected: boolean;
+    current_manager?: {
+        id: number;
+        name: string;
+    } | null;
+};
+
+export type ManagerPropertyAssignmentPageProps = SharedProps & {
+    assignmentPage: {
+        manager: {
+            id: number;
+            name: string;
+            email: string;
+            portfolio?: string | null;
+        };
+        properties: ManagerPropertyAssignment[];
+        selected_ids: number[];
+        action: string;
+        back_href: string;
+    };
+};

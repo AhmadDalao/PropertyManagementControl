@@ -21,8 +21,6 @@ export function MediaTable({ props }: { props: MediaIndexPageProps }) {
             exportHref={exportUrl('/exports/media-files', props.filters)}
             filterFields={mediaFilterFields(props, t)}
             emptyText={t('media.no_matches')}
-            createHref="/media-files/create"
-            createLabel={t('media.upload_media')}
             columns={table.columns}
             mobileCard={table.mobileCard}
         />

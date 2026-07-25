@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Assets\Data\AssetFormData;
 use App\Modules\Assets\Support\AssetAccess;
 use App\Modules\Assets\Support\AssetHierarchy;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -17,6 +18,7 @@ class AssetFormOptionsQuery
         private readonly AssetAccess $access,
         private readonly AssetHierarchy $hierarchy,
         private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $defaults */
@@ -35,8 +37,8 @@ class AssetFormOptionsQuery
         return new AssetFormData(
             portfolioId: $portfolioId,
             portfolios: $portfolioOptions,
-            parents: Asset::query()
-                ->where('portfolio_id', $portfolioId)
+            parents: $this->assignments
+                ->assets(Asset::query()->where('portfolio_id', $portfolioId), $actor)
                 ->where('status', '!=', 'archived')
                 ->when($excludedParentIds !== [], fn (Builder $query) => $query->whereNotIn('id', $excludedParentIds))
                 ->orderBy('title_en')

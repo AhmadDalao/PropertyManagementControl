@@ -68,6 +68,8 @@ export type OperationsDashboardProps = SharedProps & {
     propertyFocus: {
         selected: PropertyFocusOption | null;
         options: PropertyFocusOption[];
+        assignment_restricted: boolean;
+        has_assignments: boolean;
     };
     stats: OperationsStats;
     financial: OperationsFinancial;

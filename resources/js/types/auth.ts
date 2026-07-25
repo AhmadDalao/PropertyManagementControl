@@ -9,6 +9,10 @@ export type AppUser = {
     force_password_reset?: boolean;
     last_login_at?: string | null;
     roles: string[];
+    property_scope: {
+        restricted: boolean;
+        has_assignments: boolean;
+    };
     portfolio?: {
         id: number;
         name_en: string;

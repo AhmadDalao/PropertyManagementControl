@@ -10,6 +10,7 @@ use App\Modules\Assets\Support\AssetInputGuard;
 use App\Modules\Assets\Support\AssetMetadata;
 use App\Modules\Assets\Support\AssetReferenceGuard;
 use App\Modules\Assets\Support\AssetStakeholderManager;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -25,6 +26,7 @@ class CreateAsset
         private readonly AssetReferenceGuard $references,
         private readonly AssetStakeholderManager $stakeholders,
         private readonly AssetMetadata $metadata,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -34,6 +36,7 @@ class CreateAsset
         $portfolioId = $this->portfolioId($actor, $data);
         $this->portfolios->ensureAccess($actor, $portfolioId);
         $this->input->ensureCreate($data);
+        $this->ensureManagerParent($actor, $data, $portfolioId);
 
         return DB::transaction(function () use ($actor, $data, $portfolioId): Asset {
             $this->portfolios->ensureAccess($actor, $portfolioId);
@@ -49,11 +52,13 @@ class CreateAsset
                 'meta_json' => $this->metadata->merge($data),
             ]);
 
-            $this->stakeholders->sync(
-                $asset,
-                $this->nullableId($data['primary_owner_user_id'] ?? null),
-                $this->nullableId($data['primary_manager_user_id'] ?? null),
-            );
+            if (! $this->assignments->restricts($actor)) {
+                $this->stakeholders->sync(
+                    $asset,
+                    $this->nullableId($data['primary_owner_user_id'] ?? null),
+                    $this->nullableId($data['primary_manager_user_id'] ?? null),
+                );
+            }
 
             return $asset;
         }, 3);
@@ -78,5 +83,32 @@ class CreateAsset
     private function nullableId(mixed $value): ?int
     {
         return filled($value) ? (int) $value : null;
+    }
+
+    /** @param array<string, mixed> $data */
+    private function ensureManagerParent(User $actor, array $data, int $portfolioId): void
+    {
+        if (! $this->assignments->restricts($actor)) {
+            return;
+        }
+
+        $this->assignments->ensureHasAssignments($actor);
+        $parentId = filter_var(
+            $data['parent_id'] ?? null,
+            FILTER_VALIDATE_INT,
+            ['options' => ['min_range' => 1]],
+        );
+
+        if (! $parentId) {
+            throw ValidationException::withMessages([
+                'parent_id' => trans('app.errors.manager_asset_parent_required'),
+            ]);
+        }
+
+        $parent = Asset::query()
+            ->whereKey((int) $parentId)
+            ->where('portfolio_id', $portfolioId)
+            ->firstOrFail();
+        $this->access->ensureCanManage($actor, $parent);
     }
 }

@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import { MaintenanceMetrics } from './maintenance-metrics';
@@ -11,6 +12,7 @@ import type { MaintenanceIndexPageProps } from './types';
 export default function MaintenanceIndexPage() {
     const { props } = usePage<MaintenanceIndexPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -35,12 +37,16 @@ export default function MaintenanceIndexPage() {
                               },
                           ]
                         : []),
-                    {
-                        label: t('maintenance.create_request'),
-                        href: '/maintenance-requests/create',
-                        icon: 'bi-plus-lg',
-                        tone: 'primary',
-                    },
+                    ...(canCreate
+                        ? [
+                              {
+                                  label: t('maintenance.create_request'),
+                                  href: '/maintenance-requests/create',
+                                  icon: 'bi-plus-lg',
+                                  tone: 'primary' as const,
+                              },
+                          ]
+                        : []),
                 ]}
             />
 

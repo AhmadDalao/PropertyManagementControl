@@ -10,6 +10,7 @@ use App\Modules\Assets\Support\AssetInputGuard;
 use App\Modules\Assets\Support\AssetMetadata;
 use App\Modules\Assets\Support\AssetReferenceGuard;
 use App\Modules\Assets\Support\AssetStakeholderManager;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Support\Facades\DB;
 
 class UpdateAsset
@@ -21,6 +22,7 @@ class UpdateAsset
         private readonly AssetReferenceGuard $references,
         private readonly AssetStakeholderManager $stakeholders,
         private readonly AssetMetadata $metadata,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -31,17 +33,20 @@ class UpdateAsset
         return DB::transaction(function () use ($actor, $asset, $data): Asset {
             $locked = Asset::query()->lockForUpdate()->findOrFail($asset->id);
             $this->access->ensureCanManage($actor, $locked);
+            $data = $this->managerSafeData($actor, $locked, $data);
             $this->input->ensureUpdate($locked, $data);
             $this->references->ensure($data, $locked->portfolio_id, $locked);
             $locked->update([
                 ...$this->attributes->from($data),
                 'meta_json' => $this->metadata->merge($data, $locked),
             ]);
-            $this->stakeholders->sync(
-                $locked,
-                $this->nullableId($data['primary_owner_user_id'] ?? null),
-                $this->nullableId($data['primary_manager_user_id'] ?? null),
-            );
+            if (! $this->assignments->restricts($actor)) {
+                $this->stakeholders->sync(
+                    $locked,
+                    $this->nullableId($data['primary_owner_user_id'] ?? null),
+                    $this->nullableId($data['primary_manager_user_id'] ?? null),
+                );
+            }
 
             return $locked->refresh();
         }, 3);
@@ -50,5 +55,21 @@ class UpdateAsset
     private function nullableId(mixed $value): ?int
     {
         return filled($value) ? (int) $value : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function managerSafeData(User $actor, Asset $asset, array $data): array
+    {
+        if (! $this->assignments->restricts($actor)) {
+            return $data;
+        }
+
+        $data['parent_id'] = $asset->parent_id;
+        unset($data['primary_owner_user_id'], $data['primary_manager_user_id']);
+
+        return $data;
     }
 }

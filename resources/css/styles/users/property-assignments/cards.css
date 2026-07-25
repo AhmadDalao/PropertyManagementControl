@@ -1,0 +1,119 @@
+.pmc-property-assignment-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 0.85rem;
+}
+
+.pmc-property-assignment-card {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+    cursor: pointer;
+    transition:
+        border-color 160ms ease,
+        box-shadow 160ms ease,
+        translate 160ms ease;
+}
+
+.pmc-property-assignment-card:hover {
+    border-color: #d8b45d;
+    translate: 0 -1px;
+}
+
+.pmc-property-assignment-card.is-selected {
+    border-color: #0c8a6c;
+    box-shadow: 0 0 0 3px rgb(12 138 108 / 10%);
+    background: linear-gradient(145deg, #fff, #f5fcf9);
+}
+
+.pmc-property-assignment-check input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.pmc-property-assignment-check > span {
+    display: grid;
+    width: 1.55rem;
+    height: 1.55rem;
+    place-items: center;
+    border: 1px solid #cfc8b8;
+    border-radius: 0.45rem;
+    color: transparent;
+}
+
+.is-selected .pmc-property-assignment-check > span {
+    border-color: #0c8a6c;
+    background: #0c8a6c;
+    color: #fff;
+}
+
+.pmc-property-assignment-copy {
+    display: grid;
+    min-width: 0;
+    flex: 1;
+    gap: 0.8rem;
+}
+
+.pmc-property-assignment-heading {
+    display: flex;
+    min-width: 0;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.pmc-property-assignment-heading > span {
+    display: grid;
+    gap: 0.18rem;
+}
+
+.pmc-property-assignment-heading strong,
+.pmc-property-assignment-heading small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-property-assignment-heading small {
+    color: var(--pmc-muted);
+}
+
+.pmc-property-assignment-heading em {
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: #dff4eb;
+    color: #08765c;
+    font-size: 0.68rem;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-property-assignment-meta {
+    display: grid;
+    gap: 0.38rem;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+}
+
+.pmc-property-assignment-meta > span,
+.pmc-property-assignment-warning {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pmc-property-assignment-warning {
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.6rem;
+    background: #fff6df;
+    color: #885b00;
+    font-size: 0.76rem;
+    font-weight: 700;
+}

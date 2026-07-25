@@ -4,6 +4,7 @@ namespace App\Modules\Expenses\Requests;
 
 use App\Modules\Expenses\Support\ExpenseAccess;
 use App\Modules\Expenses\Support\ExpenseOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,9 @@ final class StoreExpenseRequest extends FormRequest
     {
         $actor = $this->user();
 
-        return $actor !== null && app(ExpenseAccess::class)->canManageSection($actor);
+        return $actor !== null
+            && app(ExpenseAccess::class)->canManageSection($actor)
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /** @return array<string, array<int, mixed>> */

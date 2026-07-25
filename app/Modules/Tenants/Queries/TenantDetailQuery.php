@@ -6,16 +6,19 @@ use App\Models\Lease;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Tenants\Data\TenantDetailData;
 use App\Modules\Tenants\Support\TenantAccess;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 final class TenantDetailQuery
 {
     private const RELATED_LIMIT = 8;
 
-    public function __construct(private readonly TenantAccess $access) {}
+    public function __construct(
+        private readonly TenantAccess $access,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     public function get(TenantProfile $target, User $actor): TenantDetailData
     {
@@ -30,12 +33,12 @@ final class TenantDetailQuery
             ->whereKey($target->id)
             ->firstOrFail();
         $this->access->ensureCanManage($actor, $tenant);
-        $activeLease = $this->leases($tenant)
+        $activeLease = $this->leases($tenant, $actor)
             ->with('documents')
             ->where('status', 'active')
             ->latest('started_at')
             ->first();
-        $payableLease = $activeLease ?? $this->leases($tenant)
+        $payableLease = $activeLease ?? $this->leases($tenant, $actor)
             ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)
             ->latest('started_at')
             ->first();
@@ -44,9 +47,15 @@ final class TenantDetailQuery
             tenant: $tenant,
             activeLease: $activeLease,
             payableLease: $payableLease,
-            leases: $this->leases($tenant)->latest('started_at')->limit(self::RELATED_LIMIT)->get(),
-            payments: $tenant->payments()->with('lease')->latest('received_on')->limit(self::RELATED_LIMIT)->get(),
-            maintenance: $tenant->maintenanceRequests()
+            leases: $this->leases($tenant, $actor)->latest('started_at')->limit(self::RELATED_LIMIT)->get(),
+            payments: $this->assignments
+                ->payments($tenant->payments()->getQuery(), $actor)
+                ->with('lease')
+                ->latest('received_on')
+                ->limit(self::RELATED_LIMIT)
+                ->get(),
+            maintenance: $this->assignments
+                ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
                 ->with('asset')
                 ->latest('requested_at')
                 ->limit(self::RELATED_LIMIT)
@@ -55,14 +64,19 @@ final class TenantDetailQuery
                 ->where('status', 'posted')
                 ->latest('received_on')
                 ->first(),
-            activeLeaseCount: (int) ($tenant->getAttribute('active_leases_count') ?? 0),
-            openMaintenanceCount: (int) ($tenant->getAttribute('open_maintenance_count') ?? 0),
+            activeLeaseCount: $this->leases($tenant, $actor)->where('status', 'active')->count(),
+            openMaintenanceCount: $this->assignments
+                ->maintenance($tenant->maintenanceRequests()->getQuery(), $actor)
+                ->whereIn('status', ['open', 'in_progress'])
+                ->count(),
         );
     }
 
-    /** @return HasMany<Lease, TenantProfile> */
-    private function leases(TenantProfile $tenant): HasMany
+    /** @return Builder<Lease> */
+    private function leases(TenantProfile $tenant, User $actor): Builder
     {
-        return $tenant->leases()->with(['leaseable', 'installments']);
+        return $this->assignments
+            ->leases($tenant->leases()->getQuery(), $actor)
+            ->with(['leaseable', 'installments']);
     }
 }

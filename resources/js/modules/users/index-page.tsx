@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import type { UserIndexPageProps } from './types';
@@ -11,6 +12,7 @@ import { UserTable } from './user-table';
 export default function UsersIndexPage() {
     const { props } = usePage<UserIndexPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -20,14 +22,18 @@ export default function UsersIndexPage() {
                 eyebrow={t('users.workspace_eyebrow')}
                 title={t('users.title')}
                 description={t('users.workspace_description')}
-                actions={[
-                    {
-                        label: t('users.create_user'),
-                        href: '/users/create',
-                        icon: 'bi-person-plus',
-                        tone: 'primary',
-                    },
-                ]}
+                actions={
+                    canCreate
+                        ? [
+                              {
+                                  label: t('users.create_user'),
+                                  href: '/users/create',
+                                  icon: 'bi-person-plus',
+                                  tone: 'primary',
+                              },
+                          ]
+                        : []
+                }
             />
 
             <UserMetrics insights={props.userInsights} />

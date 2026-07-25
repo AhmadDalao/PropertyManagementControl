@@ -6,6 +6,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Search\Presenters\SearchResultPresenter;
 use App\Modules\Search\Support\ModuleSearchSource;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use App\Modules\Tenants\Support\TenantAccess;
@@ -18,6 +19,7 @@ class TenantSearch extends ModuleSearchSource
         private readonly PortfolioScope $portfolios,
         private readonly TableQuery $tables,
         private readonly SearchResultPresenter $results,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     public function results(User $actor, string $query): array
@@ -27,8 +29,8 @@ class TenantSearch extends ModuleSearchSource
         }
 
         $this->access->ensureManager($actor);
-        $tenants = $this->portfolios
-            ->apply(TenantProfile::query(), $actor)
+        $tenants = $this->assignments
+            ->tenants($this->portfolios->apply(TenantProfile::query(), $actor), $actor)
             ->with('user');
         $this->tables->search($tenants, $query, [
             'national_id',

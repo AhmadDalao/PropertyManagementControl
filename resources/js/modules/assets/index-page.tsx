@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import { AssetMetrics } from './asset-metrics';
@@ -11,6 +12,7 @@ import type { AssetIndexPageProps } from './types';
 export default function AssetsIndexPage() {
     const { props } = usePage<AssetIndexPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -26,12 +28,16 @@ export default function AssetsIndexPage() {
                         href: '/property-map',
                         icon: 'bi-map',
                     },
-                    {
-                        label: t('assets.create_asset'),
-                        href: '/assets/create',
-                        icon: 'bi-plus-lg',
-                        tone: 'primary',
-                    },
+                    ...(canCreate
+                        ? [
+                              {
+                                  label: t('assets.create_asset'),
+                                  href: '/assets/create',
+                                  icon: 'bi-plus-lg',
+                                  tone: 'primary' as const,
+                              },
+                          ]
+                        : []),
                 ]}
             />
 

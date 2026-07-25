@@ -26,10 +26,21 @@ class PortfolioModuleSecurityTest extends TestCase
         $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Hidden Owner']);
         $manager = $this->createUserWithRole('property_manager', $portfolio, ['name' => 'Current Manager']);
         $peer = $this->createUserWithRole('property_manager', $portfolio, ['name' => 'Hidden Peer']);
+        $root = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'code' => 'PORT-ROOT',
+        ]);
+        $this->assignManagerToAsset($manager, $root);
 
         foreach (range(1, 12) as $number) {
-            $this->createUserWithRole('tenant', $portfolio, ['name' => "Visible Tenant {$number}"]);
-            $this->createAsset($portfolio, ['code' => "PORT-ASSET-{$number}"]);
+            $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => "Visible Tenant {$number}"]);
+            $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+            $asset = $this->createAsset($portfolio, [
+                'parent_id' => $root->id,
+                'code' => "PORT-ASSET-{$number}",
+            ]);
+            $this->createLease($portfolio, $tenant, $asset, $manager);
         }
 
         $response = $this->actingAs($manager)->get(route('portfolios.show', $portfolio));

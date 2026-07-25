@@ -6,6 +6,7 @@ use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Portfolios\Support\PortfolioAccess;
 use App\Modules\Portfolios\Support\PortfolioOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\TableQuery;
 use App\Modules\Users\Support\UserAccess;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ class PortfolioDirectoryQuery
         private readonly PortfolioAccess $access,
         private readonly UserAccess $users,
         private readonly TableQuery $tables,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return Builder<Portfolio> */
@@ -62,22 +64,32 @@ class PortfolioDirectoryQuery
             ])
             ->with('owner:id,name,status')
             ->withCount([
-                'assets',
+                'assets' => fn (Builder $assets) => $this->assignments->assets($assets, $actor),
                 'users' => fn (Builder $users) => $this->users->directoryScope($users, $actor),
-                'leases',
-                'leases as active_leases_count' => fn (Builder $leases) => $leases->where('status', 'active'),
-                'maintenanceRequests as open_maintenance_count' => fn (Builder $requests) => $requests->whereIn('status', ['open', 'in_progress']),
+                'leases' => fn (Builder $leases) => $this->assignments->leases($leases, $actor),
+                'leases as active_leases_count' => fn (Builder $leases) => $this->assignments
+                    ->leases($leases, $actor)
+                    ->where('status', 'active'),
+                'maintenanceRequests as open_maintenance_count' => fn (Builder $requests) => $this->assignments
+                    ->maintenance($requests, $actor)
+                    ->whereIn('status', ['open', 'in_progress']),
             ])
             ->withSum(
-                ['assets as valuation_total' => fn (Builder $assets) => $assets->where('status', '!=', 'archived')],
+                ['assets as valuation_total' => fn (Builder $assets) => $this->assignments
+                    ->assets($assets, $actor)
+                    ->where('status', '!=', 'archived')],
                 'valuation_amount',
             )
             ->withSum(
-                ['payments as posted_revenue_total' => fn (Builder $payments) => $payments->where('status', 'posted')],
+                ['payments as posted_revenue_total' => fn (Builder $payments) => $this->assignments
+                    ->payments($payments, $actor)
+                    ->where('status', 'posted')],
                 'amount',
             )
             ->withSum(
-                ['expenseEntries as posted_expense_total' => fn (Builder $expenses) => $expenses->where('status', 'posted')],
+                ['expenseEntries as posted_expense_total' => fn (Builder $expenses) => $this->assignments
+                    ->expenses($expenses, $actor)
+                    ->where('status', 'posted')],
                 'amount',
             );
     }

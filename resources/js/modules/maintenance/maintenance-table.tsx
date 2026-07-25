@@ -35,8 +35,6 @@ export function MaintenanceTable(props: MaintenanceTableProps) {
             }
             filterFields={filterFields}
             emptyText={t('maintenance.empty')}
-            createHref="/maintenance-requests/create"
-            createLabel={t('maintenance.create_request')}
             mobileCard={table.mobileCard}
             columns={table.columns}
         />

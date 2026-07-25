@@ -2,7 +2,9 @@
 
 namespace App\Modules\Assets\Requests;
 
+use App\Models\User;
 use App\Modules\Assets\Support\AssetOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -12,7 +14,11 @@ class StoreAssetRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return $this->user()?->hasAnyRole(['superadmin', 'owner', 'property_manager']) ?? false;
+        $actor = $this->user();
+
+        return $actor instanceof User
+            && $actor->hasAnyRole(['superadmin', 'owner', 'property_manager'])
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /** @return array<string, array<int, mixed>> */

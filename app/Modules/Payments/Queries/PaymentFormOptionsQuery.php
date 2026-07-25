@@ -8,6 +8,7 @@ use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Payments\Data\PaymentFormData;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\ResourcePresenter;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,7 @@ final class PaymentFormOptionsQuery
     public function __construct(
         private readonly PortfolioScope $portfolioScope,
         private readonly ResourcePresenter $resources,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $defaults */
@@ -30,7 +32,7 @@ final class PaymentFormOptionsQuery
             defaults: $defaults,
             portfolioId: $portfolioId,
             portfolios: $portfolios,
-            leases: $portfolioId ? $this->payableLeases($portfolioId) : [],
+            leases: $portfolioId ? $this->payableLeases($actor, $portfolioId) : [],
         );
     }
 
@@ -50,10 +52,10 @@ final class PaymentFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function payableLeases(int $portfolioId): array
+    private function payableLeases(User $actor, int $portfolioId): array
     {
-        return Lease::query()
-            ->where('portfolio_id', $portfolioId)
+        return $this->assignments
+            ->leases(Lease::query()->where('portfolio_id', $portfolioId), $actor)
             ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)
             ->whereHas('tenantProfile', fn (Builder $tenants) => $tenants->where('portfolio_id', $portfolioId))
             ->with([
@@ -105,7 +107,7 @@ final class PaymentFormOptionsQuery
 
         $requestedLease = filter_var($defaults['lease_id'] ?? null, FILTER_VALIDATE_INT);
         $leasePortfolio = $requestedLease
-            ? Lease::query()
+            ? $this->assignments->leases(Lease::query(), $actor)
                 ->whereKey((int) $requestedLease)
                 ->whereIn('portfolio_id', $ids->all())
                 ->whereIn('status', PaymentOptions::PAYABLE_LEASE_STATUSES)

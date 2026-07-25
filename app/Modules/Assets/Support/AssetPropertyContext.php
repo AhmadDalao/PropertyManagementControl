@@ -4,6 +4,7 @@ namespace App\Modules\Assets\Support;
 
 use App\Models\Asset;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -12,6 +13,7 @@ final readonly class AssetPropertyContext
     public function __construct(
         private PortfolioScope $portfolios,
         private AssetRootMap $roots,
+        private AssignedPropertyScope $assignments,
     ) {}
 
     /**
@@ -22,8 +24,8 @@ final readonly class AssetPropertyContext
      */
     public function get(User $actor, ?int $portfolioId = null): array
     {
-        $assets = $this->portfolios
-            ->apply(Asset::query(), $actor)
+        $assets = $this->assignments
+            ->assets($this->portfolios->apply(Asset::query(), $actor), $actor)
             ->when(
                 $portfolioId !== null,
                 fn (Builder $query) => $query->where('portfolio_id', $portfolioId),

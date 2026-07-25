@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import { LeaseRenewalMetrics } from './lease-renewal-metrics';
@@ -11,6 +12,7 @@ import type { LeaseRenewalPageProps } from './types';
 export default function LeaseRenewalIndexPage() {
     const { props } = usePage<LeaseRenewalPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -27,12 +29,16 @@ export default function LeaseRenewalIndexPage() {
                         icon: 'bi-file-earmark-text',
                         tone: 'quiet',
                     },
-                    {
-                        label: t('lease_renewals.create_lease'),
-                        href: '/leases/create',
-                        icon: 'bi-plus-lg',
-                        tone: 'primary',
-                    },
+                    ...(canCreate
+                        ? [
+                              {
+                                  label: t('lease_renewals.create_lease'),
+                                  href: '/leases/create',
+                                  icon: 'bi-plus-lg',
+                                  tone: 'primary' as const,
+                              },
+                          ]
+                        : []),
                 ]}
             />
 

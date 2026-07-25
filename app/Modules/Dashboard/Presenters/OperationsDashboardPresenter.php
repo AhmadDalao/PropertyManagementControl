@@ -51,6 +51,8 @@ class OperationsDashboardPresenter
                 $stats,
                 $propertyMap['summary'],
                 $context->selected['id'] ?? null,
+                $context->assignmentRestricted,
+                $context->hasAssignments(),
             ),
             'charts' => ['occupancy' => $this->occupancy->forUser($user, $context)],
             'setupChecklist' => $checklist,

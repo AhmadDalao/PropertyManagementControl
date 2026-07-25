@@ -9,14 +9,19 @@ use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
+use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Dashboard\Support\DashboardPropertyContext;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
 class OperationsStatsQuery
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function __construct(
+        private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     /** @return array<string, int|float> */
     public function forUser(User $user, DashboardPropertyContext $context): array
@@ -60,9 +65,27 @@ class OperationsStatsQuery
 
     private function userCount(User $user): int
     {
-        return $user->hasRole('superadmin')
-            ? User::query()->count()
-            : User::query()->where('portfolio_id', $user->portfolio_id)->count();
+        if ($user->hasRole('superadmin')) {
+            return User::query()->count();
+        }
+
+        $users = User::query()->where('portfolio_id', $user->portfolio_id);
+
+        if ($this->assignments->restricts($user)) {
+            $tenantIds = $this->assignments
+                ->tenants(TenantProfile::query(), $user)
+                ->select('id');
+            $users->where(function (Builder $visible) use ($user, $tenantIds): void {
+                $visible
+                    ->whereKey($user->id)
+                    ->orWhereHas(
+                        'tenantProfile',
+                        fn (Builder $tenants) => $tenants->whereIn('id', clone $tenantIds),
+                    );
+            });
+        }
+
+        return $users->count();
     }
 
     /** @param Builder<Payment>|Builder<ExpenseEntry> $query */

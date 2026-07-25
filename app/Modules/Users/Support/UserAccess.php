@@ -2,13 +2,18 @@
 
 namespace App\Modules\Users\Support;
 
+use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
 class UserAccess
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function __construct(
+        private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     public function ensureManager(User $actor): void
     {
@@ -46,7 +51,10 @@ class UserAccess
             return $target->hasAnyRole(['property_manager', 'tenant']);
         }
 
-        return $target->hasRole('tenant') && ! $target->hasRole('property_manager');
+        return $target->hasRole('tenant')
+            && ! $target->hasRole('property_manager')
+            && $target->tenantProfile !== null
+            && $this->assignments->allowsTenant($actor, $target->tenantProfile);
     }
 
     /**
@@ -69,6 +77,10 @@ class UserAccess
             ? ['superadmin', 'owner']
             : ['superadmin', 'owner', 'property_manager'];
 
+        $tenantIds = $this->assignments
+            ->tenants(TenantProfile::query(), $actor)
+            ->select('id');
+
         return $query->where(function (Builder $users) use ($actor, $portfolioId, $allowedRoles, $blockedRoles): void {
             $users
                 ->whereKey($actor->id)
@@ -78,7 +90,17 @@ class UserAccess
                         ->whereHas('roles', fn (Builder $roles) => $roles->whereIn('name', $allowedRoles))
                         ->whereDoesntHave('roles', fn (Builder $roles) => $roles->whereIn('name', $blockedRoles));
                 });
-        });
+        })->when(
+            $this->assignments->restricts($actor),
+            fn (Builder $users) => $users->where(function (Builder $visible) use ($actor, $tenantIds): void {
+                $visible
+                    ->whereKey($actor->id)
+                    ->orWhereHas(
+                        'tenantProfile',
+                        fn (Builder $tenants) => $tenants->whereIn('id', clone $tenantIds),
+                    );
+            }),
+        );
     }
 
     public function ensurePortfolioAccess(User $actor, ?int $portfolioId): void

@@ -160,6 +160,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
         $tenantUser = $this->createUserWithRole('tenant', $portfolio);
         $tenant = $this->createTenantProfile($portfolio, $tenantUser);
         $asset = $this->createAsset($portfolio);
+        $this->assignManagerToAsset($manager, $asset);
 
         $requestItem = MaintenanceRequest::query()->create([
             'portfolio_id' => $portfolio->id,

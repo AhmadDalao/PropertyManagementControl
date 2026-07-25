@@ -27,8 +27,6 @@ export function AssetTable(props: AssetTableProps) {
             exportHref={exportUrl('/exports/assets', props.filters)}
             filterFields={filterFields}
             emptyText={t('assets.empty')}
-            createHref="/assets/create"
-            createLabel={t('assets.create_asset')}
             mobileCard={table.mobileCard}
             columns={table.columns}
         />

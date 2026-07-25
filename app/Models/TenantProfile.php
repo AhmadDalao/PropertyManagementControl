@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property-read Portfolio|null $portfolio
  * @property-read User|null $user
+ * @property-read User|null $onboardedBy
  * @property-read Collection<int, Lease> $leases
  * @property-read Collection<int, Payment> $payments
  * @property-read Collection<int, MaintenanceRequest> $maintenanceRequests
@@ -42,6 +43,12 @@ class TenantProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function onboardedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'onboarded_by_user_id');
     }
 
     /** @return HasMany<Lease, $this> */

@@ -4,6 +4,7 @@ namespace App\Modules\Payments\Requests;
 
 use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,9 @@ final class StorePaymentRequest extends FormRequest
     {
         $actor = $this->user();
 
-        return $actor !== null && app(PaymentAccess::class)->canManageSection($actor);
+        return $actor !== null
+            && app(PaymentAccess::class)->canManageSection($actor)
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /**

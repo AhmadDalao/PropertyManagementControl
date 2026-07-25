@@ -10,6 +10,67 @@
     background: #fff;
 }
 
+.pmc-dashboard-assignment-empty {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border: 1px solid #e5c65d;
+    border-radius: 0.9rem;
+    background: #fffaf0;
+}
+
+.pmc-dashboard-assignment-icon {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #ffc400;
+    color: #111;
+    font-size: 1.05rem;
+}
+
+.pmc-dashboard-assignment-empty > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-dashboard-assignment-empty > div > span {
+    color: #775800;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-dashboard-assignment-empty strong {
+    font-size: 0.95rem;
+}
+
+.pmc-dashboard-assignment-empty small {
+    color: #666469;
+    font-size: 0.75rem;
+}
+
+.pmc-dashboard-assignment-empty > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0 0.85rem;
+    border: 1px solid #d8b63c;
+    border-radius: 0.72rem;
+    color: #111;
+    font-size: 0.73rem;
+    font-weight: 900;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
 .pmc-dashboard-focus > div:first-child {
     display: grid;
     min-width: 0;
@@ -89,6 +150,15 @@
 }
 
 @media (max-width: 575.98px) {
+    .pmc-dashboard-assignment-empty {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-dashboard-assignment-empty > a {
+        grid-column: 1 / -1;
+        justify-content: center;
+    }
+
     .pmc-dashboard-focus-controls {
         grid-template-columns: 1fr;
     }

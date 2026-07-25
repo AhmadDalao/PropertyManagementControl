@@ -29,8 +29,6 @@ export function TenantTable(props: TenantTableProps) {
             exportHref={exportUrl('/exports/tenants', props.filters)}
             filterFields={filterFields}
             emptyText={t('tenants.empty')}
-            createHref="/tenants/create"
-            createLabel={t('tenants.create_tenant')}
             mobileCard={table.mobileCard}
             columns={table.columns}
         />

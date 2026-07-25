@@ -39,8 +39,11 @@ class UserModuleArchitectureTest extends TestCase
     {
         foreach ([
             $this->path('app/Http/Middleware/EnsureActiveAccount.php'),
+            $this->path('app/Http/Middleware/EnsureManagerHasAssignedProperty.php'),
+            $this->path('app/Http/Controllers/ManagerPropertyAssignmentController.php'),
             $this->path('app/Modules/Users/Actions/CreateUser.php'),
             $this->path('app/Modules/Users/Actions/ManageUsers.php'),
+            $this->path('app/Modules/Users/Actions/SyncManagerPropertyAssignments.php'),
             $this->path('app/Modules/Users/Actions/SuspendUser.php'),
             $this->path('app/Modules/Users/Actions/UpdateUser.php'),
             $this->path('app/Modules/Users/Data/UserDetailData.php'),
@@ -59,8 +62,10 @@ class UserModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Users/Queries/UserFormOptionsQuery.php'),
             $this->path('app/Modules/Users/Queries/UserIndexQuery.php'),
             $this->path('app/Modules/Users/Queries/UserInsightsQuery.php'),
+            $this->path('app/Modules/Users/Queries/ManagerPropertyAssignmentQuery.php'),
             $this->path('app/Modules/Users/Requests/HasUserValidationAttributes.php'),
             $this->path('app/Modules/Users/Requests/StoreUserRequest.php'),
+            $this->path('app/Modules/Users/Requests/UpdateManagerPropertyAssignmentsRequest.php'),
             $this->path('app/Modules/Users/Requests/UpdateUserRequest.php'),
             $this->path('app/Modules/Users/Support/UserAccess.php'),
             $this->path('app/Modules/Users/Support/UserContinuityGuard.php'),
@@ -77,6 +82,13 @@ class UserModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/users/user-table-config.tsx'),
             $this->path('resources/js/modules/users/user-table.tsx'),
             $this->path('resources/js/modules/users/types.ts'),
+            $this->path('resources/js/modules/users/property-assignment-card.tsx'),
+            $this->path('resources/js/modules/users/property-assignment-controls.tsx'),
+            $this->path('resources/js/modules/users/property-assignments-page.tsx'),
+            $this->path('resources/css/styles/users/property-assignments.css'),
+            $this->path('resources/css/styles/users/property-assignments/base.css'),
+            $this->path('resources/css/styles/users/property-assignments/cards.css'),
+            $this->path('resources/css/styles/users/property-assignments/responsive.css'),
         ] as $path) {
             $this->assertFileExists($path);
         }
@@ -93,6 +105,14 @@ class UserModuleArchitectureTest extends TestCase
             'resources/js/modules/users/user-table.tsx' => 65,
             'resources/js/modules/users/user-table-config.tsx' => 100,
             'resources/js/modules/users/user-table-cells.tsx' => 140,
+            'app/Http/Controllers/ManagerPropertyAssignmentController.php' => 60,
+            'app/Modules/Users/Actions/SyncManagerPropertyAssignments.php' => 110,
+            'app/Modules/Users/Queries/ManagerPropertyAssignmentQuery.php' => 115,
+            'resources/js/modules/users/property-assignment-card.tsx' => 90,
+            'resources/js/modules/users/property-assignment-controls.tsx' => 100,
+            'resources/js/modules/users/property-assignments-page.tsx' => 155,
+            'resources/css/styles/users/property-assignments/base.css' => 140,
+            'resources/css/styles/users/property-assignments/cards.css' => 130,
         ] as $path => $maximumLines) {
             $source = $this->source($this->path($path));
 
@@ -112,6 +132,8 @@ class UserModuleArchitectureTest extends TestCase
 
         $this->assertStringContainsString("['auth', 'account.active', 'password.changed']", $routes);
         $this->assertStringContainsString("'account.active' => EnsureActiveAccount::class", $bootstrap);
+        $this->assertStringContainsString("'property.assigned' => EnsureManagerHasAssignedProperty::class", $bootstrap);
+        $this->assertStringContainsString("middlewareFor(['create', 'store'], 'property.assigned')", $routes);
     }
 
     private function source(string $path): string

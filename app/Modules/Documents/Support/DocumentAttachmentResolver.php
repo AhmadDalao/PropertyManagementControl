@@ -7,13 +7,17 @@ use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 
 final class DocumentAttachmentResolver
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function __construct(
+        private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     public function resolve(
         User $actor,
@@ -36,6 +40,12 @@ final class DocumentAttachmentResolver
 
         $portfolioId = (int) $record->getAttribute('portfolio_id');
         $this->portfolios->ensureAccess($actor, $portfolioId);
+        $allowed = match (true) {
+            $record instanceof Asset => $this->assignments->allowsAsset($actor, $record),
+            $record instanceof Lease => $this->assignments->allowsLease($actor, $record),
+            $record instanceof Payment => $this->assignments->allowsPayment($actor, $record),
+        };
+        abort_unless($allowed, 403, trans('app.errors.property_assignment_access_denied'));
         $portfolioQuery = Portfolio::query();
 
         if ($lock) {

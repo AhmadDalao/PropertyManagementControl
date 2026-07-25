@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Portfolios\Data\PortfolioDetailData;
 use App\Modules\Portfolios\Support\PortfolioAccess;
 use App\Modules\Portfolios\Support\PortfolioModules;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Users\Support\UserAccess;
 
 class PortfolioDetailQuery
@@ -14,6 +15,7 @@ class PortfolioDetailQuery
     public function __construct(
         private readonly PortfolioAccess $access,
         private readonly UserAccess $users,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     public function get(Portfolio $portfolio, User $actor): PortfolioDetailData
@@ -25,7 +27,7 @@ class PortfolioDetailQuery
             ->where('portfolio_id', $portfolio->id);
 
         $assets = $this->moduleVisible($actor, $settings, 'assets')
-            ? $portfolio->assets()
+            ? $this->assignments->assets($portfolio->assets()->getQuery(), $actor)
                 ->latest()
                 ->limit(8)
                 ->get(['id', 'portfolio_id', 'title_en', 'title_ar', 'code', 'asset_type', 'occupancy_status', 'status'])
@@ -38,29 +40,35 @@ class PortfolioDetailQuery
                 ->get(['id', 'portfolio_id', 'name', 'email', 'status', 'created_at'])
             : collect();
         $leases = $this->moduleVisible($actor, $settings, 'leases')
-            ? $portfolio->leases()
+            ? $this->assignments->leases($portfolio->leases()->getQuery(), $actor)
                 ->with(['tenantProfile.user:id,name', 'leaseable'])
                 ->latest()
                 ->limit(8)
                 ->get()
             : collect();
         $maintenance = $this->moduleVisible($actor, $settings, 'maintenance')
-            ? $portfolio->maintenanceRequests()
+            ? $this->assignments->maintenance($portfolio->maintenanceRequests()->getQuery(), $actor)
                 ->with('asset:id,portfolio_id,title_en,title_ar,code')
                 ->latest('requested_at')
                 ->limit(8)
                 ->get()
             : collect();
         $documents = $this->moduleVisible($actor, $settings, 'documents')
-            ? $portfolio->documents()->latest()->limit(8)->get()
+            ? $this->assignments
+                ->documents($portfolio->documents()->getQuery(), $actor)
+                ->latest()
+                ->limit(8)
+                ->get()
             : collect();
 
-        $assetSummary = $portfolio->assets()
+        $assetSummary = $this->assignments
+            ->assets($portfolio->assets()->getQuery(), $actor)
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN occupancy_status = 'vacant' AND rentable = 1 THEN 1 ELSE 0 END) as vacant_count")
             ->selectRaw("SUM(CASE WHEN status != 'archived' THEN valuation_amount ELSE 0 END) as valuation_total")
             ->first();
-        $leaseSummary = $portfolio->leases()
+        $leaseSummary = $this->assignments
+            ->leases($portfolio->leases()->getQuery(), $actor)
             ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_count")
             ->first();
 
@@ -76,11 +84,18 @@ class PortfolioDetailQuery
             vacantAssets: (int) ($assetSummary?->getAttribute('vacant_count') ?? 0),
             valuation: (float) ($assetSummary?->getAttribute('valuation_total') ?? 0),
             activeLeases: (int) ($leaseSummary?->getAttribute('active_count') ?? 0),
-            openMaintenance: $portfolio->maintenanceRequests()
+            openMaintenance: $this->assignments
+                ->maintenance($portfolio->maintenanceRequests()->getQuery(), $actor)
                 ->whereIn('status', ['open', 'in_progress'])
                 ->count(),
-            postedRevenue: (float) $portfolio->payments()->where('status', 'posted')->sum('amount'),
-            postedExpenses: (float) $portfolio->expenseEntries()->where('status', 'posted')->sum('amount'),
+            postedRevenue: (float) $this->assignments
+                ->payments($portfolio->payments()->getQuery(), $actor)
+                ->where('status', 'posted')
+                ->sum('amount'),
+            postedExpenses: (float) $this->assignments
+                ->expenses($portfolio->expenseEntries()->getQuery(), $actor)
+                ->where('status', 'posted')
+                ->sum('amount'),
             visibleUsers: (clone $peopleQuery)->count(),
         );
     }

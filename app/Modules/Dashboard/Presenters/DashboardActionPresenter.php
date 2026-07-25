@@ -4,6 +4,10 @@ namespace App\Modules\Dashboard\Presenters;
 
 class DashboardActionPresenter
 {
+    public function __construct(
+        private readonly ManagerAssignmentActionPresenter $managerAssignments,
+    ) {}
+
     /**
      * @param  array<int, array{label:string, done:bool, href:string}>  $checklist
      * @param  array<string, int|float>  $stats
@@ -15,7 +19,13 @@ class DashboardActionPresenter
         array $stats,
         array $mapSummary,
         ?int $propertyId = null,
+        bool $assignmentRestricted = false,
+        bool $hasAssignments = true,
     ): array {
+        if ($assignmentRestricted && ! $hasAssignments) {
+            return $this->managerAssignments->present();
+        }
+
         $actions = [];
 
         if ((float) ($stats['arrears'] ?? 0) > 0) {

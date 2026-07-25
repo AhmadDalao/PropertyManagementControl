@@ -19,6 +19,7 @@ final readonly class DashboardPropertyContext
         public array $options,
         private array $assetIds,
         private array $leaseableTypes,
+        public bool $assignmentRestricted,
     ) {}
 
     /**
@@ -29,7 +30,7 @@ final readonly class DashboardPropertyContext
      */
     public function assets(Builder $query): Builder
     {
-        return $this->selected === null
+        return ! $this->shouldScope()
             ? $query
             : $query->whereIn('assets.id', $this->assetIds);
     }
@@ -40,7 +41,7 @@ final readonly class DashboardPropertyContext
      */
     public function leases(Builder $query): Builder
     {
-        return $this->selected === null
+        return ! $this->shouldScope()
             ? $query
             : $query
                 ->whereIn('leaseable_type', $this->leaseableTypes)
@@ -55,7 +56,7 @@ final readonly class DashboardPropertyContext
      */
     public function assetRecords(Builder $query, string $column = 'asset_id'): Builder
     {
-        return $this->selected === null
+        return ! $this->shouldScope()
             ? $query
             : $query->whereIn($column, $this->assetIds);
     }
@@ -68,7 +69,7 @@ final readonly class DashboardPropertyContext
      */
     public function leaseRecords(Builder $query, string $column = 'lease_id'): Builder
     {
-        if ($this->selected === null) {
+        if (! $this->shouldScope()) {
             return $query;
         }
 
@@ -84,6 +85,18 @@ final readonly class DashboardPropertyContext
         return [
             'selected' => $this->selected,
             'options' => $this->options,
+            'assignment_restricted' => $this->assignmentRestricted,
+            'has_assignments' => $this->hasAssignments(),
         ];
+    }
+
+    public function hasAssignments(): bool
+    {
+        return ! $this->assignmentRestricted || $this->assetIds !== [];
+    }
+
+    private function shouldScope(): bool
+    {
+        return $this->assignmentRestricted || $this->selected !== null;
     }
 }

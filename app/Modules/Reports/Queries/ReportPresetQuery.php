@@ -6,13 +6,16 @@ use App\Models\ReportPreset;
 use App\Models\User;
 use App\Modules\Reports\Support\ReportAccess;
 use App\Modules\Reports\Support\ReportFilterSet;
+use App\Modules\Reports\Support\ReportPropertyScope;
 use Illuminate\Database\Eloquent\Builder;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ReportPresetQuery
 {
     public function __construct(
         private readonly ReportAccess $access,
         private readonly ReportFilterSet $filters,
+        private readonly ReportPropertyScope $properties,
     ) {}
 
     /** @return array<int, array<string, mixed>> */
@@ -41,6 +44,7 @@ class ReportPresetQuery
             })
             ->latest()
             ->get()
+            ->filter(fn (ReportPreset $preset): bool => $this->accessible($actor, $preset))
             ->map(function (ReportPreset $preset) use ($actor): array {
                 $filters = $this->filters->stored($preset->filters_json);
 
@@ -69,8 +73,25 @@ class ReportPresetQuery
             ->latest()
             ->first();
 
-        return $preset instanceof ReportPreset
+        return $preset instanceof ReportPreset && $this->accessible($actor, $preset)
             ? $this->filters->stored($preset->filters_json)
             : [];
+    }
+
+    private function accessible(User $actor, ReportPreset $preset): bool
+    {
+        $filters = $this->filters->stored($preset->filters_json);
+
+        try {
+            $this->properties->assetIds(
+                $actor,
+                $filters['portfolio_id'] ?? null,
+                $filters['property_id'] ?? null,
+            );
+
+            return true;
+        } catch (HttpException) {
+            return false;
+        }
     }
 }

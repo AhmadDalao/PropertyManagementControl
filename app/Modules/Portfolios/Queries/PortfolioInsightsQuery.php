@@ -9,12 +9,16 @@ use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Users\Support\UserAccess;
 use Illuminate\Database\Eloquent\Builder;
 
 class PortfolioInsightsQuery
 {
-    public function __construct(private readonly UserAccess $users) {}
+    public function __construct(
+        private readonly UserAccess $users,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     /**
      * @param  Builder<Portfolio>  $baseQuery
@@ -29,26 +33,29 @@ class PortfolioInsightsQuery
             ->selectRaw("SUM(CASE WHEN status = 'archived' THEN 1 ELSE 0 END) as archived_count")
             ->first();
         $portfolioIds = (clone $baseQuery)->select('id');
-        $assetSummary = Asset::query()
-            ->whereIn('portfolio_id', clone $portfolioIds)
+        $assetSummary = $this->assignments
+            ->assets(Asset::query()->whereIn('portfolio_id', clone $portfolioIds), $actor)
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN status != 'archived' THEN valuation_amount ELSE 0 END) as valuation_total")
             ->first();
-        $leaseSummary = Lease::query()
-            ->whereIn('portfolio_id', clone $portfolioIds)
+        $leaseSummary = $this->assignments
+            ->leases(Lease::query()->whereIn('portfolio_id', clone $portfolioIds), $actor)
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active_count")
             ->first();
-        $openMaintenance = MaintenanceRequest::query()
-            ->whereIn('portfolio_id', clone $portfolioIds)
+        $openMaintenance = $this->assignments
+            ->maintenance(
+                MaintenanceRequest::query()->whereIn('portfolio_id', clone $portfolioIds),
+                $actor,
+            )
             ->whereIn('status', ['open', 'in_progress'])
             ->count();
-        $revenue = Payment::query()
-            ->whereIn('portfolio_id', clone $portfolioIds)
+        $revenue = $this->assignments
+            ->payments(Payment::query()->whereIn('portfolio_id', clone $portfolioIds), $actor)
             ->where('status', 'posted')
             ->sum('amount');
-        $expenses = ExpenseEntry::query()
-            ->whereIn('portfolio_id', clone $portfolioIds)
+        $expenses = $this->assignments
+            ->expenses(ExpenseEntry::query()->whereIn('portfolio_id', clone $portfolioIds), $actor)
             ->where('status', 'posted')
             ->sum('amount');
         $visibleUsers = $this->users->directoryScope(User::query(), $actor)

@@ -4,11 +4,15 @@ namespace App\Modules\Maintenance\Support;
 
 use App\Models\MaintenanceRequest;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 
 class MaintenanceAccess
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function __construct(
+        private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     public function ensureCanAccess(User $actor, MaintenanceRequest $request): void
     {
@@ -24,6 +28,11 @@ class MaintenanceAccess
 
         $this->ensureManager($actor);
         $this->portfolios->ensureAccess($actor, $request->portfolio_id);
+        abort_unless(
+            $this->assignments->allowsMaintenance($actor, $request),
+            403,
+            trans('app.errors.property_assignment_access_denied'),
+        );
     }
 
     public function ensureManager(User $actor): void

@@ -6,11 +6,15 @@ use App\Models\CmsPage;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 
 class SetupChecklistPresenter
 {
-    public function __construct(private readonly PortfolioScope $portfolios) {}
+    public function __construct(
+        private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     /**
      * @param  array<string, int|float>  $stats
@@ -18,6 +22,14 @@ class SetupChecklistPresenter
      */
     public function present(User $user, array $stats): array
     {
+        if ($this->assignments->restricts($user) && ! $this->assignments->hasAssignments($user)) {
+            return [[
+                'label' => trans('app.dashboard.property_assignment_action'),
+                'done' => false,
+                'href' => '/portfolios',
+            ]];
+        }
+
         $items = [
             [
                 'label' => 'Create portfolio',
@@ -30,7 +42,9 @@ class SetupChecklistPresenter
             ['label' => 'Create assets', 'done' => $stats['totalAssets'] > 0, 'href' => '/assets/create'],
             [
                 'label' => 'Create profiles',
-                'done' => $this->portfolios->apply(TenantProfile::query(), $user)->exists(),
+                'done' => $this->assignments
+                    ->tenants($this->portfolios->apply(TenantProfile::query(), $user), $user)
+                    ->exists(),
                 'href' => '/tenants/create',
             ],
             ['label' => 'Create leases', 'done' => $stats['activeLeases'] > 0, 'href' => '/leases/create'],

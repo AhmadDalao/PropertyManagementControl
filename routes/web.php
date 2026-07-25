@@ -18,6 +18,7 @@ use App\Http\Controllers\LeaseController;
 use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceRequestController;
+use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\NavigationItemController;
 use App\Http\Controllers\PaymentController;
@@ -65,10 +66,16 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::get('/property-map', PropertyMapController::class)->name('property-map.index')->middleware('portfolio.module:assets');
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
-    Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:users');
-    Route::resource('assets', AssetController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:assets');
-    Route::resource('tenants', TenantController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:tenants');
-    Route::resource('leases', LeaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:leases');
+    Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:users')->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::get('/users/{user}/property-assignments', [ManagerPropertyAssignmentController::class, 'edit'])
+        ->name('users.property-assignments.edit')
+        ->middleware('portfolio.module:users');
+    Route::put('/users/{user}/property-assignments', [ManagerPropertyAssignmentController::class, 'update'])
+        ->name('users.property-assignments.update')
+        ->middleware('portfolio.module:users');
+    Route::resource('assets', AssetController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:assets')->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::resource('tenants', TenantController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:tenants')->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::resource('leases', LeaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:leases')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/leases/{lease}/renew', [LeaseController::class, 'renew'])->name('leases.renew')->middleware('portfolio.module:leases');
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
@@ -81,20 +88,21 @@ Route::middleware(['auth', 'account.active', 'password.changed'])->group(functio
     Route::get('/rent-collection', [RentCollectionController::class, 'index'])
         ->name('rent-collection.index')
         ->middleware('portfolio.module:payments');
-    Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments');
+    Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
 
     Route::resource('maintenance-requests', MaintenanceRequestController::class)
         ->parameters(['maintenance-requests' => 'maintenanceRequest'])
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
-        ->middleware('portfolio.module:maintenance');
+        ->middleware('portfolio.module:maintenance')
+        ->middlewareFor(['create', 'store'], 'property.assigned');
 
-    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses');
+    Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
     Route::post('/reports/presets', [ReportController::class, 'storePreset'])->name('reports.presets.store')->middleware('portfolio.module:reports');
     Route::delete('/reports/presets/{reportPreset}', [ReportController::class, 'destroyPreset'])->name('reports.presets.destroy')->middleware('portfolio.module:reports');
-    Route::resource('documents', DocumentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:documents');
+    Route::resource('documents', DocumentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:documents')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download')->middleware('portfolio.module:documents');
 
     Route::get('/cms', [CmsPageController::class, 'index'])->name('cms.index');

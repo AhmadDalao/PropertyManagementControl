@@ -4,6 +4,7 @@ namespace App\Modules\Assets\Support;
 
 use App\Models\Asset;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 
 final readonly class PropertyScope
@@ -11,6 +12,7 @@ final readonly class PropertyScope
     public function __construct(
         private PortfolioScope $portfolios,
         private AssetHierarchy $hierarchy,
+        private AssignedPropertyScope $assignments,
     ) {}
 
     /**
@@ -23,6 +25,10 @@ final readonly class PropertyScope
         return $this->portfolios
             ->apply(Asset::query(), $actor)
             ->whereNull('parent_id')
+            ->when(
+                $this->assignments->rootIds($actor) !== null,
+                fn ($query) => $query->whereIn('id', $this->assignments->rootIds($actor) ?? []),
+            )
             ->with('portfolio:id,name_en,name_ar')
             ->orderBy('portfolio_id')
             ->orderBy($titleColumn)
@@ -56,9 +62,16 @@ final readonly class PropertyScope
     {
         $property = $this->selected($actor, $portfolioId, $propertyId);
 
-        return $property
-            ? $this->hierarchy->descendantIdsIncluding($property)
-            : null;
+        if (! $property) {
+            return null;
+        }
+
+        $ids = $this->hierarchy->descendantIdsIncluding($property);
+        $assignedIds = $this->assignments->assetIds($actor);
+
+        return $assignedIds === null
+            ? $ids
+            : array_values(array_intersect($ids, $assignedIds));
     }
 
     public function label(User $actor, ?int $portfolioId, mixed $propertyId): ?string
@@ -91,6 +104,10 @@ final readonly class PropertyScope
             ->apply(Asset::query(), $actor)
             ->whereKey($propertyId)
             ->whereNull('parent_id')
+            ->when(
+                $this->assignments->rootIds($actor) !== null,
+                fn ($query) => $query->whereIn('id', $this->assignments->rootIds($actor) ?? []),
+            )
             ->when(
                 $portfolioId !== null,
                 fn ($query) => $query->where('portfolio_id', $portfolioId),

@@ -2,6 +2,7 @@ import { Head, Link, usePage } from '@inertiajs/react';
 
 import { PageHeader } from '@/components/page-header';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 import type { SharedProps } from '@/types';
 
@@ -23,6 +24,7 @@ export default function PropertyMapPage() {
     const { props } = usePage<PropertyMapPageProps>();
     const { t } = useTranslator();
     const isSuperadmin = props.auth.user?.roles.includes('superadmin') ?? false;
+    const canCreate = canCreateOperationalRecord(props.auth.user);
     const selectedPortfolio = props.filters.portfolio_id
         ? String(props.filters.portfolio_id)
         : 'all';
@@ -36,10 +38,15 @@ export default function PropertyMapPage() {
                 description={t('map.description')}
                 actions={
                     <>
-                        <Link href="/assets/create" className="btn btn-primary">
-                            <i className="bi bi-plus-lg" />
-                            {t('map.create_asset')}
-                        </Link>
+                        {canCreate ? (
+                            <Link
+                                href="/assets/create"
+                                className="btn btn-primary"
+                            >
+                                <i className="bi bi-plus-lg" />
+                                {t('map.create_asset')}
+                            </Link>
+                        ) : null}
                         <Link
                             href="/assets"
                             className="btn btn-outline-secondary"

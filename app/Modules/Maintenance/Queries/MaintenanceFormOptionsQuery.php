@@ -5,6 +5,7 @@ namespace App\Modules\Maintenance\Queries;
 use App\Models\Asset;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Support\Collection;
@@ -14,6 +15,7 @@ class MaintenanceFormOptionsQuery
     public function __construct(
         private readonly PortfolioScope $portfolios,
         private readonly MorphTypes $morphTypes,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return Collection<int, Asset> */
@@ -39,23 +41,26 @@ class MaintenanceFormOptionsQuery
     /** @return Collection<int, Asset> */
     public function managerAssets(User $actor): Collection
     {
-        return $this->portfolios
-            ->apply(Asset::query()->orderBy('title_en'), $actor)
+        return $this->assignments
+            ->assets($this->portfolios->apply(Asset::query()->orderBy('title_en'), $actor), $actor)
             ->get();
     }
 
     /** @return Collection<int, TenantProfile> */
     public function managerTenants(User $actor): Collection
     {
-        return $this->portfolios
-            ->apply(TenantProfile::query()->with('user')->orderBy('id'), $actor)
+        return $this->assignments
+            ->tenants(
+                $this->portfolios->apply(TenantProfile::query()->with('user')->orderBy('id'), $actor),
+                $actor,
+            )
             ->get();
     }
 
     /** @return Collection<int, User> */
     public function managers(User $actor): Collection
     {
-        return $this->portfolios->apply(
+        $query = $this->portfolios->apply(
             User::query()
                 ->whereHas(
                     'roles',
@@ -63,7 +68,22 @@ class MaintenanceFormOptionsQuery
                 )
                 ->orderBy('name'),
             $actor,
-        )->get();
+        );
+
+        if ($this->assignments->restricts($actor)) {
+            $assetIds = $this->assignments->assetIds($actor) ?? [];
+            $query->where(function ($users) use ($actor, $assetIds): void {
+                $users
+                    ->whereKey($actor->id)
+                    ->orWhereHas('roles', fn ($roles) => $roles->where('name', 'owner'))
+                    ->orWhereHas('assetStakeholders', fn ($stakeholders) => $stakeholders
+                        ->where('relationship_type', 'manager')
+                        ->whereNull('ends_on')
+                        ->whereIn('asset_id', $assetIds));
+            });
+        }
+
+        return $query->get();
     }
 
     /** @return array<int, array{id:int,name:string}> */

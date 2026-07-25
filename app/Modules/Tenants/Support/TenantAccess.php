@@ -4,9 +4,12 @@ namespace App\Modules\Tenants\Support;
 
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 
 class TenantAccess
 {
+    public function __construct(private readonly AssignedPropertyScope $assignments) {}
+
     public function canManageSection(User $actor): bool
     {
         return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
@@ -15,7 +18,8 @@ class TenantAccess
     public function canManage(User $actor, TenantProfile $tenant): bool
     {
         return $this->canManageSection($actor)
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $tenant->portfolio_id);
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $tenant->portfolio_id)
+            && $this->assignments->allowsTenant($actor, $tenant);
     }
 
     public function ensureManager(User $actor): void

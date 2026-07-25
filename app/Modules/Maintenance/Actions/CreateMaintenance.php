@@ -93,7 +93,7 @@ class CreateMaintenance
         $this->portfolios->ensureAccess($actor, $portfolioId);
 
         return DB::transaction(function () use ($actor, $portfolioId, $data): MaintenanceRequest {
-            $this->references->ensureBelongsToPortfolio($data, $portfolioId);
+            $this->references->ensureBelongsToPortfolio($actor, $data, $portfolioId);
             $request = MaintenanceRequest::query()->create([
                 'portfolio_id' => $portfolioId,
                 'asset_id' => $data['asset_id'],

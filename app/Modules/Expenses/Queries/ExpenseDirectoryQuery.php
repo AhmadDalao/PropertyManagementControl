@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Expenses\Support\ExpenseAccess;
 use App\Modules\Expenses\Support\ExpenseOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use DateTimeImmutable;
@@ -20,6 +21,7 @@ final class ExpenseDirectoryQuery
         private readonly PortfolioScope $portfolios,
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -55,7 +57,10 @@ final class ExpenseDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios->apply(ExpenseEntry::query(), $actor);
+        return $this->assignments->expenses(
+            $this->portfolios->apply(ExpenseEntry::query(), $actor),
+            $actor,
+        );
     }
 
     /**

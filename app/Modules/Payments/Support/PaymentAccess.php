@@ -4,9 +4,12 @@ namespace App\Modules\Payments\Support;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 
 final class PaymentAccess
 {
+    public function __construct(private readonly AssignedPropertyScope $assignments) {}
+
     public function canManageSection(User $actor): bool
     {
         return $actor->hasAnyRole(['superadmin', 'owner', 'property_manager']);
@@ -15,7 +18,8 @@ final class PaymentAccess
     public function canAccess(User $actor, Payment $payment): bool
     {
         if ($this->canManageSection($actor)) {
-            return $actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id;
+            return ($actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id)
+                && $this->assignments->allowsPayment($actor, $payment);
         }
 
         return $actor->hasRole('tenant')
@@ -25,7 +29,8 @@ final class PaymentAccess
     public function canManage(User $actor, Payment $payment): bool
     {
         return $this->canManageSection($actor)
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id);
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id)
+            && $this->assignments->allowsPayment($actor, $payment);
     }
 
     public function ensureCanAccess(User $actor, Payment $payment): void

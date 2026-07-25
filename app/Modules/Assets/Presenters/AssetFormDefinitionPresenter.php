@@ -21,6 +21,8 @@ class AssetFormDefinitionPresenter
     public function fields(User $actor, AssetFormData $data, ?Asset $asset = null): array
     {
         $fields = [];
+        $managerOnly = $actor->hasRole('property_manager')
+            && ! $actor->hasAnyRole(['superadmin', 'owner']);
 
         if ($actor->hasRole('superadmin') && ! $asset) {
             $fields[] = [
@@ -37,17 +39,21 @@ class AssetFormDefinitionPresenter
         $statuses = $asset?->status === 'archived'
             ? ['archived']
             : AssetOptions::MUTABLE_STATUSES;
-        $fields = [
-            ...$fields,
-            [
+        if (! $managerOnly || ! $asset) {
+            $fields[] = [
                 'name' => 'parent_id',
                 'label' => trans('app.assets.parent_asset'),
                 'type' => 'select',
+                'required' => $managerOnly,
                 'options' => [
-                    $this->options->option('', trans('app.assets.no_parent')),
+                    ...($managerOnly ? [] : [$this->options->option('', trans('app.assets.no_parent'))]),
                     ...$this->options->assets($data->parents),
                 ],
-            ],
+            ];
+        }
+
+        $fields = [
+            ...$fields,
             ['name' => 'asset_type', 'label' => trans('app.assets.asset_type'), 'type' => 'select', 'required' => true, 'options' => $this->options->values(AssetOptions::TYPES, 'assets.types')],
             ['name' => 'usage_type', 'label' => trans('app.assets.usage_type'), 'type' => 'select', 'required' => true, 'options' => $this->options->values(AssetOptions::USAGES, 'assets.usages')],
             ['name' => 'title_en', 'label' => trans('app.assets.title_en'), 'required' => true],
@@ -72,24 +78,29 @@ class AssetFormDefinitionPresenter
             ['name' => 'land_number', 'label' => trans('app.assets.land_number'), 'placeholder' => trans('app.assets.land_number_placeholder'), 'help' => trans('app.assets.land_number_help')],
             ['name' => 'latitude', 'label' => trans('app.assets.latitude'), 'type' => 'number', 'step' => '0.000001', 'min' => -90, 'max' => 90],
             ['name' => 'longitude', 'label' => trans('app.assets.longitude'), 'type' => 'number', 'step' => '0.000001', 'min' => -180, 'max' => 180],
-            [
-                'name' => 'primary_owner_user_id',
-                'label' => trans('app.assets.primary_owner'),
-                'type' => 'select',
-                'options' => [$this->options->option('', trans('app.assets.unassigned')), ...$this->options->users($data->owners)],
-            ],
-            [
-                'name' => 'primary_manager_user_id',
-                'label' => trans('app.assets.primary_manager'),
-                'type' => 'select',
-                'options' => [$this->options->option('', trans('app.assets.unassigned')), ...$this->options->users($data->managers)],
-            ],
             ['name' => 'address', 'label' => trans('app.fields.address_en'), 'type' => 'textarea', 'rows' => 2],
             ['name' => 'address_ar', 'label' => trans('app.fields.address_ar'), 'type' => 'textarea', 'rows' => 2],
             ['name' => 'description_en', 'label' => trans('app.assets.description_en'), 'type' => 'textarea'],
             ['name' => 'description_ar', 'label' => trans('app.assets.description_ar'), 'type' => 'textarea'],
             ['name' => 'rentable', 'label' => trans('app.assets.rentable'), 'type' => 'checkbox', 'help' => trans('app.assets.rentable_help')],
         ];
+
+        if (! $managerOnly) {
+            array_splice($fields, -5, 0, [
+                [
+                    'name' => 'primary_owner_user_id',
+                    'label' => trans('app.assets.primary_owner'),
+                    'type' => 'select',
+                    'options' => [$this->options->option('', trans('app.assets.unassigned')), ...$this->options->users($data->owners)],
+                ],
+                [
+                    'name' => 'primary_manager_user_id',
+                    'label' => trans('app.assets.primary_manager'),
+                    'type' => 'select',
+                    'options' => [$this->options->option('', trans('app.assets.unassigned')), ...$this->options->users($data->managers)],
+                ],
+            ]);
+        }
 
         return $this->resources->sectionFields($fields, [
             trans('app.assets.structure_section') => [

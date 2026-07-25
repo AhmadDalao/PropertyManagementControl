@@ -3,12 +3,16 @@
 namespace App\Modules\Reports\Support;
 
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
 final readonly class ReportQueryScope
 {
-    public function __construct(private PortfolioScope $portfolios) {}
+    public function __construct(
+        private PortfolioScope $portfolios,
+        private AssignedPropertyScope $assignments,
+    ) {}
 
     /**
      * @template TModel of \Illuminate\Database\Eloquent\Model
@@ -18,13 +22,13 @@ final readonly class ReportQueryScope
      */
     public function apply(Builder $query, User $actor, ?int $portfolioId): Builder
     {
-        $this->portfolios->apply($query, $actor);
+        $query = $this->portfolios->apply($query, $actor);
 
         if ($portfolioId !== null) {
             $query->where('portfolio_id', $portfolioId);
         }
 
-        return $query;
+        return $this->assignments->records($query, $actor);
     }
 
     /**

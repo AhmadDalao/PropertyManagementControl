@@ -5,10 +5,14 @@ import type { OperationsDashboardProps } from '../types';
 
 export function OperationsHeader({
     mode,
+    propertyFocus,
 }: {
     mode: OperationsDashboardProps['mode'];
+    propertyFocus: OperationsDashboardProps['propertyFocus'];
 }) {
     const { t } = useTranslator();
+    const managerNeedsAssignment =
+        propertyFocus.assignment_restricted && !propertyFocus.has_assignments;
 
     return (
         <WorkspaceHeader
@@ -40,25 +44,36 @@ export function OperationsHeader({
                               tone: 'quiet',
                           },
                       ]
-                    : [
-                          {
-                              label: t('dashboard.create_lease'),
-                              href: '/leases/create',
-                              icon: 'bi-file-earmark-plus',
-                              tone: 'primary',
-                          },
-                          {
-                              label: t('dashboard.post_payment'),
-                              href: '/payments/create',
-                              icon: 'bi-cash-stack',
-                          },
-                          {
-                              label: t('dashboard.new_maintenance'),
-                              href: '/maintenance-requests/create',
-                              icon: 'bi-tools',
-                              tone: 'quiet',
-                          },
-                      ]
+                    : managerNeedsAssignment
+                      ? [
+                            {
+                                label: t(
+                                    'dashboard.property_assignment_action',
+                                ),
+                                href: '/portfolios',
+                                icon: 'bi-building',
+                                tone: 'primary',
+                            },
+                        ]
+                      : [
+                            {
+                                label: t('dashboard.create_lease'),
+                                href: '/leases/create',
+                                icon: 'bi-file-earmark-plus',
+                                tone: 'primary',
+                            },
+                            {
+                                label: t('dashboard.post_payment'),
+                                href: '/payments/create',
+                                icon: 'bi-cash-stack',
+                            },
+                            {
+                                label: t('dashboard.new_maintenance'),
+                                href: '/maintenance-requests/create',
+                                icon: 'bi-tools',
+                                tone: 'quiet',
+                            },
+                        ]
             }
         />
     );

@@ -22,8 +22,6 @@ export function PortfolioTable(props: PortfolioTableProps) {
             exportHref={exportUrl('/exports/portfolios', props.filters)}
             filterFields={filterFields}
             emptyText={t('portfolios.empty')}
-            createHref={props.canCreate ? '/portfolios/create' : undefined}
-            createLabel={t('portfolios.create_portfolio')}
             mobileCard={table.mobileCard}
             columns={table.columns}
         />

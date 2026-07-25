@@ -48,7 +48,7 @@ final class UpdateUser
             $user->syncRoles([$role]);
             $portfolio = $this->lockedPortfolio($user);
             $this->ownership->claim($portfolio, $user, $role, $previousRole !== 'owner');
-            $this->tenants->sync($user, $role, $status);
+            $this->tenants->sync($user, $role, $status, $actor);
 
             if ($credentialsChanged || $status !== 'active') {
                 $this->sessions->revoke($user, $previousEmail);

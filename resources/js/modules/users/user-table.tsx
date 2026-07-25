@@ -28,8 +28,6 @@ export function UserTable(props: UserTableProps) {
             exportHref={exportUrl('/exports/users', props.filters)}
             filterFields={filterFields}
             emptyText={t('users.empty')}
-            createHref="/users/create"
-            createLabel={t('users.create_user')}
             mobileCard={table.mobileCard}
             columns={table.columns}
         />

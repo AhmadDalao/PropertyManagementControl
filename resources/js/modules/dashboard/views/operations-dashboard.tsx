@@ -24,7 +24,10 @@ export function OperationsDashboard({
     return (
         <AdminLayout>
             <Head title={text('Dashboard')} />
-            <OperationsHeader mode={props.mode} />
+            <OperationsHeader
+                mode={props.mode}
+                propertyFocus={props.propertyFocus}
+            />
             <PropertyFocus focus={props.propertyFocus} />
             <OperationsMetrics props={props} />
             <OperationsActionQueue actions={props.nextActions} />

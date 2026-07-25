@@ -4,6 +4,7 @@ namespace App\Modules\Leases\Requests;
 
 use App\Modules\Leases\Support\LeaseAccess;
 use App\Modules\Leases\Support\LeaseOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -15,7 +16,9 @@ final class StoreLeaseRequest extends FormRequest
     {
         $actor = $this->user();
 
-        return $actor !== null && app(LeaseAccess::class)->canManageSection($actor);
+        return $actor !== null
+            && app(LeaseAccess::class)->canManageSection($actor)
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /**

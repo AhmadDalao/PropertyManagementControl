@@ -23,7 +23,7 @@ final class UserDetailPresenter
         $overview = $this->overview->present($data->user);
 
         return [
-            'header' => $this->header->present($data->user),
+            'header' => $this->header->present($data->user, $actor),
             ...$overview,
             'related' => $this->related->present($data->stakeholders, $data->maintenance),
             'documents' => $this->resources->documentStrip($data->documents),

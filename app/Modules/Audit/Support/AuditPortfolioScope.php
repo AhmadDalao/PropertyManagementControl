@@ -18,13 +18,17 @@ use App\Models\Portfolio;
 use App\Models\ReportPreset;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Models\Activity;
 
 class AuditPortfolioScope
 {
-    public function __construct(private readonly AuditSubjectRegistry $subjects) {}
+    public function __construct(
+        private readonly AuditSubjectRegistry $subjects,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     /**
      * @param  Builder<Activity>  $query
@@ -32,6 +36,10 @@ class AuditPortfolioScope
      */
     public function apply(Builder $query, User $actor, ?int $requestedPortfolioId): Builder
     {
+        if ($this->assignments->restricts($actor)) {
+            return $this->applyManagerAssignments($query, $actor);
+        }
+
         $portfolioId = $actor->hasRole('superadmin')
             ? $requestedPortfolioId
             : $actor->portfolio_id;
@@ -74,6 +82,76 @@ class AuditPortfolioScope
                     ->select('id'),
             );
             $this->orSubjectIds($query, 'label_override', LabelOverride::query()->where('portfolio_id', $portfolioId)->select('id'));
+        });
+    }
+
+    /**
+     * @param  Builder<Activity>  $query
+     * @return Builder<Activity>
+     */
+    private function applyManagerAssignments(Builder $query, User $actor): Builder
+    {
+        return $query->where(function (Builder $query) use ($actor): void {
+            $assets = $this->assignments->assets(Asset::query(), $actor)->select('id');
+            $tenants = $this->assignments->tenants(TenantProfile::query(), $actor)->select('id');
+            $leases = $this->assignments->leases(Lease::query(), $actor)->select('id');
+            $payments = $this->assignments->payments(Payment::query(), $actor)->select('id');
+            $maintenance = $this->assignments
+                ->maintenance(MaintenanceRequest::query(), $actor)
+                ->select('id');
+            $expenses = $this->assignments->expenses(ExpenseEntry::query(), $actor)->select('id');
+            $documents = $this->assignments->documents(Document::query(), $actor)->select('id');
+
+            $this->orSubjectIds(
+                $query,
+                'user',
+                User::query()
+                    ->whereKey($actor->id)
+                    ->orWhereHas(
+                        'tenantProfile',
+                        fn (Builder $profiles) => $profiles->whereIn('id', clone $tenants),
+                    )
+                    ->select('id'),
+            );
+            $this->orSubjectIds($query, 'asset', clone $assets);
+            $this->orSubjectIds(
+                $query,
+                'asset_stakeholder',
+                AssetStakeholder::query()->whereIn('asset_id', clone $assets)->select('id'),
+            );
+            $this->orSubjectIds($query, 'tenant_profile', clone $tenants);
+            $this->orSubjectIds($query, 'lease', clone $leases);
+            $this->orSubjectIds(
+                $query,
+                'lease_installment',
+                LeaseInstallment::query()->whereIn('lease_id', clone $leases)->select('id'),
+            );
+            $this->orSubjectIds($query, 'payment', clone $payments);
+            $this->orSubjectIds(
+                $query,
+                'payment_allocation',
+                PaymentAllocation::query()->whereIn('payment_id', clone $payments)->select('id'),
+            );
+            $this->orSubjectIds($query, 'maintenance_request', clone $maintenance);
+            $this->orSubjectIds(
+                $query,
+                'maintenance_update',
+                MaintenanceUpdate::query()
+                    ->whereIn('maintenance_request_id', clone $maintenance)
+                    ->select('id'),
+            );
+            $this->orSubjectIds($query, 'expense_entry', $expenses);
+            $this->orSubjectIds($query, 'document', $documents);
+            $this->orSubjectIds(
+                $query,
+                'media_file',
+                MediaFile::query()->where('uploaded_by_user_id', $actor->id)->select('id'),
+            );
+            $this->orSubjectIds(
+                $query,
+                'report_preset',
+                ReportPreset::query()->where('user_id', $actor->id)->select('id'),
+            );
         });
     }
 

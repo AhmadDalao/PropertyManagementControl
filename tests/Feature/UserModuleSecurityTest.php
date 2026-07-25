@@ -31,6 +31,11 @@ class UserModuleSecurityTest extends TestCase
         $peer = $this->createUserWithRole('property_manager', $portfolio, ['name' => 'Scoped Peer']);
         $tenant = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Scoped Tenant']);
         $foreign = $this->createUserWithRole('tenant', $foreignPortfolio, ['name' => 'Scoped Foreign']);
+        $asset = $this->createAsset($portfolio);
+        $this->assignManagerToAsset($manager, $asset);
+        $this->createTenantProfile($portfolio, $tenant, [
+            'onboarded_by_user_id' => $manager->id,
+        ]);
 
         $this->actingAs($manager)
             ->get(route('users.index', ['search' => 'Scoped', 'per_page' => 100]))
@@ -106,6 +111,11 @@ class UserModuleSecurityTest extends TestCase
         $owner = $this->createUserWithRole('owner', $portfolio);
         $manager = $this->createUserWithRole('property_manager', $portfolio);
         $tenant = $this->createUserWithRole('tenant', $portfolio);
+        $asset = $this->createAsset($portfolio);
+        $this->assignManagerToAsset($manager, $asset);
+        $this->createTenantProfile($portfolio, $tenant, [
+            'onboarded_by_user_id' => $manager->id,
+        ]);
         $access = app(UserAccess::class);
 
         $this->assertNull($access->recordHref($manager, $owner));

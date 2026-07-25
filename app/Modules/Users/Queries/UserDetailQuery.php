@@ -3,13 +3,17 @@
 namespace App\Modules\Users\Queries;
 
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Users\Data\UserDetailData;
 use App\Modules\Users\Support\UserAccess;
 use Illuminate\Database\Eloquent\Builder;
 
 final class UserDetailQuery
 {
-    public function __construct(private readonly UserAccess $access) {}
+    public function __construct(
+        private readonly UserAccess $access,
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
 
     public function get(User $target, User $actor): UserDetailData
     {
@@ -18,9 +22,7 @@ final class UserDetailQuery
             ->with([
                 'portfolio',
                 'roles',
-                'tenantProfile' => fn ($profile) => $profile->withCount([
-                    'leases as active_leases_count' => fn (Builder $leases) => $leases->where('status', 'active'),
-                ]),
+                'tenantProfile',
             ])
             ->withCount([
                 'portfoliosOwned',
@@ -33,6 +35,17 @@ final class UserDetailQuery
             ->whereKey($target->id)
             ->firstOrFail();
         $this->access->ensureCanManage($actor, $user);
+        $tenantProfile = $user->tenantProfile;
+
+        if ($tenantProfile) {
+            $tenantProfile->setAttribute(
+                'active_leases_count',
+                $this->assignments
+                    ->leases($tenantProfile->leases()->getQuery(), $actor)
+                    ->where('status', 'active')
+                    ->count(),
+            );
+        }
 
         return new UserDetailData(
             user: $user,

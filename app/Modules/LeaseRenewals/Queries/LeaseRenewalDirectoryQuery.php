@@ -8,6 +8,7 @@ use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\LeaseRenewals\Support\LeaseRenewalNoticeScope;
 use App\Modules\LeaseRenewals\Support\LeaseRenewalOptions;
 use App\Modules\Leases\Support\LeaseAccess;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,7 @@ final readonly class LeaseRenewalDirectoryQuery
         private TableQuery $tables,
         private LeaseRenewalSearch $search,
         private LeaseRenewalNoticeScope $notices,
+        private AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -56,8 +58,8 @@ final readonly class LeaseRenewalDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios
-            ->apply(Lease::query(), $actor)
+        return $this->assignments
+            ->leases($this->portfolios->apply(Lease::query(), $actor), $actor)
             ->whereIn('status', LeaseRenewalOptions::LEASE_STATUSES)
             ->whereDate('ends_at', '>=', today()->subDays(90));
     }

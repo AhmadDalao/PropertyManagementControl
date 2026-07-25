@@ -44,8 +44,6 @@ export function ExpenseTable(props: ExpenseTableProps) {
             columns={table.columns}
             mobileCard={table.mobileCard}
             emptyText={t('expenses.empty')}
-            createHref="/expenses/create"
-            createLabel={t('expenses.record_expense')}
         />
     );
 }

@@ -8,6 +8,7 @@ use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Leases\Data\LeaseFormData;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\ResourcePresenter;
@@ -19,6 +20,7 @@ final class LeaseFormOptionsQuery
         private readonly PortfolioScope $portfolioScope,
         private readonly ResourcePresenter $resources,
         private readonly MorphTypes $morphTypes,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $defaults */
@@ -48,10 +50,10 @@ final class LeaseFormOptionsQuery
             portfolios: $portfolios,
             tenants: $lease || ! $portfolioId
                 ? []
-                : $this->activeTenants($portfolioId, $includeTenantId ?: null),
+                : $this->activeTenants($actor, $portfolioId, $includeTenantId ?: null),
             assets: $lease || ! $portfolioId
                 ? []
-                : $this->availableAssets($portfolioId, $includeAssetId ?: null),
+                : $this->availableAssets($actor, $portfolioId, $includeAssetId ?: null),
         );
     }
 
@@ -71,10 +73,10 @@ final class LeaseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function activeTenants(int $portfolioId, ?int $includeTenantId = null): array
+    private function activeTenants(User $actor, int $portfolioId, ?int $includeTenantId = null): array
     {
-        return TenantProfile::query()
-            ->where('portfolio_id', $portfolioId)
+        return $this->assignments
+            ->tenants(TenantProfile::query()->where('portfolio_id', $portfolioId), $actor)
             ->where(function (Builder $tenants) use ($includeTenantId): void {
                 $tenants->where(function (Builder $active): void {
                     $active->where('status', 'active')
@@ -95,7 +97,7 @@ final class LeaseFormOptionsQuery
     }
 
     /** @return array<int, array{value:int,label:string}> */
-    private function availableAssets(int $portfolioId, ?int $includeAssetId = null): array
+    private function availableAssets(User $actor, int $portfolioId, ?int $includeAssetId = null): array
     {
         $leasedAssetIds = Lease::query()
             ->select('leaseable_id')
@@ -103,8 +105,8 @@ final class LeaseFormOptionsQuery
             ->where('status', 'active');
         $titleColumn = app()->isLocale('ar') ? 'title_ar' : 'title_en';
 
-        return Asset::query()
-            ->where('portfolio_id', $portfolioId)
+        return $this->assignments
+            ->assets(Asset::query()->where('portfolio_id', $portfolioId), $actor)
             ->where('status', 'active')
             ->where('rentable', true)
             ->where(function (Builder $assets) use ($leasedAssetIds, $includeAssetId): void {

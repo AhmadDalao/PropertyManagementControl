@@ -6,6 +6,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,7 @@ class MaintenanceDirectoryQuery
         private readonly PortfolioScope $portfolios,
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -47,7 +49,10 @@ class MaintenanceDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios->apply(MaintenanceRequest::query(), $actor);
+        return $this->assignments->maintenance(
+            $this->portfolios->apply(MaintenanceRequest::query(), $actor),
+            $actor,
+        );
     }
 
     /**

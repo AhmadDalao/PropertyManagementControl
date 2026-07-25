@@ -2,6 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 
 import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
+import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import { LeaseMetrics } from './lease-metrics';
@@ -11,6 +12,7 @@ import type { LeaseIndexPageProps } from './types';
 export default function LeasesIndexPage() {
     const { props } = usePage<LeaseIndexPageProps>();
     const { t } = useTranslator();
+    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
@@ -20,19 +22,23 @@ export default function LeasesIndexPage() {
                 eyebrow={t('leases.workspace_eyebrow')}
                 title={t('leases.title')}
                 description={t('leases.workspace_description')}
-                actions={[
-                    {
-                        label: t('leases.post_payment'),
-                        href: '/payments/create',
-                        icon: 'bi-cash-stack',
-                    },
-                    {
-                        label: t('leases.create_lease'),
-                        href: '/leases/create',
-                        icon: 'bi-plus-lg',
-                        tone: 'primary',
-                    },
-                ]}
+                actions={
+                    canCreate
+                        ? [
+                              {
+                                  label: t('leases.post_payment'),
+                                  href: '/payments/create',
+                                  icon: 'bi-cash-stack',
+                              },
+                              {
+                                  label: t('leases.create_lease'),
+                                  href: '/leases/create',
+                                  icon: 'bi-plus-lg',
+                                  tone: 'primary',
+                              },
+                          ]
+                        : []
+                }
             />
 
             <LeaseMetrics {...props} />

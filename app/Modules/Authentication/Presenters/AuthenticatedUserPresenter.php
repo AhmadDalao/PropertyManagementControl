@@ -4,9 +4,14 @@ namespace App\Modules\Authentication\Presenters;
 
 use App\Models\User;
 use App\Modules\Portfolios\Support\PortfolioModules;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 
 final class AuthenticatedUserPresenter
 {
+    public function __construct(
+        private readonly AssignedPropertyScope $assignments,
+    ) {}
+
     /** @return array<string, mixed>|null */
     public function present(?User $user): ?array
     {
@@ -27,6 +32,10 @@ final class AuthenticatedUserPresenter
             'force_password_reset' => $user->force_password_reset,
             'last_login_at' => $user->last_login_at?->toIso8601String(),
             'roles' => $user->getRoleNames()->values()->all(),
+            'property_scope' => [
+                'restricted' => $this->assignments->restricts($user),
+                'has_assignments' => $this->assignments->hasAssignments($user),
+            ],
             'portfolio' => $user->portfolio ? [
                 'id' => $user->portfolio->id,
                 'name_en' => $user->portfolio->name_en,

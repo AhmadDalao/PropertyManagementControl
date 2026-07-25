@@ -36,7 +36,7 @@ final class UpdateExpense
                 ]);
             }
 
-            $references = $this->references->withinPortfolio($data, $locked->portfolio_id);
+            $references = $this->references->withinPortfolio($actor, $data, $locked->portfolio_id);
             $locked->update($this->attributes->forUpdate($data, $references));
 
             return $locked->refresh()->load(['portfolio', 'asset', 'maintenanceRequest', 'createdBy']);

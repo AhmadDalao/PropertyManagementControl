@@ -3,6 +3,7 @@
 namespace App\Modules\Tenants\Requests;
 
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Tenants\Support\TenantAccess;
 use App\Modules\Tenants\Support\TenantOptions;
 use Illuminate\Foundation\Http\FormRequest;
@@ -18,7 +19,8 @@ class StoreTenantRequest extends FormRequest
         $actor = $this->user();
 
         return $actor instanceof User
-            && app(TenantAccess::class)->canManageSection($actor);
+            && app(TenantAccess::class)->canManageSection($actor)
+            && app(AssignedPropertyScope::class)->hasAssignments($actor);
     }
 
     /**

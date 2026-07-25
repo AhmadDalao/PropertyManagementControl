@@ -4,11 +4,15 @@ namespace App\Modules\Leases\Support;
 
 use App\Models\Asset;
 use App\Models\TenantProfile;
+use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use Illuminate\Validation\ValidationException;
 
 final class LeaseParticipants
 {
-    public function asset(int $assetId, int $portfolioId): Asset
+    public function __construct(private readonly AssignedPropertyScope $assignments) {}
+
+    public function asset(User $actor, int $assetId, int $portfolioId): Asset
     {
         $asset = Asset::query()->lockForUpdate()->findOrFail($assetId);
 
@@ -16,6 +20,11 @@ final class LeaseParticipants
             $asset->portfolio_id !== $portfolioId,
             422,
             trans('app.errors.lease_asset_portfolio_mismatch'),
+        );
+        abort_unless(
+            $this->assignments->allowsAsset($actor, $asset),
+            403,
+            trans('app.errors.property_assignment_access_denied'),
         );
 
         if (! $asset->rentable || $asset->status !== 'active') {
@@ -28,6 +37,7 @@ final class LeaseParticipants
     }
 
     public function tenant(
+        User $actor,
         int $tenantId,
         int $portfolioId,
         bool $allowInactivePortal = false,
@@ -38,6 +48,11 @@ final class LeaseParticipants
             $tenant->portfolio_id !== $portfolioId,
             422,
             trans('app.errors.tenant_portfolio_mismatch'),
+        );
+        abort_unless(
+            $this->assignments->allowsTenant($actor, $tenant),
+            403,
+            trans('app.errors.property_assignment_access_denied'),
         );
 
         $user = $tenant->user()->lockForUpdate()->first();

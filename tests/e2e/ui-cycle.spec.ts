@@ -998,6 +998,57 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('owner property assignments stay direct, responsive, and Arabic', async ({
+        page,
+    }) => {
+        await page.context().clearCookies();
+        await login(page, localAccounts[1].email, 'password');
+        await page.setViewportSize(viewports.mobile);
+        await page.goto(
+            `/users?search=${encodeURIComponent(localAccounts[2].email)}&per_page=10&locale=en`,
+        );
+
+        const managerLink = page
+            .locator('.pmc-mobile-record-card a[href^="/users/"]')
+            .first();
+        await expect(managerLink).toBeVisible();
+        const managerHref = await managerLink.getAttribute('href');
+        expect(managerHref).toBeTruthy();
+        await page.goto(`${managerHref}?locale=en`);
+
+        const assignmentLink = page.getByRole('link', {
+            name: 'Manage property assignments',
+        });
+        await expect(assignmentLink).toBeVisible();
+        const assignmentHref = await assignmentLink.getAttribute('href');
+        expect(assignmentHref).toBeTruthy();
+        await page.goto(`${assignmentHref}?locale=ar`);
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(page.getByText('صلاحيات مدير العقار')).toBeVisible();
+        await expect(page.getByText('يشمل التعيين الواحد')).toBeVisible();
+        await expect(
+            page.getByPlaceholder('اسم العقار أو الرمز أو العقار الأب'),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'حفظ التعيينات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const results = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(results.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await expectNoHorizontalOverflow(page);
+        expect(
+            await page
+                .locator('.pmc-property-assignment-search input')
+                .evaluate((node) => node.getBoundingClientRect().height),
+        ).toBeGreaterThanOrEqual(44);
+    });
+
     test('Arabic portfolio workspace, form, and detail stay localized', async ({
         page,
     }) => {

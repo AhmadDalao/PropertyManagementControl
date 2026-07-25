@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\User;
 use App\Modules\Assets\Support\AssetHierarchy;
 use App\Modules\Dashboard\Support\DashboardPropertyContext;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -14,6 +15,7 @@ final readonly class DashboardPropertyContextQuery
     public function __construct(
         private PortfolioScope $portfolios,
         private AssetHierarchy $hierarchy,
+        private AssignedPropertyScope $assignments,
     ) {}
 
     public function forUser(User $actor, ?int $propertyId): DashboardPropertyContext
@@ -23,6 +25,10 @@ final readonly class DashboardPropertyContextQuery
             ->apply(Asset::query(), $actor)
             ->whereNull('parent_id')
             ->where('status', 'active')
+            ->when(
+                $this->assignments->rootIds($actor) !== null,
+                fn ($query) => $query->whereIn('id', $this->assignments->rootIds($actor) ?? []),
+            )
             ->orderBy($titleColumn)
             ->get(['id', 'portfolio_id', 'code', 'title_en', 'title_ar']);
         $options = array_values(
@@ -36,8 +42,9 @@ final readonly class DashboardPropertyContextQuery
             return new DashboardPropertyContext(
                 selected: null,
                 options: $options,
-                assetIds: [],
+                assetIds: $this->assignments->assetIds($actor) ?? [],
                 leaseableTypes: $leaseableTypes,
+                assignmentRestricted: $this->assignments->restricts($actor),
             );
         }
 
@@ -50,11 +57,19 @@ final readonly class DashboardPropertyContextQuery
         return new DashboardPropertyContext(
             selected: $this->option($property),
             options: $options,
-            assetIds: array_values(
-                $this->hierarchy->descendantIdsIncluding($property),
-            ),
+            assetIds: $this->selectedAssetIds($actor, $property),
             leaseableTypes: $leaseableTypes,
+            assignmentRestricted: $this->assignments->restricts($actor),
         );
+    }
+
+    /** @return list<int> */
+    private function selectedAssetIds(User $actor, Asset $property): array
+    {
+        $ids = $this->hierarchy->descendantIdsIncluding($property);
+        $assignedIds = $this->assignments->assetIds($actor);
+
+        return array_values($assignedIds === null ? $ids : array_intersect($ids, $assignedIds));
     }
 
     /** @return array{id:int,code:string,title_en:string,title_ar:?string} */

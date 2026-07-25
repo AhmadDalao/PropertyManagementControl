@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,6 +15,7 @@ final class DocumentAccess
     public function __construct(
         private readonly PortfolioScope $portfolios,
         private readonly DocumentAttachments $attachments,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     public function canManageSection(User $actor): bool
@@ -24,7 +26,8 @@ final class DocumentAccess
     public function canManage(User $actor, Document $document): bool
     {
         return $this->canManageSection($actor)
-            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $document->portfolio_id);
+            && ($actor->hasRole('superadmin') || $actor->portfolio_id === $document->portfolio_id)
+            && $this->assignments->allowsDocument($actor, $document);
     }
 
     public function ensureManager(User $actor): void
@@ -53,7 +56,10 @@ final class DocumentAccess
     {
         $this->ensureManager($actor);
 
-        return $this->portfolios->apply($query, $actor);
+        return $this->assignments->documents(
+            $this->portfolios->apply($query, $actor),
+            $actor,
+        );
     }
 
     /**

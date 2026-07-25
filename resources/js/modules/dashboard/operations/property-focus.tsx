@@ -15,7 +15,9 @@ export function PropertyFocus({
     const [updating, setUpdating] = useState(false);
     const selectedTitle = focus.selected
         ? propertyTitle(focus.selected, locale)
-        : t('dashboard.all_properties');
+        : focus.assignment_restricted
+          ? t('dashboard.all_assigned_properties')
+          : t('dashboard.all_properties');
 
     const changeProperty = (value: string) => {
         setUpdating(true);
@@ -29,6 +31,25 @@ export function PropertyFocus({
             },
         );
     };
+
+    if (focus.assignment_restricted && !focus.has_assignments) {
+        return (
+            <section className="pmc-dashboard-assignment-empty">
+                <span className="pmc-dashboard-assignment-icon">
+                    <i className="bi bi-building" aria-hidden="true" />
+                </span>
+                <div>
+                    <span>{t('dashboard.assigned_scope')}</span>
+                    <strong>{t('dashboard.no_assigned_properties')}</strong>
+                    <small>{t('dashboard.no_assigned_properties_help')}</small>
+                </div>
+                <Link href="/portfolios">
+                    {t('dashboard.review_portfolio')}
+                    <i className="bi bi-arrow-up-right" aria-hidden="true" />
+                </Link>
+            </section>
+        );
+    }
 
     return (
         <section
@@ -67,7 +88,11 @@ export function PropertyFocus({
                     disabled={updating}
                     onChange={(event) => changeProperty(event.target.value)}
                 >
-                    <option value="">{t('dashboard.all_properties')}</option>
+                    <option value="">
+                        {focus.assignment_restricted
+                            ? t('dashboard.all_assigned_properties')
+                            : t('dashboard.all_properties')}
+                    </option>
                     {focus.options.map((property) => (
                         <option key={property.id} value={property.id}>
                             {property.code} · {propertyTitle(property, locale)}

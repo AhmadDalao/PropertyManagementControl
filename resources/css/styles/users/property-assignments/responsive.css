@@ -1,0 +1,19 @@
+@media (min-width: 768px) {
+    .pmc-property-assignment-toolbar {
+        grid-template-columns: minmax(20rem, 1fr) auto;
+        align-items: end;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-property-assignment-actions .btn {
+        min-height: 46px;
+        flex: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-property-assignment-card {
+        transition: none;
+    }
+}

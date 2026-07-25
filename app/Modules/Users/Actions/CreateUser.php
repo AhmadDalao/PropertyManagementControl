@@ -3,6 +3,7 @@
 namespace App\Modules\Users\Actions;
 
 use App\Models\User;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Users\Support\UserAccess;
 use App\Modules\Users\Support\UserInputGuard;
 use App\Modules\Users\Support\UserPortfolioOwnership;
@@ -21,12 +22,14 @@ final class CreateUser
         private readonly UserPortfolioResolver $portfolios,
         private readonly UserPortfolioOwnership $ownership,
         private readonly UserTenantProfileSynchronizer $tenants,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @param array<string, mixed> $data */
     public function execute(User $actor, array $data): User
     {
         $this->access->ensureManager($actor);
+        $this->assignments->ensureHasAssignments($actor);
         $this->input->validate($data, passwordRequired: true);
         $role = (string) ($data['role'] ?? '');
         $this->roles->ensureAssignable($actor, $role);
@@ -46,7 +49,7 @@ final class CreateUser
 
             $user->syncRoles([$role]);
             $this->ownership->claim($portfolio, $user, $role);
-            $this->tenants->sync($user, $role, (string) $data['status']);
+            $this->tenants->sync($user, $role, (string) $data['status'], $actor);
 
             return $user->load(['portfolio', 'roles', 'tenantProfile']);
         }, attempts: 3);

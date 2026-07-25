@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
@@ -23,6 +24,7 @@ final class PaymentDirectoryQuery
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
         private readonly MorphTypes $morphTypes,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -61,7 +63,10 @@ final class PaymentDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios->apply(Payment::query(), $actor);
+        return $this->assignments->payments(
+            $this->portfolios->apply(Payment::query(), $actor),
+            $actor,
+        );
     }
 
     /**

@@ -53,7 +53,12 @@ class UpdateMaintenance
         return DB::transaction(function () use ($actor, $request, $data): MaintenanceRequest {
             $locked = MaintenanceRequest::query()->lockForUpdate()->findOrFail($request->id);
             $this->access->ensureCanAccess($actor, $locked);
-            $this->references->ensureBelongsToPortfolio($data, $locked->portfolio_id);
+            $this->references->ensureBelongsToPortfolio(
+                $actor,
+                $data,
+                $locked->portfolio_id,
+                $locked->asset_id,
+            );
             $previousStatus = $locked->status;
             $previousPriority = $locked->priority;
             $previousAssignee = $locked->assigned_to_user_id;

@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Search\Presenters\SearchResultPresenter;
 use App\Modules\Search\Support\ModuleSearchSource;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +17,7 @@ class PaymentSearch extends ModuleSearchSource
         private readonly PortfolioScope $portfolios,
         private readonly TableQuery $tables,
         private readonly SearchResultPresenter $results,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     public function results(User $actor, string $query): array
@@ -80,6 +82,9 @@ class PaymentSearch extends ModuleSearchSource
             );
         }
 
-        return $this->portfolios->apply(Payment::query(), $actor);
+        return $this->assignments->payments(
+            $this->portfolios->apply(Payment::query(), $actor),
+            $actor,
+        );
     }
 }

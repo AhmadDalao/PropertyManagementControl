@@ -5,6 +5,7 @@ namespace App\Modules\Tenants\Queries;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use App\Modules\Tenants\Support\TenantAccess;
@@ -19,6 +20,7 @@ final class TenantDirectoryQuery
         private readonly PortfolioScope $portfolios,
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
+        private readonly AssignedPropertyScope $assignments,
     ) {}
 
     /** @return array<string, mixed> */
@@ -46,7 +48,10 @@ final class TenantDirectoryQuery
     {
         $this->access->ensureManager($actor);
 
-        return $this->portfolios->apply(TenantProfile::query(), $actor);
+        return $this->assignments->tenants(
+            $this->portfolios->apply(TenantProfile::query(), $actor),
+            $actor,
+        );
     }
 
     /**
