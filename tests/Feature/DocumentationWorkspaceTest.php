@@ -40,6 +40,7 @@ class DocumentationWorkspaceTest extends TestCase
                 ->missing('roleGuides')
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/assets')
                     && collect($shortcuts)->contains('route', '/assets/building-setup')
+                    && collect($shortcuts)->contains('route', '/portfolio-control')
                     && ! collect($shortcuts)->contains('route', '/users')
                     && ! collect($shortcuts)->contains('route', '/payments')
                     && ! collect($shortcuts)->contains('route', '/cms'))
@@ -71,6 +72,7 @@ class DocumentationWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('audience', 'property_manager')
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains('route', '/assets')
+                    && collect($shortcuts)->contains('route', '/portfolio-control')
                     && ! collect($shortcuts)->contains('route', '/assets/building-setup'))
                 ->where('quickStarts', fn ($quickStarts) => ! collect($quickStarts)->contains('route', '/assets/building-setup'))
                 ->where('workflowTracks', fn ($workflows) => collect($workflows)->contains('key', 'asset_to_lease'))
@@ -146,7 +148,11 @@ class DocumentationWorkspaceTest extends TestCase
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains(
                     fn ($shortcut) => $shortcut['route'] === '/assets/building-setup'
                         && $shortcut['label'] === 'إعداد المبنى',
-                ))
+                )
+                    && collect($shortcuts)->contains(
+                        fn ($shortcut) => $shortcut['route'] === '/portfolio-control'
+                            && $shortcut['label'] === 'تحكم المحفظة',
+                    ))
                 ->where('guides.0.title', 'إدارة الأصول'));
     }
 }

@@ -178,6 +178,16 @@ return [
             'icon' => 'bi-grid-1x2',
         ],
         [
+            'label' => 'Portfolio Control',
+            'category' => 'Command',
+            'route' => '/portfolio-control',
+            'description' => 'Compare every accessible property, rank operating pressure, and continue directly into the focused dashboard, Action Center, or reports.',
+            'action' => 'Compare properties',
+            'icon' => 'bi-buildings',
+            'roles' => ['superadmin', 'owner', 'property_manager'],
+            'module' => 'assets',
+        ],
+        [
             'label' => 'Action Center',
             'category' => 'Command',
             'route' => '/action-center',
@@ -343,7 +353,7 @@ return [
             'title' => 'Property owner',
             'summary' => 'Controls their portfolio lifecycle from assets to tenants, leases, payments, maintenance, and reports.',
             'responsibilities' => ['Manage portfolio assets', 'Create tenants and leases', 'Track payments', 'Review maintenance and reports'],
-            'routes' => ['/dashboard', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
+            'routes' => ['/dashboard', '/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
             'icon' => 'bi-buildings',
         ],
         [
@@ -351,7 +361,7 @@ return [
             'title' => 'Property manager',
             'summary' => 'Runs day-to-day portfolio operations, tenant service, rent posting, and maintenance triage.',
             'responsibilities' => ['Run daily asset operations', 'Handle tenants', 'Post payments', 'Triage maintenance'],
-            'routes' => ['/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
+            'routes' => ['/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
             'icon' => 'bi-person-workspace',
         ],
         [

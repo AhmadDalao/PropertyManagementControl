@@ -15,12 +15,13 @@ The product is an operational MVP release candidate. It does not need another br
 - Active or expired leases use a controlled move-out plan instead of direct termination. The handover requires returned keys, a deposit decision, termination and inspection PDFs, and a reached move-out date; completion snapshots remaining debt, releases occupancy, and remains visible in lease history.
 - Owners and managers have a durable collection-control cycle for every open installment: assign the account, record each contact, capture promises, schedule the next action, identify missed promises, and keep the history visible from the collection queue, lease, dashboard, reports, and XLSX export.
 - Owners and managers start each day in one prioritized Action Center rather than checking four separate modules. Collections, maintenance, renewals, and move-outs retain their original scoped source records and direct action pages; the combined queue adds property, responsible-person, priority, type, pagination, and XLSX controls without duplicating workflow state.
+- Owners and managers compare every accessible property in one card-based Portfolio Control workspace, rank pressure by arrears, occupancy, collection, or cash flow, and continue directly into the selected property dashboard, Action Center, or reports.
 - Lease, payment, maintenance, and expense details expose a role-aware Next Step panel instead of hiding lifecycle actions across edit forms and index menus.
 - Public pages, authentication, admin, forms, tables, reports, documentation, CMS, map, validation, and statuses support English and Arabic with RTL rendering.
 
 ## UI and scale evidence
 
-- Playwright and axe cover 45 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
+- Playwright and axe cover 49 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
