@@ -1,10 +1,9 @@
 import { Head, usePage } from '@inertiajs/react';
 
-import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
-import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
+import { MaintenanceHeader } from './maintenance-header';
 import { MaintenanceMetrics } from './maintenance-metrics';
 import { MaintenanceTable } from './maintenance-table';
 import type { MaintenanceIndexPageProps } from './types';
@@ -12,43 +11,12 @@ import type { MaintenanceIndexPageProps } from './types';
 export default function MaintenanceIndexPage() {
     const { props } = usePage<MaintenanceIndexPageProps>();
     const { t } = useTranslator();
-    const canCreate = canCreateOperationalRecord(props.auth.user);
 
     return (
         <AdminLayout>
             <Head title={t('maintenance.title')} />
 
-            <WorkspaceHeader
-                eyebrow={t('maintenance.workspace_eyebrow')}
-                title={t('maintenance.title')}
-                description={
-                    props.mode === 'tenant'
-                        ? t('maintenance.tenant_description')
-                        : t('maintenance.manager_description')
-                }
-                actions={[
-                    ...(props.mode === 'manager' && props.financialsEnabled
-                        ? [
-                              {
-                                  label: t('maintenance.expenses_action'),
-                                  href: '/expenses',
-                                  icon: 'bi-receipt',
-                                  tone: 'quiet' as const,
-                              },
-                          ]
-                        : []),
-                    ...(canCreate
-                        ? [
-                              {
-                                  label: t('maintenance.create_request'),
-                                  href: '/maintenance-requests/create',
-                                  icon: 'bi-plus-lg',
-                                  tone: 'primary' as const,
-                              },
-                          ]
-                        : []),
-                ]}
-            />
+            <MaintenanceHeader {...props} />
 
             <MaintenanceMetrics {...props} />
             <MaintenanceTable {...props} />

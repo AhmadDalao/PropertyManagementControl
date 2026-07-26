@@ -39,6 +39,7 @@ const primaryAdminRoutes = [
     '/rent-collection',
     '/payments',
     '/maintenance-requests',
+    '/maintenance-vendors',
     '/expenses',
     '/documents',
     '/media-files',
@@ -1393,6 +1394,32 @@ test.describe('authenticated administration', () => {
             'multiple',
             '',
         );
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('contractor directory and create form stay responsive and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/maintenance-vendors?locale=en&per_page=10');
+
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'Contractors' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'Create contractor' }).first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/maintenance-vendors/create?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { name: 'إنشاء مقاول' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        await expect(page.getByLabel(/^اسم الشركة/)).toBeVisible();
+        await expect(page.getByLabel(/^فئة الخدمة/)).toBeVisible();
+        await expect(page.getByLabel(/^اسم جهة الاتصال/)).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 

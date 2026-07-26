@@ -22,6 +22,8 @@ use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\MaintenanceRequestController;
+use App\Http\Controllers\MaintenanceVendorController;
+use App\Http\Controllers\MaintenanceWorkOrderController;
 use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\NavigationItemController;
@@ -146,6 +148,35 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
         ->middleware('portfolio.module:maintenance')
         ->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/work-orders/create',
+        [MaintenanceWorkOrderController::class, 'create'],
+    )->name('maintenance-requests.work-orders.create')
+        ->middleware('portfolio.module:maintenance');
+    Route::post(
+        '/maintenance-requests/{maintenanceRequest}/work-orders',
+        [MaintenanceWorkOrderController::class, 'store'],
+    )->name('maintenance-requests.work-orders.store')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
+        '/maintenance-work-orders/{maintenanceWorkOrder}',
+        [MaintenanceWorkOrderController::class, 'show'],
+    )->name('maintenance-work-orders.show')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
+        '/maintenance-work-orders/{maintenanceWorkOrder}/edit',
+        [MaintenanceWorkOrderController::class, 'edit'],
+    )->name('maintenance-work-orders.edit')
+        ->middleware('portfolio.module:maintenance');
+    Route::put(
+        '/maintenance-work-orders/{maintenanceWorkOrder}',
+        [MaintenanceWorkOrderController::class, 'update'],
+    )->name('maintenance-work-orders.update')
+        ->middleware('portfolio.module:maintenance');
+    Route::resource('maintenance-vendors', MaintenanceVendorController::class)
+        ->parameters(['maintenance-vendors' => 'maintenanceVendor'])
+        ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
+        ->middleware('portfolio.module:maintenance');
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');

@@ -33,13 +33,33 @@ final class MaintenanceWorkflowPresenter
     private function managerActions(MaintenanceDetailData $data): array
     {
         $request = $data->request;
-        $actions = [[
+        $latestWorkOrder = $data->workOrders->first();
+        $actions = [];
+
+        if (
+            $latestWorkOrder
+            && ! in_array($latestWorkOrder->status, ['completed', 'cancelled'], true)
+        ) {
+            $actions[] = [
+                'label' => trans('app.work_orders.open_current'),
+                'href' => route('maintenance-work-orders.show', $latestWorkOrder),
+                'variant' => 'primary',
+            ];
+        } elseif (! in_array($request->status, ['resolved', 'cancelled'], true)) {
+            $actions[] = [
+                'label' => trans('app.work_orders.create'),
+                'href' => route('maintenance-requests.work-orders.create', $request),
+                'variant' => 'primary',
+            ];
+        }
+
+        $actions[] = [
             'label' => trans(in_array($request->status, ['resolved', 'cancelled'], true)
                 ? 'app.maintenance.reopen_request'
                 : 'app.maintenance.triage_request_action'),
             'href' => route('maintenance-requests.edit', $request),
-            'variant' => 'primary',
-        ]];
+            'variant' => $actions === [] ? 'primary' : 'secondary',
+        ];
 
         if (
             $request->status !== 'cancelled'

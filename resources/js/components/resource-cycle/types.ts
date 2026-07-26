@@ -27,6 +27,7 @@ export type ResourceField = {
         | 'password'
         | 'number'
         | 'date'
+        | 'datetime-local'
         | 'textarea'
         | 'select'
         | 'checkbox'

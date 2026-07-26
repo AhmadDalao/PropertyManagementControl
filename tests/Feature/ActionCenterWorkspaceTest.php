@@ -7,6 +7,8 @@ use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
@@ -44,7 +46,7 @@ final class ActionCenterWorkspaceTest extends TestCase
         );
 
         $this->installment($lease, 'Owner overdue rent', today()->subDays(40));
-        $this->maintenance(
+        $maintenance = $this->maintenance(
             $portfolio,
             $unit,
             $tenant,
@@ -53,6 +55,25 @@ final class ActionCenterWorkspaceTest extends TestCase
             'urgent',
             now()->subHour(),
         );
+        $vendor = MaintenanceVendor::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'name' => 'Owner Emergency Services',
+            'service_category' => 'electricity',
+            'status' => 'active',
+        ]);
+        $workOrder = MaintenanceWorkOrder::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'maintenance_request_id' => $maintenance->id,
+            'vendor_id' => $vendor->id,
+            'created_by_user_id' => $owner->id,
+            'assigned_to_user_id' => $manager->id,
+            'reference_code' => 'WO-ACTION-001',
+            'vendor_name' => $vendor->name,
+            'status' => 'scheduled',
+            'scheduled_at' => now()->addHour(),
+            'currency' => 'SAR',
+            'scope' => 'Stop the leak and restore safe electrical service.',
+        ]);
         LeaseMoveOut::query()->create([
             'portfolio_id' => $portfolio->id,
             'lease_id' => $lease->id,
@@ -91,7 +112,7 @@ final class ActionCenterWorkspaceTest extends TestCase
                 ->where('metrics.critical', 3)
                 ->where('metrics.high', 1)
                 ->where('metrics.unassigned', 1)
-                ->where('actionItems.data', function ($items) use ($property): bool {
+                ->where('actionItems.data', function ($items) use ($property, $workOrder): bool {
                     $rows = collect($items);
 
                     return $rows->pluck('type')->sort()->values()->all() === [
@@ -112,6 +133,12 @@ final class ActionCenterWorkspaceTest extends TestCase
                         )
                         && data_get($rows->firstWhere('type', 'maintenance'), 'subtitle')
                             === 'Electricity'
+                        && data_get($rows->firstWhere('type', 'maintenance'), 'work_order.reference_code')
+                            === 'WO-ACTION-001'
+                        && data_get($rows->firstWhere('type', 'maintenance'), 'href')
+                            === route('maintenance-work-orders.show', $workOrder, false)
+                        && data_get($rows->firstWhere('type', 'maintenance'), 'status')
+                            === 'scheduled'
                         && data_get($rows->firstWhere('type', 'move_out'), 'subtitle')
                             === 'Tenant notice'
                         && data_get($rows->firstWhere('type', 'renewal'), 'subtitle')

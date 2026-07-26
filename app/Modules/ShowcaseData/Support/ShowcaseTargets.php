@@ -29,6 +29,8 @@ class ShowcaseTargets
             'collection_follow_ups' => 120,
             'payments' => 1600,
             'maintenance' => 320,
+            'maintenance_vendors' => 20,
+            'work_orders' => 320,
             'expenses' => 240,
             'documents' => 960,
         ];

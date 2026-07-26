@@ -9,6 +9,8 @@ use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\Payment;
 use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
@@ -42,6 +44,8 @@ class ShowcaseDatasetMetrics
             'collection_follow_ups' => CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count(),
             'payments' => Payment::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'maintenance' => MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count(),
+            'maintenance_vendors' => MaintenanceVendor::query()->whereIn('portfolio_id', $portfolioIds)->count(),
+            'work_orders' => MaintenanceWorkOrder::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'expenses' => ExpenseEntry::query()->whereIn('portfolio_id', $portfolioIds)->count(),
             'documents' => Document::query()->whereIn('portfolio_id', $portfolioIds)->count(),
         ];

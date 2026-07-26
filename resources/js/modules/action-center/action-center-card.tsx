@@ -4,6 +4,7 @@ import { ShowcaseBadge } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate } from '@/lib/utils';
 
+import { ActionCenterWorkOrderContext } from './action-center-work-order-context';
 import type { ActionCenterItem } from './types';
 
 export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
@@ -66,6 +67,9 @@ export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
                         value={portfolio}
                     />
                 ) : null}
+                {item.work_order ? (
+                    <ActionCenterWorkOrderContext workOrder={item.work_order} />
+                ) : null}
             </dl>
 
             <div className="pmc-action-card-timing">
@@ -123,7 +127,11 @@ export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
                     </span>
                 </div>
                 <Link href={item.href} className="pmc-action-open">
-                    <span>{actionLabel(item.type, t)}</span>
+                    <span>
+                        {item.work_order
+                            ? t('action_center.action_work_order')
+                            : actionLabel(item.type, t)}
+                    </span>
                     <i className="bi bi-arrow-up-right" aria-hidden="true" />
                 </Link>
             </footer>

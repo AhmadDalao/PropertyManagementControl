@@ -27,6 +27,13 @@ class MaintenanceDetailOverviewPresenter
             ],
             ['label' => trans('app.maintenance.updates'), 'value' => $data->updates->count()],
             ['label' => trans('app.maintenance.photos'), 'value' => $data->attachments->count()],
+            [
+                'label' => trans('app.maintenance.work_orders'),
+                'value' => $data->workOrders->count(),
+                'tone' => $data->workOrders->whereIn('status', ['scheduled', 'in_progress'])->isNotEmpty()
+                    ? 'primary'
+                    : 'muted',
+            ],
         ];
 
         if (
@@ -70,8 +77,22 @@ class MaintenanceDetailOverviewPresenter
         $actions[] = [
             'label' => trans('app.maintenance.add_photos'),
             'href' => route('maintenance-requests.attachments.create', $request),
-            'variant' => 'primary',
+            'variant' => $data->tenantMode ? 'primary' : 'light',
         ];
+
+        if (
+            ! $data->tenantMode
+            && ! in_array($request->status, ['resolved', 'cancelled'], true)
+            && $data->workOrders
+                ->whereIn('status', ['draft', 'scheduled', 'in_progress'])
+                ->isEmpty()
+        ) {
+            $actions[] = [
+                'label' => trans('app.work_orders.create'),
+                'href' => route('maintenance-requests.work-orders.create', $request),
+                'variant' => 'primary',
+            ];
+        }
 
         if (
             ! $data->tenantMode

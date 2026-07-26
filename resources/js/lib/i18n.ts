@@ -24,6 +24,7 @@ export type UiTranslationKey =
     | `login.${string}`
     | `messages.${string}`
     | `maintenance.${string}`
+    | `maintenance_vendors.${string}`
     | `media.${string}`
     | `modules.${string}`
     | `nav.${string}`
@@ -46,7 +47,8 @@ export type UiTranslationKey =
     | `tenants.${string}`
     | `users.${string}`
     | `validation.${string}`
-    | `wording.${string}`;
+    | `wording.${string}`
+    | `work_orders.${string}`;
 
 export type LocalizedCopy = {
     key: UiTranslationKey | string;

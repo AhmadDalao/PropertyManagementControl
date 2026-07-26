@@ -5,6 +5,7 @@ use App\Modules\Leases\LeaseLifecycle;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseCollectionFollowUps;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseMoveOuts;
+use App\Modules\ShowcaseData\Actions\BackfillShowcaseWorkOrders;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -172,6 +173,13 @@ Artisan::command('property:backfill-showcase-collection-follow-ups', function (B
 
     return 0;
 })->purpose('Idempotently add collection follow-up examples to tagged showcase arrears.');
+
+Artisan::command('property:backfill-showcase-work-orders', function (BackfillShowcaseWorkOrders $backfill) {
+    $count = $backfill->handle();
+    $this->info("Prepared {$count} tagged showcase work orders.");
+
+    return 0;
+})->purpose('Idempotently add contractors and work orders to tagged showcase maintenance.');
 
 Artisan::command('property:sync-operational-statuses', function (LeaseLifecycle $lifecycle) {
     $result = $lifecycle->synchronize();

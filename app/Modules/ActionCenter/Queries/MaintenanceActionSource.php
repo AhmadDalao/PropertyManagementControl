@@ -42,7 +42,11 @@ final readonly class MaintenanceActionSource implements ActionCenterSource
 
         return array_values($this->directory
             ->listing($this->query($actor, $filters), false)
-            ->with('portfolio:id,name_en,name_ar')
+            ->with([
+                'portfolio:id,name_en,name_ar',
+                'activeWorkOrder',
+                'activeWorkOrder.assignedTo:id,name',
+            ])
             ->orderByRaw(
                 "CASE WHEN priority = 'urgent' OR due_at < ? THEN 0 "
                 ."WHEN priority = 'high' OR assigned_to_user_id IS NULL THEN 1 ELSE 2 END",
@@ -130,11 +134,17 @@ final readonly class MaintenanceActionSource implements ActionCenterSource
     /** @return array<string, mixed> */
     private function item(MaintenanceRequest $request): array
     {
+        $workOrder = $request->activeWorkOrder;
         $priority = $request->priority === 'urgent' || $request->due_at?->isPast()
             ? 'critical'
-            : ($request->priority === 'high' || $request->assigned_to_user_id === null
+            : ($request->priority === 'high'
+                || $request->assigned_to_user_id === null
+                || $workOrder?->status === 'in_progress'
                 ? 'high'
                 : 'normal');
+        $assignee = $workOrder && $workOrder->assignedTo
+            ? $workOrder->assignedTo
+            : $request->assignedTo;
 
         return [
             'key' => 'maintenance:'.$request->id,
@@ -146,17 +156,24 @@ final readonly class MaintenanceActionSource implements ActionCenterSource
             'tenant' => $request->tenantProfile?->user?->name,
             'asset' => $this->asset($request->asset),
             'portfolio' => $this->portfolio($request->portfolio),
-            'status' => $request->status,
+            'status' => $workOrder ? $workOrder->status : $request->status,
             'due_on' => $request->due_at?->toDateString(),
             'due_state' => $this->itemState->dueState($request->due_at),
             'opened_on' => $request->requested_at?->toDateString(),
-            'assigned_to' => $request->assignedTo ? [
-                'id' => $request->assignedTo->id,
-                'name' => $request->assignedTo->name,
+            'assigned_to' => $assignee ? [
+                'id' => $assignee->id,
+                'name' => $assignee->name,
+            ] : null,
+            'work_order' => $workOrder ? [
+                'reference_code' => $workOrder->reference_code,
+                'vendor_name' => $workOrder->vendor_name,
+                'scheduled_on' => $workOrder->scheduled_at?->toDateTimeString(),
             ] : null,
             'amount' => null,
             'currency' => null,
-            'href' => route('maintenance-requests.show', $request, false),
+            'href' => $workOrder
+                ? route('maintenance-work-orders.show', $workOrder, false)
+                : route('maintenance-requests.show', $request, false),
             'is_showcase' => $request->getIsShowcaseAttribute(),
         ];
     }

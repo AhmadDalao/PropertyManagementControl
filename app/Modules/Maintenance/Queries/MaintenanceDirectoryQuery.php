@@ -147,6 +147,12 @@ class MaintenanceDirectoryQuery
                     ->where('name', 'like', $like)
                     ->orWhere('email', 'like', $like),
             ),
+            fn (Builder $requests, string $search, string $like) => $requests->orWhereHas(
+                'workOrders',
+                fn (Builder $workOrders) => $workOrders
+                    ->where('reference_code', 'like', $like)
+                    ->orWhere('vendor_name', 'like', $like),
+            ),
         ]);
     }
 

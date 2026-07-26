@@ -10,6 +10,8 @@ use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\ShowcaseDataset;
@@ -53,6 +55,8 @@ class ShowcaseDatasetTest extends TestCase
                 ->where('targets.buildings', 40)
                 ->where('targets.collection_follow_ups', 120)
                 ->where('targets.documents', 960)
+                ->where('targets.maintenance_vendors', 20)
+                ->where('targets.work_orders', 320)
                 ->where('canGenerate', true)
                 ->has('datasets.data'));
 
@@ -209,6 +213,8 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(120, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(320, MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(20, MaintenanceVendor::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(320, MaintenanceWorkOrder::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(240, ExpenseEntry::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(960, Document::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(0, Document::query()->whereIn('portfolio_id', $portfolioIds)->where('mime_type', '!=', 'application/pdf')->count());
@@ -222,6 +228,7 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(480, Lease::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(120, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(320, MaintenanceWorkOrder::query()->whereIn('portfolio_id', $portfolioIds)->count());
 
         Queue::fake();
         $dataset->update(['status' => 'failed', 'generated_properties' => 39]);
@@ -268,6 +275,8 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(0, User::query()->where('showcase_dataset_id', $dataset->id)->count());
         $this->assertSame(0, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(0, LeaseMoveOut::query()->whereIn('lease_id', $leaseIds)->count());
+        $this->assertSame(0, MaintenanceVendor::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(0, MaintenanceWorkOrder::query()->whereIn('portfolio_id', $portfolioIds)->count());
         Storage::disk('local')->assertMissing("showcase/{$dataset->key}");
     }
 }

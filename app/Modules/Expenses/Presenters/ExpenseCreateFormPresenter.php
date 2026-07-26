@@ -25,12 +25,12 @@ final class ExpenseCreateFormPresenter
                 'asset_id' => (string) $this->selected($data->defaults['asset_id'] ?? null, $data->assets),
                 'maintenance_request_id' => (string) $this->selected($data->defaults['maintenance_request_id'] ?? null, $data->maintenanceRequests),
                 'category' => 'maintenance',
-                'title' => '',
-                'description' => '',
+                'title' => $this->text($data->defaults['title'] ?? null, 255),
+                'description' => $this->text($data->defaults['description'] ?? null, 5000),
                 'incurred_on' => now()->toDateString(),
-                'amount' => '',
+                'amount' => $this->amount($data->defaults['amount'] ?? null),
                 'currency' => $data->currency,
-                'vendor_name' => '',
+                'vendor_name' => $this->text($data->defaults['vendor_name'] ?? null, 255),
                 'status' => 'posted',
             ],
         ];
@@ -42,5 +42,21 @@ final class ExpenseCreateFormPresenter
         $id = filter_var($requested, FILTER_VALIDATE_INT);
 
         return $id && collect($options)->contains('value', (int) $id) ? (int) $id : '';
+    }
+
+    private function text(mixed $value, int $max): string
+    {
+        return is_string($value) ? mb_substr(trim($value), 0, $max) : '';
+    }
+
+    private function amount(mixed $value): float|string
+    {
+        if (! is_numeric($value)) {
+            return '';
+        }
+
+        $amount = round((float) $value, 2);
+
+        return $amount >= 0.01 && $amount <= 999999999999.99 ? $amount : '';
     }
 }

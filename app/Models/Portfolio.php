@@ -115,6 +115,18 @@ class Portfolio extends Model
         return $this->hasMany(MaintenanceRequest::class);
     }
 
+    /** @return HasMany<MaintenanceVendor, $this> */
+    public function maintenanceVendors(): HasMany
+    {
+        return $this->hasMany(MaintenanceVendor::class);
+    }
+
+    /** @return HasMany<MaintenanceWorkOrder, $this> */
+    public function maintenanceWorkOrders(): HasMany
+    {
+        return $this->hasMany(MaintenanceWorkOrder::class);
+    }
+
     /** @return HasMany<ExpenseEntry, $this> */
     public function expenseEntries(): HasMany
     {

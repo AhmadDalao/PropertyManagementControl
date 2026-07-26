@@ -9,6 +9,8 @@ use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\MediaFile;
 use App\Models\Payment;
 use App\Models\Portfolio;
@@ -315,7 +317,7 @@ class DemoDataSeeder extends Seeder
             'notes' => 'Local demo handover requiring inspection, keys, and deposit review.',
         ]);
 
-        $this->maintenance($portfolio, $unitA, $activeLease, $tenant, $tenantUser, $manager, [
+        $inProgressRequest = $this->maintenance($portfolio, $unitA, $activeLease, $tenant, $tenantUser, $manager, [
             'title' => 'Living room light issue',
             'description' => 'The living room lights flicker intermittently.',
             'category' => 'electricity',
@@ -331,6 +333,32 @@ class DemoDataSeeder extends Seeder
             'priority' => 'high',
             'status' => 'in_progress',
             'requested_at' => now()->subDays(6),
+        ]);
+        $vendor = MaintenanceVendor::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'name' => "{$prefix} Property Services",
+            'contact_name' => 'Service Desk',
+            'phone' => '+966500009999',
+            'email' => strtolower($prefix).'@service.invalid',
+            'service_category' => 'plumbing',
+            'status' => 'active',
+            'notes' => 'Local demo contractor with scheduled and completed work history.',
+        ]);
+        MaintenanceWorkOrder::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'maintenance_request_id' => $inProgressRequest->id,
+            'vendor_id' => $vendor->id,
+            'created_by_user_id' => $manager->id,
+            'assigned_to_user_id' => $manager->id,
+            'reference_code' => "{$prefix}-WO-001",
+            'vendor_name' => $vendor->name,
+            'vendor_phone' => $vendor->phone,
+            'status' => 'in_progress',
+            'scheduled_at' => now()->addDay()->setTime(14, 0),
+            'estimated_amount' => 450,
+            'currency' => 'SAR',
+            'scope' => 'Inspect the sink plumbing, replace the failed seal, and test for leaks.',
+            'tenant_access_required' => true,
         ]);
 
         ExpenseEntry::query()->create([
@@ -475,7 +503,7 @@ class DemoDataSeeder extends Seeder
     /**
      * @param  array<string, mixed>  $attributes
      */
-    private function maintenance(Portfolio $portfolio, Asset $asset, Lease $lease, TenantProfile $tenant, User $tenantUser, User $manager, array $attributes): void
+    private function maintenance(Portfolio $portfolio, Asset $asset, Lease $lease, TenantProfile $tenant, User $tenantUser, User $manager, array $attributes): MaintenanceRequest
     {
         $request = MaintenanceRequest::query()->create([
             'portfolio_id' => $portfolio->id,
@@ -498,6 +526,8 @@ class DemoDataSeeder extends Seeder
             'is_public_comment' => true,
             'comment' => 'Demo request is visible in the tenant and owner dashboards.',
         ]);
+
+        return $request;
     }
 
     private function document(Portfolio $portfolio, Lease $lease, User $uploader, string $type, string $titleEn, string $titleAr): void

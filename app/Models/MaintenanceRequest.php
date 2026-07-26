@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -37,6 +38,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read Collection<int, MaintenanceUpdate> $updates
  * @property-read Collection<int, ExpenseEntry> $expenses
  * @property-read Collection<int, MaintenanceAttachment> $attachments
+ * @property-read Collection<int, MaintenanceWorkOrder> $workOrders
+ * @property-read MaintenanceWorkOrder|null $activeWorkOrder
  * @property CarbonInterface|null $requested_at
  * @property CarbonInterface|null $due_at
  * @property CarbonInterface|null $resolved_at
@@ -113,5 +116,25 @@ class MaintenanceRequest extends Model
     public function attachments(): HasMany
     {
         return $this->hasMany(MaintenanceAttachment::class);
+    }
+
+    /** @return HasMany<MaintenanceWorkOrder, $this> */
+    public function workOrders(): HasMany
+    {
+        return $this->hasMany(MaintenanceWorkOrder::class);
+    }
+
+    /** @return HasOne<MaintenanceWorkOrder, $this> */
+    public function activeWorkOrder(): HasOne
+    {
+        return $this->hasOne(MaintenanceWorkOrder::class)
+            ->ofMany(
+                ['id' => 'max'],
+                fn ($query) => $query->whereIn('status', [
+                    'draft',
+                    'scheduled',
+                    'in_progress',
+                ]),
+            );
     }
 }

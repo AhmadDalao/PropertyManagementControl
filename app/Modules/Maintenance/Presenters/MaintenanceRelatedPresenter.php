@@ -4,6 +4,7 @@ namespace App\Modules\Maintenance\Presenters;
 
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceUpdate;
+use App\Models\MaintenanceWorkOrder;
 use App\Modules\Maintenance\Data\MaintenanceDetailData;
 use App\Modules\Portfolios\Support\PortfolioModules;
 
@@ -12,7 +13,10 @@ class MaintenanceRelatedPresenter
     /** @return array<int, array<string, mixed>> */
     public function present(MaintenanceDetailData $data): array
     {
-        $panels = [$this->updates($data)];
+        $panels = [
+            $this->workOrders($data),
+            $this->updates($data),
+        ];
 
         if (
             ! $data->tenantMode
@@ -22,6 +26,60 @@ class MaintenanceRelatedPresenter
         }
 
         return $panels;
+    }
+
+    /** @return array<string, mixed> */
+    private function workOrders(MaintenanceDetailData $data): array
+    {
+        $reference = trans('app.work_orders.reference');
+        $vendor = trans('app.work_orders.vendor');
+        $schedule = trans('app.work_orders.schedule');
+        $status = trans('app.work_orders.status');
+        $access = trans('app.work_orders.access');
+
+        return [
+            'title' => trans($data->tenantMode
+                ? 'app.work_orders.service_visits'
+                : 'app.maintenance.work_orders'),
+            'description' => trans($data->tenantMode
+                ? 'app.work_orders.service_visits_help'
+                : 'app.work_orders.request_work_orders_help'),
+            'columns' => $data->tenantMode
+                ? [$schedule, $status, $access]
+                : [$reference, $vendor, $schedule, $status],
+            'rows' => $data->workOrders->map(
+                fn (MaintenanceWorkOrder $workOrder): array => $data->tenantMode
+                    ? [
+                        $schedule => $workOrder->scheduled_at?->toDateTimeString() ?: '-',
+                        $status => trans("app.status.{$workOrder->status}"),
+                        $access => trans($workOrder->tenant_access_required
+                            ? 'app.work_orders.access_required'
+                            : 'app.work_orders.no_access_required'),
+                    ]
+                    : [
+                        $reference => [
+                            'label' => $workOrder->reference_code,
+                            'href' => route('maintenance-work-orders.show', $workOrder),
+                        ],
+                        $vendor => $workOrder->vendor_name,
+                        $schedule => $workOrder->scheduled_at?->toDateTimeString() ?: '-',
+                        $status => trans("app.status.{$workOrder->status}"),
+                    ],
+            )->all(),
+            'emptyText' => trans($data->tenantMode
+                ? 'app.work_orders.no_service_visits'
+                : 'app.work_orders.no_work_orders'),
+            ...(! $data->tenantMode
+                && ! in_array($data->request->status, ['resolved', 'cancelled'], true)
+                && $data->workOrders
+                    ->whereIn('status', ['draft', 'scheduled', 'in_progress'])
+                    ->isEmpty()
+                ? [
+                    'actionHref' => route('maintenance-requests.work-orders.create', $data->request),
+                    'actionLabel' => trans('app.work_orders.create'),
+                ]
+                : []),
+        ];
     }
 
     /** @return array<string, mixed> */

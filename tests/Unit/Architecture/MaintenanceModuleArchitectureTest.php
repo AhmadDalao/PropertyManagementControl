@@ -29,6 +29,16 @@ class MaintenanceModuleArchitectureTest extends TestCase
         );
         $this->assertLinesAtMost($attachmentController, 90);
         $this->assertStringNotContainsString('MaintenanceAttachment::query()', $attachmentController);
+
+        foreach ([
+            'app/Http/Controllers/MaintenanceVendorController.php',
+            'app/Http/Controllers/MaintenanceWorkOrderController.php',
+        ] as $path) {
+            $resourceController = $this->source($path);
+            $this->assertLinesAtMost($resourceController, 110);
+            $this->assertStringNotContainsString('::query()', $resourceController);
+            $this->assertStringNotContainsString('DB::', $resourceController);
+        }
     }
 
     #[Test]
@@ -79,6 +89,8 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Actions/ManageMaintenance.php',
             'app/Modules/Maintenance/Actions/PersistMaintenanceAttachments.php',
             'app/Modules/Maintenance/Actions/UpdateMaintenance.php',
+            'app/Modules/Maintenance/Actions/ManageMaintenanceVendors.php',
+            'app/Modules/Maintenance/Actions/ManageMaintenanceWorkOrders.php',
             'app/Modules/Maintenance/Data/MaintenanceDetailData.php',
             'app/Modules/Maintenance/Data/StoredMaintenancePhoto.php',
             'app/Modules/Maintenance/Presenters/MaintenanceAttachmentFormPresenter.php',
@@ -91,17 +103,31 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Presenters/MaintenanceTableRowPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceTriageFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkflowPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceVendorDetailPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceVendorFormPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderDetailPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderFormPresenter.php',
             'app/Modules/Maintenance/Queries/MaintenanceDetailQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceDirectoryQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceFormOptionsQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceIndexQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceInsightsQuery.php',
+            'app/Modules/Maintenance/Queries/MaintenanceOperationsSearch.php',
+            'app/Modules/Maintenance/Queries/MaintenanceVendorIndexQuery.php',
             'app/Modules/Maintenance/Support/MaintenanceReferenceGuard.php',
             'app/Modules/Maintenance/Support/MaintenanceAttachmentOptions.php',
             'app/Modules/Maintenance/Support/MaintenanceAttachmentRules.php',
             'app/Modules/Maintenance/Support/MaintenanceAttachmentStorage.php',
             'app/Modules/Maintenance/Support/MaintenanceTransitionGuard.php',
+            'app/Modules/Maintenance/Support/MaintenanceVendorAccess.php',
+            'app/Modules/Maintenance/Support/MaintenanceVendorOptions.php',
+            'app/Modules/Maintenance/Support/MaintenanceWorkOrderAccess.php',
+            'app/Modules/Maintenance/Support/MaintenanceWorkOrderOptions.php',
+            'resources/js/modules/maintenance-vendors/index-page.tsx',
+            'resources/js/modules/maintenance-vendors/types.ts',
+            'resources/js/modules/maintenance-vendors/vendor-table.tsx',
             'resources/js/modules/maintenance/maintenance-filters.ts',
+            'resources/js/modules/maintenance/maintenance-header.tsx',
             'resources/js/modules/maintenance/maintenance-metrics.tsx',
             'resources/js/modules/maintenance/maintenance-table-cells.tsx',
             'resources/js/modules/maintenance/maintenance-table-config.tsx',

@@ -36,7 +36,15 @@ class ExpenseEntryController extends Controller
         return Inertia::render('admin/resource-form', [
             'formPage' => $this->formPresenter->present(
                 $this->actor($request),
-                defaults: $request->only('portfolio_id', 'asset_id', 'maintenance_request_id'),
+                defaults: $request->only(
+                    'portfolio_id',
+                    'asset_id',
+                    'maintenance_request_id',
+                    'vendor_name',
+                    'amount',
+                    'title',
+                    'description',
+                ),
             ),
         ]);
     }

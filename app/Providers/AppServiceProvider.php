@@ -17,6 +17,8 @@ use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceAttachment;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\MediaFile;
 use App\Models\NavigationItem;
 use App\Models\OperationalReadinessCheck;
@@ -85,6 +87,8 @@ class AppServiceProvider extends ServiceProvider
             'maintenance_attachment' => MaintenanceAttachment::class,
             'maintenance_request' => MaintenanceRequest::class,
             'maintenance_update' => MaintenanceUpdate::class,
+            'maintenance_vendor' => MaintenanceVendor::class,
+            'maintenance_work_order' => MaintenanceWorkOrder::class,
             'expense_entry' => ExpenseEntry::class,
             'cms_page' => CmsPage::class,
             'cms_section' => CmsSection::class,

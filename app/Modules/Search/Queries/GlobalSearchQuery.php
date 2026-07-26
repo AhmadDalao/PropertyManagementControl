@@ -8,6 +8,7 @@ use App\Modules\Cms\Queries\CmsPageSearch;
 use App\Modules\Documents\Queries\DocumentSearch;
 use App\Modules\Expenses\Queries\ExpenseSearch;
 use App\Modules\Leases\Queries\LeaseSearch;
+use App\Modules\Maintenance\Queries\MaintenanceOperationsSearch;
 use App\Modules\Maintenance\Queries\MaintenanceSearch;
 use App\Modules\Media\Queries\MediaFileSearch;
 use App\Modules\Payments\Queries\PaymentSearch;
@@ -27,6 +28,7 @@ class GlobalSearchQuery
         private readonly LeaseSearch $leases,
         private readonly PaymentSearch $payments,
         private readonly MaintenanceSearch $maintenance,
+        private readonly MaintenanceOperationsSearch $maintenanceOperations,
         private readonly ExpenseSearch $expenses,
         private readonly UserSearch $users,
         private readonly DocumentSearch $documents,
@@ -75,6 +77,7 @@ class GlobalSearchQuery
             $this->leases,
             $this->payments,
             $this->maintenance,
+            $this->maintenanceOperations,
             $this->expenses,
             $this->users,
             $this->documents,

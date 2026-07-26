@@ -13,6 +13,8 @@ use App\Models\LeaseInstallment;
 use App\Models\LeaseMoveOut;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceUpdate;
+use App\Models\MaintenanceVendor;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\MediaFile;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
@@ -71,6 +73,8 @@ class AuditPortfolioScope
             $this->orSubjectIds($query, 'payment_allocation', PaymentAllocation::query()->whereIn('payment_id', clone $portfolioPayments)->select('id'));
             $this->orSubjectIds($query, 'maintenance_request', clone $portfolioMaintenance);
             $this->orSubjectIds($query, 'maintenance_update', MaintenanceUpdate::query()->whereIn('maintenance_request_id', clone $portfolioMaintenance)->select('id'));
+            $this->orSubjectIds($query, 'maintenance_vendor', MaintenanceVendor::query()->where('portfolio_id', $portfolioId)->select('id'));
+            $this->orSubjectIds($query, 'maintenance_work_order', MaintenanceWorkOrder::query()->where('portfolio_id', $portfolioId)->select('id'));
             $this->orSubjectIds($query, 'expense_entry', ExpenseEntry::query()->where('portfolio_id', $portfolioId)->select('id'));
             $this->orSubjectIds($query, 'document', Document::query()->where('portfolio_id', $portfolioId)->select('id'));
             $this->orSubjectIds($query, 'media_file', MediaFile::query()->where('portfolio_id', $portfolioId)->select('id'));
@@ -151,6 +155,18 @@ class AuditPortfolioScope
                 $query,
                 'maintenance_update',
                 MaintenanceUpdate::query()
+                    ->whereIn('maintenance_request_id', clone $maintenance)
+                    ->select('id'),
+            );
+            $this->orSubjectIds(
+                $query,
+                'maintenance_vendor',
+                MaintenanceVendor::query()->where('portfolio_id', $actor->portfolio_id ?? 0)->select('id'),
+            );
+            $this->orSubjectIds(
+                $query,
+                'maintenance_work_order',
+                MaintenanceWorkOrder::query()
                     ->whereIn('maintenance_request_id', clone $maintenance)
                     ->select('id'),
             );

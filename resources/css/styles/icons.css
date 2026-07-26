@@ -113,6 +113,9 @@
 .bi-calendar3::before {
     content: '\f214';
 }
+.bi-clipboard2-check::before {
+    content: '\f725';
+}
 .bi-calculator::before {
     content: '\f1e0';
 }

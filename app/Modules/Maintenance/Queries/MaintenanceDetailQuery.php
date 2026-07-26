@@ -40,6 +40,17 @@ class MaintenanceDetailQuery
             ->with('uploadedBy:id,name')
             ->latest()
             ->get();
+        $workOrders = $request->workOrders()
+            ->when(
+                $tenantMode,
+                fn ($query) => $query->where('status', '!=', 'draft'),
+            )
+            ->with([
+                'vendor:id,name',
+                'assignedTo:id,name',
+            ])
+            ->latest()
+            ->get();
 
         return new MaintenanceDetailData(
             request: $request,
@@ -48,6 +59,7 @@ class MaintenanceDetailQuery
             updates: $updates,
             expenses: $expenses,
             attachments: $attachments,
+            workOrders: $workOrders,
             postedExpenseTotal: $expensesEnabled
                 ? (float) $expenses->where('status', 'posted')->sum('amount')
                 : 0,

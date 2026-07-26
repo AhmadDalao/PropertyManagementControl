@@ -36,6 +36,7 @@ final class ActionCenterModuleArchitectureTest extends TestCase
             'app/Modules/ActionCenter/Actions/ActionCenterWorkbookExport.php' => 100,
             'app/Modules/ActionCenter/Requests/ActionCenterIndexRequest.php' => 100,
             'resources/js/modules/action-center/action-center-card.tsx' => 190,
+            'resources/js/modules/action-center/action-center-work-order-context.tsx' => 70,
             'resources/js/modules/action-center/action-center-filter-controls.tsx' => 220,
             'resources/js/modules/action-center/action-center-filters.tsx' => 90,
             'resources/js/modules/action-center/action-center-type-chips.tsx' => 70,

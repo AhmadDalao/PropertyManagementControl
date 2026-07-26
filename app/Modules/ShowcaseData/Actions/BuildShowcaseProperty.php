@@ -14,6 +14,7 @@ use App\Modules\ShowcaseData\Generators\ShowcaseMaintenanceBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseMoveOutBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcasePaymentBuilder;
 use App\Modules\ShowcaseData\Generators\ShowcaseUnitBuilder;
+use App\Modules\ShowcaseData\Generators\ShowcaseWorkOrderBuilder;
 use App\Modules\ShowcaseData\Support\ShowcaseTargets;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -28,6 +29,7 @@ class BuildShowcaseProperty
         private readonly ShowcasePaymentBuilder $payments,
         private readonly ShowcaseCollectionFollowUpBuilder $collectionFollowUps,
         private readonly ShowcaseMaintenanceBuilder $maintenance,
+        private readonly ShowcaseWorkOrderBuilder $workOrders,
         private readonly ShowcaseExpenseBuilder $expenses,
         private readonly ShowcaseDocumentBuilder $documents,
         private readonly ShowcaseMoveOutBuilder $moveOuts,
@@ -62,6 +64,7 @@ class BuildShowcaseProperty
                 $buildingIndex,
             );
             $maintenance = $this->maintenance->build($portfolio, $manager, $leases, $buildingIndex);
+            $this->workOrders->build($portfolio, $manager, $maintenance, $buildingIndex);
             $this->expenses->build($portfolio, $manager, $building, $maintenance, $buildingIndex);
             $this->documents->build($dataset, $portfolio, $manager, $leases);
             $this->moveOuts->build(

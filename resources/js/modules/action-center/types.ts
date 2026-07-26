@@ -43,6 +43,11 @@ export type ActionCenterItem = {
         id: number;
         name: string;
     } | null;
+    work_order?: {
+        reference_code: string;
+        vendor_name: string;
+        scheduled_on?: string | null;
+    } | null;
     amount?: number | null;
     currency?: string | null;
     href: string;

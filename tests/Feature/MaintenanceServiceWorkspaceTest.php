@@ -111,6 +111,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                         && $item['value'] === 'Call vendor before visiting.'
                 ))
                 ->where('detailPage.related', fn ($related) => collect($related)->pluck('title')->all() === [
+                    'Work orders',
                     'Updates',
                     'Expenses',
                 ])
@@ -192,7 +193,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                     ->contains('Posted cost'))
                 ->where('detailPage.related', fn ($related): bool => collect($related)
                     ->pluck('title')
-                    ->all() === ['Updates'])
+                    ->all() === ['Work orders', 'Updates'])
                 ->where('detailPage.workflow.actions', fn ($actions): bool => ! collect($actions)
                     ->pluck('label')
                     ->contains('Add expense')));
@@ -367,10 +368,12 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
                 ->where('detailPage.stats', fn ($stats) => ! collect($stats)->contains('label', 'Cost'))
-                ->where('detailPage.related', fn ($related) => collect($related)->count() === 1
-                    && collect($related)->first()['title'] === 'Updates'
-                    && count(collect($related)->first()['rows']) === 1
-                    && collect($related)->first()['rows'][0]['Comment'] === 'We will visit tomorrow.')
+                ->where('detailPage.related', fn ($related) => collect($related)->count() === 2
+                    && collect($related)[0]['title'] === 'Service visits'
+                    && collect($related)[0]['rows'] === []
+                    && collect($related)[1]['title'] === 'Updates'
+                    && count(collect($related)[1]['rows']) === 1
+                    && collect($related)[1]['rows'][0]['Comment'] === 'We will visit tomorrow.')
                 ->where('detailPage.sections.0.items', fn ($items) => ! collect($items)->contains('label', 'Internal notes'))
                 ->where('detailPage.timeline', []));
 
@@ -434,7 +437,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.show', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.related.0.rows.0.Comment', 'Technician is scheduled for today.'));
+                ->where('detailPage.related.1.rows.0.Comment', 'Technician is scheduled for today.'));
     }
 
     public function test_maintenance_action_rejects_cross_portfolio_mutation_when_reused_directly(): void
@@ -575,8 +578,9 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('detailPage.header.description', 'التكييف والتهوية · متوسط · مفتوح')
                 ->where('detailPage.header.backLabel', 'قائمة الصيانة')
                 ->where('detailPage.sections.0.title', 'سياق الطلب')
-                ->where('detailPage.related.0.title', 'التحديثات')
-                ->where('detailPage.related.1.title', 'المصاريف'));
+                ->where('detailPage.related.0.title', 'أوامر العمل')
+                ->where('detailPage.related.1.title', 'التحديثات')
+                ->where('detailPage.related.2.title', 'المصاريف'));
     }
 
     public function test_terminal_request_cannot_be_cancelled_twice(): void
