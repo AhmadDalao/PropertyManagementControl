@@ -140,6 +140,7 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
                 ->where('detailPage.header.title', $workOrder->reference_code)
+                ->where('detailPage.header.actions.0.label', "Edit {$workOrder->reference_code}")
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains(fn ($item): bool => $item['label'] === 'Phone'
                         && $item['value'] === '+966500000002')));

@@ -44,7 +44,9 @@ final class MaintenanceWorkOrderDetailPresenter
                 'backHref' => route('maintenance-requests.show', [$request, 'tab' => 'related']),
                 'backLabel' => trans('app.work_orders.back_to_request'),
                 'actions' => [[
-                    'label' => trans('app.work_orders.edit'),
+                    'label' => trans('app.work_orders.edit', [
+                        'reference' => $workOrder->reference_code,
+                    ]),
                     'href' => route('maintenance-work-orders.edit', $workOrder),
                     'variant' => 'primary',
                 ]],
