@@ -27,10 +27,10 @@ export function PropertyPerformanceGrid({
             action={{
                 label: selectedProperty
                     ? t('dashboard.open_focused_property')
-                    : t('dashboard.open_all_properties'),
+                    : t('dashboard.open_portfolio_control'),
                 href: selectedProperty
                     ? `/assets/${selectedProperty.id}`
-                    : '/assets',
+                    : '/portfolio-control',
             }}
         >
             <div className="pmc-property-performance-grid">

@@ -25,6 +25,7 @@ const localAccounts = [
 
 const primaryAdminRoutes = [
     '/dashboard',
+    '/portfolio-control',
     '/action-center',
     '/profile',
     '/property-map',
@@ -296,6 +297,55 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('[data-property-scope-trigger]'),
         ).toBeFocused();
+    });
+
+    test('portfolio control ranks every property with direct mobile actions and Arabic copy', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/portfolio-control?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Portfolio control',
+                }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-portfolio-control-card').first(),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-portfolio-control-grid'),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
+            await expectMinimumTouchHeight(
+                page,
+                [
+                    '.pmc-portfolio-control-chips button',
+                    '.pmc-portfolio-control-filter-actions button',
+                    '.pmc-portfolio-control-card footer a',
+                ].join(', '),
+            );
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/portfolio-control?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'تحكم المحفظة',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByPlaceholder('العقار أو الرمز أو المحفظة'),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تركيز لوحة التحكم' }).first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
     });
 
     test('global search is responsive, scoped, and localized', async ({
@@ -729,7 +779,9 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.locator('.pmc-readiness-check-detail'),
             ).toHaveCount(7);
-            await expect(page.getByText('Hostinger cron command')).toBeVisible();
+            await expect(
+                page.getByText('Hostinger cron command'),
+            ).toBeVisible();
             await expect(
                 page.getByRole('button', { name: 'Copy command' }),
             ).toBeVisible();

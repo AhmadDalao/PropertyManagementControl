@@ -57,6 +57,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $stats = $this->source('app/Modules/Dashboard/Queries/OperationsStatsQuery.php');
         $operations = $this->source('app/Modules/Dashboard/Presenters/OperationsDashboardPresenter.php');
         $properties = $this->source('app/Modules/Dashboard/Queries/OperationsPropertyPerformanceQuery.php');
+        $propertyDataset = $this->source('app/Modules/Dashboard/Queries/PropertyPerformanceDatasetQuery.php');
         $rootMap = $this->source('app/Modules/Assets/Support/AssetRootMap.php');
         $scorer = $this->source('app/Modules/Dashboard/Support/PropertyPerformanceScorer.php');
 
@@ -64,6 +65,8 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString("->with('installments')", $stats);
         $this->assertStringNotContainsString('paymentHealth', $operations);
         $this->assertLessThanOrEqual(220, substr_count($properties, "\n") + 1);
+        $this->assertLessThanOrEqual(230, substr_count($propertyDataset, "\n") + 1);
+        $this->assertStringContainsString('PropertyPerformanceDatasetQuery', $properties);
         $this->assertLessThanOrEqual(60, substr_count($rootMap, "\n") + 1);
         $this->assertLessThanOrEqual(60, substr_count($scorer, "\n") + 1);
     }

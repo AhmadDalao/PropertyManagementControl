@@ -23,6 +23,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 propertyScoped: true,
             },
             {
+                labelKey: 'nav.portfolio_control',
+                href: '/portfolio-control',
+                icon: 'bi-buildings',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'assets',
+            },
+            {
                 labelKey: 'nav.action_center',
                 href: '/action-center',
                 icon: 'bi-collection',

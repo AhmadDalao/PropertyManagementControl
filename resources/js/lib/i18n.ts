@@ -31,6 +31,7 @@ export type UiTranslationKey =
     | `pagination.${string}`
     | `passwords.${string}`
     | `payments.${string}`
+    | `portfolio_control.${string}`
     | `portfolios.${string}`
     | `profile.${string}`
     | `public.${string}`

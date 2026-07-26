@@ -28,6 +28,7 @@ use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\NavigationItemController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PortfolioControlController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyMapController;
@@ -58,6 +59,9 @@ Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('loca
 Route::middleware(['auth', 'account.active', 'password.changed', 'property.context'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/portfolio-control', PortfolioControlController::class)
+        ->name('portfolio-control.index')
+        ->middleware('portfolio.module:assets');
     Route::get('/action-center', [ActionCenterController::class, 'index'])
         ->name('action-center.index');
     Route::get('/action-center/export', [ActionCenterController::class, 'export'])
