@@ -94,7 +94,7 @@ final class SystemHealthQuery
         $lastSeen = $history->latest();
 
         if (! $lastSeen) {
-            return $this->check('scheduler', 'blocked', trans('app.readiness.scheduler_missing'));
+            return $this->schedulerCheck('blocked', trans('app.readiness.scheduler_missing'));
         }
 
         $minutes = max(0, (int) $lastSeen->diffInMinutes(now()));
@@ -110,8 +110,7 @@ final class SystemHealthQuery
                 'minutes' => $this->locale->number($minutes),
             ]);
 
-        return $this->check(
-            'scheduler',
+        return $this->schedulerCheck(
             $status,
             $detail,
             [
@@ -120,6 +119,25 @@ final class SystemHealthQuery
                 'cadence_confirmed' => $cadenceConfirmed,
             ],
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $meta
+     * @return array<string, mixed>
+     */
+    private function schedulerCheck(string $status, string $detail, array $meta = []): array
+    {
+        $check = $this->check('scheduler', $status, $detail, $meta);
+
+        if ($status !== 'ready') {
+            $check['command'] = sprintf(
+                '%s %s schedule:run >> /dev/null 2>&1',
+                escapeshellarg((string) config('operations.scheduler_php_binary', PHP_BINARY)),
+                escapeshellarg(base_path('artisan')),
+            );
+        }
+
+        return $check;
     }
 
     /** @return array<string, mixed> */

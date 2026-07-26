@@ -83,10 +83,10 @@ The Composer lifecycle clears Laravel's generated package manifest before rebuil
 Create a cron job that runs Laravel's scheduler every minute:
 
 ```bash
-php /path/to/artisan schedule:run >> /dev/null 2>&1
+/opt/alt/php84/usr/bin/php /path/to/artisan schedule:run >> /dev/null 2>&1
 ```
 
-The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy.
+Do not use Hostinger's unqualified `php` command: its shared-hosting CLI may resolve to an older PHP release than the website. Set `SCHEDULER_PHP_BINARY` when the account uses a different verified PHP 8.4 path. The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy.
 
 Shared hosting can terminate a worker without releasing Laravel's overlap mutex. The heartbeat lock expires after 5 minutes, the queue-worker lock after 10 minutes, and the daily status-sync lock after 120 minutes. If a killed worker left an older lock from a previous release, run `php artisan schedule:clear-cache` once, then confirm the queue count decreases in `/system/readiness`.
 

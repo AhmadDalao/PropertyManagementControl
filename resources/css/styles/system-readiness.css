@@ -233,6 +233,46 @@
     font-weight: 700;
 }
 
+.pmc-readiness-command {
+    display: grid;
+    gap: 0.45rem;
+    margin-top: 0.65rem;
+}
+
+.pmc-readiness-command > span:first-child {
+    color: var(--pmc-text-muted);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-readiness-command code {
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--pmc-border);
+    border-radius: 0.65rem;
+    color: var(--pmc-text);
+    background: #fff;
+    font-size: 0.72rem;
+    text-align: left;
+}
+
+.pmc-readiness-command button {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--pmc-border-strong);
+    border-radius: 0.65rem;
+    color: var(--pmc-text);
+    background: #fff;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
 .pmc-readiness-check > a {
     display: inline-flex;
     align-items: center;

@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 
 import { useTranslator } from '@/lib/i18n';
 
+import { ReadinessCommand } from './readiness-command';
 import { ReadinessStatusBadge } from './readiness-status';
 import type { AutomaticReadinessCheck } from './types';
 
@@ -29,6 +30,9 @@ export function AutomaticCheckGrid({
                         <div className="pmc-readiness-check-detail">
                             {check.detail}
                         </div>
+                    ) : null}
+                    {check.command ? (
+                        <ReadinessCommand command={check.command} />
                     ) : null}
                     {check.href ? (
                         <Link href={check.href}>

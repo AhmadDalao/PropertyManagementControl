@@ -10,7 +10,8 @@ export type AutomaticReadinessCheck = {
     detail?: string;
     href?: string;
     action_label?: string;
-    meta?: Record<string, string | number | null>;
+    command?: string;
+    meta?: Record<string, string | number | boolean | null>;
 };
 
 export type ReadinessConfirmation = {

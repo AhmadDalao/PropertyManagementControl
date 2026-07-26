@@ -728,6 +728,13 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.locator('.pmc-readiness-check-detail'),
             ).toHaveCount(7);
+            await expect(page.getByText('Hostinger cron command')).toBeVisible();
+            await expect(
+                page.getByRole('button', { name: 'Copy command' }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-readiness-command code'),
+            ).toContainText('schedule:run');
             await expect(
                 page.getByRole('link', { name: 'Open portfolio' }).first(),
             ).toBeVisible();
@@ -775,6 +782,10 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', {
                 name: 'سلامة البنية التشغيلية',
             }),
+        ).toBeVisible();
+        await expect(page.getByText('أمر Cron في Hostinger')).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'نسخ الأمر' }),
         ).toBeVisible();
         await expect(
             page.getByRole('link', { name: 'فتح المحفظة' }).first(),

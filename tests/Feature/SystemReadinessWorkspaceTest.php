@@ -356,6 +356,9 @@ final class SystemReadinessWorkspaceTest extends TestCase
 
     public function test_one_fresh_heartbeat_cannot_make_cron_look_healthy(): void
     {
+        config([
+            'operations.scheduler_php_binary' => '/opt/alt/php84/usr/bin/php',
+        ]);
         Cache::forget(RecordSchedulerHeartbeat::CACHE_KEY);
         app(RecordSchedulerHeartbeat::class)->handle();
         $superadmin = $this->createUserWithRole('superadmin');
@@ -370,6 +373,12 @@ final class SystemReadinessWorkspaceTest extends TestCase
                     return ($scheduler['status'] ?? null) === 'attention'
                         && ($scheduler['meta']['sample_count'] ?? null) === 1
                         && ($scheduler['meta']['cadence_confirmed'] ?? null) === false
+                        && str_contains(
+                            (string) ($scheduler['command'] ?? ''),
+                            "/opt/alt/php84/usr/bin/php' '"
+                                .base_path('artisan')
+                                ."' schedule:run",
+                        )
                         && str_contains(
                             (string) ($scheduler['detail'] ?? ''),
                             'only 1 recent cadence samples',

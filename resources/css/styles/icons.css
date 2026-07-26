@@ -161,6 +161,9 @@
 .bi-compass::before {
     content: '\f2d1';
 }
+.bi-copy::before {
+    content: '\f759';
+}
 .bi-cursor::before {
     content: '\f2e3';
 }
