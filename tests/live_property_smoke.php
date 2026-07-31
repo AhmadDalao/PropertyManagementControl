@@ -214,6 +214,8 @@ if ($login['status'] !== 302 || ! str_contains((string) $login['location'], '/da
 
 $authChecks = [
     '/dashboard' => 'dashboard',
+    '/notifications?locale=en' => 'admin/notifications/index',
+    '/notifications?locale=ar' => 'admin/notifications/index',
     '/action-center?locale=en' => 'admin/action-center/index',
     '/action-center?locale=ar' => 'admin/action-center/index',
     '/property-map' => 'admin/property-map/index',
