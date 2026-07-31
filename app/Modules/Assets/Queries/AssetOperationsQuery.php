@@ -129,7 +129,8 @@ final readonly class AssetOperationsQuery
             ->where('portfolio_id', $asset->portfolio_id)
             ->whereIn('lease_id', $leaseIds)
             ->where('status', 'posted')
-            ->whereBetween('received_on', $month)
+            ->whereDate('received_on', '>=', $month[0])
+            ->whereDate('received_on', '<=', $month[1])
             ->sum('amount');
     }
 
@@ -141,7 +142,8 @@ final readonly class AssetOperationsQuery
     {
         return (float) $query
             ->where('status', 'posted')
-            ->whereBetween('incurred_on', $month)
+            ->whereDate('incurred_on', '>=', $month[0])
+            ->whereDate('incurred_on', '<=', $month[1])
             ->sum('amount');
     }
 }

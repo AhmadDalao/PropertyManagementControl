@@ -32,8 +32,28 @@
 .pmc-table-search .form-control {
     min-height: 2.65rem;
     padding-inline-start: 2.35rem;
+    padding-inline-end: 2.35rem;
     border-radius: 0.68rem;
     background: #fff;
+}
+
+.pmc-table-search > .pmc-table-searching {
+    position: absolute;
+    inset-inline: auto 0.85rem;
+    animation: pmc-table-search-spin 0.75s linear infinite;
+    color: #8a6800;
+}
+
+@keyframes pmc-table-search-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-table-search > .pmc-table-searching {
+        animation: none;
+    }
 }
 
 .pmc-mobile-filter-trigger {

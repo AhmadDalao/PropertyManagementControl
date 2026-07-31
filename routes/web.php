@@ -35,6 +35,7 @@ use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemReadinessController;
 use App\Http\Controllers\TenantController;
@@ -185,6 +186,9 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
+    Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
+    Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');
+    Route::get('/reports/statement.docx', [ReportStatementController::class, 'word'])->name('reports.statement.word')->middleware('portfolio.module:reports');
     Route::post('/reports/presets', [ReportController::class, 'storePreset'])->name('reports.presets.store')->middleware('portfolio.module:reports');
     Route::delete('/reports/presets/{reportPreset}', [ReportController::class, 'destroyPreset'])->name('reports.presets.destroy')->middleware('portfolio.module:reports');
     Route::resource('documents', DocumentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:documents')->middlewareFor(['create', 'store'], 'property.assigned');

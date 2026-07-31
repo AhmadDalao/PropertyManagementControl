@@ -50,6 +50,7 @@ const primaryAdminRoutes = [
     '/system/showcase-data',
     '/system/readiness',
     '/reports',
+    '/reports/statement',
     '/documentation',
 ] as const;
 
@@ -534,6 +535,60 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { name: 'تحصيل الإيجارات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('operational table search updates results without submitting the filter form', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/assets?locale=en');
+
+        const search = page.locator('.pmc-table-search input');
+        await search.fill('ROSE-101');
+        await expect(page).toHaveURL(/search=ROSE-101/);
+        await expect(search).toHaveAttribute('aria-busy', 'false');
+        await expect(
+            page.locator('.pmc-data-table').getByText('ROSE-101'),
+        ).toBeVisible();
+
+        await search.fill('');
+        await expect(page).not.toHaveURL(/search=/);
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('owner statement is concise, responsive, and bilingual', async ({
+        page,
+    }) => {
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/reports/statement?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Owner statement',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-statement-context')).toBeVisible();
+            await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+            await expect(
+                page.locator('.pmc-statement-record-grid'),
+            ).toBeVisible();
+            await expect(
+                page.locator('a[href^="/reports/statement.pdf"]'),
+            ).toBeVisible();
+            await expect(
+                page.locator('a[href^="/reports/statement.docx"]'),
+            ).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.goto('/reports/statement?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'كشف المالك' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });

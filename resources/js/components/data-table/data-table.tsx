@@ -45,6 +45,7 @@ export function DataTable<T extends DataTableRow>({
                 draftFilters={query.draftFilters}
                 activeFilters={query.activeFilters}
                 filtersOpen={query.filtersOpen}
+                isSearching={query.isSearching}
                 setDraftFilters={query.setDraftFilters}
                 setFiltersOpen={query.setFiltersOpen}
                 visit={query.visit}

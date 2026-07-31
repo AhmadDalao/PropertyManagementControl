@@ -336,6 +336,7 @@ class AssetWorkspaceTest extends TestCase
 
     public function test_asset_detail_links_operational_records_for_owner_decisions(): void
     {
+        $this->travelTo(now()->setDate(2026, 7, 31)->setTime(12, 0));
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
         $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Decision Tenant']);

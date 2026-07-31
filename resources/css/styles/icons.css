@@ -218,6 +218,9 @@
 .bi-file-earmark-pdf::before {
     content: '\f63e';
 }
+.bi-file-earmark-word::before {
+    content: '\f38d';
+}
 .bi-file-earmark-plus::before {
     content: '\f37d';
 }

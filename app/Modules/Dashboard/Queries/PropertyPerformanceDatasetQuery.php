@@ -138,7 +138,8 @@ final readonly class PropertyPerformanceDatasetQuery
         LeaseInstallment::query()
             ->whereIn('lease_id', array_keys($rootByLease))
             ->where(fn ($query) => $query
-                ->whereBetween('due_date', [now()->startOfMonth(), now()->endOfMonth()])
+                ->whereDate('due_date', '>=', now()->startOfMonth())
+                ->whereDate('due_date', '<=', now()->endOfMonth())
                 ->orWhereDate('due_date', '<', today()))
             ->get(['lease_id', 'due_date', 'amount_due', 'amount_paid'])
             ->each(function (LeaseInstallment $installment) use (&$rows, $rootByLease): void {
@@ -162,7 +163,8 @@ final readonly class PropertyPerformanceDatasetQuery
         $this->portfolios->apply(Payment::query(), $actor)
             ->where('status', 'posted')
             ->whereIn('lease_id', array_keys($rootByLease))
-            ->whereBetween('received_on', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereDate('received_on', '>=', now()->startOfMonth())
+            ->whereDate('received_on', '<=', now()->endOfMonth())
             ->get(['lease_id', 'amount'])
             ->each(function (Payment $payment) use (&$rows, $rootByLease): void {
                 $rootId = $payment->lease_id !== null
@@ -184,7 +186,8 @@ final readonly class PropertyPerformanceDatasetQuery
         $this->portfolios->apply(ExpenseEntry::query(), $actor)
             ->where('status', 'posted')
             ->whereIn('asset_id', array_keys($rootByAsset))
-            ->whereBetween('incurred_on', [now()->startOfMonth(), now()->endOfMonth()])
+            ->whereDate('incurred_on', '>=', now()->startOfMonth())
+            ->whereDate('incurred_on', '<=', now()->endOfMonth())
             ->get(['asset_id', 'amount'])
             ->each(function (ExpenseEntry $expense) use (&$rows, $rootByAsset): void {
                 $rootId = $expense->asset_id !== null

@@ -118,6 +118,7 @@ class DashboardModuleTest extends TestCase
 
     public function test_owner_dashboard_returns_actionable_month_and_property_performance_data(): void
     {
+        $this->travelTo(now()->setDate(2026, 7, 31)->setTime(12, 0));
         $portfolio = $this->createPortfolio();
         $foreignPortfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);

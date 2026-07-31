@@ -25,10 +25,8 @@ final readonly class OperationsFinancialQuery
             ->select('id');
         $installments = LeaseInstallment::query()
             ->whereIn('lease_id', $leaseIds)
-            ->whereBetween('due_date', [
-                now()->startOfMonth()->toDateString(),
-                now()->endOfMonth()->toDateString(),
-            ]);
+            ->whereDate('due_date', '>=', now()->startOfMonth())
+            ->whereDate('due_date', '<=', now()->endOfMonth());
         $scheduledDue = (float) (clone $installments)->sum('amount_due');
         $scheduledPaid = (float) (clone $installments)->sum('amount_paid');
         $revenue = $this->monthlyTotal(
@@ -62,10 +60,8 @@ final readonly class OperationsFinancialQuery
     {
         return (float) $query
             ->where('status', 'posted')
-            ->whereBetween($dateColumn, [
-                now()->startOfMonth()->toDateString(),
-                now()->endOfMonth()->toDateString(),
-            ])
+            ->whereDate($dateColumn, '>=', now()->startOfMonth())
+            ->whereDate($dateColumn, '<=', now()->endOfMonth())
             ->sum('amount');
     }
 

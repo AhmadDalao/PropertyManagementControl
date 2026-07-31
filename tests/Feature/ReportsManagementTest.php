@@ -9,6 +9,7 @@ use App\Models\ReportPreset;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 class ReportsManagementTest extends TestCase
 {
@@ -186,6 +187,82 @@ class ReportsManagementTest extends TestCase
         $this->assertStringNotContainsString('Foreign outage', $arabicSheet);
     }
 
+    public function test_owner_statement_is_scoped_and_downloads_real_pdf_and_word_files(): void
+    {
+        $portfolio = $this->createPortfolio(['name_en' => 'Own Portfolio', 'name_ar' => 'محفظتي']);
+        $foreignPortfolio = $this->createPortfolio(['name_en' => 'Foreign Portfolio']);
+        $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Statement Owner']);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $lease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile($portfolio, $this->createUserWithRole('tenant', $portfolio, ['name' => 'Own Tenant'])),
+            $this->createAsset($portfolio, ['title_en' => 'Own Statement Unit', 'occupancy_status' => 'occupied']),
+            $owner,
+        );
+        $foreignLease = $this->createLease(
+            $foreignPortfolio,
+            $this->createTenantProfile($foreignPortfolio, $this->createUserWithRole('tenant', $foreignPortfolio, ['name' => 'Foreign Tenant'])),
+            $this->createAsset($foreignPortfolio, ['title_en' => 'Foreign Statement Unit', 'occupancy_status' => 'occupied']),
+            $foreignOwner,
+        );
+
+        foreach ([[$lease, $owner, 'OWN-STMT', 1250], [$foreignLease, $foreignOwner, 'FOREIGN-STMT', 9000]] as [$item, $recorder, $reference, $amount]) {
+            Payment::query()->create([
+                'portfolio_id' => $item->portfolio_id,
+                'lease_id' => $item->id,
+                'tenant_profile_id' => $item->tenant_profile_id,
+                'recorded_by_user_id' => $recorder->id,
+                'reference' => $reference,
+                'type' => 'rent',
+                'method' => 'cash',
+                'status' => 'posted',
+                'received_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => 'SAR',
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('reports.statement'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/statement')
+                ->where('statement.portfolio.en', 'Own Portfolio')
+                ->where('statement.portfolio.ar', 'محفظتي')
+                ->where('statement.prepared_for', 'Statement Owner')
+                ->where('summary.revenue', fn (int|float $value) => (float) $value === 1250.0)
+                ->has('recentPayments', 1)
+                ->where('recentPayments.0.reference', 'OWN-STMT'));
+
+        $pdf = $this->actingAs($owner)->get(route('reports.statement.pdf'));
+        $pdf->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('.pdf', (string) $pdf->headers->get('content-disposition'));
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+
+        $word = $this->actingAs($owner)->get(route('reports.statement.word'));
+        $word->assertOk()->assertHeader(
+            'content-type',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        );
+        $this->assertStringContainsString('.docx', (string) $word->headers->get('content-disposition'));
+        $content = $word->streamedContent();
+        $this->assertSame('PK', substr($content, 0, 2));
+
+        $path = tempnam(sys_get_temp_dir(), 'owner-statement-test-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $content);
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $documentXml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        $this->assertStringContainsString('OWN-STMT', $documentXml);
+        $this->assertStringContainsString('كشف المالك', $documentXml);
+        $this->assertStringNotContainsString('FOREIGN-STMT', $documentXml);
+        $this->assertStringNotContainsString('Foreign Tenant', $documentXml);
+    }
+
     public function test_report_date_filters_limit_financial_activity(): void
     {
         $portfolio = $this->createPortfolio();
@@ -352,6 +429,12 @@ class ReportsManagementTest extends TestCase
         $this->actingAs($owner)
             ->get(route('reports.index', ['property_id' => $foreignRoot->id]))
             ->assertForbidden();
+        $this->actingAs($owner)
+            ->get(route('reports.statement', ['property_id' => $unit->id]))
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->get(route('reports.statement.pdf', ['property_id' => $foreignRoot->id]))
+            ->assertForbidden();
 
         $this->actingAs($owner)
             ->post(route('reports.presets.store'), [
@@ -378,6 +461,18 @@ class ReportsManagementTest extends TestCase
 
         $this->actingAs($tenant)
             ->get(route('reports.export'))
+            ->assertForbidden();
+
+        $this->actingAs($tenant)
+            ->get(route('reports.statement'))
+            ->assertForbidden();
+
+        $this->actingAs($tenant)
+            ->get(route('reports.statement.pdf'))
+            ->assertForbidden();
+
+        $this->actingAs($tenant)
+            ->get(route('reports.statement.word'))
             ->assertForbidden();
     }
 

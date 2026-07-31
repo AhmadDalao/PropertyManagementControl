@@ -3,6 +3,7 @@ import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { useTranslator } from '@/lib/i18n';
 import type { TableCount } from '@/types';
 
+import { TableSearchField } from './table-search-field';
 import { filterLabel, filterValueLabel, PAGE_SIZES } from './table-utils';
 import type { TableFilterField, TableVisit } from './types';
 
@@ -12,6 +13,7 @@ type TableToolbarProps = {
     draftFilters: Record<string, string>;
     activeFilters: Array<[string, string]>;
     filtersOpen: boolean;
+    isSearching: boolean;
     setDraftFilters: Dispatch<SetStateAction<Record<string, string>>>;
     setFiltersOpen: Dispatch<SetStateAction<boolean>>;
     visit: TableVisit;
@@ -25,6 +27,7 @@ export function TableToolbar({
     draftFilters,
     activeFilters,
     filtersOpen,
+    isSearching,
     setDraftFilters,
     setFiltersOpen,
     visit,
@@ -60,24 +63,16 @@ export function TableToolbar({
 
             <form className="pmc-table-toolbar" onSubmit={submit}>
                 <div className="pmc-table-primary-tools">
-                    <label className="pmc-table-search">
-                        <span className="visually-hidden">
-                            {t('actions.search', 'Search')}
-                        </span>
-                        <i className="bi bi-search" />
-                        <input
-                            type="search"
-                            className="form-control"
-                            value={draftFilters.search ?? ''}
-                            placeholder={t('table.search', 'Search records...')}
-                            onChange={(event) =>
-                                setDraftFilters((current) => ({
-                                    ...current,
-                                    search: event.currentTarget.value,
-                                }))
-                            }
-                        />
-                    </label>
+                    <TableSearchField
+                        value={draftFilters.search ?? ''}
+                        isSearching={isSearching}
+                        onChange={(search) =>
+                            setDraftFilters((current) => ({
+                                ...current,
+                                search,
+                            }))
+                        }
+                    />
                     <button
                         type="button"
                         className="pmc-mobile-filter-trigger"
@@ -123,13 +118,14 @@ export function TableToolbar({
                                     type={field.type}
                                     className="form-control"
                                     value={draftFilters[field.name] ?? ''}
-                                    onChange={(event) =>
+                                    onChange={(event) => {
+                                        const value = event.currentTarget.value;
+
                                         setDraftFilters((current) => ({
                                             ...current,
-                                            [field.name]:
-                                                event.currentTarget.value,
-                                        }))
-                                    }
+                                            [field.name]: value,
+                                        }));
+                                    }}
                                 />
                             ) : (
                                 <select

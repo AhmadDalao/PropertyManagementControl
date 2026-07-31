@@ -259,6 +259,7 @@ $authChecks = [
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',
+    '/reports/statement' => 'admin/reports/statement',
 ];
 
 foreach ($authChecks as $path => $expectedComponent) {
@@ -568,4 +569,32 @@ if (! str_contains($reportHeaders, '.xlsx') || ! str_starts_with((string) $repor
 }
 
 smoke_note('/reports/export Excel .xlsx');
+
+$ownerStatementPdf = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/statement.pdf');
+$ownerStatementPdfHeaders = strtolower((string) $ownerStatementPdf['headers']);
+
+if ($ownerStatementPdf['status'] !== 200) {
+    smoke_fail("Owner statement PDF returned {$ownerStatementPdf['status']}.");
+}
+
+if (! str_contains($ownerStatementPdfHeaders, 'application/pdf') || ! str_starts_with((string) $ownerStatementPdf['body'], '%PDF-')) {
+    smoke_fail('Owner statement PDF was not a valid PDF download.');
+}
+
+smoke_note('/reports/statement.pdf PDF');
+
+$ownerStatementWord = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/statement.docx');
+$ownerStatementWordHeaders = strtolower((string) $ownerStatementWord['headers']);
+
+if ($ownerStatementWord['status'] !== 200) {
+    smoke_fail("Owner statement Word document returned {$ownerStatementWord['status']}.");
+}
+
+if (! str_contains($ownerStatementWordHeaders, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+    || ! str_contains($ownerStatementWordHeaders, '.docx')
+    || ! str_starts_with((string) $ownerStatementWord['body'], 'PK')) {
+    smoke_fail('Owner statement Word document was not a valid .docx download.');
+}
+
+smoke_note('/reports/statement.docx Word .docx');
 smoke_note('Live smoke passed.');

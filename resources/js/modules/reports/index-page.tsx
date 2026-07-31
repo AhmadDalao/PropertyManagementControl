@@ -47,6 +47,9 @@ export default function ReportsIndexPage() {
     const exportHref = exportQuery
         ? `/reports/export?${exportQuery}`
         : '/reports/export';
+    const statementHref = exportQuery
+        ? `/reports/statement?${exportQuery}`
+        : '/reports/statement';
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -87,6 +90,12 @@ export default function ReportsIndexPage() {
                         href: '/documentation',
                         icon: 'bi-question-circle',
                         tone: 'quiet',
+                    },
+                    {
+                        label: t('reports.owner_statement'),
+                        href: statementHref,
+                        icon: 'bi-file-earmark-text',
+                        tone: 'secondary',
                     },
                     {
                         label: t('actions.export_xlsx'),

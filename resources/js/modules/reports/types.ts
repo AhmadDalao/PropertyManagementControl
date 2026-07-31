@@ -116,6 +116,21 @@ export type ReportsPageProps = SharedProps & {
     savedPresets: ReportPreset[];
 };
 
+export type OwnerStatementPageProps = Omit<
+    ReportsPageProps,
+    | 'portfolioOptions'
+    | 'propertyOptions'
+    | 'presetVisibilityOptions'
+    | 'savedPresets'
+> & {
+    statement: {
+        portfolio: { en: string; ar: string };
+        property: { en: string; ar: string };
+        prepared_for: string;
+        generated_at: string;
+    };
+};
+
 export type ReportRecord = {
     href: string;
     title: string;

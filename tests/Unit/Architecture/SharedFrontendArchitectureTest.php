@@ -109,6 +109,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'table-empty.tsx',
             'table-header.tsx',
             'table-pagination.tsx',
+            'table-search-field.tsx',
             'table-toolbar.tsx',
             'table-utils.ts',
             'types.ts',

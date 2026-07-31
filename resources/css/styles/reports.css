@@ -2,4 +2,5 @@
 @import './reports/metrics.css';
 @import './reports/records.css';
 @import './reports/presets.css';
+@import './reports/statement.css';
 @import './reports/responsive.css';

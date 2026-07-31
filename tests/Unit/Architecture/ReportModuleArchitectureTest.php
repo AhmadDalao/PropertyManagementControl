@@ -20,6 +20,13 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('Payment::query()', $source);
         $this->assertStringNotContainsString('ReportPreset::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
+
+        $statement = $this->source($this->path('app/Http/Controllers/ReportStatementController.php'));
+        $this->assertLessThanOrEqual(60, substr_count($statement, "\n") + 1);
+        $this->assertStringContainsString('OwnerStatementPresenter', $statement);
+        $this->assertStringContainsString('OwnerStatementPdfExport', $statement);
+        $this->assertStringContainsString('OwnerStatementWordExport', $statement);
+        $this->assertStringNotContainsString('Payment::query()', $statement);
     }
 
     #[Test]
@@ -73,10 +80,13 @@ class ReportModuleArchitectureTest extends TestCase
     {
         foreach ([
             'app/Modules/Reports/Actions/ManageReportPresets.php',
+            'app/Modules/Reports/Actions/OwnerStatementPdfExport.php',
+            'app/Modules/Reports/Actions/OwnerStatementWordExport.php',
             'app/Modules/Reports/Actions/ReportWorkbookExport.php',
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
             'app/Modules/Reports/Presenters/ReportPagePresenter.php',
+            'app/Modules/Reports/Presenters/OwnerStatementPresenter.php',
             'app/Modules/Reports/Presenters/ReportChartsPresenter.php',
             'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
@@ -94,6 +104,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
+            'resources/js/modules/reports/owner-statement-page.tsx',
+            'resources/js/modules/reports/owner-statement-records.tsx',
+            'resources/js/modules/reports/owner-statement-summary.tsx',
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
             'resources/js/modules/reports/report-operations.tsx',
