@@ -913,9 +913,7 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.getByRole('button', { name: 'Copy command' }),
             ).toBeVisible();
-            const cronCommand = page.locator(
-                '.pmc-readiness-command > code',
-            );
+            const cronCommand = page.locator('.pmc-readiness-command > code');
             await expect(cronCommand).toContainText('schedule:run');
             await expect(cronCommand).not.toContainText('>');
             await expect(
@@ -2146,6 +2144,10 @@ test.describe('authenticated administration', () => {
             await expectNoHorizontalOverflow(page);
         }
 
+        await expect(
+            page.getByRole('heading', { name: 'السجل التشغيلي' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-report-journal')).toBeVisible();
         await expect(page.locator('.pmc-report-record-grid')).toBeVisible();
         await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
 
@@ -2165,6 +2167,12 @@ test.describe('authenticated administration', () => {
             .getByRole('button', { name: 'Overview', exact: true })
             .click();
         await expect(page.locator('.pmc-report-pulse-grid')).toBeVisible();
+        await page
+            .getByRole('button', { name: 'Operations', exact: true })
+            .click();
+        await expect(
+            page.getByRole('heading', { name: 'Operational journal' }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 

@@ -52,6 +52,7 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('PortfolioReportDatasetQuery', $query);
         $this->assertStringContainsString('LeaseReportSnapshotFactory', $query);
         $this->assertStringContainsString('ReportSummaryPresenter', $query);
+        $this->assertStringContainsString('ReportJournalPresenter', $query);
         $this->assertStringNotContainsString('Payment::query()', $query);
         $this->assertStringNotContainsString('->groupBy(', $query);
 
@@ -66,10 +67,16 @@ class ReportModuleArchitectureTest extends TestCase
     public function report_styles_are_split_by_concern(): void
     {
         $facade = $this->source($this->path('resources/css/styles/reports.css'));
+        $global = $this->source($this->path('resources/css/app.css'));
+        $index = $this->source($this->path('resources/js/modules/reports/index-page.tsx'));
+        $statement = $this->source($this->path('resources/js/modules/reports/owner-statement-page.tsx'));
 
         $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
+        $this->assertStringNotContainsString("styles/reports.css';", $global);
+        $this->assertStringContainsString("css/styles/reports.css';", $index);
+        $this->assertStringContainsString("css/styles/reports.css';", $statement);
 
-        foreach (['filters', 'library', 'metrics', 'records', 'presets', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'journal', 'records', 'presets', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -91,6 +98,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLibraryPresenter.php',
+            'app/Modules/Reports/Presenters/ReportJournalPresenter.php',
             'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportSummaryPresenter.php',
@@ -111,6 +119,7 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
             'resources/js/modules/reports/report-library.tsx',
+            'resources/js/modules/reports/report-journal.tsx',
             'resources/js/modules/reports/report-operations.tsx',
             'resources/js/modules/reports/report-overview.tsx',
             'resources/js/modules/reports/report-preset-form.tsx',

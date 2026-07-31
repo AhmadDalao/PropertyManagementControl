@@ -3,7 +3,6 @@
 @import './styles/tokens.css';
 @import './styles/components.css';
 @import './styles/workspaces.css';
-@import './styles/reports.css';
 @import './styles/public.css';
 @import './styles/auth.css';
 @import './styles/cms/workspace.css';

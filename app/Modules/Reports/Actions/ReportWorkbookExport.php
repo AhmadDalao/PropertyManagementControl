@@ -97,6 +97,32 @@ class ReportWorkbookExport
             ];
         }
 
+        $rows[] = [];
+        $rows[] = [
+            trans('app.reports.journal_title'),
+            ...$this->labels([
+                'Date',
+                'Type',
+                'Record',
+                'Context',
+                'Performed By',
+                'Amount',
+                'Currency',
+            ]),
+        ];
+        foreach ($report['operationalJournal'] as $event) {
+            $rows[] = [
+                trans('app.reports.journal_title'),
+                $event['occurred_at'],
+                $event['type_label'],
+                $event['title'],
+                $event['subtitle'],
+                $event['actor'],
+                $event['amount'],
+                $event['currency'],
+            ];
+        }
+
         return $rows;
     }
 

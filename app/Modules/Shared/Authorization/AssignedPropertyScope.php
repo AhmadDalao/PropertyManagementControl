@@ -259,6 +259,27 @@ final class AssignedPropertyScope
             return $query->whereIn('asset_id', $this->assetIds($actor) ?? []);
         }
 
+        if ($model instanceof Document) {
+            return $query->where(function (Builder $documents) use ($actor): void {
+                $documents
+                    ->where(function (Builder $assets) use ($actor): void {
+                        $assets
+                            ->whereIn('documentable_type', $this->morphTypes->for(new Asset))
+                            ->whereIn('documentable_id', $this->assetIds($actor) ?? []);
+                    })
+                    ->orWhere(function (Builder $leases) use ($actor): void {
+                        $leases
+                            ->whereIn('documentable_type', $this->morphTypes->for(new Lease))
+                            ->whereIn('documentable_id', $this->leaseIds($actor));
+                    })
+                    ->orWhere(function (Builder $payments) use ($actor): void {
+                        $payments
+                            ->whereIn('documentable_type', $this->morphTypes->for(new Payment))
+                            ->whereIn('documentable_id', $this->paymentIds($actor));
+                    });
+            });
+        }
+
         return $query;
     }
 

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
@@ -53,6 +54,12 @@ class ReportsManagementTest extends TestCase
                     'recentPayments',
                     'recentExpenses',
                     'maintenanceBacklog',
+                    'journalSummary.totalEvents',
+                    'journalSummary.newLeases',
+                    'journalSummary.serviceOpened',
+                    'journalSummary.serviceResolved',
+                    'journalSummary.documentsAdded',
+                    'operationalJournal',
                 ])
                 ->has('reportLibrary', 4)
                 ->where('reportLibrary.0.key', 'owner')
@@ -368,6 +375,161 @@ class ReportsManagementTest extends TestCase
                 ->where('recentPayments.0.reference', 'TODAY-PAY'));
     }
 
+    public function test_operational_journal_combines_each_scoped_business_event_and_exports_it(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Journal Owner']);
+        $asset = $this->createAsset($portfolio, ['title_en' => 'Journal Unit']);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio, ['name' => 'Journal Tenant']),
+        );
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, [
+            'code' => 'JOURNAL-LEASE',
+        ]);
+
+        Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'JOURNAL-PAYMENT',
+            'type' => 'rent',
+            'method' => 'cash',
+            'status' => 'posted',
+            'received_on' => today(),
+            'amount' => 1500,
+            'currency' => 'SAR',
+        ]);
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'created_by_user_id' => $owner->id,
+            'category' => 'maintenance',
+            'title' => 'Journal repair',
+            'incurred_on' => today(),
+            'amount' => 275,
+            'currency' => 'SAR',
+            'status' => 'posted',
+        ]);
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $owner->id,
+            'category' => 'plumbing',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => 'Journal open request',
+            'description' => 'Open service event',
+            'requested_at' => now(),
+        ]);
+        MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $asset->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $owner->id,
+            'resolved_by_user_id' => $owner->id,
+            'category' => 'electrical',
+            'priority' => 'medium',
+            'status' => 'resolved',
+            'title' => 'Journal resolved request',
+            'description' => 'Resolved service event',
+            'requested_at' => now()->subMonth(),
+            'resolved_at' => now(),
+            'created_at' => now()->subMonth(),
+            'updated_at' => now(),
+        ]);
+        Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'lease_contract',
+            'title_en' => 'Journal contract',
+            'title_ar' => 'عقد السجل',
+            'disk' => 'local',
+            'file_path' => 'tests/journal-contract.pdf',
+            'original_name' => 'journal-contract.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 128,
+            'is_public' => true,
+        ]);
+        foreach (range(1, 7) as $number) {
+            Document::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'uploaded_by_user_id' => $owner->id,
+                'documentable_type' => $lease->getMorphClass(),
+                'documentable_id' => $lease->id,
+                'type' => 'other',
+                'title_en' => "Journal supplement {$number}",
+                'title_ar' => "ملحق السجل {$number}",
+                'disk' => 'local',
+                'file_path' => "tests/journal-supplement-{$number}.pdf",
+                'original_name' => "journal-supplement-{$number}.pdf",
+                'mime_type' => 'application/pdf',
+                'file_size' => 64,
+                'is_public' => false,
+                'created_at' => today(),
+                'updated_at' => today(),
+            ]);
+        }
+
+        $filters = [
+            'date_from' => today()->toDateString(),
+            'date_to' => today()->toDateString(),
+        ];
+        $expectedTypes = [
+            'document',
+            'expense',
+            'lease',
+            'maintenance_opened',
+            'maintenance_resolved',
+            'payment',
+        ];
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', $filters))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('journalSummary.totalEvents', 13)
+                ->where('journalSummary.newLeases', 1)
+                ->where('journalSummary.serviceOpened', 1)
+                ->where('journalSummary.serviceResolved', 1)
+                ->where('journalSummary.documentsAdded', 8)
+                ->has('operationalJournal', 12)
+                ->where(
+                    'operationalJournal',
+                    fn ($events): bool => collect($events)
+                        ->pluck('type')
+                        ->unique()
+                        ->sort()
+                        ->values()
+                        ->all() === $expectedTypes
+                        && ! collect($events)->contains('title', 'Journal supplement 7'),
+                ));
+
+        $sheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)->get(route('reports.export', $filters)),
+        );
+        foreach (['Operational journal', 'JOURNAL-PAYMENT', 'Journal repair', 'Journal contract', 'Journal supplement 7'] as $value) {
+            $this->assertStringContainsString($value, $sheet);
+        }
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('reports.index', $filters))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('operationalJournal.0.type_label', fn (string $label): bool => $label !== '')
+                ->where(
+                    'operationalJournal',
+                    fn ($events): bool => collect($events)
+                        ->pluck('type_label')
+                        ->contains('ترحيل دفعة'),
+                ));
+    }
+
     public function test_property_filter_scopes_every_report_dataset_to_the_selected_asset_tree(): void
     {
         $portfolio = $this->createPortfolio();
@@ -469,13 +631,24 @@ class ReportsManagementTest extends TestCase
                 ->where('summary.expenses', fn (int|float $value) => (float) $value === 100.0)
                 ->where('summary.openRequests', 1)
                 ->where('recentPayments.0.reference', 'SELECTED')
-                ->where('maintenanceBacklog.0.title', 'Selected issue'));
+                ->where('maintenanceBacklog.0.title', 'Selected issue')
+                ->where(
+                    'operationalJournal',
+                    fn ($events): bool => collect($events)->contains('title', 'SELECTED')
+                        && collect($events)->contains('title', 'Selected repair')
+                        && ! collect($events)->contains('title', 'OTHER')
+                        && ! collect($events)->contains('title', 'Other repair'),
+                ));
 
         $sheet = $this->xlsxWorksheetXml(
             $this->actingAs($owner)->get(route('reports.export', ['property_id' => $root->id])),
         );
         $this->assertStringContainsString('Selected issue', $sheet);
+        $this->assertStringContainsString('Operational journal', $sheet);
+        $this->assertStringContainsString('SELECTED', $sheet);
+        $this->assertStringContainsString('Selected repair', $sheet);
         $this->assertStringNotContainsString('Other issue', $sheet);
+        $this->assertStringNotContainsString('Other repair', $sheet);
         $this->assertStringNotContainsString('9200', $sheet);
 
         $this->actingAs($owner)

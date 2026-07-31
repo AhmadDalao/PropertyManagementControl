@@ -43,7 +43,7 @@ final class ReportSummaryPresenter
             'activeLeases' => $leases->activeLeases,
             'leasesInArrears' => $leases->arrearsLeases->count(),
             'openRequests' => $maintenanceBacklog->count(),
-            'resolvedRequests' => $data->maintenanceRequests->where('status', 'resolved')->count(),
+            'resolvedRequests' => $data->resolvedMaintenanceRequests->count(),
         ];
     }
 }

@@ -69,7 +69,7 @@ class ReportController extends Controller
     {
         $filters = $request->filters();
         $actor = $this->actor($request);
-        $report = $this->reports->handle($actor, $filters);
+        $report = $this->reports->handle($actor, $filters, true);
 
         return $this->workbook->download($report, $filters, $actor);
     }

@@ -76,6 +76,28 @@ export type MaintenanceRow = {
     created_at?: string | null;
 };
 
+export type OperationalJournalEvent = {
+    key: string;
+    type:
+        | 'payment'
+        | 'expense'
+        | 'lease'
+        | 'maintenance_opened'
+        | 'maintenance_resolved'
+        | 'document';
+    type_label: string;
+    title: string;
+    subtitle: string;
+    occurred_at?: string | null;
+    actor: string;
+    href: string;
+    amount?: number | null;
+    currency?: string | null;
+    direction: 'income' | 'outflow' | 'none';
+    icon: string;
+    tone: 'success' | 'warning' | 'danger' | 'info';
+};
+
 export type ReportPreset = {
     id: number;
     title_en: string;
@@ -131,6 +153,14 @@ export type ReportsPageProps = SharedProps & {
     recentPayments: PaymentRow[];
     recentExpenses: ExpenseRow[];
     maintenanceBacklog: MaintenanceRow[];
+    journalSummary: {
+        totalEvents: number;
+        newLeases: number;
+        serviceOpened: number;
+        serviceResolved: number;
+        documentsAdded: number;
+    };
+    operationalJournal: OperationalJournalEvent[];
     savedPresets: ReportPreset[];
     reportLibrary: ReportLibraryGroup[];
 };

@@ -78,6 +78,11 @@ class PropertyManagerAssignmentScopeTest extends TestCase
                 ->where('summary.expenses', fn (int|float $value): bool => (float) $value === 10.0)
                 ->where('summary.activeLeases', 1)
                 ->where('summary.openRequests', 1)
+                ->where(
+                    'operationalJournal',
+                    fn ($events): bool => collect($events)->contains('title', 'Visible scope contract')
+                        && ! collect($events)->contains('title', 'Hidden scope contract'),
+                )
                 ->has('propertyOptions', 1)
                 ->where('propertyOptions.0.id', $data['visibleRoot']->id));
 

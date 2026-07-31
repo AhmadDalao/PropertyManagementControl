@@ -5,6 +5,7 @@ namespace App\Modules\Reports\Queries;
 use App\Models\User;
 use App\Modules\Reports\Presenters\ReportChartsPresenter;
 use App\Modules\Reports\Presenters\ReportExpenseRowsPresenter;
+use App\Modules\Reports\Presenters\ReportJournalPresenter;
 use App\Modules\Reports\Presenters\ReportLeaseRowsPresenter;
 use App\Modules\Reports\Presenters\ReportMaintenanceRowsPresenter;
 use App\Modules\Reports\Presenters\ReportPaymentRowsPresenter;
@@ -22,6 +23,7 @@ final readonly class PortfolioReportQuery
         private ReportPaymentRowsPresenter $paymentRows,
         private ReportExpenseRowsPresenter $expenseRows,
         private ReportMaintenanceRowsPresenter $maintenanceRows,
+        private ReportJournalPresenter $journal,
         private ReportCollectionControlQuery $collectionControl,
     ) {}
 
@@ -29,7 +31,7 @@ final readonly class PortfolioReportQuery
      * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<string, mixed>
      */
-    public function handle(User $actor, array $filters): array
+    public function handle(User $actor, array $filters, bool $forExport = false): array
     {
         $data = $this->dataset->handle($actor, $filters);
         $leaseSnapshot = $this->leaseSnapshot->make($data, $filters);
@@ -50,6 +52,7 @@ final readonly class PortfolioReportQuery
             ...$this->paymentRows->present($data),
             'recentExpenses' => $this->expenseRows->present($data),
             'maintenanceBacklog' => $this->maintenanceRows->present($maintenanceBacklog),
+            ...$this->journal->present($data, $filters, $forExport ? null : 12),
         ];
     }
 }
