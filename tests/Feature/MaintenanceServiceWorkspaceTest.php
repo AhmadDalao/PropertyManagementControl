@@ -560,6 +560,19 @@ class MaintenanceServiceWorkspaceTest extends TestCase
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-requests.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('counts', fn ($counts) => collect($counts)->pluck('label')->all() === [
+                    'الكل',
+                    'مفتوح',
+                    'قيد التنفيذ',
+                    'تم الحل',
+                    'ملغي',
+                ]));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
             ->get(route('maintenance-requests.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page

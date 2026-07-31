@@ -62,11 +62,11 @@ class MaintenanceIndexQuery
             'maintenanceInsights' => $this->insights->get($summaryQuery, $financialsEnabled),
             'financialsEnabled' => $financialsEnabled,
             'filters' => $filters,
-            'counts' => $this->tables->statusCounts(
+            'counts' => $this->localizedCounts($this->tables->statusCounts(
                 $summaryQuery,
                 MaintenanceOptions::STATUSES,
                 $filters,
-            ),
+            )),
             'categoryOptions' => MaintenanceOptions::CATEGORIES,
             'priorityOptions' => MaintenanceOptions::PRIORITIES,
             'statusOptions' => MaintenanceOptions::STATUSES,
@@ -84,5 +84,21 @@ class MaintenanceIndexQuery
         $this->directory->applyManagerFilters($requests, $filters, $actor);
 
         return $requests;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $counts
+     * @return array<int, array<string, mixed>>
+     */
+    private function localizedCounts(array $counts): array
+    {
+        return collect($counts)->map(function (array $count): array {
+            $status = (string) data_get($count, 'filter.status', 'all');
+            $count['label'] = $status === 'all'
+                ? trans('app.maintenance.all')
+                : trans("app.status.{$status}");
+
+            return $count;
+        })->all();
     }
 }
