@@ -114,13 +114,21 @@ class CreateMaintenance
                 'requested_at' => now(),
                 'due_at' => $this->schedule->dueAtForPriority($data['priority']),
                 'resolved_at' => $data['status'] === 'resolved' ? now() : null,
+                'resolution_summary' => $data['status'] === 'resolved'
+                    ? $data['resolution_summary']
+                    : null,
+                'resolved_by_user_id' => $data['status'] === 'resolved'
+                    ? $actor->id
+                    : null,
             ]);
 
             $request->updates()->create([
                 'user_id' => $actor->id,
                 'status_to' => $data['status'],
-                'is_public_comment' => false,
-                'comment' => trans('app.maintenance.created_by_management'),
+                'is_public_comment' => $data['status'] === 'resolved',
+                'comment' => $data['status'] === 'resolved'
+                    ? $data['resolution_summary']
+                    : trans('app.maintenance.created_by_management'),
             ]);
 
             return $request;

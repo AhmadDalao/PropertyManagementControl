@@ -62,7 +62,11 @@ class UpdateMaintenance
             $previousStatus = $locked->status;
             $previousPriority = $locked->priority;
             $previousAssignee = $locked->assigned_to_user_id;
+            $previousResolution = $locked->resolution_summary;
             $this->transitions->ensureAllowed($previousStatus, $data['status']);
+            $isResolved = $data['status'] === 'resolved';
+            $resolutionChanged = $isResolved
+                && $previousResolution !== ($data['resolution_summary'] ?? null);
             $locked->update([
                 'assigned_to_user_id' => $data['assigned_to_user_id'] ?? null,
                 'priority' => $data['priority'],
@@ -74,16 +78,41 @@ class UpdateMaintenance
                     $data['status'],
                     $previousPriority,
                 ),
-                'resolved_at' => $data['status'] === 'resolved' ? now() : null,
+                'resolved_at' => $isResolved ? ($locked->resolved_at ?? now()) : null,
+                'resolution_summary' => $isResolved
+                    ? $data['resolution_summary']
+                    : $locked->resolution_summary,
+                'resolved_by_user_id' => $isResolved
+                    ? ($previousStatus !== 'resolved' || $resolutionChanged
+                        ? $actor->id
+                        : ($locked->resolved_by_user_id ?? $actor->id))
+                    : $locked->resolved_by_user_id,
+                'tenant_confirmed_at' => $previousStatus !== $data['status'] || $resolutionChanged
+                    ? null
+                    : $locked->tenant_confirmed_at,
+                'tenant_confirmation_note' => $previousStatus !== $data['status'] || $resolutionChanged
+                    ? null
+                    : $locked->tenant_confirmation_note,
             ]);
 
-            if ($this->shouldRecordUpdate($locked, $data, $previousStatus, $previousPriority, $previousAssignee)) {
+            if ($this->shouldRecordUpdate(
+                $locked,
+                $data,
+                $previousStatus,
+                $previousPriority,
+                $previousAssignee,
+                $previousResolution,
+            )) {
                 $locked->updates()->create([
                     'user_id' => $actor->id,
                     'status_from' => $previousStatus,
                     'status_to' => $locked->status,
-                    'is_public_comment' => (bool) ($data['is_public_comment'] ?? false),
-                    'comment' => $data['comment'] ?? trans('app.maintenance.request_updated'),
+                    'is_public_comment' => $isResolved
+                        || (bool) ($data['is_public_comment'] ?? false),
+                    'comment' => $data['comment']
+                        ?? ($isResolved
+                            ? $data['resolution_summary']
+                            : trans('app.maintenance.request_updated')),
                 ]);
             }
 
@@ -98,10 +127,12 @@ class UpdateMaintenance
         string $previousStatus,
         string $previousPriority,
         ?int $previousAssignee,
+        ?string $previousResolution,
     ): bool {
         return ! empty($data['comment'])
             || $previousStatus !== $request->status
             || $previousPriority !== $request->priority
-            || (int) $previousAssignee !== (int) $request->assigned_to_user_id;
+            || (int) $previousAssignee !== (int) $request->assigned_to_user_id
+            || $previousResolution !== $request->resolution_summary;
     }
 }

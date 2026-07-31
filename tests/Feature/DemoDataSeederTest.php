@@ -39,6 +39,20 @@ class DemoDataSeederTest extends TestCase
         $this->assertGreaterThanOrEqual(2, CollectionFollowUp::query()->count());
         $this->assertGreaterThanOrEqual(4, Payment::query()->count());
         $this->assertGreaterThanOrEqual(4, MaintenanceRequest::query()->count());
+        $this->assertDatabaseHas('maintenance_requests', [
+            'status' => 'resolved',
+            'title' => 'Bathroom mixer pressure',
+            'tenant_confirmed_at' => null,
+        ]);
+        $this->assertDatabaseHas('maintenance_work_orders', [
+            'status' => 'completed',
+            'final_amount' => 275,
+        ]);
+        $this->assertDatabaseHas('expense_entries', [
+            'title' => 'Mixer cartridge replacement',
+            'amount' => 275,
+            'status' => 'posted',
+        ]);
         $this->assertGreaterThanOrEqual(4, Document::query()->count());
         $this->assertDatabaseHas('documents', [
             'documentable_type' => 'lease',

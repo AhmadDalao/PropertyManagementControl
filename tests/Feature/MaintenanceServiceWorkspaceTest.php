@@ -621,7 +621,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.show', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.workflow.title', 'Review the completed service record')
+                ->where('detailPage.workflow.title', 'Tenant sign-off is pending')
                 ->where('detailPage.workflow.actions', fn ($actions) => collect($actions)->pluck('label')->all() === [
                     'Review and reopen',
                     'Add expense',

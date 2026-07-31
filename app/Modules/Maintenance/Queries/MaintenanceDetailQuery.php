@@ -26,6 +26,7 @@ class MaintenanceDetailQuery
             'tenantProfile.user',
             'submittedBy',
             'assignedTo',
+            'resolvedBy',
         ]);
 
         $updates = $request->updates()

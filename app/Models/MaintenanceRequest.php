@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $title
  * @property string $description
  * @property string|null $internal_notes
+ * @property string|null $resolution_summary
+ * @property int|null $resolved_by_user_id
+ * @property string|null $tenant_confirmation_note
  * @property int $expenses_count
  * @property float|null $posted_expense_total
  * @property-read Portfolio|null $portfolio
@@ -35,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read TenantProfile|null $tenantProfile
  * @property-read User|null $submittedBy
  * @property-read User|null $assignedTo
+ * @property-read User|null $resolvedBy
  * @property-read Collection<int, MaintenanceUpdate> $updates
  * @property-read Collection<int, ExpenseEntry> $expenses
  * @property-read Collection<int, MaintenanceAttachment> $attachments
@@ -43,6 +47,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property CarbonInterface|null $requested_at
  * @property CarbonInterface|null $due_at
  * @property CarbonInterface|null $resolved_at
+ * @property CarbonInterface|null $tenant_confirmed_at
  */
 class MaintenanceRequest extends Model
 {
@@ -60,6 +65,7 @@ class MaintenanceRequest extends Model
             'requested_at' => 'datetime',
             'due_at' => 'datetime',
             'resolved_at' => 'datetime',
+            'tenant_confirmed_at' => 'datetime',
             'meta_json' => 'array',
         ];
     }
@@ -98,6 +104,12 @@ class MaintenanceRequest extends Model
     public function assignedTo(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to_user_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function resolvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resolved_by_user_id');
     }
 
     /** @return HasMany<MaintenanceUpdate, $this> */

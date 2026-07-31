@@ -334,6 +334,18 @@ class DemoDataSeeder extends Seeder
             'status' => 'in_progress',
             'requested_at' => now()->subDays(6),
         ]);
+        $resolvedRequest = $this->maintenance($portfolio, $unitA, $activeLease, $tenant, $tenantUser, $manager, [
+            'title' => 'Bathroom mixer pressure',
+            'description' => 'Water pressure dropped at the bathroom mixer.',
+            'category' => 'plumbing',
+            'priority' => 'medium',
+            'status' => 'resolved',
+            'requested_at' => now()->subDays(9),
+            'due_at' => now()->subDays(5),
+            'resolved_at' => now()->subDays(6),
+            'resolution_summary' => 'Replaced the mixer cartridge and tested hot and cold water pressure.',
+            'resolved_by_user_id' => $manager->id,
+        ]);
         $vendor = MaintenanceVendor::query()->create([
             'portfolio_id' => $portfolio->id,
             'name' => "{$prefix} Property Services",
@@ -360,10 +372,30 @@ class DemoDataSeeder extends Seeder
             'scope' => 'Inspect the sink plumbing, replace the failed seal, and test for leaks.',
             'tenant_access_required' => true,
         ]);
+        MaintenanceWorkOrder::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'maintenance_request_id' => $resolvedRequest->id,
+            'vendor_id' => $vendor->id,
+            'created_by_user_id' => $manager->id,
+            'assigned_to_user_id' => $manager->id,
+            'reference_code' => "{$prefix}-WO-002",
+            'vendor_name' => $vendor->name,
+            'vendor_phone' => $vendor->phone,
+            'status' => 'completed',
+            'scheduled_at' => now()->subDays(7)->setTime(10, 0),
+            'completed_at' => now()->subDays(6)->setTime(12, 0),
+            'estimated_amount' => 300,
+            'final_amount' => 275,
+            'currency' => 'SAR',
+            'scope' => 'Replace the bathroom mixer cartridge and verify water pressure.',
+            'completion_notes' => 'Hot and cold lines tested without leaks.',
+            'tenant_access_required' => true,
+        ]);
 
         ExpenseEntry::query()->create([
             'portfolio_id' => $portfolio->id,
             'asset_id' => $unitA->id,
+            'maintenance_request_id' => $inProgressRequest->id,
             'created_by_user_id' => $manager->id,
             'category' => 'maintenance',
             'title' => 'Electrical inspection',
@@ -372,6 +404,20 @@ class DemoDataSeeder extends Seeder
             'amount' => 350,
             'currency' => 'SAR',
             'vendor_name' => 'Quick Fix LLC',
+            'status' => 'posted',
+        ]);
+        ExpenseEntry::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $unitA->id,
+            'maintenance_request_id' => $resolvedRequest->id,
+            'created_by_user_id' => $manager->id,
+            'category' => 'plumbing',
+            'title' => 'Mixer cartridge replacement',
+            'description' => 'Completed service cost for the tenant-confirmation example.',
+            'incurred_on' => now()->subDays(6),
+            'amount' => 275,
+            'currency' => 'SAR',
+            'vendor_name' => $vendor->name,
             'status' => 'posted',
         ]);
 
@@ -518,13 +564,18 @@ class DemoDataSeeder extends Seeder
             'title' => $attributes['title'],
             'description' => $attributes['description'],
             'requested_at' => $attributes['requested_at'],
+            'due_at' => $attributes['due_at'] ?? null,
+            'resolved_at' => $attributes['resolved_at'] ?? null,
+            'resolution_summary' => $attributes['resolution_summary'] ?? null,
+            'resolved_by_user_id' => $attributes['resolved_by_user_id'] ?? null,
         ]);
 
         $request->updates()->create([
             'user_id' => $manager->id,
             'status_to' => $attributes['status'],
             'is_public_comment' => true,
-            'comment' => 'Demo request is visible in the tenant and owner dashboards.',
+            'comment' => $attributes['resolution_summary']
+                ?? 'Demo request is visible in the tenant and owner dashboards.',
         ]);
 
         return $request;

@@ -11,11 +11,18 @@ final class MaintenanceWorkflowPresenter
     public function present(MaintenanceDetailData $data): array
     {
         $request = $data->request;
+        $workflowKey = $request->status;
+
+        if ($request->status === 'resolved') {
+            $workflowKey = $request->tenant_confirmed_at
+                ? 'confirmed'
+                : 'awaiting_confirmation';
+        }
 
         return [
             'eyebrow' => trans('app.resource.next_step'),
-            'title' => trans("app.maintenance.workflow_{$request->status}_title"),
-            'description' => trans("app.maintenance.workflow_{$request->status}_description"),
+            'title' => trans("app.maintenance.workflow_{$workflowKey}_title"),
+            'description' => trans("app.maintenance.workflow_{$workflowKey}_description"),
             'status' => trans("app.status.{$request->status}"),
             'tone' => match ($request->status) {
                 'resolved' => 'teal',
@@ -93,11 +100,21 @@ final class MaintenanceWorkflowPresenter
     private function tenantActions(MaintenanceDetailData $data): array
     {
         $request = $data->request;
-        $actions = [[
+        $actions = [];
+
+        if ($request->status === 'resolved' && ! $request->tenant_confirmed_at) {
+            $actions[] = [
+                'label' => trans('app.maintenance.review_resolution'),
+                'href' => route('maintenance-requests.resolution-response.create', $request),
+                'variant' => 'primary',
+            ];
+        }
+
+        $actions[] = [
             'label' => trans('app.maintenance.add_comment'),
             'href' => route('maintenance-requests.edit', $request),
-            'variant' => 'primary',
-        ]];
+            'variant' => $actions === [] ? 'primary' : 'secondary',
+        ];
 
         if (in_array($request->status, ['open', 'in_progress'], true)) {
             $actions[] = [

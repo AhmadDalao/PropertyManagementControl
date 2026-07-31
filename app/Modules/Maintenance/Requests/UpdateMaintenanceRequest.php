@@ -40,6 +40,7 @@ class UpdateMaintenanceRequest extends FormRequest
             'priority' => ['required', Rule::in(MaintenanceOptions::PRIORITIES)],
             'status' => ['required', Rule::in(MaintenanceOptions::STATUSES)],
             'internal_notes' => ['nullable', 'string'],
+            'resolution_summary' => ['nullable', 'string', 'max:5000', 'required_if:status,resolved'],
             'comment' => ['nullable', 'string'],
             'is_public_comment' => ['nullable', 'boolean'],
         ];

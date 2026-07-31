@@ -47,6 +47,7 @@ class StoreMaintenanceRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string'],
             'internal_notes' => ['nullable', 'string'],
+            'resolution_summary' => ['nullable', 'string', 'max:5000', 'required_if:status,resolved'],
             ...MaintenanceAttachmentRules::optional(),
         ];
     }

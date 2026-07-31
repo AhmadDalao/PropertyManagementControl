@@ -22,6 +22,8 @@ use App\Http\Controllers\LeaseRenewalController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\MaintenanceRequestController;
+use App\Http\Controllers\MaintenanceResolutionController;
+use App\Http\Controllers\MaintenanceServiceReportController;
 use App\Http\Controllers\MaintenanceVendorController;
 use App\Http\Controllers\MaintenanceWorkOrderController;
 use App\Http\Controllers\ManagerPropertyAssignmentController;
@@ -155,6 +157,21 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])
         ->middleware('portfolio.module:maintenance')
         ->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/resolution-response',
+        [MaintenanceResolutionController::class, 'create'],
+    )->name('maintenance-requests.resolution-response.create')
+        ->middleware('portfolio.module:maintenance');
+    Route::post(
+        '/maintenance-requests/{maintenanceRequest}/resolution-response',
+        [MaintenanceResolutionController::class, 'store'],
+    )->name('maintenance-requests.resolution-response.store')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/service-report.pdf',
+        MaintenanceServiceReportController::class,
+    )->name('maintenance-requests.service-report')
+        ->middleware('portfolio.module:maintenance');
     Route::get(
         '/maintenance-requests/{maintenanceRequest}/work-orders/create',
         [MaintenanceWorkOrderController::class, 'create'],

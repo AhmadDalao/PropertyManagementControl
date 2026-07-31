@@ -34,6 +34,15 @@ class MaintenanceDetailOverviewPresenter
                     ? 'primary'
                     : 'muted',
             ],
+            [
+                'label' => trans('app.maintenance.tenant_confirmation'),
+                'value' => $request->status === 'resolved'
+                    ? trans($request->tenant_confirmed_at
+                        ? 'app.maintenance.confirmed'
+                        : 'app.maintenance.pending_confirmation')
+                    : trans('app.maintenance.not_ready'),
+                'tone' => $request->tenant_confirmed_at ? 'teal' : 'muted',
+            ],
         ];
 
         if (
@@ -79,6 +88,15 @@ class MaintenanceDetailOverviewPresenter
             'href' => route('maintenance-requests.attachments.create', $request),
             'variant' => $data->tenantMode ? 'primary' : 'light',
         ];
+
+        if ($request->status === 'resolved') {
+            $actions[] = [
+                'label' => trans('app.maintenance.download_service_report'),
+                'href' => route('maintenance-requests.service-report', $request),
+                'variant' => 'light',
+                'external' => true,
+            ];
+        }
 
         if (
             ! $data->tenantMode
@@ -146,6 +164,22 @@ class MaintenanceDetailOverviewPresenter
             ['label' => trans('app.maintenance.requested_at'), 'value' => $request->requested_at?->toDateTimeString()],
             ['label' => trans('app.maintenance.due_at'), 'value' => $request->due_at?->toDateTimeString()],
             ['label' => trans('app.maintenance.resolved_at'), 'value' => $request->resolved_at?->toDateTimeString()],
+            ['label' => trans('app.maintenance.resolved_by'), 'value' => $request->resolvedBy?->name],
+            ['label' => trans('app.maintenance.resolution_summary'), 'value' => $request->resolution_summary],
+            [
+                'label' => trans('app.maintenance.tenant_confirmation'),
+                'value' => $request->tenant_confirmed_at
+                    ? trans('app.maintenance.confirmed_at', [
+                        'date' => $request->tenant_confirmed_at->toDateTimeString(),
+                    ])
+                    : ($request->status === 'resolved'
+                        ? trans('app.maintenance.pending_confirmation')
+                        : null),
+            ],
+            [
+                'label' => trans('app.maintenance.tenant_response_note'),
+                'value' => $request->tenant_confirmation_note,
+            ],
             ['label' => trans('app.maintenance.issue_description'), 'value' => $request->description],
             [
                 'label' => trans('app.maintenance.internal_notes'),
