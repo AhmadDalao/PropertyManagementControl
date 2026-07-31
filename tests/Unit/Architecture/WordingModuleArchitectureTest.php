@@ -8,6 +8,22 @@ use PHPUnit\Framework\TestCase;
 class WordingModuleArchitectureTest extends TestCase
 {
     #[Test]
+    public function translation_cache_tracks_language_file_versions(): void
+    {
+        $resolved = $this->source(
+            'app/Modules/Wording/Support/ResolvedUiTranslations.php',
+        );
+        $defaults = $this->source(
+            'app/Modules/Wording/Support/TranslationDefaults.php',
+        );
+
+        $this->assertStringContainsString('$this->defaults->fingerprint($locale)', $resolved);
+        $this->assertDoesNotMatchRegularExpression('/ui-translations:v\d+/', $resolved);
+        $this->assertStringContainsString('public function fingerprint(', $defaults);
+        $this->assertStringContainsString('glob(lang_path(', $defaults);
+    }
+
+    #[Test]
     public function wording_controller_stays_a_thin_http_adapter(): void
     {
         $source = $this->source('app/Http/Controllers/WordingController.php');

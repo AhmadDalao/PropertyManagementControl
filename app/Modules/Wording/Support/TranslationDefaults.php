@@ -11,6 +11,9 @@ class TranslationDefaults
     /** @var array<string, array<string, mixed>> */
     private array $resolved = [];
 
+    /** @var array<string, string> */
+    private array $fingerprints = [];
+
     public function __construct(
         private readonly DocumentationTranslationDefaults $documentation,
     ) {}
@@ -72,6 +75,27 @@ class TranslationDefaults
     {
         return $this->value($group, $key, 'en') !== null
             && $this->value($group, $key, 'ar') !== null;
+    }
+
+    public function fingerprint(string $locale): string
+    {
+        if (isset($this->fingerprints[$locale])) {
+            return $this->fingerprints[$locale];
+        }
+
+        $paths = glob(lang_path("{$locale}/*.php")) ?: [];
+        $paths[] = config_path('property_docs.php');
+        sort($paths);
+        $metadata = collect($paths)
+            ->filter(fn (string $path): bool => is_file($path))
+            ->map(fn (string $path): string => implode(':', [
+                $path,
+                (string) filemtime($path),
+                (string) filesize($path),
+            ]))
+            ->implode('|');
+
+        return $this->fingerprints[$locale] = substr(hash('sha256', $metadata), 0, 16);
     }
 
     /**

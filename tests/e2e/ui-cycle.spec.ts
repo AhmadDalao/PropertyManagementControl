@@ -44,6 +44,7 @@ const primaryAdminRoutes = [
     '/maintenance-vendors',
     '/expenses',
     '/documents',
+    '/notifications',
     '/media-files',
     '/audit-logs',
     '/cms',
@@ -1070,6 +1071,45 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
         }
 
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('notification inbox stays searchable, responsive, and bilingual', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/notifications?locale=en');
+
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'Notifications' }),
+        ).toBeVisible();
+        await expect(
+            page.getByPlaceholder(
+                'Search titles, details, codes, or people...',
+            ),
+        ).toBeVisible();
+        await expect(page.locator('a[href*="type=payment"]')).toContainText(
+            'Payments',
+        );
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-filter-chips a, #notification-search, button[type="submit"]',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/notifications?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'الإشعارات' }),
+        ).toBeVisible();
+        await expect(
+            page.getByPlaceholder(
+                'ابحث في العناوين والتفاصيل والرموز والأشخاص...',
+            ),
+        ).toBeVisible();
+        await expect(page.locator('a[href*="type=payment"]')).toContainText(
+            'المدفوعات',
+        );
         await expectNoHorizontalOverflow(page);
     });
 

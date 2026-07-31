@@ -8,6 +8,7 @@ use App\Modules\Documents\Support\DocumentAccess;
 use App\Modules\Documents\Support\DocumentAttachments;
 use App\Modules\Documents\Support\DocumentAttributes;
 use App\Modules\Documents\Support\DocumentInputGuard;
+use App\Modules\Notifications\Actions\SendOperationalActivityNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -18,6 +19,7 @@ final class UpdateDocument
         private readonly DocumentAttachments $attachments,
         private readonly DocumentAttributes $attributes,
         private readonly DocumentInputGuard $input,
+        private readonly SendOperationalActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -26,7 +28,8 @@ final class UpdateDocument
         $this->access->ensureCanManage($actor, $document);
         $data = $this->input->validateUpdate($data);
 
-        return DB::transaction(function () use ($actor, $document, $data): Document {
+        $wasPublic = (bool) $document->is_public;
+        $updated = DB::transaction(function () use ($actor, $document, $data): Document {
             $lockedDocument = Document::query()->lockForUpdate()->whereKey($document->id)->firstOrFail();
             $this->access->ensureCanManage($actor, $lockedDocument);
             $alias = $this->attachments->aliasForDocument($lockedDocument);
@@ -41,5 +44,11 @@ final class UpdateDocument
 
             return $lockedDocument->fresh(['documentable']);
         }, 3);
+
+        if (! $wasPublic && $updated->is_public) {
+            $this->notifications->document($actor, $updated);
+        }
+
+        return $updated;
     }
 }

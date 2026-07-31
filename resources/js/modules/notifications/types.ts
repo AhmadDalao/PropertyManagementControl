@@ -10,6 +10,8 @@ export type NotificationItem = {
     body: string;
     icon: string;
     tone: NotificationTone;
+    resource_type: string;
+    resource_label: string;
     target_href: string;
     read_href: string;
     read: boolean;
@@ -24,11 +26,20 @@ export type NotificationSummary = {
 export type NotificationIndexPageProps = SharedProps & {
     filters: {
         status: 'all' | 'unread' | 'read';
+        type: 'all' | 'maintenance_request' | 'payment' | 'lease' | 'document';
+        search: string;
     };
     counts: {
         all: number;
         unread: number;
         read: number;
+    };
+    typeCounts: {
+        all: number;
+        maintenance_request: number;
+        payment: number;
+        lease: number;
+        document: number;
     };
     notificationItems: PaginatedData<NotificationItem>;
 };

@@ -11,6 +11,7 @@ final class NotificationItemPresenter
     {
         $locale = app()->getLocale();
         $data = $notification->data;
+        $resourceType = (string) ($data['resource_type'] ?? 'activity');
 
         return [
             'id' => $notification->id,
@@ -19,6 +20,8 @@ final class NotificationItemPresenter
             'body' => $this->localized($data, 'body', $locale),
             'icon' => (string) ($data['icon'] ?? 'bi-envelope'),
             'tone' => (string) ($data['tone'] ?? 'neutral'),
+            'resource_type' => $resourceType,
+            'resource_label' => trans("app.notifications.types.{$resourceType}"),
             'target_href' => $this->target($data['url'] ?? null),
             'read_href' => route('notifications.read', $notification->id, false),
             'read' => $notification->read_at !== null,

@@ -39,6 +39,7 @@ final class MaintenanceActivityNotification extends Notification
             'resource_id' => $this->request->id,
             'portfolio_id' => $this->request->portfolio_id,
             'asset_id' => $this->request->asset_id,
+            'actor_user_id' => $this->actor->id,
         ];
     }
 

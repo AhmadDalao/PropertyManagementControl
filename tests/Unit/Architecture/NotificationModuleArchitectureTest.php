@@ -29,18 +29,30 @@ class NotificationModuleArchitectureTest extends TestCase
         foreach ([
             'app/Modules/Notifications/Actions/MarkNotificationsRead.php',
             'app/Modules/Notifications/Actions/SendMaintenanceActivityNotification.php',
+            'app/Modules/Notifications/Actions/SendOperationalActivityNotification.php',
+            'app/Modules/Notifications/Data/OperationalNotificationData.php',
             'app/Modules/Notifications/Notifications/MaintenanceActivityNotification.php',
+            'app/Modules/Notifications/Notifications/OperationalActivityNotification.php',
             'app/Modules/Notifications/Presenters/NotificationItemPresenter.php',
+            'app/Modules/Notifications/Presenters/OperationalNotificationFactory.php',
             'app/Modules/Notifications/Presenters/NotificationSummaryPresenter.php',
             'app/Modules/Notifications/Queries/MaintenanceNotificationRecipientsQuery.php',
             'app/Modules/Notifications/Queries/NotificationIndexQuery.php',
+            'app/Modules/Notifications/Queries/OperationalNotificationRecipientsQuery.php',
             'app/Modules/Notifications/Requests/NotificationIndexRequest.php',
             'resources/js/modules/notifications/index-page.tsx',
+            'resources/js/modules/notifications/notification-filters.tsx',
+            'resources/js/modules/notifications/notification-list.tsx',
             'resources/js/modules/notifications/notification-menu.tsx',
             'resources/js/modules/notifications/types.ts',
         ] as $path) {
             $this->assertFileExists($this->path($path));
         }
+
+        $entry = $this->source('resources/js/modules/notifications/index-page.tsx');
+        $this->assertLessThanOrEqual(80, substr_count($entry, "\n") + 1);
+        $this->assertStringContainsString("from './notification-filters'", $entry);
+        $this->assertStringContainsString("from './notification-list'", $entry);
     }
 
     private function source(string $relativePath): string

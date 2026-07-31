@@ -43,7 +43,7 @@ return [
     'notifications' => [
         'eyebrow' => 'Operational updates',
         'title' => 'Notifications',
-        'description' => 'See maintenance activity that needs your attention, then open the exact request without hunting through tables.',
+        'description' => 'Review payment, lease, document, and maintenance activity, then open the exact record without hunting through tables.',
         'activity' => 'Activity feed',
         'inbox' => 'Notification inbox',
         'inbox_description' => 'Updates are private to the people responsible for the portfolio, property, or tenancy.',
@@ -54,6 +54,9 @@ return [
         'unread_detail' => 'Still needs review',
         'read_detail' => 'Already reviewed',
         'filter' => 'Filter notifications',
+        'type_filter' => 'Filter by record type',
+        'search' => 'Search notifications',
+        'search_placeholder' => 'Search titles, details, codes, or people...',
         'new' => 'New',
         'recent' => 'Recent notifications',
         'open_menu' => 'Open notifications',
@@ -61,8 +64,52 @@ return [
         'mark_all_read' => 'Mark all as read',
         'unread_count' => ':count unread',
         'no_notifications' => 'No notifications here',
-        'no_notifications_help' => 'New maintenance activity will appear here automatically.',
+        'no_notifications_help' => 'New payment, lease, document, and maintenance activity will appear here automatically.',
+        'types' => [
+            'all' => 'All activity',
+            'activity' => 'Activity',
+            'maintenance_request' => 'Maintenance',
+            'payment' => 'Payments',
+            'lease' => 'Leases',
+            'document' => 'Documents',
+        ],
         'events' => [
+            'payment_posted' => [
+                'title' => 'Payment :reference received',
+                'body' => ':actor posted :amount to lease :lease. The receipt and updated balance are ready.',
+            ],
+            'payment_reversed' => [
+                'title' => 'Payment :reference returned to pending',
+                'body' => ':actor reversed :amount from lease :lease while the payment is reviewed.',
+            ],
+            'payment_voided' => [
+                'title' => 'Payment :reference voided',
+                'body' => ':actor voided :amount from lease :lease. The contract balance was recalculated.',
+            ],
+            'lease_created' => [
+                'title' => 'Lease :lease created',
+                'body' => ':actor created a draft lease for :asset. Review the contract details before activation.',
+            ],
+            'lease_updated' => [
+                'title' => 'Lease :lease updated',
+                'body' => ':actor updated the lease terms for :asset. Open the lease to review the current record.',
+            ],
+            'lease_activated' => [
+                'title' => 'Lease :lease activated',
+                'body' => ':actor activated the lease for :asset. The contract and installment schedule are now active.',
+            ],
+            'lease_terminated' => [
+                'title' => 'Lease :lease terminated',
+                'body' => ':actor terminated the lease for :asset. Open the record to review the final status.',
+            ],
+            'lease_renewal_created' => [
+                'title' => 'Renewal :lease prepared',
+                'body' => ':actor prepared a renewal for :asset. Review the new dates and terms before activation.',
+            ],
+            'document_available' => [
+                'title' => ':document_type available',
+                'body' => ':actor added “:document” to your portal. Open the document to review or download it.',
+            ],
             'maintenance_created' => [
                 'title' => 'New maintenance request #:id',
                 'body' => ':actor submitted “:request”. Open the request to assign and triage it.',

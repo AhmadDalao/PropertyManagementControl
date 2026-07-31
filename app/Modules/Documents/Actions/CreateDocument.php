@@ -9,6 +9,7 @@ use App\Modules\Documents\Support\DocumentAttachmentResolver;
 use App\Modules\Documents\Support\DocumentAttributes;
 use App\Modules\Documents\Support\DocumentFileStorage;
 use App\Modules\Documents\Support\DocumentInputGuard;
+use App\Modules\Notifications\Actions\SendOperationalActivityNotification;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -21,6 +22,7 @@ final class CreateDocument
         private readonly DocumentAttributes $attributes,
         private readonly DocumentFileStorage $files,
         private readonly DocumentInputGuard $input,
+        private readonly SendOperationalActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -35,7 +37,7 @@ final class CreateDocument
         $storedFile = $this->files->store($file, (int) $attachment->getAttribute('portfolio_id'));
 
         try {
-            return DB::transaction(function () use ($actor, $alias, $data, $storedFile): Document {
+            $document = DB::transaction(function () use ($actor, $alias, $data, $storedFile): Document {
                 $attachment = $this->attachments->resolve(
                     $actor,
                     $alias,
@@ -47,6 +49,9 @@ final class CreateDocument
                     $this->attributes->forCreate($actor, $attachment, $alias, $storedFile, $data),
                 );
             }, 3);
+            $this->notifications->document($actor, $document);
+
+            return $document;
         } catch (Throwable $exception) {
             $this->files->delete($storedFile->disk, $storedFile->path);
 

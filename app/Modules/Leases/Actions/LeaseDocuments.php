@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Documents\Support\BilingualPdf;
 use App\Modules\Leases\Support\LeaseAccess;
+use App\Modules\Notifications\Actions\SendOperationalActivityNotification;
 use App\Modules\Shared\PrivatePdfDocuments;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -20,6 +21,7 @@ final class LeaseDocuments
         private readonly LeaseAccess $access,
         private readonly BilingualPdf $pdf,
         private readonly PrivatePdfDocuments $documents,
+        private readonly SendOperationalActivityNotification $notifications,
     ) {}
 
     public function uploadSigned(User $actor, Lease $lease, UploadedFile $file): Document
@@ -32,7 +34,7 @@ final class LeaseDocuments
         }
 
         try {
-            return Document::query()->create([
+            $document = Document::query()->create([
                 'portfolio_id' => $lease->portfolio_id,
                 'uploaded_by_user_id' => $actor->id,
                 'documentable_type' => $lease->getMorphClass(),
@@ -47,6 +49,9 @@ final class LeaseDocuments
                 'file_size' => $file->getSize(),
                 'is_public' => true,
             ]);
+            $this->notifications->document($actor, $document);
+
+            return $document;
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($path);
 

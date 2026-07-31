@@ -11,6 +11,7 @@ use App\Modules\Leases\Support\LeaseInputGuard;
 use App\Modules\Leases\Support\LeaseParticipants;
 use App\Modules\Leases\Support\LeasePortfolioResolver;
 use App\Modules\Leases\Support\LeaseRenewalGuard;
+use App\Modules\Notifications\Actions\SendOperationalActivityNotification;
 use Illuminate\Support\Facades\DB;
 
 final class CreateLease
@@ -23,6 +24,7 @@ final class CreateLease
         private readonly LeaseRenewalGuard $renewals,
         private readonly LeaseAttributes $attributes,
         private readonly LeaseLifecycle $lifecycle,
+        private readonly SendOperationalActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -31,7 +33,7 @@ final class CreateLease
         $this->access->ensureManager($actor);
         $this->input->validateCreate($data);
 
-        return DB::transaction(function () use ($actor, $data): Lease {
+        $lease = DB::transaction(function () use ($actor, $data): Lease {
             $portfolioId = $this->portfolios->resolve($actor, $data['portfolio_id'] ?? null);
             $asset = $this->participants->asset($actor, (int) $data['asset_id'], $portfolioId);
             $tenant = $this->participants->tenant(
@@ -47,5 +49,14 @@ final class CreateLease
                 $this->attributes->forCreate($actor, $portfolioId, $tenant, $asset, $data),
             );
         }, attempts: 3);
+
+        $event = match (true) {
+            $lease->renewed_from_lease_id !== null => 'lease_renewal_created',
+            $lease->status === 'active' => 'lease_activated',
+            default => 'lease_created',
+        };
+        $this->notifications->lease($actor, $lease, $event);
+
+        return $lease;
     }
 }

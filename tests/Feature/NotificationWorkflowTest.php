@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\MaintenanceRequest;
+use App\Models\Payment;
+use App\Modules\Documents\Actions\ManageDocuments;
 use App\Modules\Notifications\Notifications\MaintenanceActivityNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -172,6 +175,113 @@ class NotificationWorkflowTest extends TestCase
         $this->assertNull($otherNotification->fresh()->read_at);
     }
 
+    public function test_payment_lease_and_document_events_reach_only_affected_accounts(): void
+    {
+        Storage::fake('local');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+        $this->assignManagerToAsset($manager, $asset);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $manager);
+        $unrelatedOwner = $this->createUserWithRole('owner', $this->createPortfolio());
+
+        $this->actingAs($manager)
+            ->post(route('payments.store'), [
+                'lease_id' => $lease->id,
+                'type' => 'rent',
+                'method' => 'bank_transfer',
+                'status' => 'posted',
+                'reference' => 'PAY-NOTIFY-001',
+                'received_on' => now()->toDateString(),
+                'amount' => 750,
+            ])
+            ->assertRedirect();
+
+        $payment = Payment::query()->where('reference', 'PAY-NOTIFY-001')->firstOrFail();
+
+        foreach ([$tenantUser, $owner] as $recipient) {
+            $notification = $recipient->notifications()->sole();
+            $this->assertSame('payment_posted', $notification->data['event']);
+            $this->assertSame('payment', $notification->data['resource_type']);
+            $this->assertSame($manager->id, $notification->data['actor_user_id']);
+        }
+
+        $this->assertSame(0, $manager->notifications()->count());
+        $this->assertSame(0, $unrelatedOwner->notifications()->count());
+
+        $this->actingAs($manager)
+            ->put(route('payments.update', $payment), [
+                'status' => 'pending',
+                'notes' => 'Bank confirmation requires another review.',
+            ])
+            ->assertRedirect(route('payments.show', $payment));
+
+        $this->actingAs($manager)
+            ->delete(route('payments.destroy', $payment))
+            ->assertRedirect(route('payments.show', $payment));
+
+        $events = $tenantUser->notifications()
+            ->get()
+            ->pluck('data')
+            ->pluck('event')
+            ->all();
+        $this->assertEqualsCanonicalizing([
+            'payment_posted',
+            'payment_reversed',
+            'payment_voided',
+        ], $events);
+
+        $secondAsset = $this->createAsset($portfolio);
+        $this->actingAs($owner)
+            ->post(route('leases.store'), $this->leasePayload(
+                $portfolio->id,
+                $tenant->id,
+                $secondAsset->id,
+            ))
+            ->assertRedirect();
+        $newLease = $tenant->leases()->where('leaseable_id', $secondAsset->id)->sole();
+        $this->assertTrue($tenantUser->notifications()
+            ->get()
+            ->pluck('data')
+            ->contains(fn (array $data): bool => $data['event'] === 'lease_activated'));
+
+        $document = app(ManageDocuments::class)->create($owner, [
+            'documentable_type' => 'lease',
+            'documentable_id' => $newLease->id,
+            'type' => 'signed_contract',
+            'title_en' => "Signed contract {$newLease->code}",
+            'title_ar' => "العقد الموقع {$newLease->code}",
+            'is_public' => true,
+            'file' => $this->fakePdf('signed-contract.pdf'),
+        ]);
+        $documentNotification = $tenantUser->notifications()
+            ->get()
+            ->first(fn ($notification): bool => $notification->data['event'] === 'document_available');
+        $this->assertNotNull($documentNotification);
+        $this->assertSame('document_available', $documentNotification->data['event']);
+        $this->assertSame($document->id, $documentNotification->data['resource_id']);
+
+        $this->actingAs($tenantUser)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('notifications.index', [
+                'type' => 'payment',
+                'search' => 'PAY-NOTIFY-001',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.type', 'payment')
+                ->where('filters.search', 'PAY-NOTIFY-001')
+                ->where('counts.all', 3)
+                ->where('typeCounts.payment', 3)
+                ->where('notificationItems.total', 3)
+                ->where('notificationItems.data.0.resource_label', 'المدفوعات'));
+    }
+
     private function maintenanceRequest(
         int $portfolioId,
         int $assetId,
@@ -193,5 +303,30 @@ class NotificationWorkflowTest extends TestCase
             'requested_at' => now(),
             'due_at' => now()->addDay(),
         ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function leasePayload(int $portfolioId, int $tenantId, int $assetId): array
+    {
+        return [
+            'portfolio_id' => $portfolioId,
+            'tenant_profile_id' => $tenantId,
+            'asset_id' => $assetId,
+            'status' => 'active',
+            'payment_frequency' => 'monthly',
+            'started_at' => now()->startOfMonth()->toDateString(),
+            'ends_at' => now()->startOfMonth()->addYear()->subDay()->toDateString(),
+            'signed_at' => null,
+            'rent_amount' => 2000,
+            'deposit_amount' => 1000,
+            'tax_amount' => 0,
+            'discount_amount' => 0,
+            'currency' => 'SAR',
+            'billing_day' => 1,
+            'renewal_notice_days' => 30,
+            'terms_en' => null,
+            'terms_ar' => null,
+            'notes' => null,
+        ];
     }
 }

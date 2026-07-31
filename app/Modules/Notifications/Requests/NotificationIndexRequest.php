@@ -7,6 +7,9 @@ use Illuminate\Validation\Rule;
 
 final class NotificationIndexRequest extends FormRequest
 {
+    /** @var list<string> */
+    public const TYPES = ['all', 'maintenance_request', 'payment', 'lease', 'document'];
+
     public function authorize(): bool
     {
         return $this->user() !== null;
@@ -17,11 +20,20 @@ final class NotificationIndexRequest extends FormRequest
     {
         return [
             'status' => ['nullable', Rule::in(['all', 'unread', 'read'])],
+            'type' => ['nullable', Rule::in(self::TYPES)],
+            'search' => ['nullable', 'string', 'max:120'],
         ];
     }
 
-    public function status(): string
+    /** @return array{status:string,type:string,search:string} */
+    public function filters(): array
     {
-        return (string) (($this->validated()['status'] ?? null) ?: 'all');
+        $validated = $this->validated();
+
+        return [
+            'status' => (string) (($validated['status'] ?? null) ?: 'all'),
+            'type' => (string) (($validated['type'] ?? null) ?: 'all'),
+            'search' => trim((string) ($validated['search'] ?? '')),
+        ];
     }
 }

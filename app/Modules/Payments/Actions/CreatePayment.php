@@ -4,6 +4,7 @@ namespace App\Modules\Payments\Actions;
 
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Notifications\Actions\SendOperationalActivityNotification;
 use App\Modules\Payments\Support\PaymentAccess;
 use App\Modules\Payments\Support\PaymentAttributes;
 use App\Modules\Payments\Support\PaymentInputGuard;
@@ -18,6 +19,7 @@ final class CreatePayment
         private readonly PaymentLeaseGuard $leases,
         private readonly PaymentAttributes $attributes,
         private readonly PaymentAllocator $allocator,
+        private readonly SendOperationalActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
@@ -26,7 +28,7 @@ final class CreatePayment
         $this->access->ensureManager($actor);
         $this->input->validateCreate($data);
 
-        return DB::transaction(function () use ($actor, $data): Payment {
+        $payment = DB::transaction(function () use ($actor, $data): Payment {
             $lease = $this->leases->payable($actor, (int) $data['lease_id']);
             $payment = Payment::query()->create($this->attributes->forCreate($actor, $lease, $data));
 
@@ -36,5 +38,11 @@ final class CreatePayment
 
             return $payment->fresh(['allocations']);
         }, attempts: 3);
+
+        if ($payment->status === 'posted') {
+            $this->notifications->payment($actor, $payment, 'payment_posted');
+        }
+
+        return $payment;
     }
 }

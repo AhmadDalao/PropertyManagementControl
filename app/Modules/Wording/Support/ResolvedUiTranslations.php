@@ -137,6 +137,6 @@ class ResolvedUiTranslations
 
     private function cacheKey(string $locale): string
     {
-        return "ui-translations:v63:{$locale}";
+        return "ui-translations:{$this->defaults->fingerprint($locale)}:{$locale}";
     }
 }

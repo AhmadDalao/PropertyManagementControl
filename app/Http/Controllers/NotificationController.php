@@ -18,7 +18,7 @@ final class NotificationController extends Controller
     ): Response {
         return Inertia::render(
             'admin/notifications/index',
-            $notifications->handle($this->actor($request), $request->status()),
+            $notifications->handle($this->actor($request), $request->filters()),
         );
     }
 
