@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Modules\Assets\Presenters\PropertyContextPresenter;
 use App\Modules\Authentication\Presenters\AuthenticatedUserPresenter;
+use App\Modules\Notifications\Presenters\NotificationSummaryPresenter;
 use App\Modules\PublicSite\Queries\PublicNavigationQuery;
 use App\Modules\Wording\UiTranslationCatalog;
 use Illuminate\Http\Request;
@@ -54,6 +55,8 @@ class HandleInertiaRequests extends Middleware
                 'user' => app(AuthenticatedUserPresenter::class)
                     ->present($request->user()),
             ],
+            'notificationSummary' => fn () => app(NotificationSummaryPresenter::class)
+                ->present($request->user()),
             'propertyContext' => fn () => app(PropertyContextPresenter::class)
                 ->present($request),
             'flash' => [

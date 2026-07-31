@@ -27,6 +27,8 @@ class PropertyOperationsWorkflowTest extends TestCase
 
     public function test_property_detail_rolls_descendant_unit_operations_into_one_owner_view(): void
     {
+        $this->travelTo('2026-08-15 12:00:00');
+
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
         $tenantUser = $this->createUserWithRole('tenant', $portfolio, ['name' => 'Tower Tenant']);

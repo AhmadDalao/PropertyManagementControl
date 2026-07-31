@@ -26,7 +26,11 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             />
 
             <main className="pmc-console-main">
-                <AdminTopbar user={user} {...shell} />
+                <AdminTopbar
+                    user={user}
+                    notifications={props.notificationSummary}
+                    {...shell}
+                />
 
                 <section className="pmc-console-content">
                     <FlashBanner />

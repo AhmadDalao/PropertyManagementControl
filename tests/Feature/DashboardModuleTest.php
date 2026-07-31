@@ -235,6 +235,8 @@ class DashboardModuleTest extends TestCase
 
     public function test_owner_can_focus_the_entire_dashboard_on_one_authorized_property(): void
     {
+        $this->travelTo('2026-08-15 12:00:00');
+
         $portfolio = $this->createPortfolio();
         $foreignPortfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);

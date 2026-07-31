@@ -29,6 +29,7 @@ use App\Http\Controllers\MaintenanceWorkOrderController;
 use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\NavigationItemController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortfolioControlController;
 use App\Http\Controllers\PortfolioController;
@@ -63,6 +64,12 @@ Route::post('/locale/{locale}', [LocaleController::class, 'update'])->name('loca
 Route::middleware(['auth', 'account.active', 'password.changed', 'property.context'])->group(function () {
     Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])
+        ->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'read'])
+        ->name('notifications.read');
     Route::get('/portfolio-control', PortfolioControlController::class)
         ->name('portfolio-control.index')
         ->middleware('portfolio.module:assets');

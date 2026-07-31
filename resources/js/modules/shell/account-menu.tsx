@@ -79,6 +79,13 @@ export function AccountMenu({ user }: { user: AppUser }) {
                         {t('nav.dashboard')}
                     </Link>
                     <Link
+                        href="/notifications"
+                        role="menuitem"
+                        onClick={closeMenu}
+                    >
+                        {t('nav.notifications')}
+                    </Link>
+                    <Link
                         href="/documentation"
                         role="menuitem"
                         onClick={closeMenu}

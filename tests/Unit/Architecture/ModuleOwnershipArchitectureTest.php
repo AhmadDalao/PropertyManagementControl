@@ -29,6 +29,7 @@ class ModuleOwnershipArchitectureTest extends TestCase
             'app/Modules/Documents/Support/BilingualPdf.php' => 60,
             'app/Modules/Portfolios/Support/PortfolioModules.php' => 110,
             'app/Modules/Shared/Authorization/ActorAccess.php' => 40,
+            'app/Modules/Shared/LocalizedStatusCounts.php' => 30,
         ] as $path => $limit) {
             $source = $this->source($path);
             $this->assertLessThanOrEqual(

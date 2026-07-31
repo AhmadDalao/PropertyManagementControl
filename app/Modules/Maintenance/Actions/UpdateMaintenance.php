@@ -8,6 +8,7 @@ use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Maintenance\Support\MaintenanceReferenceGuard;
 use App\Modules\Maintenance\Support\MaintenanceSchedule;
 use App\Modules\Maintenance\Support\MaintenanceTransitionGuard;
+use App\Modules\Notifications\Actions\SendMaintenanceActivityNotification;
 use Illuminate\Support\Facades\DB;
 
 class UpdateMaintenance
@@ -17,16 +18,27 @@ class UpdateMaintenance
         private readonly MaintenanceSchedule $schedule,
         private readonly MaintenanceReferenceGuard $references,
         private readonly MaintenanceTransitionGuard $transitions,
+        private readonly SendMaintenanceActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
     public function handle(User $actor, MaintenanceRequest $request, array $data): MaintenanceRequest
     {
         $this->access->ensureCanAccess($actor, $request);
+        $previousStatus = $request->status;
 
-        return $actor->hasRole('tenant')
+        $updated = $actor->hasRole('tenant')
             ? $this->addTenantComment($actor, $request, $data)
             : $this->triage($actor, $request, $data);
+
+        $this->notifications->updated(
+            $actor,
+            $updated,
+            $previousStatus,
+            (bool) ($data['is_public_comment'] ?? false),
+        );
+
+        return $updated;
     }
 
     /** @param array<string, mixed> $data */

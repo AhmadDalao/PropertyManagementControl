@@ -20,6 +20,8 @@ class PortfolioControlWorkspaceTest extends TestCase
 
     public function test_owner_can_rank_search_filter_and_page_the_complete_portfolio(): void
     {
+        $this->travelTo('2026-08-15 12:00:00');
+
         $portfolio = $this->createPortfolio([
             'code' => 'OWNER-PORT',
             'name_en' => 'Owner Portfolio',

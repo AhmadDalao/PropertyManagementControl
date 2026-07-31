@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Maintenance\Support\MaintenanceReferenceGuard;
 use App\Modules\Maintenance\Support\MaintenanceSchedule;
+use App\Modules\Notifications\Actions\SendMaintenanceActivityNotification;
 use App\Modules\Shared\MorphTypes;
 use App\Modules\Shared\PortfolioScope;
 use Closure;
@@ -27,14 +28,19 @@ class CreateMaintenance
         private readonly PortfolioScope $portfolios,
         private readonly MorphTypes $morphTypes,
         private readonly PersistMaintenanceAttachments $attachments,
+        private readonly SendMaintenanceActivityNotification $notifications,
     ) {}
 
     /** @param array<string, mixed> $data */
     public function handle(User $actor, array $data): MaintenanceRequest
     {
-        return $actor->hasRole('tenant')
+        $request = $actor->hasRole('tenant')
             ? $this->forTenant($actor, $data)
             : $this->forManager($actor, $data);
+
+        $this->notifications->created($actor, $request);
+
+        return $request;
     }
 
     /** @param array<string, mixed> $data */

@@ -5,17 +5,21 @@ namespace App\Modules\Maintenance\Actions;
 use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
+use App\Modules\Notifications\Actions\SendMaintenanceActivityNotification;
 use Illuminate\Support\Facades\DB;
 
 class CancelMaintenance
 {
-    public function __construct(private readonly MaintenanceAccess $access) {}
+    public function __construct(
+        private readonly MaintenanceAccess $access,
+        private readonly SendMaintenanceActivityNotification $notifications,
+    ) {}
 
     public function handle(User $actor, MaintenanceRequest $request): bool
     {
         $this->access->ensureCanAccess($actor, $request);
 
-        return DB::transaction(function () use ($actor, $request): bool {
+        $cancelled = DB::transaction(function () use ($actor, $request): bool {
             $locked = MaintenanceRequest::query()->lockForUpdate()->findOrFail($request->id);
 
             $this->access->ensureCanAccess($actor, $locked);
@@ -38,5 +42,11 @@ class CancelMaintenance
 
             return true;
         });
+
+        if ($cancelled) {
+            $this->notifications->cancelled($actor, $request->refresh());
+        }
+
+        return $cancelled;
     }
 }

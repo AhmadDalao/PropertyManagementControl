@@ -5,6 +5,7 @@ return [
     'nav' => [
         'home' => 'الرئيسية',
         'dashboard' => 'لوحة التحكم',
+        'notifications' => 'الإشعارات',
         'portfolio_control' => 'تحكم المحفظة',
         'action_center' => 'مركز الإجراءات',
         'portfolios' => 'المحافظ',
@@ -38,6 +39,63 @@ return [
         'group_portfolio' => 'المحفظة',
         'group_operations' => 'المال والخدمات',
         'group_system' => 'النظام',
+    ],
+    'notifications' => [
+        'eyebrow' => 'التحديثات التشغيلية',
+        'title' => 'الإشعارات',
+        'description' => 'تابع نشاط الصيانة الذي يحتاج إلى انتباهك وافتح الطلب المطلوب مباشرة دون البحث في الجداول.',
+        'activity' => 'سجل النشاط',
+        'inbox' => 'صندوق الإشعارات',
+        'inbox_description' => 'تظهر التحديثات بشكل خاص للمسؤولين عن المحفظة أو العقار أو عقد الإيجار.',
+        'all' => 'الكل',
+        'unread' => 'غير مقروء',
+        'read' => 'مقروء',
+        'all_detail' => 'جميع التحديثات المسجلة',
+        'unread_detail' => 'تحتاج إلى المراجعة',
+        'read_detail' => 'تمت مراجعتها',
+        'filter' => 'تصفية الإشعارات',
+        'new' => 'جديد',
+        'recent' => 'أحدث الإشعارات',
+        'open_menu' => 'فتح الإشعارات',
+        'view_all' => 'عرض جميع الإشعارات',
+        'mark_all_read' => 'تحديد الكل كمقروء',
+        'unread_count' => ':count غير مقروء',
+        'no_notifications' => 'لا توجد إشعارات هنا',
+        'no_notifications_help' => 'ستظهر تحديثات الصيانة الجديدة هنا تلقائياً.',
+        'events' => [
+            'maintenance_created' => [
+                'title' => 'طلب صيانة جديد رقم :id',
+                'body' => 'قدّم :actor طلب «:request». افتح الطلب لتعيينه وفرزه.',
+            ],
+            'maintenance_created_for_tenant' => [
+                'title' => 'تم إنشاء طلب الصيانة رقم :id',
+                'body' => 'أنشأ :actor طلب «:request» لعقد إيجارك. الحالة الحالية: :status.',
+            ],
+            'maintenance_tenant_comment' => [
+                'title' => 'رد المستأجر على الطلب رقم :id',
+                'body' => 'أضاف :actor تحديثاً عاماً إلى «:request».',
+            ],
+            'maintenance_updated' => [
+                'title' => 'تم تحديث طلب الصيانة رقم :id',
+                'body' => 'حدّث :actor طلب «:request». الحالة الحالية: :status.',
+            ],
+            'maintenance_resolved' => [
+                'title' => 'تم حل طلب الصيانة رقم :id',
+                'body' => 'حدد :actor طلب «:request» كمحلول. راجع النتيجة ثم أكدها أو أعد فتح الطلب.',
+            ],
+            'maintenance_cancelled' => [
+                'title' => 'تم إلغاء طلب الصيانة رقم :id',
+                'body' => 'ألغى :actor طلب «:request».',
+            ],
+            'maintenance_confirmed' => [
+                'title' => 'أكد المستأجر الطلب رقم :id',
+                'body' => 'أكد :actor حل طلب «:request».',
+            ],
+            'maintenance_reopened' => [
+                'title' => 'أعاد المستأجر فتح الطلب رقم :id',
+                'body' => 'أفاد :actor بأن طلب «:request» ما زال يحتاج إلى عمل.',
+            ],
+        ],
     ],
     'roles' => [
         'superadmin' => 'مدير النظام',
@@ -3146,6 +3204,7 @@ return [
     'messages' => [
         'welcome_back' => 'مرحباً بعودتك.',
         'logged_out' => 'تم تسجيل خروجك.',
+        'notifications_marked_read' => 'تم تحديد جميع الإشعارات كمقروءة.',
         'profile_updated' => 'تم تحديث الملف الشخصي.',
         'password_updated' => 'تم تحديث كلمة المرور.',
         'password_change_required' => 'استبدل كلمة المرور المؤقتة قبل استخدام البوابة.',

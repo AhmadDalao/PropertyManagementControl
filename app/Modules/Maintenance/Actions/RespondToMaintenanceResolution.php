@@ -6,6 +6,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Maintenance\Support\MaintenanceSchedule;
+use App\Modules\Notifications\Actions\SendMaintenanceActivityNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -14,6 +15,7 @@ final readonly class RespondToMaintenanceResolution
     public function __construct(
         private MaintenanceAccess $access,
         private MaintenanceSchedule $schedule,
+        private SendMaintenanceActivityNotification $notifications,
     ) {}
 
     /** @param array{outcome:string,note?:string|null} $data */
@@ -25,7 +27,7 @@ final readonly class RespondToMaintenanceResolution
         $this->access->ensureCanAccess($actor, $request);
         abort_unless($actor->hasRole('tenant'), 403);
 
-        return DB::transaction(function () use ($actor, $request, $data): MaintenanceRequest {
+        $updated = DB::transaction(function () use ($actor, $request, $data): MaintenanceRequest {
             $locked = MaintenanceRequest::query()->lockForUpdate()->findOrFail($request->id);
             $this->access->ensureCanAccess($actor, $locked);
 
@@ -66,5 +68,13 @@ final readonly class RespondToMaintenanceResolution
 
             return $locked->refresh();
         });
+
+        $this->notifications->resolutionResponse(
+            $actor,
+            $updated,
+            $data['outcome'],
+        );
+
+        return $updated;
     }
 }

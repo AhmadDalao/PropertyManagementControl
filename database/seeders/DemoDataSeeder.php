@@ -18,6 +18,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Leases\Actions\InstallmentSchedule;
+use App\Modules\Notifications\Notifications\MaintenanceActivityNotification;
 use App\Modules\Payments\Actions\PaymentAllocator;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
 use Illuminate\Database\Seeder;
@@ -259,16 +260,17 @@ class DemoDataSeeder extends Seeder
         $activeLease = $this->lease($portfolio, $tenant, $unitA, $manager, [
             'code' => "{$prefix}-LEASE-001",
             'status' => 'active',
-            'started_at' => now()->startOfMonth()->subMonths(2),
-            'ends_at' => now()->startOfMonth()->addMonthsNoOverflow(9)->endOfMonth(),
-            'signed_at' => now()->startOfMonth()->subMonths(2),
+            'started_at' => now()->startOfMonth()->subMonths(3),
+            'ends_at' => now()->addDays(75)->toDateString(),
+            'signed_at' => now()->startOfMonth()->subMonths(3),
             'rent_amount' => $config['commercial'] ? 4500 : 3900,
             'deposit_amount' => $config['commercial'] ? 4500 : 3900,
+            'renewal_notice_days' => 90,
             'notes' => 'Active demo lease with generated installments.',
         ]);
 
-        $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-001", now()->startOfMonth()->subMonths(2), (float) $activeLease->rent_amount + (float) $activeLease->deposit_amount, 'First rent and deposit.');
-        $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-002", now()->startOfMonth()->subMonth(), (float) $activeLease->rent_amount, 'Second month rent.');
+        $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-001", now()->startOfMonth()->subMonths(3), (float) $activeLease->rent_amount + (float) $activeLease->deposit_amount, 'First rent and deposit.');
+        $this->payment($portfolio, $activeLease, $tenant, $manager, "{$prefix}-PAY-002", now()->startOfMonth()->subMonths(2), (float) $activeLease->rent_amount, 'Second month rent.');
         $overdueInstallment = $activeLease->installments()
             ->whereColumn('amount_paid', '<', 'amount_due')
             ->whereDate('due_date', '<', today())
@@ -437,6 +439,19 @@ class DemoDataSeeder extends Seeder
 
         $this->document($portfolio, $activeLease, $manager, 'lease_contract', "Lease contract {$activeLease->code}", "عقد الإيجار {$activeLease->code}");
         $this->document($portfolio, $activeLease, $manager, 'signed_contract', "Signed contract {$activeLease->code}", "العقد الموقع {$activeLease->code}");
+
+        foreach ([$owner, $manager] as $operator) {
+            $operator->notify(new MaintenanceActivityNotification(
+                'maintenance_created',
+                $inProgressRequest,
+                $tenantUser,
+            ));
+        }
+        $tenantUser->notify(new MaintenanceActivityNotification(
+            'maintenance_resolved',
+            $resolvedRequest,
+            $manager,
+        ));
     }
 
     /**
@@ -512,10 +527,14 @@ class DemoDataSeeder extends Seeder
             'discount_amount' => 0,
             'currency' => 'SAR',
             'billing_day' => 1,
+            'renewal_notice_days' => $attributes['renewal_notice_days'] ?? 30,
             'notes' => $attributes['notes'] ?? null,
             'terms_json' => [
                 'utilities' => 'Tenant pays electricity. Owner covers common area service.',
-                'notice' => 'Thirty-day renewal notice.',
+                'notice' => sprintf(
+                    '%d-day renewal notice.',
+                    $attributes['renewal_notice_days'] ?? 30,
+                ),
             ],
         ]);
 

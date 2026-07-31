@@ -28,6 +28,7 @@ export type UiTranslationKey =
     | `media.${string}`
     | `modules.${string}`
     | `nav.${string}`
+    | `notifications.${string}`
     | `pagination.${string}`
     | `passwords.${string}`
     | `payments.${string}`

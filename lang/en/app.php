@@ -5,6 +5,7 @@ return [
     'nav' => [
         'home' => 'Home',
         'dashboard' => 'Dashboard',
+        'notifications' => 'Notifications',
         'portfolio_control' => 'Portfolio Control',
         'action_center' => 'Action Center',
         'portfolios' => 'Portfolios',
@@ -38,6 +39,63 @@ return [
         'group_portfolio' => 'Portfolio',
         'group_operations' => 'Money & Service',
         'group_system' => 'System',
+    ],
+    'notifications' => [
+        'eyebrow' => 'Operational updates',
+        'title' => 'Notifications',
+        'description' => 'See maintenance activity that needs your attention, then open the exact request without hunting through tables.',
+        'activity' => 'Activity feed',
+        'inbox' => 'Notification inbox',
+        'inbox_description' => 'Updates are private to the people responsible for the portfolio, property, or tenancy.',
+        'all' => 'All',
+        'unread' => 'Unread',
+        'read' => 'Read',
+        'all_detail' => 'Every recorded update',
+        'unread_detail' => 'Still needs review',
+        'read_detail' => 'Already reviewed',
+        'filter' => 'Filter notifications',
+        'new' => 'New',
+        'recent' => 'Recent notifications',
+        'open_menu' => 'Open notifications',
+        'view_all' => 'View all notifications',
+        'mark_all_read' => 'Mark all as read',
+        'unread_count' => ':count unread',
+        'no_notifications' => 'No notifications here',
+        'no_notifications_help' => 'New maintenance activity will appear here automatically.',
+        'events' => [
+            'maintenance_created' => [
+                'title' => 'New maintenance request #:id',
+                'body' => ':actor submitted “:request”. Open the request to assign and triage it.',
+            ],
+            'maintenance_created_for_tenant' => [
+                'title' => 'Maintenance request #:id created',
+                'body' => ':actor created “:request” for your tenancy. Current status: :status.',
+            ],
+            'maintenance_tenant_comment' => [
+                'title' => 'Tenant replied on request #:id',
+                'body' => ':actor added a public update to “:request”.',
+            ],
+            'maintenance_updated' => [
+                'title' => 'Maintenance request #:id updated',
+                'body' => ':actor updated “:request”. Current status: :status.',
+            ],
+            'maintenance_resolved' => [
+                'title' => 'Maintenance request #:id resolved',
+                'body' => ':actor marked “:request” as resolved. Review the result and confirm or reopen it.',
+            ],
+            'maintenance_cancelled' => [
+                'title' => 'Maintenance request #:id cancelled',
+                'body' => ':actor cancelled “:request”.',
+            ],
+            'maintenance_confirmed' => [
+                'title' => 'Tenant confirmed request #:id',
+                'body' => ':actor confirmed the resolution for “:request”.',
+            ],
+            'maintenance_reopened' => [
+                'title' => 'Tenant reopened request #:id',
+                'body' => ':actor reported that “:request” still needs work.',
+            ],
+        ],
     ],
     'roles' => [
         'superadmin' => 'Superadmin',
@@ -3146,6 +3204,7 @@ return [
     'messages' => [
         'welcome_back' => 'Welcome back.',
         'logged_out' => 'You have been logged out.',
+        'notifications_marked_read' => 'All notifications marked as read.',
         'profile_updated' => 'Profile updated.',
         'password_updated' => 'Password updated.',
         'password_change_required' => 'Replace your temporary password before using the portal.',

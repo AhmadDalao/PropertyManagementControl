@@ -23,6 +23,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 propertyScoped: true,
             },
             {
+                labelKey: 'nav.notifications',
+                href: '/notifications',
+                icon: 'bi-envelope',
+            },
+            {
                 labelKey: 'nav.portfolio_control',
                 href: '/portfolio-control',
                 icon: 'bi-buildings',

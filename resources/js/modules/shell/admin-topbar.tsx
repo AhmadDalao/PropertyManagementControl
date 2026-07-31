@@ -4,12 +4,15 @@ import type { RefObject } from 'react';
 import { GlobalSearch } from '@/components/global-search';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslator } from '@/lib/i18n';
+import { NotificationMenu } from '@/modules/notifications/notification-menu';
+import type { NotificationSummary } from '@/modules/notifications/types';
 import type { AppUser } from '@/types/auth';
 
 import { AccountMenu } from './account-menu';
 
 type AdminTopbarProps = {
     user: AppUser | null;
+    notifications: NotificationSummary;
     navOpen: boolean;
     drawerViewport: boolean;
     sidebarCollapsed: boolean;
@@ -19,6 +22,7 @@ type AdminTopbarProps = {
 
 export function AdminTopbar({
     user,
+    notifications,
     navOpen,
     drawerViewport,
     sidebarCollapsed,
@@ -46,6 +50,9 @@ export function AdminTopbar({
             {user ? <GlobalSearch /> : null}
 
             <div className="pmc-topbar-actions">
+                {user ? (
+                    <NotificationMenu notifications={notifications} />
+                ) : null}
                 <LanguageSwitcher />
                 {user ? (
                     <AccountMenu user={user} />

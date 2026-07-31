@@ -40,6 +40,7 @@ export function GeographicMap({
                 ref={containerRef}
                 className="pmc-property-map-canvas"
                 data-testid="property-map-canvas"
+                data-positioned-count={assets.length}
                 aria-label={t('map.canvas_title')}
             />
             {tilesFailed ? (

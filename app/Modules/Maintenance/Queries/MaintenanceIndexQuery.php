@@ -8,6 +8,7 @@ use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Maintenance\Presenters\MaintenanceTableRowPresenter;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
 use App\Modules\Portfolios\Support\PortfolioModules;
+use App\Modules\Shared\LocalizedStatusCounts;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,6 +23,7 @@ class MaintenanceIndexQuery
         private readonly PortfolioScope $portfolios,
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
+        private readonly LocalizedStatusCounts $statusCounts,
     ) {}
 
     /** @return array<string, mixed> */
@@ -62,11 +64,10 @@ class MaintenanceIndexQuery
             'maintenanceInsights' => $this->insights->get($summaryQuery, $financialsEnabled),
             'financialsEnabled' => $financialsEnabled,
             'filters' => $filters,
-            'counts' => $this->localizedCounts($this->tables->statusCounts(
-                $summaryQuery,
-                MaintenanceOptions::STATUSES,
-                $filters,
-            )),
+            'counts' => $this->statusCounts->present(
+                $this->tables->statusCounts($summaryQuery, MaintenanceOptions::STATUSES, $filters),
+                'app.maintenance.all',
+            ),
             'categoryOptions' => MaintenanceOptions::CATEGORIES,
             'priorityOptions' => MaintenanceOptions::PRIORITIES,
             'statusOptions' => MaintenanceOptions::STATUSES,
@@ -84,21 +85,5 @@ class MaintenanceIndexQuery
         $this->directory->applyManagerFilters($requests, $filters, $actor);
 
         return $requests;
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $counts
-     * @return array<int, array<string, mixed>>
-     */
-    private function localizedCounts(array $counts): array
-    {
-        return collect($counts)->map(function (array $count): array {
-            $status = (string) data_get($count, 'filter.status', 'all');
-            $count['label'] = $status === 'all'
-                ? trans('app.maintenance.all')
-                : trans("app.status.{$status}");
-
-            return $count;
-        })->all();
     }
 }

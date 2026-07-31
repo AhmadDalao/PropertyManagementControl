@@ -1,3 +1,5 @@
+import type { NotificationSummary } from '@/modules/notifications/types';
+
 import type { AppUser } from './auth';
 
 export type * from './auth';
@@ -16,6 +18,7 @@ export type SharedProps = {
     auth: {
         user: AppUser | null;
     };
+    notificationSummary: NotificationSummary;
     propertyContext: PropertyContext | null;
     app: {
         name: string;

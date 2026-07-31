@@ -71,6 +71,8 @@ class OperationalArchiveTest extends TestCase
 
     public function test_voiding_payment_reverses_installment_allocations(): void
     {
+        $this->travelTo('2026-08-15 12:00:00');
+
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
         $tenantUser = $this->createUserWithRole('tenant', $portfolio);
