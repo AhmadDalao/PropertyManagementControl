@@ -375,10 +375,11 @@ final class SystemReadinessWorkspaceTest extends TestCase
                         && ($scheduler['meta']['cadence_confirmed'] ?? null) === false
                         && str_contains(
                             (string) ($scheduler['command'] ?? ''),
-                            "/opt/alt/php84/usr/bin/php' '"
+                            '/opt/alt/php84/usr/bin/php '
                                 .base_path('artisan')
-                                ."' schedule:run",
+                                .' schedule:run',
                         )
+                        && ! str_contains((string) ($scheduler['command'] ?? ''), '>')
                         && str_contains(
                             (string) ($scheduler['detail'] ?? ''),
                             'only 1 recent cadence samples',

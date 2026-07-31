@@ -903,11 +903,21 @@ test.describe('authenticated administration', () => {
                 page.getByText('Hostinger cron command'),
             ).toBeVisible();
             await expect(
-                page.getByRole('button', { name: 'Copy command' }),
+                page.getByText('Set up the Hostinger scheduler'),
             ).toBeVisible();
             await expect(
-                page.locator('.pmc-readiness-command code'),
-            ).toContainText('schedule:run');
+                page.getByText(
+                    'Open Websites → Dashboard → Advanced → Cron Jobs in hPanel.',
+                ),
+            ).toBeVisible();
+            await expect(
+                page.getByRole('button', { name: 'Copy command' }),
+            ).toBeVisible();
+            const cronCommand = page.locator(
+                '.pmc-readiness-command > code',
+            );
+            await expect(cronCommand).toContainText('schedule:run');
+            await expect(cronCommand).not.toContainText('>');
             await expect(
                 page.getByRole('link', { name: 'Open portfolio' }).first(),
             ).toBeVisible();
@@ -957,6 +967,12 @@ test.describe('authenticated administration', () => {
             }),
         ).toBeVisible();
         await expect(page.getByText('أمر Cron في Hostinger')).toBeVisible();
+        await expect(page.getByText('إعداد جدولة Hostinger')).toBeVisible();
+        await expect(
+            page.getByText(
+                'افتح المواقع ← لوحة التحكم ← متقدم ← مهام Cron في hPanel.',
+            ),
+        ).toBeVisible();
         await expect(
             page.getByRole('button', { name: 'نسخ الأمر' }),
         ).toBeVisible();

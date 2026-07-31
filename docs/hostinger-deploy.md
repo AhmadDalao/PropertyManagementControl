@@ -80,13 +80,19 @@ The Composer lifecycle clears Laravel's generated package manifest before rebuil
 
 ## Cron
 
-Create a cron job that runs Laravel's scheduler every minute:
+In hPanel, open **Websites → Dashboard → Advanced → Cron Jobs**, choose
+**Custom**, and set the schedule to every minute (`* * * * *`). Paste this
+command into **Command to Run**:
 
 ```bash
-/opt/alt/php84/usr/bin/php /path/to/artisan schedule:run >> /dev/null 2>&1
+/opt/alt/php84/usr/bin/php /home/u867436826/domains/ahmaddalao.com/public_html/property/artisan schedule:run
 ```
 
-Do not use Hostinger's unqualified `php` command: its shared-hosting CLI may resolve to an older PHP release than the website. Set `SCHEDULER_PHP_BINARY` when the account uses a different verified PHP 8.4 path. The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy.
+Do not add `>> /dev/null 2>&1` to the hPanel field. Hostinger rejects those
+special characters unless a separate shell wrapper is created, and the direct
+command does not need one. Hostinger cron schedules use UTC.
+
+Do not use Hostinger's unqualified `php` command: its shared-hosting CLI may resolve to an older PHP release than the website. Set `SCHEDULER_PHP_BINARY` when the account uses a different verified PHP 8.4 path. The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy. Wait three minutes after saving the hPanel job, then refresh the readiness page.
 
 Shared hosting can terminate a worker without releasing Laravel's overlap mutex. The heartbeat lock expires after 5 minutes, the queue-worker lock after 10 minutes, and the daily status-sync lock after 120 minutes. If a killed worker left an older lock from a previous release, run `php artisan schedule:clear-cache` once, then confirm the queue count decreases in `/system/readiness`.
 

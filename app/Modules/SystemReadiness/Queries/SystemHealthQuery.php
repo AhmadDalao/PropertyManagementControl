@@ -131,9 +131,9 @@ final class SystemHealthQuery
 
         if ($status !== 'ready') {
             $check['command'] = sprintf(
-                '%s %s schedule:run >> /dev/null 2>&1',
-                escapeshellarg((string) config('operations.scheduler_php_binary', PHP_BINARY)),
-                escapeshellarg(base_path('artisan')),
+                '%s %s schedule:run',
+                (string) config('operations.scheduler_php_binary', PHP_BINARY),
+                base_path('artisan'),
             );
         }
 

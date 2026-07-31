@@ -239,11 +239,35 @@
     margin-top: 0.65rem;
 }
 
-.pmc-readiness-command > span:first-child {
+.pmc-readiness-command-heading > span,
+.pmc-readiness-command > span {
     color: var(--pmc-text-muted);
     font-size: 0.7rem;
     font-weight: 800;
     text-transform: uppercase;
+}
+
+.pmc-readiness-command-heading p,
+.pmc-readiness-command-note {
+    margin: 0.25rem 0 0;
+    color: var(--pmc-text-muted);
+    font-size: 0.76rem;
+}
+
+.pmc-readiness-command ol {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0.2rem 0 0;
+    padding-inline-start: 1.2rem;
+    color: var(--pmc-text);
+    font-size: 0.76rem;
+}
+
+.pmc-readiness-command ol code {
+    display: inline;
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.35rem;
+    white-space: nowrap;
 }
 
 .pmc-readiness-command code {
@@ -271,6 +295,17 @@
     background: #fff;
     font-size: 0.76rem;
     font-weight: 800;
+}
+
+.pmc-readiness-command-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+}
+
+.pmc-readiness-command-note i {
+    flex: 0 0 auto;
+    color: var(--pmc-warning);
 }
 
 .pmc-readiness-check > a {

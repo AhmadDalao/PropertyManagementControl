@@ -24,6 +24,18 @@ export function ReadinessCommand({ command }: { command: string }) {
 
     return (
         <div className="pmc-readiness-command">
+            <div className="pmc-readiness-command-heading">
+                <span>{t('readiness.cron_setup_title')}</span>
+                <p>{t('readiness.cron_setup_description')}</p>
+            </div>
+            <ol>
+                <li>{t('readiness.cron_step_open')}</li>
+                <li>
+                    {t('readiness.cron_step_schedule')}{' '}
+                    <code dir="ltr">* * * * *</code>
+                </li>
+                <li>{t('readiness.cron_step_save')}</li>
+            </ol>
             <span>{t('readiness.cron_command')}</span>
             <code dir="ltr">{command}</code>
             <button type="button" onClick={copy}>
@@ -33,6 +45,10 @@ export function ReadinessCommand({ command }: { command: string }) {
                 />
                 {buttonLabel}
             </button>
+            <p className="pmc-readiness-command-note">
+                <i className="bi bi-clock-history" aria-hidden="true" />
+                {t('readiness.cron_verify_note')}
+            </p>
             <span className="visually-hidden" aria-live="polite">
                 {status === 'idle' ? '' : buttonLabel}
             </span>
