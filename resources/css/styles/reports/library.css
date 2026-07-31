@@ -1,0 +1,217 @@
+.pmc-report-library {
+    display: grid;
+    gap: 1.15rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-report-library-intro {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.9rem;
+    background: #fff;
+}
+
+.pmc-report-library-intro > div:first-child,
+.pmc-report-library-group > header > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-report-library-intro span {
+    color: #8a6700;
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.pmc-report-library-intro h2,
+.pmc-report-library-group h3,
+.pmc-report-library-card h4 {
+    margin: 0;
+    color: #111;
+    font-weight: 900;
+}
+
+.pmc-report-library-intro h2 {
+    font-size: clamp(1.05rem, 2vw, 1.35rem);
+}
+
+.pmc-report-library-intro p,
+.pmc-report-library-group p,
+.pmc-report-library-card p {
+    margin: 0;
+    color: #6f6f76;
+    line-height: 1.5;
+}
+
+.pmc-report-library-intro p {
+    font-size: 0.76rem;
+}
+
+.pmc-report-library-note {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.45rem;
+    flex: 0 0 auto;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid #eadfbf;
+    border-radius: 0.7rem;
+    background: #fffaf0;
+}
+
+.pmc-report-library-note span {
+    max-width: 34ch;
+    color: #68551c;
+    font-size: 0.68rem;
+    font-weight: 750;
+    line-height: 1.4;
+}
+
+.pmc-report-library-group {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.pmc-report-library-group > header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-report-library-group h3 {
+    font-size: 0.92rem;
+}
+
+.pmc-report-library-group p {
+    font-size: 0.7rem;
+}
+
+.pmc-report-library-group > header > span {
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    flex: 0 0 auto;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.pmc-report-library-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0.7rem;
+}
+
+.pmc-report-library-card {
+    display: grid;
+    min-width: 0;
+    align-content: space-between;
+    gap: 1rem;
+    padding: 0.9rem;
+    border: 1px solid #dedad3;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-report-library-card-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.7rem;
+}
+
+.pmc-report-library-card-head > span {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border: 1px solid #eadfbf;
+    border-radius: 0.65rem;
+    background: #fff8e7;
+    color: #6d5100;
+}
+
+.pmc-report-library-card-head > div {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.3rem;
+}
+
+.pmc-report-library-card h4 {
+    font-size: 0.82rem;
+}
+
+.pmc-report-library-card p {
+    font-size: 0.7rem;
+}
+
+.pmc-report-library-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.pmc-report-library-card-actions a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.6rem;
+    font-size: 0.69rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-report-source-link {
+    flex: 1 1 8rem;
+    border: 1px solid #dedad3;
+    background: #fff;
+    color: #111;
+}
+
+.pmc-report-download-link {
+    flex: 1 1 7rem;
+    border: 1px solid #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-report-library-card-actions a:hover {
+    border-color: #c89b12;
+    color: #8a6700;
+}
+
+.pmc-report-download-link:hover {
+    background: #2a2a2a;
+    color: #fff !important;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-report-library-intro {
+        display: grid;
+        align-items: start;
+    }
+
+    .pmc-report-library-note {
+        width: 100%;
+    }
+
+    .pmc-report-library-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-report-tabs button:last-child {
+        grid-column: 1 / -1;
+    }
+}

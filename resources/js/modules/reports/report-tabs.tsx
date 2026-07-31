@@ -7,6 +7,11 @@ export const reportTabs: Array<{
     label: `reports.${string}`;
     icon: string;
 }> = [
+    {
+        key: 'library',
+        label: 'reports.tab_library',
+        icon: 'bi-bar-chart-line',
+    },
     { key: 'overview', label: 'reports.tab_overview', icon: 'bi-grid' },
     {
         key: 'collections',

@@ -53,7 +53,62 @@ class ReportsManagementTest extends TestCase
                     'recentPayments',
                     'recentExpenses',
                     'maintenanceBacklog',
-                ]));
+                ])
+                ->has('reportLibrary', 4)
+                ->where('reportLibrary.0.key', 'owner')
+                ->where('reportLibrary.0.cards.0.key', 'owner-statement')
+                ->where('reportLibrary.0.cards.0.downloads.0.label', 'Download PDF')
+                ->where('reportLibrary.0.cards.0.downloads.1.label', 'Download DOCX')
+                ->where('reportLibrary.1.key', 'finance')
+                ->where('reportLibrary.2.key', 'operations')
+                ->where('reportLibrary.3.key', 'control'));
+    }
+
+    public function test_report_library_links_keep_the_selected_scope_and_hide_disabled_modules(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'module_settings' => [
+                'expenses' => false,
+            ],
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $query = [
+            'date_from' => '2026-01-01',
+            'date_to' => '2026-06-30',
+            'portfolio_id' => $portfolio->id,
+            'property_id' => $property->id,
+        ];
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', $query))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('reportLibrary', 4)
+                ->has('reportLibrary.1.cards', 2)
+                ->where('reportLibrary.1.cards.0.key', 'rent-collection')
+                ->where(
+                    'reportLibrary.1.cards.0.downloads.0.href',
+                    fn (string $href): bool => str_contains($href, 'date_from=2026-01-01')
+                        && str_contains($href, 'date_to=2026-06-30')
+                        && str_contains($href, 'portfolio_id='.$portfolio->id)
+                        && str_contains($href, 'property_id='.$property->id),
+                )
+                ->where(
+                    'reportLibrary.1.cards',
+                    fn ($cards): bool => collect($cards)->doesntContain(
+                        fn (array $card): bool => $card['key'] === 'expenses',
+                    ),
+                )
+                ->where(
+                    'reportLibrary.3.cards',
+                    fn ($cards): bool => collect($cards)->doesntContain(
+                        fn (array $card): bool => $card['key'] === 'audit',
+                    ),
+                ));
     }
 
     public function test_owner_report_summary_and_export_do_not_leak_foreign_portfolio_data(): void

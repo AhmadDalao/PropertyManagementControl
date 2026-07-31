@@ -36,7 +36,7 @@ class ReportController extends Controller
             if ($defaultFilters !== []) {
                 $tab = $request->query('tab');
 
-                if (in_array($tab, ['overview', 'collections', 'costs', 'operations'], true)) {
+                if (in_array($tab, ['library', 'overview', 'collections', 'costs', 'operations'], true)) {
                     $defaultFilters['tab'] = $tab;
                 }
 

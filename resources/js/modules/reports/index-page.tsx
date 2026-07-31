@@ -9,6 +9,7 @@ import { useTranslator } from '@/lib/i18n';
 import { ReportCollections } from './report-collections';
 import { ReportCosts } from './report-costs';
 import { ReportFilters } from './report-filters';
+import { ReportLibrary } from './report-library';
 import { ReportOperations } from './report-operations';
 import { ReportOverview } from './report-overview';
 import { ReportPresets } from './report-presets';
@@ -32,14 +33,14 @@ export default function ReportsIndexPage() {
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<ReportTab>(() => {
         if (typeof window === 'undefined') {
-            return 'overview';
+            return 'library';
         }
 
         const requested = new URLSearchParams(window.location.search).get(
             'tab',
         );
 
-        return isReportTab(requested) ? requested : 'overview';
+        return isReportTab(requested) ? requested : 'library';
     });
     const exportQuery = new URLSearchParams(
         cleanReportFilters(filters),
@@ -119,6 +120,9 @@ export default function ReportsIndexPage() {
             />
             <ReportTabs active={activeTab} onSelect={selectTab} />
 
+            {activeTab === 'library' ? (
+                <ReportLibrary groups={props.reportLibrary} />
+            ) : null}
             {activeTab === 'overview' ? <ReportOverview props={props} /> : null}
             {activeTab === 'collections' ? (
                 <ReportCollections props={props} />

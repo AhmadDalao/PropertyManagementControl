@@ -2040,6 +2040,18 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'التقارير', exact: true }),
         ).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                name: 'اختر الإجابة التي تحتاجها',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(12);
+        await expect(
+            page.locator('a[href^="/reports/statement.pdf"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('a[href^="/reports/statement.docx"]'),
+        ).toBeVisible();
         await page.getByRole('button', { name: 'إظهار التصفيات' }).click();
         await expect(page.locator('#report-filter-panel')).toBeVisible();
         await expect(page.getByLabel('التاريخ من')).toBeVisible();
@@ -2061,7 +2073,13 @@ test.describe('authenticated administration', () => {
         expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
 
         await page.setViewportSize(viewports.desktop);
-        await page.goto('/reports');
+        await page.goto('/reports?locale=en');
+        await expect(
+            page.locator('.pmc-report-library-grid').first(),
+        ).toBeVisible();
+        await page
+            .getByRole('button', { name: 'Overview', exact: true })
+            .click();
         await expect(page.locator('.pmc-report-pulse-grid')).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });

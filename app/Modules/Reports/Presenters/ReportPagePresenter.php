@@ -13,6 +13,7 @@ class ReportPagePresenter
     public function __construct(
         private readonly PortfolioReportQuery $reports,
         private readonly ReportPresetQuery $presets,
+        private readonly ReportLibraryPresenter $library,
         private readonly PortfolioScope $portfolios,
         private readonly ReportPropertyScope $properties,
     ) {}
@@ -30,6 +31,7 @@ class ReportPagePresenter
             'propertyOptions' => $this->properties->options($actor),
             'savedPresets' => $this->presets->visibleTo($actor),
             'presetVisibilityOptions' => $this->visibilityOptions($actor, $filters['portfolio_id']),
+            'reportLibrary' => $this->library->present($actor, $filters),
         ];
     }
 

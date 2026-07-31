@@ -69,7 +69,7 @@ class ReportModuleArchitectureTest extends TestCase
 
         $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
 
-        foreach (['filters', 'metrics', 'records', 'presets', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'records', 'presets', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -90,6 +90,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportChartsPresenter.php',
             'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportLibraryPresenter.php',
             'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportSummaryPresenter.php',
@@ -109,6 +110,7 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/owner-statement-summary.tsx',
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
+            'resources/js/modules/reports/report-library.tsx',
             'resources/js/modules/reports/report-operations.tsx',
             'resources/js/modules/reports/report-overview.tsx',
             'resources/js/modules/reports/report-preset-form.tsx',

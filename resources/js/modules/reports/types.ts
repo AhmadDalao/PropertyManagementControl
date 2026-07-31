@@ -1,8 +1,26 @@
 import type { SharedProps } from '@/types';
 
 export type ReportMode = 'portfolio' | 'superadmin';
-export type ReportTab = 'overview' | 'collections' | 'costs' | 'operations';
+export type ReportTab =
+    'library' | 'overview' | 'collections' | 'costs' | 'operations';
 export type PresetVisibility = 'global' | 'portfolio' | 'private';
+
+export type ReportLibraryCard = {
+    key: string;
+    icon: string;
+    title: string;
+    description: string;
+    openLabel: string;
+    openHref: string;
+    downloads: Array<{ label: string; href: string }>;
+};
+
+export type ReportLibraryGroup = {
+    key: string;
+    title: string;
+    description: string;
+    cards: ReportLibraryCard[];
+};
 
 export type ReportFilterValues = {
     date_from: string;
@@ -114,6 +132,7 @@ export type ReportsPageProps = SharedProps & {
     recentExpenses: ExpenseRow[];
     maintenanceBacklog: MaintenanceRow[];
     savedPresets: ReportPreset[];
+    reportLibrary: ReportLibraryGroup[];
 };
 
 export type OwnerStatementPageProps = Omit<
@@ -122,6 +141,7 @@ export type OwnerStatementPageProps = Omit<
     | 'propertyOptions'
     | 'presetVisibilityOptions'
     | 'savedPresets'
+    | 'reportLibrary'
 > & {
     statement: {
         portfolio: { en: string; ar: string };
