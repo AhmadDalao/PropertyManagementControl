@@ -29,6 +29,7 @@ const primaryAdminRoutes = [
     '/action-center',
     '/profile',
     '/property-map',
+    '/property-explorer',
     '/portfolios',
     '/users',
     '/assets',
@@ -244,13 +245,13 @@ test.describe('authenticated administration', () => {
             propertyId,
         );
 
-        const assetsLink = page.locator(
-            `.pmc-nav-link[href="/assets?property_id=${propertyId}"]`,
+        const explorerLink = page.locator(
+            `.pmc-nav-link[href="/property-explorer?property_id=${propertyId}"]`,
         );
-        await expect(assetsLink).toBeVisible();
-        await assetsLink.click();
+        await expect(explorerLink).toBeVisible();
+        await explorerLink.click();
         await expect(page).toHaveURL(
-            new RegExp(`/assets\\?property_id=${propertyId}`),
+            new RegExp(`/property-explorer\\?property_id=${propertyId}`),
         );
         await expect(
             page.locator('[data-property-scope-trigger]'),
@@ -555,6 +556,59 @@ test.describe('authenticated administration', () => {
 
         await search.fill('');
         await expect(page).not.toHaveURL(/search=/);
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('property explorer keeps hierarchy, tenant search, and Arabic context clear', async ({
+        page,
+    }) => {
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/property-explorer?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Property explorer',
+                }),
+            ).toBeVisible();
+            await expect(
+                page.getByTestId('property-explorer-record').first(),
+            ).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page
+            .getByTestId('property-explorer-property')
+            .selectOption({ label: 'Rose Tower · ROSE-TOWER' });
+        await expect(page).toHaveURL(/property_id=/);
+        const search = page.getByTestId('property-explorer-search');
+        await search.fill('Sara Tenant');
+        await expect(page).toHaveURL(/search=Sara(?:%20|\+)Tenant/);
+        await expect(page.getByTestId('property-explorer-record')).toHaveCount(
+            1,
+        );
+        await expect(
+            page.getByText('Sara Tenant', { exact: true }),
+        ).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-explorer-focus-actions .btn, .pmc-explorer-record footer a',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/property-explorer?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'مستكشف العقارات',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('searchbox', { name: 'البحث داخل العقار' }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 
@@ -2091,6 +2145,7 @@ test.describe('authenticated administration', () => {
                 '/action-center',
                 '/profile',
                 '/assets',
+                '/property-explorer',
                 '/property-map',
                 '/rent-collection',
                 '/lease-renewals',
@@ -2120,7 +2175,7 @@ test.describe('local role dashboards', () => {
         superadmin: {
             visible: [
                 '/action-center',
-                '/assets',
+                '/property-explorer',
                 '/rent-collection',
                 '/lease-renewals',
                 '/cms',
@@ -2133,7 +2188,7 @@ test.describe('local role dashboards', () => {
         owner: {
             visible: [
                 '/action-center',
-                '/assets',
+                '/property-explorer',
                 '/lease-renewals',
                 '/rent-collection',
                 '/payments',
@@ -2149,7 +2204,7 @@ test.describe('local role dashboards', () => {
         manager: {
             visible: [
                 '/action-center',
-                '/assets',
+                '/property-explorer',
                 '/lease-renewals',
                 '/rent-collection',
                 '/payments',
@@ -2166,7 +2221,7 @@ test.describe('local role dashboards', () => {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
             hidden: [
                 '/action-center',
-                '/assets',
+                '/property-explorer',
                 '/lease-renewals',
                 '/rent-collection',
                 '/payments',

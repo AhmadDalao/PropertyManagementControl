@@ -63,43 +63,76 @@ final readonly class OwnerStatementWordExport
     /** @return array{type:string,text:string,style?:string} */
     private function paragraph(string $text, ?string $style = null): array
     {
-        return array_filter(['type' => 'paragraph', 'text' => $text, 'style' => $style]);
+        $paragraph = ['type' => 'paragraph', 'text' => $text];
+
+        if ($style !== null) {
+            $paragraph['style'] = $style;
+        }
+
+        return $paragraph;
     }
 
-    /** @param array<int, array<int, string>> $rows */
+    /**
+     * @param  array<int, array<int, string>>  $rows
+     * @return array{type:string,rows:array<int,array<int,string>>}
+     */
     private function table(array $rows): array
     {
         return ['type' => 'table', 'rows' => $rows];
     }
 
-    /** @param array<int, array<string, mixed>> $leases */
+    /**
+     * @param  array<int, array<string, mixed>>  $leases
+     * @return array<int, array<int, string>>
+     */
     private function arrearsRows(array $leases): array
     {
         $rows = [['Lease / العقد', 'Tenant / المستأجر', 'Property / العقار', 'Balance / الرصيد']];
         foreach ($leases as $lease) {
-            $rows[] = [$lease['code'], $lease['tenant'] ?? '-', $lease['asset'] ?? '-', $this->money($lease['arrears_amount'], $lease['currency'])];
+            $rows[] = [
+                (string) $lease['code'],
+                (string) ($lease['tenant'] ?? '-'),
+                (string) ($lease['asset'] ?? '-'),
+                $this->money($lease['arrears_amount'], (string) $lease['currency']),
+            ];
         }
 
         return $rows;
     }
 
-    /** @param array<int, array<string, mixed>> $payments */
+    /**
+     * @param  array<int, array<string, mixed>>  $payments
+     * @return array<int, array<int, string>>
+     */
     private function paymentRows(array $payments): array
     {
         $rows = [['Reference / المرجع', 'Tenant / المستأجر', 'Date / التاريخ', 'Amount / المبلغ']];
         foreach ($payments as $payment) {
-            $rows[] = [$payment['reference'], $payment['tenant'] ?? '-', $payment['received_on'] ?? '-', $this->money($payment['amount'], $payment['currency'])];
+            $rows[] = [
+                (string) $payment['reference'],
+                (string) ($payment['tenant'] ?? '-'),
+                (string) ($payment['received_on'] ?? '-'),
+                $this->money($payment['amount'], (string) $payment['currency']),
+            ];
         }
 
         return $rows;
     }
 
-    /** @param array<int, array<string, mixed>> $requests */
+    /**
+     * @param  array<int, array<string, mixed>>  $requests
+     * @return array<int, array<int, string>>
+     */
     private function maintenanceRows(array $requests): array
     {
         $rows = [['Request / الطلب', 'Property / العقار', 'Status / الحالة', 'Priority / الأولوية']];
         foreach ($requests as $request) {
-            $rows[] = [$request['title'], $request['asset'] ?? '-', $request['status'], $request['priority']];
+            $rows[] = [
+                (string) $request['title'],
+                (string) ($request['asset'] ?? '-'),
+                (string) $request['status'],
+                (string) $request['priority'],
+            ];
         }
 
         return $rows;

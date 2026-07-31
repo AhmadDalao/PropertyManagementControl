@@ -68,7 +68,7 @@ export function PropertyFocus({
             {focus.selected ? (
                 <Link
                     className="pmc-dashboard-focus-action"
-                    href={`/assets/${focus.selected.id}`}
+                    href={`/property-explorer?property_id=${focus.selected.id}`}
                 >
                     {t('dashboard.open_focused_property')}
                     <i className="bi bi-arrow-up-right" aria-hidden="true" />

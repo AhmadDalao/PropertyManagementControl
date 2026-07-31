@@ -28,9 +28,16 @@ export default function AssetsIndexPage() {
                 description={t('assets.workspace_description')}
                 actions={[
                     {
+                        label: t('assets.explorer.title'),
+                        href: '/property-explorer',
+                        icon: 'bi-diagram-3',
+                        tone: 'primary',
+                    },
+                    {
                         label: t('assets.property_map'),
                         href: '/property-map',
                         icon: 'bi-map',
+                        tone: 'quiet',
                     },
                     ...(canCreate
                         ? [
@@ -38,9 +45,7 @@ export default function AssetsIndexPage() {
                                   label: t('assets.builder.single_asset'),
                                   href: '/assets/create',
                                   icon: 'bi-plus-lg',
-                                  tone: canSetupBuilding
-                                      ? ('secondary' as const)
-                                      : ('primary' as const),
+                                  tone: 'secondary' as const,
                               },
                           ]
                         : []),
@@ -50,7 +55,7 @@ export default function AssetsIndexPage() {
                                   label: t('assets.builder.setup_building'),
                                   href: '/assets/building-setup',
                                   icon: 'bi-buildings',
-                                  tone: 'primary' as const,
+                                  tone: 'secondary' as const,
                               },
                           ]
                         : []),

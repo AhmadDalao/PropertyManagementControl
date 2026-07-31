@@ -1,0 +1,340 @@
+.pmc-explorer-focus,
+.pmc-explorer-records {
+    min-width: 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-explorer-focus > header,
+.pmc-explorer-records > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-explorer-focus > header > div:first-child {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-explorer-focus > header span,
+.pmc-explorer-records > header span {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-explorer-focus h2,
+.pmc-explorer-records h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 950;
+}
+
+.pmc-explorer-focus-badges,
+.pmc-explorer-focus-actions,
+.pmc-explorer-tenancy footer {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.pmc-explorer-focus-actions .btn {
+    min-height: 2.75rem;
+}
+
+.pmc-explorer-focus-badges em {
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pmc-sand);
+    font-size: 0.68rem;
+    font-style: normal;
+    font-weight: 850;
+}
+
+.pmc-explorer-focus-body {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 0.85rem;
+    padding: 1rem;
+}
+
+.pmc-explorer-facts,
+.pmc-explorer-tenancy {
+    min-width: 0;
+    padding: 0.9rem;
+    border-radius: 0.8rem;
+    background: var(--pmc-sand);
+}
+
+.pmc-explorer-facts > span,
+.pmc-explorer-tenancy > header span,
+.pmc-explorer-record-context > span {
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-explorer-facts dl,
+.pmc-explorer-tenancy dl,
+.pmc-explorer-record dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0.75rem 0 0;
+}
+
+.pmc-explorer-facts dl div,
+.pmc-explorer-tenancy dl div,
+.pmc-explorer-record dl div {
+    min-width: 0;
+}
+
+.pmc-explorer-facts dt,
+.pmc-explorer-tenancy dt,
+.pmc-explorer-record dt {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    font-weight: 750;
+}
+
+.pmc-explorer-facts dd,
+.pmc-explorer-tenancy dd,
+.pmc-explorer-record dd {
+    margin: 0.15rem 0 0;
+    overflow: hidden;
+    font-size: 0.78rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-explorer-tenancy {
+    display: grid;
+    gap: 0.75rem;
+    background: #f2faf8;
+}
+
+.pmc-explorer-tenancy > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-explorer-tenancy > header > div,
+.pmc-explorer-tenancy.is-empty > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-explorer-tenancy > header strong {
+    font-size: 1rem;
+}
+
+.pmc-explorer-tenancy > header small,
+.pmc-explorer-record-context small {
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-explorer-tenancy footer {
+    padding-top: 0.7rem;
+    border-top: 1px solid var(--pmc-line);
+}
+
+.pmc-explorer-tenancy footer a {
+    color: var(--pmc-ink);
+    font-size: 0.7rem;
+    font-weight: 900;
+}
+
+.pmc-explorer-tenancy.is-empty {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+}
+
+.pmc-explorer-tenancy.is-empty > i {
+    display: grid;
+    width: 2.7rem;
+    height: 2.7rem;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: #fff;
+}
+
+.pmc-explorer-tenancy.is-empty p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-explorer-tenancy.is-empty > a {
+    padding: 0.55rem 0.7rem;
+    border-radius: 0.6rem;
+    background: var(--pmc-amber);
+    color: var(--pmc-ink);
+    font-size: 0.7rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-explorer-records > header p {
+    margin: 0.2rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+}
+
+.pmc-explorer-records > header > strong {
+    display: grid;
+    min-width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.75rem;
+}
+
+.pmc-explorer-record-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.pmc-explorer-record {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.8rem;
+    background: #fff;
+}
+
+.pmc-explorer-record > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.6rem;
+}
+
+.pmc-explorer-record > header > div,
+.pmc-explorer-record-context {
+    display: grid;
+    min-width: 0;
+    gap: 0.1rem;
+}
+
+.pmc-explorer-record > header span {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 900;
+}
+
+.pmc-explorer-record > header a {
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.88rem;
+    font-weight: 950;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-explorer-record > header small {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-explorer-record-context {
+    min-height: 4.2rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: var(--pmc-sand);
+}
+
+.pmc-explorer-record-context strong {
+    overflow: hidden;
+    font-size: 0.8rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-explorer-record footer {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--pmc-line);
+}
+
+.pmc-explorer-record footer a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    color: var(--pmc-ink);
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-explorer-record footer a.is-primary {
+    margin-inline-end: auto;
+    border-color: var(--pmc-amber);
+    background: var(--pmc-amber);
+}
+
+.pmc-explorer-records .pmc-table-footer {
+    margin: 0 1rem 1rem;
+}
+
+.pmc-explorer-empty {
+    display: grid;
+    min-height: 15rem;
+    margin: 1rem;
+    padding: 2rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.45rem;
+    border: 1px dashed var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    text-align: center;
+}
+
+.pmc-explorer-empty.is-root {
+    margin: 0;
+    background: #fff;
+}
+
+.pmc-explorer-empty > i {
+    font-size: 1.5rem;
+}
+
+.pmc-explorer-empty p {
+    max-width: 35rem;
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+}

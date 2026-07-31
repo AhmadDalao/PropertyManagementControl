@@ -64,9 +64,9 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
             },
             {
-                labelKey: 'nav.assets',
-                href: '/assets',
-                icon: 'bi-building',
+                labelKey: 'nav.property_explorer',
+                href: '/property-explorer',
+                icon: 'bi-diagram-3',
                 roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'assets',
                 propertyScoped: true,

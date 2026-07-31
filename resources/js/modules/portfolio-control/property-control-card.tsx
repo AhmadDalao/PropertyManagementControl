@@ -29,7 +29,11 @@ export function PropertyControlCard({
             <header>
                 <div>
                     <span>{property.code}</span>
-                    <Link href={`/assets/${property.id}`}>{title}</Link>
+                    <Link
+                        href={`/property-explorer?property_id=${property.id}`}
+                    >
+                        {title}
+                    </Link>
                     <small>
                         {portfolio} · {property.portfolio_code}
                     </small>

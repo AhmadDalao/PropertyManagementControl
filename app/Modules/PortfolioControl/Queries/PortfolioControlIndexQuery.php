@@ -125,14 +125,15 @@ final readonly class PortfolioControlIndexQuery
      */
     private function counts(Collection $rows): array
     {
-        return collect(['all', 'risk', 'watch', 'on_track'])
+        return array_values(collect(['all', 'risk', 'watch', 'on_track'])
             ->map(fn (string $key): array => [
                 'key' => $key,
                 'count' => $key === 'all'
                     ? $rows->count()
                     : $rows->where('attention', $key)->count(),
             ])
-            ->all();
+            ->values()
+            ->all());
     }
 
     /**
@@ -182,16 +183,18 @@ final readonly class PortfolioControlIndexQuery
             ? 'portfolio_name_ar'
             : 'portfolio_name_en';
 
-        return $rows
+        return array_values($rows
             ->unique('portfolio_id')
             ->sortBy($name, SORT_NATURAL | SORT_FLAG_CASE)
             ->map(fn (array $row): array => [
                 'id' => (int) $row['portfolio_id'],
                 'code' => (string) $row['portfolio_code'],
                 'name_en' => (string) $row['portfolio_name_en'],
-                'name_ar' => $row['portfolio_name_ar'],
+                'name_ar' => is_string($row['portfolio_name_ar'])
+                    ? $row['portfolio_name_ar']
+                    : null,
             ])
             ->values()
-            ->all();
+            ->all());
     }
 }

@@ -49,7 +49,7 @@ export default function PropertyMapPage() {
                             </Link>
                         ) : null}
                         <Link
-                            href="/assets"
+                            href="/property-explorer"
                             className="btn btn-outline-secondary"
                         >
                             {t('map.asset_workspace')}

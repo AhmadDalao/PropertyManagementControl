@@ -217,6 +217,7 @@ $authChecks = [
     '/action-center?locale=en' => 'admin/action-center/index',
     '/action-center?locale=ar' => 'admin/action-center/index',
     '/property-map' => 'admin/property-map/index',
+    '/property-explorer' => 'admin/assets/explorer',
     '/portfolios' => 'admin/portfolios/index',
     '/users' => 'admin/users/index',
     '/users/create' => 'admin/resource-form',

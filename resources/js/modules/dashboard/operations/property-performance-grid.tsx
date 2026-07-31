@@ -29,7 +29,7 @@ export function PropertyPerformanceGrid({
                     ? t('dashboard.open_focused_property')
                     : t('dashboard.open_portfolio_control'),
                 href: selectedProperty
-                    ? `/assets/${selectedProperty.id}`
+                    ? `/property-explorer?property_id=${selectedProperty.id}`
                     : '/portfolio-control',
             }}
         >
@@ -40,7 +40,9 @@ export function PropertyPerformanceGrid({
                         className={`pmc-property-performance-card is-${property.attention}`}
                     >
                         <header>
-                            <Link href={`/assets/${property.id}`}>
+                            <Link
+                                href={`/property-explorer?property_id=${property.id}`}
+                            >
                                 <span>{property.code}</span>
                                 <strong>
                                     {locale === 'ar'

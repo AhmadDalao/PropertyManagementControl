@@ -144,6 +144,38 @@ class AssetModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function property_explorer_stays_a_bounded_modular_workflow(): void
+    {
+        $controller = $this->source($this->path('app/Http/Controllers/PropertyExplorerController.php'));
+        $selection = $this->source($this->path('app/Modules/Assets/Queries/PropertyExplorerSelectionQuery.php'));
+        $activeLeases = $this->source($this->path('app/Modules/Assets/Queries/PropertyExplorerActiveLeaseQuery.php'));
+        $records = $this->source($this->path('app/Modules/Assets/Queries/PropertyExplorerRecordQuery.php'));
+        $metrics = $this->source($this->path('app/Modules/Assets/Queries/PropertyExplorerMetricsQuery.php'));
+        $presenter = $this->source($this->path('app/Modules/Assets/Presenters/PropertyExplorerPresenter.php'));
+        $entry = $this->source($this->path('resources/js/modules/assets/explorer/index-page.tsx'));
+        $focus = $this->source($this->path('resources/js/modules/assets/explorer/explorer-focus-panel.tsx'));
+        $facade = $this->source($this->path('resources/css/styles/property-explorer.css'));
+
+        $this->assertLinesAtMost($controller, 35);
+        $this->assertLinesAtMost($selection, 155);
+        $this->assertLinesAtMost($activeLeases, 55);
+        $this->assertLinesAtMost($records, 90);
+        $this->assertLinesAtMost($metrics, 75);
+        $this->assertLinesAtMost($presenter, 110);
+        $this->assertLinesAtMost($entry, 100);
+        $this->assertLinesAtMost($focus, 245);
+        $this->assertStringContainsString('PropertyExplorerPresenter', $controller);
+        $this->assertStringContainsString('PropertyExplorerSelectionQuery', $presenter);
+        $this->assertStringContainsString('leaseableTypes()', $activeLeases);
+        $this->assertStringContainsString('PropertyExplorerRecordQuery', $presenter);
+        $this->assertStringContainsString('PropertyExplorerMetricsQuery', $presenter);
+        $this->assertStringNotContainsString('Asset::query()', $controller);
+        $this->assertStringContainsString("@import './property-explorer/controls.css';", $facade);
+        $this->assertStringContainsString("@import './property-explorer/content.css';", $facade);
+        $this->assertStringContainsString("@import './property-explorer/responsive.css';", $facade);
+    }
+
+    #[Test]
     public function asset_module_owns_each_resource_responsibility(): void
     {
         foreach ([
@@ -175,6 +207,9 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Presenters/BuildingSetupContinuationPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/BuildingStructureInitialValuesPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/PropertyContextPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/PropertyExplorerAssetPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/PropertyExplorerLeasePresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/PropertyExplorerPresenter.php'),
             $this->path('app/Modules/Assets/Queries/AssetDetailQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetDirectoryQuery.php'),
             $this->path('app/Modules/Assets/Queries/AssetFormOptionsQuery.php'),
@@ -185,8 +220,13 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Queries/AssetOperationsRecordsQuery.php'),
             $this->path('app/Modules/Assets/Queries/PropertyMapQuery.php'),
             $this->path('app/Modules/Assets/Queries/PropertyContextQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyExplorerMetricsQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyExplorerActiveLeaseQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyExplorerRecordQuery.php'),
+            $this->path('app/Modules/Assets/Queries/PropertyExplorerSelectionQuery.php'),
             $this->path('app/Modules/Assets/Requests/HasAssetValidationAttributes.php'),
             $this->path('app/Modules/Assets/Requests/PropertyMapRequest.php'),
+            $this->path('app/Modules/Assets/Requests/PropertyExplorerRequest.php'),
             $this->path('app/Modules/Assets/Requests/StoreAssetRequest.php'),
             $this->path('app/Modules/Assets/Requests/StoreBuildingStructureRequest.php'),
             $this->path('app/Modules/Assets/Requests/UpdateAssetRequest.php'),
@@ -208,6 +248,8 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/assets/asset-table.tsx'),
             $this->path('resources/js/modules/assets/building-setup/index-page.tsx'),
             $this->path('resources/js/modules/assets/building-setup/types.ts'),
+            $this->path('resources/js/modules/assets/explorer/index-page.tsx'),
+            $this->path('resources/js/modules/assets/explorer/types.ts'),
             $this->path('resources/js/modules/assets/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);

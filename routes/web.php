@@ -31,6 +31,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortfolioControlController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PropertyExplorerController;
 use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/global-search', GlobalSearchController::class)->name('global-search');
     Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
     Route::get('/property-map', PropertyMapController::class)->name('property-map.index')->middleware('portfolio.module:assets');
+    Route::get('/property-explorer', PropertyExplorerController::class)->name('property-explorer.index')->middleware('portfolio.module:assets');
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:users')->middlewareFor(['create', 'store'], 'property.assigned');

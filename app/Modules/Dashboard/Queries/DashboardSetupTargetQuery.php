@@ -5,6 +5,7 @@ namespace App\Modules\Dashboard\Queries;
 use App\Models\Portfolio;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 final class DashboardSetupTargetQuery
 {
@@ -36,7 +37,7 @@ final class DashboardSetupTargetQuery
                     )
                     ->orWhereDoesntHave(
                         'users',
-                        fn (Builder $users): Builder => $this->activeRole($users, 'property_manager'),
+                        fn ($users) => $this->activeRole($users, 'property_manager'),
                     )
                     ->orWhereDoesntHave(
                         'assets',
@@ -46,7 +47,7 @@ final class DashboardSetupTargetQuery
                     )
                     ->orWhereDoesntHave(
                         'users',
-                        fn (Builder $users): Builder => $this->activeRole($users, 'tenant'),
+                        fn ($users) => $this->activeRole($users, 'tenant'),
                     )
                     ->orWhereDoesntHave(
                         'leases',
@@ -59,8 +60,8 @@ final class DashboardSetupTargetQuery
     }
 
     /**
-     * @param  Builder<User>  $users
-     * @return Builder<User>
+     * @param  Builder<Model>  $users
+     * @return Builder<Model>
      */
     private function activeRole(Builder $users, string $role): Builder
     {

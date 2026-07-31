@@ -9,6 +9,7 @@ final class PropertyContextRoutes
         'action-center.index',
         'action-center.export',
         'property-map.index',
+        'property-explorer.index',
         'assets.index',
         'tenants.index',
         'leases.index',

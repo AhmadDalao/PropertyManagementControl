@@ -53,13 +53,16 @@ export function OperationsInsightPanels({
                         {
                             label: t('dashboard.occupancy_rate'),
                             value: occupancyRate,
-                            href: propertyFocusUrl('/assets', propertyId),
+                            href: propertyFocusUrl(
+                                '/property-explorer',
+                                propertyId,
+                            ),
                         },
                         {
                             label: t('dashboard.map_coverage'),
                             value: props.propertyMap.summary.coverage_percent,
                             href: propertyId
-                                ? `/assets/${propertyId}?tab=overview`
+                                ? `/property-explorer?property_id=${propertyId}`
                                 : '/property-map',
                         },
                     ]}

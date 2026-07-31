@@ -1,0 +1,80 @@
+@media (max-width: 1199.98px) {
+    .pmc-explorer-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-explorer-controls > button {
+        justify-self: start;
+    }
+
+    .pmc-explorer-record-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-explorer-page .pmc-workspace-heading h1 {
+        font-size: clamp(2rem, 10vw, 2.65rem);
+    }
+
+    .pmc-explorer-controls {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-explorer-controls > label:nth-of-type(-n + 2),
+    .pmc-explorer-controls > button {
+        grid-column: 1 / -1;
+    }
+
+    .pmc-explorer-focus-body,
+    .pmc-explorer-record-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-explorer-controls > button {
+        width: 100%;
+    }
+
+    .pmc-explorer-focus > header,
+    .pmc-explorer-records > header {
+        flex-direction: column;
+    }
+
+    .pmc-explorer-focus-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+    }
+
+    .pmc-explorer-focus-actions .btn {
+        min-width: 0;
+    }
+
+    .pmc-explorer-focus-actions .btn:last-child {
+        grid-column: 1 / -1;
+    }
+
+    .pmc-explorer-facts dl {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-explorer-tenancy.is-empty {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-explorer-tenancy.is-empty > a {
+        grid-column: 1 / -1;
+        text-align: center;
+    }
+
+    .pmc-explorer-record footer a {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-explorer-controls {
+        transition: none;
+    }
+}

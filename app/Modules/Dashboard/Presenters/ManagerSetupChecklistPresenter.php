@@ -14,7 +14,10 @@ final class ManagerSetupChecklistPresenter
         private readonly AssignedPropertyScope $assignments,
     ) {}
 
-    /** @param array<string, int|float> $stats */
+    /**
+     * @param  array<string, int|float>  $stats
+     * @return list<array{key:string,label:string,description:string,done:bool,href:string,icon:string}>
+     */
     public function present(User $user, array $stats): array
     {
         if ($this->assignments->restricts($user) && ! $this->assignments->hasAssignments($user)) {
@@ -39,7 +42,7 @@ final class ManagerSetupChecklistPresenter
         ];
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{key:string,label:string,description:string,done:bool,href:string,icon:string} */
     private function item(
         string $key,
         bool $done,

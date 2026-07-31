@@ -17,7 +17,10 @@ class SetupChecklistPresenter
 
     /**
      * @param  array<string, int|float>  $stats
-     * @return array{target:?array<string,mixed>,items:array<int,array<string,mixed>>}
+     * @return array{
+     *     target:?array<string,mixed>,
+     *     items:list<array{key:string,label:string,description:string,done:bool,href:string,icon:string}>
+     * }
      */
     public function present(User $user, array $stats): array
     {
@@ -51,7 +54,7 @@ class SetupChecklistPresenter
                         'icon' => $next['icon'],
                     ] : null,
                 ],
-                'items' => array_map(
+                'items' => array_values(array_map(
                     fn (array $step): array => $this->item(
                         $step['key'],
                         $step['title'],
@@ -61,7 +64,7 @@ class SetupChecklistPresenter
                         $step['icon'],
                     ),
                     $steps,
-                ),
+                )),
             ];
         }
 
@@ -82,7 +85,7 @@ class SetupChecklistPresenter
         return ['target' => null, 'items' => $this->manager->present($user, $stats)];
     }
 
-    /** @return array<string, mixed> */
+    /** @return array{key:string,label:string,description:string,done:bool,href:string,icon:string} */
     private function item(
         string $key,
         string $label,
