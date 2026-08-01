@@ -66,27 +66,49 @@ export function PropertyPerformanceGrid({
                             <div>
                                 <dt>{t('dashboard.collection_rate')}</dt>
                                 <dd>
-                                    {percent(property.collection_rate, locale)}
+                                    {property.collection_rate === null
+                                        ? t(
+                                              'dashboard.currency_positions_count',
+                                              undefined,
+                                              {
+                                                  count: localizedNumber(
+                                                      property.currency_count,
+                                                      locale,
+                                                  ),
+                                              },
+                                          )
+                                        : percent(
+                                              property.collection_rate,
+                                              locale,
+                                          )}
                                 </dd>
                             </div>
                             <div>
                                 <dt>{t('dashboard.arrears')}</dt>
                                 <dd>
-                                    {currency(
-                                        property.arrears,
-                                        props.app.locale,
-                                        property.currency,
-                                    )}
+                                    {property.currency_totals
+                                        .map((position) =>
+                                            currency(
+                                                position.arrears,
+                                                props.app.locale,
+                                                position.currency,
+                                            ),
+                                        )
+                                        .join(' · ')}
                                 </dd>
                             </div>
                             <div>
                                 <dt>{t('dashboard.net_cash_flow')}</dt>
                                 <dd>
-                                    {currency(
-                                        property.net,
-                                        props.app.locale,
-                                        property.currency,
-                                    )}
+                                    {property.currency_totals
+                                        .map((position) =>
+                                            currency(
+                                                position.net,
+                                                props.app.locale,
+                                                position.currency,
+                                            ),
+                                        )
+                                        .join(' · ')}
                                 </dd>
                             </div>
                         </dl>

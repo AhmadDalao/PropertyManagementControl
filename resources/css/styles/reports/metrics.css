@@ -5,6 +5,158 @@
     margin-bottom: 1rem;
 }
 
+.pmc-report-currency-section {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-report-currency-section > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 0.7fr);
+    gap: 1rem;
+    align-items: end;
+}
+
+.pmc-report-currency-section > header span,
+.pmc-report-currency-section > header p {
+    color: #68686f;
+    font-size: 0.72rem;
+}
+
+.pmc-report-currency-section > header h2 {
+    margin: 0.15rem 0 0;
+    color: #111;
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    font-weight: 950;
+}
+
+.pmc-report-currency-section > header p {
+    max-width: 34rem;
+    margin: 0;
+}
+
+.pmc-report-currency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-report-currency-grid > article {
+    display: grid;
+    gap: 0.8rem;
+    min-width: 0;
+    padding: 0.95rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.9rem;
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(17 17 17 / 4%);
+}
+
+.pmc-report-currency-grid > article.is-negative {
+    border-color: #efc4ba;
+}
+
+.pmc-report-currency-grid article > header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.1rem 0.75rem;
+    align-items: center;
+}
+
+.pmc-report-currency-grid article > header span {
+    color: #68686f;
+    font-size: 0.65rem;
+}
+
+.pmc-report-currency-grid article > header strong {
+    grid-row: 1 / span 2;
+    grid-column: 2;
+    color: #111;
+    font-size: 1.25rem;
+    font-weight: 950;
+}
+
+.pmc-report-currency-grid article > header em {
+    color: #08786e;
+    font-size: 0.72rem;
+    font-style: normal;
+    font-weight: 850;
+}
+
+.pmc-report-currency-grid dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-report-currency-grid dl > div {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: #f7f6f3;
+}
+
+.pmc-report-currency-grid dt {
+    color: #68686f;
+    font-size: 0.64rem;
+}
+
+.pmc-report-currency-grid dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    color: #111;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.pmc-report-currency-grid article > footer {
+    display: grid;
+    gap: 0.2rem;
+    color: #68686f;
+    font-size: 0.66rem;
+}
+
+.pmc-report-currency-grid article > footer strong {
+    color: #111;
+    font-size: 0.7rem;
+}
+
+.pmc-report-currency-breakdowns {
+    display: grid;
+    gap: 1rem;
+}
+
+.pmc-report-currency-breakdowns > section {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-report-currency-breakdowns > section + section {
+    padding-top: 1rem;
+    border-top: 1px solid #ece9e3;
+}
+
+.pmc-report-currency-breakdowns > section > header {
+    display: flex;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.pmc-report-currency-breakdowns > section > header span {
+    color: #68686f;
+    font-size: 0.68rem;
+}
+
+.pmc-report-currency-breakdowns > section > header strong {
+    color: #111;
+    font-size: 0.75rem;
+    font-weight: 950;
+}
+
 .pmc-report-pulse {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
@@ -133,4 +285,15 @@
     color: #111;
     font-size: 1.35rem;
     font-weight: 950;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-report-currency-section > header {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.35rem;
+    }
+
+    .pmc-report-currency-grid dl {
+        grid-template-columns: minmax(0, 1fr);
+    }
 }

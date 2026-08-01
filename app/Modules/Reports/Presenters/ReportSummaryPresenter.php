@@ -9,17 +9,23 @@ use Illuminate\Support\Collection;
 
 final class ReportSummaryPresenter
 {
+    public function __construct(
+        private readonly ReportCurrencySummaryPresenter $currencies,
+    ) {}
+
     /**
      * @param  Collection<int, MaintenanceRequest>  $maintenanceBacklog
-     * @return array<string, float|int>
+     * @return array<string, mixed>
      */
     public function present(
         PortfolioReportData $data,
         LeaseReportSnapshot $leases,
         Collection $maintenanceBacklog,
     ): array {
-        $revenue = (float) $data->payments->sum('amount');
-        $expenses = (float) $data->expenses->sum('amount');
+        $currencyTotals = $this->currencies->present($data, $leases);
+        $singleCurrency = count($currencyTotals) === 1
+            ? $currencyTotals[0]
+            : null;
         $rentableAssets = $data->assets->where('rentable', true);
         $occupiedAssets = $rentableAssets->whereIn(
             'occupancy_status',
@@ -27,19 +33,20 @@ final class ReportSummaryPresenter
         );
 
         return [
-            'revenue' => $revenue,
-            'expenses' => $expenses,
-            'net' => $revenue - $expenses,
-            'scheduledDue' => $leases->scheduledDue,
-            'scheduledPaid' => $leases->scheduledPaid,
-            'collectionRate' => $leases->scheduledDue > 0
-                ? round(min(100, ($leases->scheduledPaid / $leases->scheduledDue) * 100), 2)
-                : 0,
+            'currency' => $singleCurrency['currency'] ?? null,
+            'currencyCount' => count($currencyTotals),
+            'currencyTotals' => $currencyTotals,
+            'revenue' => $singleCurrency['revenue'] ?? null,
+            'expenses' => $singleCurrency['expenses'] ?? null,
+            'net' => $singleCurrency['net'] ?? null,
+            'scheduledDue' => $singleCurrency['scheduledDue'] ?? null,
+            'scheduledPaid' => $singleCurrency['scheduledPaid'] ?? null,
+            'collectionRate' => $singleCurrency['collectionRate'] ?? null,
             'occupancyRate' => $rentableAssets->count() > 0
                 ? round(($occupiedAssets->count() / $rentableAssets->count()) * 100, 2)
                 : 0,
-            'arrears' => $leases->arrears,
-            'contractBalance' => $leases->contractBalance,
+            'arrears' => $singleCurrency['arrears'] ?? null,
+            'contractBalance' => $singleCurrency['contractBalance'] ?? null,
             'activeLeases' => $leases->activeLeases,
             'leasesInArrears' => $leases->arrearsLeases->count(),
             'openRequests' => $maintenanceBacklog->count(),

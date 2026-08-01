@@ -16,6 +16,7 @@ class AssetDetailOverviewPresenter
         private readonly AssetLeaseBalance $balances,
         private readonly ResourcePresenter $resources,
         private readonly UserAccess $users,
+        private readonly AssetCurrencySummaryPresenter $currencies,
     ) {}
 
     /** @return array<string, mixed> */
@@ -84,8 +85,8 @@ class AssetDetailOverviewPresenter
         }
 
         if ($reportsEnabled) {
-            $stats[] = ['label' => trans('app.assets.arrears'), 'value' => $this->money($operations->arrears, $asset->currency), 'tone' => $operations->arrears > 0 ? 'danger' : 'teal'];
-            $stats[] = ['label' => trans('app.assets.monthly_net'), 'value' => $this->money($operations->monthlyNet(), $asset->currency), 'tone' => $operations->monthlyNet() >= 0 ? 'teal' : 'danger'];
+            $stats[] = ['label' => trans('app.assets.arrears'), 'value' => $this->currencies->money($operations, 'arrears'), 'tone' => $operations->hasArrears() ? 'danger' : 'teal'];
+            $stats[] = ['label' => trans('app.assets.monthly_net'), 'value' => $this->currencies->money($operations, 'monthlyNet'), 'tone' => $operations->hasNegativeNet() ? 'danger' : 'teal'];
         }
 
         $sections = [
@@ -133,13 +134,13 @@ class AssetDetailOverviewPresenter
                 'description' => trans('app.assets.property_financial_section_help'),
                 'tab' => 'financial',
                 'items' => $this->resources->detailItems([
-                    ['label' => trans('app.assets.scheduled_due'), 'value' => $this->money($operations->monthlyScheduledDue, $asset->currency)],
-                    ['label' => trans('app.assets.scheduled_paid'), 'value' => $this->money($operations->monthlyScheduledPaid, $asset->currency)],
-                    ['label' => trans('app.assets.collection_rate'), 'value' => $this->rate($operations->collectionRate())],
-                    ['label' => trans('app.assets.arrears'), 'value' => $this->money($operations->arrears, $asset->currency), 'tone' => $operations->arrears > 0 ? 'danger' : 'teal'],
-                    ['label' => trans('app.assets.monthly_revenue'), 'value' => $this->money($operations->monthlyRevenue, $asset->currency)],
-                    ['label' => trans('app.assets.monthly_expenses'), 'value' => $this->money($operations->monthlyExpenses, $asset->currency)],
-                    ['label' => trans('app.assets.monthly_net'), 'value' => $this->money($operations->monthlyNet(), $asset->currency), 'tone' => $operations->monthlyNet() >= 0 ? 'teal' : 'danger'],
+                    ['label' => trans('app.assets.scheduled_due'), 'value' => $this->currencies->money($operations, 'monthlyScheduledDue')],
+                    ['label' => trans('app.assets.scheduled_paid'), 'value' => $this->currencies->money($operations, 'monthlyScheduledPaid')],
+                    ['label' => trans('app.assets.collection_rate'), 'value' => $this->currencies->collectionRate($operations)],
+                    ['label' => trans('app.assets.arrears'), 'value' => $this->currencies->money($operations, 'arrears'), 'tone' => $operations->hasArrears() ? 'danger' : 'teal'],
+                    ['label' => trans('app.assets.monthly_revenue'), 'value' => $this->currencies->money($operations, 'monthlyRevenue')],
+                    ['label' => trans('app.assets.monthly_expenses'), 'value' => $this->currencies->money($operations, 'monthlyExpenses')],
+                    ['label' => trans('app.assets.monthly_net'), 'value' => $this->currencies->money($operations, 'monthlyNet'), 'tone' => $operations->hasNegativeNet() ? 'danger' : 'teal'],
                     ['label' => trans('app.assets.expiring_leases'), 'value' => $operations->expiringLeaseCount],
                 ]),
             ];

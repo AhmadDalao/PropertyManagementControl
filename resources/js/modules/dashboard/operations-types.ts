@@ -1,11 +1,26 @@
-export type OperationsFinancial = {
+export type OperationsCurrencyPosition = {
+    currency: string;
     scheduledDue: number;
     scheduledPaid: number;
     collectionRate: number;
     revenue: number;
     expenses: number;
     net: number;
-    currency: string;
+    arrears: number;
+};
+
+export type OperationsFinancial = {
+    scheduledDue: number | null;
+    scheduledPaid: number | null;
+    collectionRate: number | null;
+    revenue: number | null;
+    expenses: number | null;
+    net: number | null;
+    arrears: number | null;
+    currency: string | null;
+    currencyCount: number;
+    currencyTotals: OperationsCurrencyPosition[];
+    hasArrears: boolean;
 };
 
 export type LaunchReadinessStatus = {
@@ -49,20 +64,31 @@ export type PropertyPerformance = {
     title_en: string;
     title_ar?: string | null;
     code: string;
-    currency: string;
+    currency: string | null;
+    currency_count: number;
+    currency_totals: Array<{
+        currency: string;
+        scheduled_due: number;
+        scheduled_paid: number;
+        collection_rate: number;
+        arrears: number;
+        collected: number;
+        expenses: number;
+        net: number;
+    }>;
     rentable_units: number;
     occupied_units: number;
     active_leases: number;
     expiring_leases: number;
-    scheduled_due: number;
-    scheduled_paid: number;
-    arrears: number;
-    collected: number;
-    expenses: number;
-    net: number;
+    scheduled_due: number | null;
+    scheduled_paid: number | null;
+    arrears: number | null;
+    collected: number | null;
+    expenses: number | null;
+    net: number | null;
     open_requests: number;
     occupancy_rate: number;
-    collection_rate: number;
+    collection_rate: number | null;
     attention_score: number;
     attention: 'risk' | 'watch' | 'on_track';
 };

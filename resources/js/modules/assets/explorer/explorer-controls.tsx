@@ -1,12 +1,16 @@
 import { useTranslator } from '@/lib/i18n';
+import { PropertySelectionField } from '@/modules/shell/property-selection-field';
+import type { PropertyContext } from '@/types';
 
 import type { PropertyExplorerPayload } from './types';
 import { useExplorerQuery } from './use-explorer-query';
 
 export function ExplorerControls({
     explorer,
+    propertyContext,
 }: {
     explorer: PropertyExplorerPayload;
+    propertyContext: PropertyContext | null;
 }) {
     const { locale, t } = useTranslator();
     const query = useExplorerQuery(explorer.filters);
@@ -16,23 +20,40 @@ export function ExplorerControls({
             className={`pmc-explorer-controls ${query.pending ? 'is-loading' : ''}`}
             aria-label={t('assets.explorer.filters')}
         >
-            <label>
-                <span>{t('assets.explorer.property')}</span>
-                <select
-                    className="form-select"
-                    data-testid="property-explorer-property"
-                    value={explorer.filters.property_id ?? ''}
-                    onChange={(event) =>
-                        query.selectProperty(Number(event.currentTarget.value))
+            {propertyContext ? (
+                <PropertySelectionField
+                    label={t('assets.explorer.property')}
+                    context={propertyContext}
+                    value={String(explorer.filters.property_id ?? '')}
+                    updating={query.pending}
+                    allowAll={false}
+                    testId="property-explorer-property"
+                    onChange={(propertyId) =>
+                        query.selectProperty(Number(propertyId))
                     }
-                >
-                    {explorer.properties.map((property) => (
-                        <option key={property.id} value={property.id}>
-                            {localizedTitle(property, locale)} · {property.code}
-                        </option>
-                    ))}
-                </select>
-            </label>
+                />
+            ) : (
+                <label>
+                    <span>{t('assets.explorer.property')}</span>
+                    <select
+                        className="form-select"
+                        data-testid="property-explorer-property"
+                        value={explorer.filters.property_id ?? ''}
+                        onChange={(event) =>
+                            query.selectProperty(
+                                Number(event.currentTarget.value),
+                            )
+                        }
+                    >
+                        {explorer.properties.map((property) => (
+                            <option key={property.id} value={property.id}>
+                                {localizedTitle(property, locale)} ·{' '}
+                                {property.code}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+            )}
 
             <label className="pmc-explorer-search">
                 <span>{t('assets.explorer.search')}</span>

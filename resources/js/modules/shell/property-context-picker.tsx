@@ -16,6 +16,7 @@ type PropertyContextPickerProps = {
     open: boolean;
     search: string;
     updating: boolean;
+    allowAll?: boolean;
     onSearch: (value: string) => void;
     onSelect: (propertyId: string) => void;
     onClose: () => void;
@@ -26,6 +27,7 @@ export function PropertyContextPicker({
     open,
     search,
     updating,
+    allowAll = true,
     onSearch,
     onSelect,
     onClose,
@@ -158,6 +160,7 @@ export function PropertyContextPicker({
                     groups={groups}
                     resultCount={resultCount}
                     updating={updating}
+                    allowAll={allowAll}
                     onSelect={onSelect}
                 />
             </div>

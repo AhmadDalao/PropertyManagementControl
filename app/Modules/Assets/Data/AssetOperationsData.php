@@ -20,6 +20,17 @@ final readonly class AssetOperationsData
      * @param  Collection<int, MaintenanceRequest>  $maintenance
      * @param  Collection<int, ExpenseEntry>  $expenses
      * @param  Collection<int, Document>  $documents
+     * @param  list<array{
+     *     currency:string,
+     *     monthlyScheduledDue:float,
+     *     monthlyScheduledPaid:float,
+     *     collectionRate:float,
+     *     arrears:float,
+     *     monthlyRevenue:float,
+     *     monthlyExpenses:float,
+     *     monthlyNet:float,
+     *     postedExpenseTotal:float
+     * }>  $currencyTotals
      */
     public function __construct(
         public Asset $propertyRoot,
@@ -39,12 +50,13 @@ final readonly class AssetOperationsData
         public int $activeLeaseCount,
         public int $expiringLeaseCount,
         public int $openMaintenanceCount,
-        public float $monthlyScheduledDue,
-        public float $monthlyScheduledPaid,
-        public float $arrears,
-        public float $monthlyRevenue,
-        public float $monthlyExpenses,
-        public float $postedExpenseTotal,
+        public ?float $monthlyScheduledDue,
+        public ?float $monthlyScheduledPaid,
+        public ?float $arrears,
+        public ?float $monthlyRevenue,
+        public ?float $monthlyExpenses,
+        public ?float $postedExpenseTotal,
+        public array $currencyTotals,
     ) {}
 
     public function occupancyRate(): float
@@ -54,15 +66,37 @@ final readonly class AssetOperationsData
             : 0.0;
     }
 
-    public function collectionRate(): float
+    public function collectionRate(): ?float
     {
+        if ($this->monthlyScheduledDue === null) {
+            return null;
+        }
+
         return $this->monthlyScheduledDue > 0
             ? round(min(100, ($this->monthlyScheduledPaid / $this->monthlyScheduledDue) * 100), 1)
             : 0.0;
     }
 
-    public function monthlyNet(): float
+    public function monthlyNet(): ?float
     {
+        if ($this->monthlyRevenue === null || $this->monthlyExpenses === null) {
+            return null;
+        }
+
         return $this->monthlyRevenue - $this->monthlyExpenses;
+    }
+
+    public function hasArrears(): bool
+    {
+        return collect($this->currencyTotals)->contains(
+            fn (array $total): bool => $total['arrears'] > 0,
+        );
+    }
+
+    public function hasNegativeNet(): bool
+    {
+        return collect($this->currencyTotals)->contains(
+            fn (array $total): bool => $total['monthlyNet'] < 0,
+        );
     }
 }

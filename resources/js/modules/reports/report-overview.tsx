@@ -1,107 +1,47 @@
-import { MetricGrid } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import {
-    compactCurrency,
-    currency,
-    localizedNumber,
-    percent,
-} from '@/lib/utils';
+import { localizedNumber, percent } from '@/lib/utils';
 
+import { CurrencyPositionGrid } from './currency-position-grid';
 import { ReportPulse } from './report-visuals';
 import type { ReportDataProps } from './types';
 
-export function ReportOverview({
-    props,
-    links,
-}: {
-    props: ReportDataProps;
-    links?: {
-        payments?: string;
-        expenses?: string;
-        leases?: string;
-    };
-}) {
+export function ReportOverview({ props }: { props: ReportDataProps }) {
     const { locale, t } = useTranslator();
     const collectionRate = props.summary.collectionRate;
 
     return (
         <>
-            <MetricGrid
-                metrics={[
-                    {
-                        label: t('reports.collected'),
-                        value: compactCurrency(
-                            props.summary.revenue,
-                            props.app.locale,
-                        ),
-                        detail: t(
-                            'reports.collection_health_value',
-                            undefined,
-                            {
-                                value: percent(collectionRate, locale),
-                            },
-                        ),
-                        icon: 'bi-cash-stack',
-                        tone: 'ink',
-                        href: links?.payments ?? '/payments',
-                    },
-                    {
-                        label: t('reports.expenses'),
-                        value: compactCurrency(
-                            props.summary.expenses,
-                            props.app.locale,
-                        ),
-                        detail: t('reports.recent_costs', undefined, {
-                            count: localizedNumber(
-                                props.recentExpenses.length,
-                                locale,
-                            ),
-                        }),
-                        icon: 'bi-receipt',
-                        tone: 'amber',
-                        href: links?.expenses ?? '/expenses',
-                    },
-                    {
-                        label: t('reports.net_position'),
-                        value: compactCurrency(
-                            props.summary.net,
-                            props.app.locale,
-                        ),
-                        detail: t('reports.occupancy_value', undefined, {
-                            value: percent(props.summary.occupancyRate, locale),
-                        }),
-                        icon: 'bi-graph-up-arrow',
-                        tone: props.summary.net >= 0 ? 'teal' : 'red',
-                    },
-                    {
-                        label: t('reports.arrears'),
-                        value: compactCurrency(
-                            props.summary.arrears,
-                            props.app.locale,
-                        ),
-                        detail: t('reports.arrears_count', undefined, {
-                            count: localizedNumber(
-                                props.summary.leasesInArrears,
-                                locale,
-                            ),
-                        }),
-                        icon: 'bi-exclamation-circle',
-                        tone: props.summary.arrears > 0 ? 'red' : 'blue',
-                        href: links?.leases ?? '/leases',
-                    },
-                ]}
-            />
+            <CurrencyPositionGrid positions={props.summary.currencyTotals} />
 
             <section className="pmc-report-pulse-grid">
                 <ReportPulse
                     label={t('reports.collection_health')}
-                    value={percent(collectionRate, locale)}
-                    detail={t('reports.scheduled_paid', undefined, {
-                        paid: currency(props.summary.scheduledPaid, locale),
-                        due: currency(props.summary.scheduledDue, locale),
-                    })}
+                    value={
+                        collectionRate === null
+                            ? localizedNumber(
+                                  props.summary.currencyCount,
+                                  locale,
+                              )
+                            : percent(collectionRate, locale)
+                    }
+                    detail={
+                        collectionRate === null
+                            ? t('reports.currency_count', undefined, {
+                                  count: localizedNumber(
+                                      props.summary.currencyCount,
+                                      locale,
+                                  ),
+                              })
+                            : t('reports.collection_health_value', undefined, {
+                                  value: percent(collectionRate, locale),
+                              })
+                    }
                     icon="bi-wallet2"
-                    tone={collectionRate >= 80 ? 'good' : 'risk'}
+                    tone={
+                        collectionRate !== null && collectionRate >= 80
+                            ? 'good'
+                            : 'risk'
+                    }
                 />
                 <ReportPulse
                     label={t('reports.occupancy')}
@@ -133,9 +73,7 @@ export function ReportOverview({
                         props.summary.leasesInArrears,
                         locale,
                     )}
-                    detail={t('reports.contract_balance', undefined, {
-                        amount: currency(props.summary.contractBalance, locale),
-                    })}
+                    detail={t('reports.currency_safe_totals')}
                     icon="bi-file-earmark-excel"
                     tone={props.summary.leasesInArrears > 0 ? 'risk' : 'good'}
                 />

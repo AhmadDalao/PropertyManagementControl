@@ -17,6 +17,7 @@ final readonly class AssetOperationsQuery
     public function __construct(
         private AssetHierarchy $hierarchy,
         private AssetOperationsRecordsQuery $records,
+        private AssetOperationsCurrencyQuery $currencies,
     ) {}
 
     public function get(Asset $asset): AssetOperationsData
@@ -24,9 +25,10 @@ final readonly class AssetOperationsQuery
         $assetIds = $this->hierarchy->descendantIdsIncluding($asset);
         $leaseQuery = $this->leaseQuery($asset, $assetIds);
         $leaseIds = (clone $leaseQuery)->pluck('id');
-        $collectibleLeaseIds = (clone $leaseQuery)
+        $collectibleLeases = (clone $leaseQuery)
             ->whereIn('status', ['active', 'expired'])
-            ->pluck('id');
+            ->get(['id', 'currency']);
+        $collectibleLeaseIds = $collectibleLeases->pluck('id');
         $maintenanceQuery = MaintenanceRequest::query()
             ->where('portfolio_id', $asset->portfolio_id)
             ->whereIn('asset_id', $assetIds);
@@ -45,9 +47,10 @@ final readonly class AssetOperationsQuery
             now()->startOfMonth()->toDateString(),
             now()->endOfMonth()->toDateString(),
         ];
-        $monthlyInstallments = LeaseInstallment::query()
+        $financialInstallments = LeaseInstallment::query()
             ->whereIn('lease_id', $collectibleLeaseIds)
-            ->whereBetween('due_date', $month);
+            ->whereDate('due_date', '<=', $month[1])
+            ->get(['lease_id', 'due_date', 'amount_due', 'amount_paid']);
         $rentableQuery = Asset::query()
             ->where('portfolio_id', $asset->portfolio_id)
             ->whereIn('id', $assetIds)
@@ -58,6 +61,26 @@ final readonly class AssetOperationsQuery
             $leaseIds->all(),
             $collectibleLeaseIds->all(),
         );
+        $monthlyPayments = Payment::query()
+            ->where('portfolio_id', $asset->portfolio_id)
+            ->whereIn('lease_id', $leaseIds)
+            ->where('status', 'posted')
+            ->whereDate('received_on', '>=', $month[0])
+            ->whereDate('received_on', '<=', $month[1])
+            ->get(['currency', 'amount']);
+        $postedExpenses = (clone $expenseQuery)
+            ->where('status', 'posted')
+            ->get(['currency', 'amount', 'incurred_on']);
+        $currencyTotals = $this->currencies->summarize(
+            $asset,
+            $collectibleLeases,
+            $financialInstallments,
+            $monthlyPayments,
+            $postedExpenses,
+        );
+        $singleCurrency = count($currencyTotals) === 1
+            ? $currencyTotals[0]
+            : null;
 
         return new AssetOperationsData(
             propertyRoot: $this->hierarchy->root($asset),
@@ -84,14 +107,13 @@ final readonly class AssetOperationsQuery
             openMaintenanceCount: (clone $maintenanceQuery)
                 ->whereIn('status', ['open', 'in_progress'])
                 ->count(),
-            monthlyScheduledDue: (float) (clone $monthlyInstallments)->sum('amount_due'),
-            monthlyScheduledPaid: (float) (clone $monthlyInstallments)->sum('amount_paid'),
-            arrears: $this->arrears($collectibleLeaseIds->all()),
-            monthlyRevenue: $this->monthlyRevenue($asset, $leaseIds->all(), $month),
-            monthlyExpenses: $this->monthlyExpenses(clone $expenseQuery, $month),
-            postedExpenseTotal: (float) (clone $expenseQuery)
-                ->where('status', 'posted')
-                ->sum('amount'),
+            monthlyScheduledDue: $singleCurrency['monthlyScheduledDue'] ?? null,
+            monthlyScheduledPaid: $singleCurrency['monthlyScheduledPaid'] ?? null,
+            arrears: $singleCurrency['arrears'] ?? null,
+            monthlyRevenue: $singleCurrency['monthlyRevenue'] ?? null,
+            monthlyExpenses: $singleCurrency['monthlyExpenses'] ?? null,
+            postedExpenseTotal: $singleCurrency['postedExpenseTotal'] ?? null,
+            currencyTotals: $currencyTotals,
         );
     }
 
@@ -105,45 +127,5 @@ final readonly class AssetOperationsQuery
             ->where('portfolio_id', $asset->portfolio_id)
             ->whereIn('leaseable_type', $this->hierarchy->leaseableTypes())
             ->whereIn('leaseable_id', $assetIds);
-    }
-
-    /** @param array<int, int> $leaseIds */
-    private function arrears(array $leaseIds): float
-    {
-        return (float) LeaseInstallment::query()
-            ->whereIn('lease_id', $leaseIds)
-            ->whereDate('due_date', '<', today())
-            ->selectRaw(
-                'COALESCE(SUM(CASE WHEN amount_due > amount_paid THEN amount_due - amount_paid ELSE 0 END), 0) AS total'
-            )
-            ->value('total');
-    }
-
-    /**
-     * @param  array<int, int>  $leaseIds
-     * @param  array<int, string>  $month
-     */
-    private function monthlyRevenue(Asset $asset, array $leaseIds, array $month): float
-    {
-        return (float) Payment::query()
-            ->where('portfolio_id', $asset->portfolio_id)
-            ->whereIn('lease_id', $leaseIds)
-            ->where('status', 'posted')
-            ->whereDate('received_on', '>=', $month[0])
-            ->whereDate('received_on', '<=', $month[1])
-            ->sum('amount');
-    }
-
-    /**
-     * @param  Builder<ExpenseEntry>  $query
-     * @param  array<int, string>  $month
-     */
-    private function monthlyExpenses(Builder $query, array $month): float
-    {
-        return (float) $query
-            ->where('status', 'posted')
-            ->whereDate('incurred_on', '>=', $month[0])
-            ->whereDate('incurred_on', '<=', $month[1])
-            ->sum('amount');
     }
 }

@@ -21,6 +21,22 @@ export function PropertyControlCard({
             ? property.portfolio_name_ar || property.portfolio_name_en
             : property.portfolio_name_en || property.portfolio_name_ar;
     const reasons = attentionReasons(property);
+    const collectionValue =
+        property.collection_rate === null
+            ? t('portfolio_control.currency_positions_count', undefined, {
+                  count: localizedNumber(property.currency_count, locale),
+              })
+            : percent(property.collection_rate, locale);
+    const arrearsValue = property.currency_totals
+        .map((position) =>
+            compactCurrency(position.arrears, locale, position.currency),
+        )
+        .join(' · ');
+    const netValue = property.currency_totals
+        .map((position) =>
+            compactCurrency(position.net, locale, position.currency),
+        )
+        .join(' · ');
 
     return (
         <article
@@ -55,27 +71,15 @@ export function PropertyControlCard({
                 </div>
                 <div>
                     <dt>{t('portfolio_control.collection')}</dt>
-                    <dd>{percent(property.collection_rate, locale)}</dd>
+                    <dd>{collectionValue}</dd>
                 </div>
                 <div>
                     <dt>{t('portfolio_control.arrears')}</dt>
-                    <dd>
-                        {compactCurrency(
-                            property.arrears,
-                            locale,
-                            property.currency,
-                        )}
-                    </dd>
+                    <dd>{arrearsValue}</dd>
                 </div>
                 <div>
                     <dt>{t('portfolio_control.net_cash_flow')}</dt>
-                    <dd>
-                        {compactCurrency(
-                            property.net,
-                            locale,
-                            property.currency,
-                        )}
-                    </dd>
+                    <dd>{netValue}</dd>
                 </div>
             </dl>
 
@@ -126,7 +130,7 @@ function attentionReasons(property: PortfolioControlProperty) {
         icon: string;
     }> = [];
 
-    if (property.arrears > 0) {
+    if (property.currency_totals.some((position) => position.arrears > 0)) {
         reasons.push({
             key: 'portfolio_control.reason_arrears',
             count: 1,

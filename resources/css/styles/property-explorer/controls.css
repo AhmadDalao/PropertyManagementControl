@@ -18,6 +18,10 @@
     gap: 0.4rem;
 }
 
+.pmc-explorer-controls .pmc-property-selection-field {
+    min-width: 0;
+}
+
 .pmc-explorer-controls label > span {
     color: var(--pmc-muted);
     font-size: 0.68rem;

@@ -10,7 +10,7 @@ class DashboardActionPresenter
 
     /**
      * @param  array<int, array{key:string,label:string,description:string,done:bool,href:string,icon:string}>  $checklist
-     * @param  array<string, int|float>  $stats
+     * @param  array<string, mixed>  $stats
      * @param  array<string, mixed>  $mapSummary
      * @return array<int, array{label:string, description:string, href:string, icon:string}>
      */
@@ -34,7 +34,7 @@ class DashboardActionPresenter
             }
         }
 
-        if ((float) ($stats['arrears'] ?? 0) > 0) {
+        if (($stats['hasArrears'] ?? false) === true) {
             $actions[] = $this->action(
                 'Collect outstanding rent',
                 'Open payment and arrears views before balances get stale.',

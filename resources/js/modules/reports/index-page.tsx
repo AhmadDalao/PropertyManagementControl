@@ -116,6 +116,7 @@ export default function ReportsIndexPage() {
                 mode={props.mode}
                 portfolioOptions={props.portfolioOptions}
                 propertyOptions={props.propertyOptions}
+                propertyContext={props.propertyContext}
                 onChange={setFilters}
                 onSubmit={applyFilters}
                 onToggle={() => setFiltersOpen((open) => !open)}

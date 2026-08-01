@@ -7,6 +7,10 @@ use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class AssetWorkflowPresenter
 {
+    public function __construct(
+        private readonly AssetCurrencySummaryPresenter $currencies,
+    ) {}
+
     /** @return array<string, mixed> */
     public function present(AssetDetailData $data): array
     {
@@ -14,14 +18,14 @@ final class AssetWorkflowPresenter
         $propertyId = $operations->propertyRoot->id;
 
         if (
-            $operations->arrears > 0
+            $operations->hasArrears()
             && PortfolioModules::enabledForUser($data->actor, 'reports')
         ) {
             return [
                 'eyebrow' => trans('app.assets.next_owner_action'),
                 'title' => trans('app.assets.collect_overdue_rent'),
                 'description' => trans('app.assets.collect_overdue_rent_help'),
-                'status' => $this->money($operations->arrears, $data->asset->currency),
+                'status' => $this->currencies->money($operations, 'arrears'),
                 'tone' => 'danger',
                 'icon' => 'bi-exclamation-triangle',
                 'actions' => [
@@ -111,10 +115,5 @@ final class AssetWorkflowPresenter
     private function action(string $label, string $href, string $variant): array
     {
         return compact('label', 'href', 'variant');
-    }
-
-    private function money(float $amount, string $currency): string
-    {
-        return number_format($amount, 2).' '.$currency;
     }
 }

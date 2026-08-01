@@ -6,73 +6,68 @@ use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\Payment;
-use App\Models\Portfolio;
 use App\Models\User;
 use App\Modules\Dashboard\Support\DashboardPropertyContext;
+use App\Modules\Dashboard\Support\OperationsCurrencySummary;
 use App\Modules\Shared\PortfolioScope;
-use Illuminate\Database\Eloquent\Builder;
 
 final readonly class OperationsFinancialQuery
 {
-    public function __construct(private PortfolioScope $portfolios) {}
+    public function __construct(
+        private PortfolioScope $portfolios,
+        private OperationsCurrencySummary $currencies,
+    ) {}
 
-    /** @return array<string, float|string> */
+    /** @return array<string, mixed> */
     public function forUser(User $actor, DashboardPropertyContext $context): array
     {
-        $leaseIds = $context
+        $leases = $context
             ->leases($this->portfolios->apply(Lease::query(), $actor))
             ->whereIn('status', ['active', 'expired'])
-            ->select('id');
+            ->get(['id', 'currency']);
         $installments = LeaseInstallment::query()
-            ->whereIn('lease_id', $leaseIds)
-            ->whereDate('due_date', '>=', now()->startOfMonth())
-            ->whereDate('due_date', '<=', now()->endOfMonth());
-        $scheduledDue = (float) (clone $installments)->sum('amount_due');
-        $scheduledPaid = (float) (clone $installments)->sum('amount_paid');
-        $revenue = $this->monthlyTotal(
-            $context->leaseRecords(
-                $this->portfolios->apply(Payment::query(), $actor),
-            ),
-            'received_on',
+            ->whereIn('lease_id', $leases->pluck('id'))
+            ->whereDate('due_date', '<=', now()->endOfMonth())
+            ->get(['lease_id', 'due_date', 'amount_due', 'amount_paid']);
+        $payments = $context->leaseRecords(
+            $this->portfolios->apply(Payment::query(), $actor),
+        )
+            ->where('status', 'posted')
+            ->whereDate('received_on', '>=', now()->startOfMonth())
+            ->whereDate('received_on', '<=', now()->endOfMonth())
+            ->get(['currency', 'amount']);
+        $expenses = $context->assetRecords(
+            $this->portfolios->apply(ExpenseEntry::query(), $actor),
+        )
+            ->where('status', 'posted')
+            ->whereDate('incurred_on', '>=', now()->startOfMonth())
+            ->whereDate('incurred_on', '<=', now()->endOfMonth())
+            ->get(['currency', 'amount']);
+        $currencyTotals = $this->currencies->summarize(
+            $actor,
+            $leases,
+            $installments,
+            $payments,
+            $expenses,
         );
-        $expenses = $this->monthlyTotal(
-            $context->assetRecords(
-                $this->portfolios->apply(ExpenseEntry::query(), $actor),
-            ),
-            'incurred_on',
-        );
+        $singleCurrency = count($currencyTotals) === 1
+            ? $currencyTotals[0]
+            : null;
 
         return [
-            'scheduledDue' => $scheduledDue,
-            'scheduledPaid' => $scheduledPaid,
-            'collectionRate' => $scheduledDue > 0
-                ? round(min(100, ($scheduledPaid / $scheduledDue) * 100), 2)
-                : 0,
-            'revenue' => $revenue,
-            'expenses' => $expenses,
-            'net' => $revenue - $expenses,
-            'currency' => $this->currency($actor),
+            'currency' => $singleCurrency['currency'] ?? null,
+            'currencyCount' => count($currencyTotals),
+            'currencyTotals' => $currencyTotals,
+            'scheduledDue' => $singleCurrency['scheduledDue'] ?? null,
+            'scheduledPaid' => $singleCurrency['scheduledPaid'] ?? null,
+            'collectionRate' => $singleCurrency['collectionRate'] ?? null,
+            'revenue' => $singleCurrency['revenue'] ?? null,
+            'expenses' => $singleCurrency['expenses'] ?? null,
+            'net' => $singleCurrency['net'] ?? null,
+            'arrears' => $singleCurrency['arrears'] ?? null,
+            'hasArrears' => collect($currencyTotals)->contains(
+                fn (array $total): bool => $total['arrears'] > 0,
+            ),
         ];
-    }
-
-    /** @param Builder<Payment>|Builder<ExpenseEntry> $query */
-    private function monthlyTotal(Builder $query, string $dateColumn): float
-    {
-        return (float) $query
-            ->where('status', 'posted')
-            ->whereDate($dateColumn, '>=', now()->startOfMonth())
-            ->whereDate($dateColumn, '<=', now()->endOfMonth())
-            ->sum('amount');
-    }
-
-    private function currency(User $actor): string
-    {
-        if ($actor->portfolio_id) {
-            return (string) (Portfolio::query()
-                ->whereKey($actor->portfolio_id)
-                ->value('default_currency') ?: 'SAR');
-        }
-
-        return 'SAR';
     }
 }

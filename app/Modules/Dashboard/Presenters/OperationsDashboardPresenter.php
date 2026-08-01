@@ -39,7 +39,14 @@ class OperationsDashboardPresenter
     public function present(User $user, ?int $propertyId = null): array
     {
         $context = $this->propertyContext->forUser($user, $propertyId);
-        $stats = $this->stats->forUser($user, $context);
+        $financial = $this->financial->forUser($user, $context);
+        $stats = [
+            ...$this->stats->forUser($user, $context),
+            'monthlyRevenue' => $financial['revenue'],
+            'monthlyExpenses' => $financial['expenses'],
+            'arrears' => $financial['arrears'],
+            'hasArrears' => $financial['hasArrears'],
+        ];
         $setup = $this->checklist->present($user, $stats);
         $checklist = $setup['items'];
         $propertyMap = $this->propertyMap->forUser($user, $context);
@@ -49,7 +56,7 @@ class OperationsDashboardPresenter
             'propertyFocus' => $context->payload(),
             'setupTarget' => $setup['target'],
             'stats' => $stats,
-            'financial' => $this->financial->forUser($user, $context),
+            'financial' => $financial,
             'nextActions' => $this->actions->operations(
                 $checklist,
                 $stats,

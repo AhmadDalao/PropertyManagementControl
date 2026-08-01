@@ -2,6 +2,8 @@ import { Link } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
+import { PropertySelectionField } from '@/modules/shell/property-selection-field';
+import type { PropertyContext } from '@/types';
 
 import type { ReportFilterValues, ReportMode } from './types';
 
@@ -11,6 +13,7 @@ type Props = {
     mode: ReportMode;
     portfolioOptions: Array<{ id: number; name: string }>;
     propertyOptions: Array<{ id: number; portfolio_id: number; name: string }>;
+    propertyContext: PropertyContext | null;
     onChange: (filters: ReportFilterValues) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onToggle: () => void;
@@ -22,6 +25,7 @@ export function ReportFilters({
     mode,
     portfolioOptions,
     propertyOptions,
+    propertyContext,
     onChange,
     onSubmit,
     onToggle,
@@ -32,6 +36,17 @@ export function ReportFilters({
             filters.portfolio_id === 'all' ||
             String(property.portfolio_id) === filters.portfolio_id,
     );
+    const visiblePropertyIds = new Set(
+        visibleProperties.map((property) => property.id),
+    );
+    const visiblePropertyContext = propertyContext
+        ? {
+              ...propertyContext,
+              options: propertyContext.options.filter((property) =>
+                  visiblePropertyIds.has(property.id),
+              ),
+          }
+        : null;
 
     return (
         <>
@@ -118,28 +133,47 @@ export function ReportFilters({
                         </select>
                     </label>
                 ) : null}
-                <label>
-                    <span>{t('reports.property')}</span>
-                    <select
-                        className="form-select"
-                        value={filters.property_id}
-                        onChange={(event) =>
+                {visiblePropertyContext ? (
+                    <PropertySelectionField
+                        label={t('reports.property')}
+                        context={visiblePropertyContext}
+                        value={
+                            filters.property_id === 'all'
+                                ? ''
+                                : filters.property_id
+                        }
+                        testId="report-property-filter"
+                        onChange={(propertyId) =>
                             onChange({
                                 ...filters,
-                                property_id: event.currentTarget.value,
+                                property_id: propertyId || 'all',
                             })
                         }
-                    >
-                        <option value="all">
-                            {t('reports.all_properties')}
-                        </option>
-                        {visibleProperties.map((property) => (
-                            <option key={property.id} value={property.id}>
-                                {property.name}
+                    />
+                ) : (
+                    <label>
+                        <span>{t('reports.property')}</span>
+                        <select
+                            className="form-select"
+                            value={filters.property_id}
+                            onChange={(event) =>
+                                onChange({
+                                    ...filters,
+                                    property_id: event.currentTarget.value,
+                                })
+                            }
+                        >
+                            <option value="all">
+                                {t('reports.all_properties')}
                             </option>
-                        ))}
-                    </select>
-                </label>
+                            {visibleProperties.map((property) => (
+                                <option key={property.id} value={property.id}>
+                                    {property.name}
+                                </option>
+                            ))}
+                        </select>
+                    </label>
+                )}
                 <div className="pmc-report-toolbar-actions">
                     <button className="btn btn-primary">
                         <i className="bi bi-funnel me-2" aria-hidden="true" />

@@ -3,11 +3,8 @@
 namespace App\Modules\Dashboard\Queries;
 
 use App\Models\Asset;
-use App\Models\ExpenseEntry;
 use App\Models\Lease;
-use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
-use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
@@ -23,7 +20,7 @@ class OperationsStatsQuery
         private readonly AssignedPropertyScope $assignments,
     ) {}
 
-    /** @return array<string, int|float> */
+    /** @return array<string, mixed> */
     public function forUser(User $user, DashboardPropertyContext $context): array
     {
         $assets = $context->assets(
@@ -32,15 +29,13 @@ class OperationsStatsQuery
         $leases = $context->leases(
             $this->portfolios->apply(Lease::query(), $user),
         );
-        $payments = $context->leaseRecords(
-            $this->portfolios->apply(Payment::query(), $user),
-        );
         $maintenance = $context->assetRecords(
             $this->portfolios->apply(MaintenanceRequest::query(), $user),
         );
-        $expenses = $context->assetRecords(
-            $this->portfolios->apply(ExpenseEntry::query(), $user),
-        );
+        $valuationTotals = $this->valuationTotals(clone $assets);
+        $singleValuation = count($valuationTotals) === 1
+            ? $valuationTotals[0]
+            : null;
 
         return [
             'totalUsers' => $this->userCount($user),
@@ -48,14 +43,13 @@ class OperationsStatsQuery
                 ? Portfolio::query()->count()
                 : (int) ($user->portfolio_id !== null),
             'totalAssets' => (clone $assets)->count(),
-            'totalValue' => (float) (clone $assets)->sum('valuation_amount'),
+            'totalValue' => $singleValuation['amount'] ?? null,
+            'valuationCurrency' => $singleValuation['currency'] ?? null,
+            'valuationTotals' => $valuationTotals,
             'activeLeases' => (clone $leases)->where('status', 'active')->count(),
-            'monthlyRevenue' => $this->monthlyTotal($payments, 'received_on'),
-            'monthlyExpenses' => $this->monthlyTotal($expenses, 'incurred_on'),
             'openRequests' => (clone $maintenance)
                 ->whereIn('status', ['open', 'in_progress'])
                 ->count(),
-            'arrears' => $this->arrearsTotal($user, $context),
             'vacantUnits' => (clone $assets)
                 ->where('rentable', true)
                 ->where('occupancy_status', 'vacant')
@@ -88,29 +82,32 @@ class OperationsStatsQuery
         return $users->count();
     }
 
-    /** @param Builder<Payment>|Builder<ExpenseEntry> $query */
-    private function monthlyTotal(Builder $query, string $dateColumn): float
+    /**
+     * @param  Builder<Asset>  $assets
+     * @return list<array{currency:string,amount:float}>
+     */
+    private function valuationTotals(Builder $assets): array
     {
-        return (float) (clone $query)
-            ->where('status', 'posted')
-            ->whereMonth($dateColumn, now()->month)
-            ->whereYear($dateColumn, now()->year)
-            ->sum('amount');
+        $grouped = $assets
+            ->get(['currency', 'valuation_amount'])
+            ->groupBy(fn (Asset $asset): string => $this->currency($asset->currency))
+            ->sortKeys();
+        $totals = [];
+
+        foreach ($grouped as $currency => $records) {
+            $totals[] = [
+                'currency' => $currency,
+                'amount' => (float) $records->sum('valuation_amount'),
+            ];
+        }
+
+        return $totals;
     }
 
-    private function arrearsTotal(User $user, DashboardPropertyContext $context): float
+    private function currency(?string $currency): string
     {
-        $leaseIds = $context
-            ->leases($this->portfolios->apply(Lease::query(), $user))
-            ->whereIn('status', ['active', 'expired'])
-            ->select('id');
+        $normalized = strtoupper(trim((string) $currency));
 
-        return (float) LeaseInstallment::query()
-            ->whereIn('lease_id', $leaseIds)
-            ->whereDate('due_date', '<', today())
-            ->selectRaw(
-                'COALESCE(SUM(CASE WHEN amount_due > amount_paid THEN amount_due - amount_paid ELSE 0 END), 0) AS total'
-            )
-            ->value('total');
+        return $normalized !== '' ? $normalized : 'SAR';
     }
 }

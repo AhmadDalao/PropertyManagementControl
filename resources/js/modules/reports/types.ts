@@ -5,6 +5,24 @@ export type ReportTab =
     'library' | 'overview' | 'collections' | 'costs' | 'operations';
 export type PresetVisibility = 'global' | 'portfolio' | 'private';
 
+export type CurrencyPosition = {
+    currency: string;
+    revenue: number;
+    expenses: number;
+    net: number;
+    scheduledDue: number;
+    scheduledPaid: number;
+    collectionRate: number;
+    arrears: number;
+    contractBalance: number;
+};
+
+export type CurrencyBreakdown = {
+    label: string;
+    currency: string;
+    amount: number;
+};
+
 export type ReportLibraryCard = {
     key: string;
     icon: string;
@@ -117,15 +135,18 @@ export type ReportDataProps = SharedProps & {
         property_id?: number | null;
     };
     summary: {
-        revenue: number;
-        expenses: number;
-        net: number;
-        scheduledDue: number;
-        scheduledPaid: number;
-        collectionRate: number;
+        currency: string | null;
+        currencyCount: number;
+        currencyTotals: CurrencyPosition[];
+        revenue: number | null;
+        expenses: number | null;
+        net: number | null;
+        scheduledDue: number | null;
+        scheduledPaid: number | null;
+        collectionRate: number | null;
         occupancyRate: number;
-        arrears: number;
-        contractBalance: number;
+        arrears: number | null;
+        contractBalance: number | null;
         activeLeases: number;
         leasesInArrears: number;
         openRequests: number;
@@ -136,8 +157,8 @@ export type ReportDataProps = SharedProps & {
         brokenPromisesCount: number;
     };
     charts: {
-        revenueByMonth: Record<string, number>;
-        expenseByCategory: Record<string, number>;
+        revenueByMonth: CurrencyBreakdown[];
+        expenseByCategory: CurrencyBreakdown[];
         assetMix: Record<string, number>;
         maintenanceByStatus: Record<string, number>;
     };

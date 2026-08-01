@@ -22,11 +22,12 @@ export type PortfolioControlSummary = {
     properties: number;
     risk: number;
     occupancy_rate: number;
-    collection_rate: number;
-    arrears: number;
-    net: number;
+    collection_rate: number | null;
+    arrears: number | null;
+    net: number | null;
     currency: string | null;
     currency_count: number;
+    currency_totals: PortfolioControlProperty['currency_totals'];
     open_requests: number;
     expiring_leases: number;
 };

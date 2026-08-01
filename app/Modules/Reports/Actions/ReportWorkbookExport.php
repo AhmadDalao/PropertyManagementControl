@@ -51,24 +51,72 @@ class ReportWorkbookExport
             $this->labels(['Section', 'Metric', 'Value']),
         ];
 
-        foreach ($report['summary'] as $metric => $value) {
+        foreach ([
+            'occupancyRate',
+            'activeLeases',
+            'leasesInArrears',
+            'openRequests',
+            'resolvedRequests',
+            'openCollectionCount',
+            'untrackedOverdueCount',
+            'followUpDueCount',
+            'brokenPromisesCount',
+        ] as $metric) {
             $rows[] = [
                 $this->copy('Summary'),
-                $this->metric((string) $metric),
-                $value,
+                $this->metric($metric),
+                $report['summary'][$metric] ?? 0,
             ];
         }
 
         $rows[] = [];
-        $rows[] = $this->labels(['Revenue by Month', 'Month', 'Amount']);
-        foreach ($report['charts']['revenueByMonth'] as $month => $amount) {
-            $rows[] = [$this->copy('Revenue by Month'), $month, $amount];
+        $rows[] = $this->labels([
+            'Currency Position',
+            'Currency',
+            'Collected',
+            'Expenses',
+            'Net Position',
+            'Scheduled Due',
+            'Scheduled Paid',
+            'Collection Rate',
+            'Arrears',
+            'Contract Balance',
+        ]);
+        foreach ($report['summary']['currencyTotals'] as $position) {
+            $rows[] = [
+                $this->copy('Currency Position'),
+                $position['currency'],
+                $position['revenue'],
+                $position['expenses'],
+                $position['net'],
+                $position['scheduledDue'],
+                $position['scheduledPaid'],
+                $position['collectionRate'],
+                $position['arrears'],
+                $position['contractBalance'],
+            ];
         }
 
         $rows[] = [];
-        $rows[] = $this->labels(['Expense by Category', 'Category', 'Amount']);
-        foreach ($report['charts']['expenseByCategory'] as $category => $amount) {
-            $rows[] = [$this->copy('Expense by Category'), $this->option((string) $category), $amount];
+        $rows[] = $this->labels(['Revenue by Month', 'Month', 'Currency', 'Amount']);
+        foreach ($report['charts']['revenueByMonth'] as $item) {
+            $rows[] = [
+                $this->copy('Revenue by Month'),
+                $item['label'],
+                $item['currency'],
+                $item['amount'],
+            ];
+        }
+
+        $rows[] = [];
+        $rows[] = $this->labels(['Expense by Category', 'Category', 'Currency', 'Amount']);
+        foreach ($report['charts']['expenseByCategory'] as $item) {
+            $rows[] = [
+                $this->copy('Expense by Category'),
+                $this->option((string) $item['label']),
+                $item['currency'],
+                $item['amount'],
+            ];
         }
 
         $rows[] = [];

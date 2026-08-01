@@ -492,6 +492,158 @@ class DashboardModuleTest extends TestCase
                 ->missing('tenantPortal.tenant'));
     }
 
+    public function test_dashboard_property_cards_and_asset_detail_keep_currencies_separate(): void
+    {
+        $this->travelTo('2026-08-15 12:00:00');
+
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'currency' => 'SAR',
+        ]);
+        $sarUnit = $this->createAsset($portfolio, [
+            'parent_id' => $property->id,
+            'currency' => 'SAR',
+            'occupancy_status' => 'occupied',
+        ]);
+        $usdUnit = $this->createAsset($portfolio, [
+            'parent_id' => $property->id,
+            'currency' => 'USD',
+            'occupancy_status' => 'occupied',
+        ]);
+        $sarTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $usdTenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $sarLease = $this->createLease(
+            $portfolio,
+            $sarTenant,
+            $sarUnit,
+            $owner,
+            ['currency' => 'SAR'],
+            false,
+        );
+        $usdLease = $this->createLease(
+            $portfolio,
+            $usdTenant,
+            $usdUnit,
+            $owner,
+            ['currency' => 'USD'],
+            false,
+        );
+
+        foreach ([
+            [$sarLease, 1000, 400],
+            [$usdLease, 200, 50],
+        ] as [$lease, $due, $paid]) {
+            LeaseInstallment::query()->create([
+                'lease_id' => $lease->id,
+                'sequence' => 1,
+                'line_type' => 'rent',
+                'label' => 'Current rent',
+                'due_date' => now()->subDay()->toDateString(),
+                'amount_due' => $due,
+                'amount_paid' => $paid,
+                'status' => 'partial',
+            ]);
+        }
+
+        foreach ([
+            [$sarLease, $sarTenant, 'SAR-DASH', 400, 'SAR'],
+            [$usdLease, $usdTenant, 'USD-DASH', 50, 'USD'],
+        ] as [$lease, $tenant, $reference, $amount, $currency]) {
+            Payment::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'lease_id' => $lease->id,
+                'tenant_profile_id' => $tenant->id,
+                'recorded_by_user_id' => $owner->id,
+                'reference' => $reference,
+                'type' => 'rent',
+                'method' => 'cash',
+                'status' => 'posted',
+                'received_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => $currency,
+            ]);
+        }
+
+        foreach ([
+            [$sarUnit, 100, 'SAR'],
+            [$usdUnit, 20, 'USD'],
+        ] as [$asset, $amount, $currency]) {
+            ExpenseEntry::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $asset->id,
+                'created_by_user_id' => $owner->id,
+                'category' => 'general',
+                'title' => "{$currency} expense",
+                'incurred_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => 'posted',
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('financial.currency', null)
+                ->where('financial.currencyCount', 2)
+                ->where('financial.revenue', null)
+                ->where('financial.expenses', null)
+                ->where('financial.net', null)
+                ->where('financial.arrears', null)
+                ->where('financial.hasArrears', true)
+                ->where('stats.monthlyRevenue', null)
+                ->where('stats.monthlyExpenses', null)
+                ->where('stats.arrears', null)
+                ->where('stats.hasArrears', true)
+                ->where('propertyPerformance.0.currency', null)
+                ->where('propertyPerformance.0.currency_count', 2)
+                ->where('propertyPerformance.0.net', null)
+                ->where(
+                    'financial.currencyTotals',
+                    fn ($positions): bool => collect($positions)->contains(
+                        fn (array $position): bool => $position['currency'] === 'SAR'
+                            && (float) $position['revenue'] === 400.0
+                            && (float) $position['expenses'] === 100.0
+                            && (float) $position['arrears'] === 600.0,
+                    ) && collect($positions)->contains(
+                        fn (array $position): bool => $position['currency'] === 'USD'
+                            && (float) $position['revenue'] === 50.0
+                            && (float) $position['expenses'] === 20.0
+                            && (float) $position['arrears'] === 150.0,
+                    ),
+                ));
+
+        $this->actingAs($owner)
+            ->get(route('assets.show', $property))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.decisionCards.1.value', '2 currencies')
+                ->where('detailPage.decisionCards.2.value', '600.00 SAR · 150.00 USD')
+                ->where('detailPage.workflow.status', '600.00 SAR · 150.00 USD'));
+
+        $this->actingAs($owner)
+            ->get(route('portfolio-control.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('summary.currency', null)
+                ->where('summary.currency_count', 2)
+                ->where('summary.arrears', null)
+                ->where('summary.net', null)
+                ->where('properties.data.0.currency', null)
+                ->where('properties.data.0.currency_count', 2)
+                ->has('summary.currency_totals', 2));
+    }
+
     private function maintenanceRequest(
         Portfolio $portfolio,
         Asset $asset,

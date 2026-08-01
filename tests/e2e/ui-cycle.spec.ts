@@ -580,9 +580,11 @@ test.describe('authenticated administration', () => {
         }
 
         await page.setViewportSize(viewports.mobile);
+        await page.getByTestId('property-explorer-property').click();
         await page
-            .getByTestId('property-explorer-property')
-            .selectOption({ label: 'Rose Tower · ROSE-TOWER' });
+            .locator('[data-property-scope-option]')
+            .filter({ hasText: 'ROSE-TOWER' })
+            .click();
         await expect(page).toHaveURL(/property_id=/);
         const search = page.getByTestId('property-explorer-search');
         await search.fill('Sara Tenant');
@@ -627,7 +629,12 @@ test.describe('authenticated administration', () => {
                 }),
             ).toBeVisible();
             await expect(page.locator('.pmc-statement-context')).toBeVisible();
-            await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+            await expect(
+                page.locator('.pmc-report-currency-grid article').first(),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-statement-health-grid .pmc-report-pulse'),
+            ).toHaveCount(3);
             await expect(
                 page.locator('.pmc-statement-record-grid'),
             ).toBeVisible();
@@ -2272,6 +2279,17 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('#report-filter-panel')).toBeVisible();
         await expect(page.getByLabel('التاريخ من')).toBeVisible();
         await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+        await page.getByTestId('report-property-filter').click();
+        await page.locator('[data-property-scope-search]').fill('Rose');
+        await expect(
+            page
+                .locator('[data-property-scope-option]')
+                .filter({ hasText: 'ROSE-TOWER' }),
+        ).toBeVisible();
+        await page
+            .locator('[data-property-scope-option]')
+            .filter({ hasText: 'ROSE-TOWER' })
+            .click();
 
         for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
             await page.getByRole('button', { name: tab, exact: true }).click();

@@ -5,7 +5,9 @@ namespace App\Modules\PortfolioControl\Queries;
 use App\Models\User;
 use App\Modules\Dashboard\Queries\DashboardPropertyContextQuery;
 use App\Modules\Dashboard\Queries\PropertyPerformanceDatasetQuery;
+use App\Modules\PortfolioControl\Presenters\PortfolioControlSummaryPresenter;
 use App\Modules\PortfolioControl\Support\PortfolioControlAccess;
+use App\Modules\PortfolioControl\Support\PortfolioControlSorter;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -16,6 +18,8 @@ final readonly class PortfolioControlIndexQuery
         private PortfolioControlAccess $access,
         private DashboardPropertyContextQuery $context,
         private PropertyPerformanceDatasetQuery $performance,
+        private PortfolioControlSorter $sorter,
+        private PortfolioControlSummaryPresenter $summary,
     ) {}
 
     /**
@@ -40,7 +44,7 @@ final readonly class PortfolioControlIndexQuery
         $filtered = $filters['attention'] === 'all'
             ? $base
             : $base->where('attention', $filters['attention'])->values();
-        $sorted = $this->sort($filtered, $filters['sort']);
+        $sorted = $this->sorter->sort($filtered, $filters['sort']);
         $properties = new LengthAwarePaginator(
             $sorted->forPage($filters['page'], $filters['per_page'])->values(),
             $sorted->count(),
@@ -58,7 +62,7 @@ final readonly class PortfolioControlIndexQuery
         return [
             'filters' => $filters,
             'counts' => $counts,
-            'summary' => $this->summary($filtered),
+            'summary' => $this->summary->present($filtered, $actor),
             'portfolioOptions' => $portfolioOptions,
             'properties' => $properties->toArray(),
         ];
@@ -99,28 +103,6 @@ final readonly class PortfolioControlIndexQuery
 
     /**
      * @param  Collection<int, array<string, mixed>>  $rows
-     * @return Collection<int, array<string, mixed>>
-     */
-    private function sort(Collection $rows, string $sort): Collection
-    {
-        $title = app()->isLocale('ar') ? 'title_ar' : 'title_en';
-
-        return (match ($sort) {
-            'arrears' => $rows->sortByDesc('arrears'),
-            'occupancy' => $rows->sortBy('occupancy_rate'),
-            'collection' => $rows->sortBy('collection_rate'),
-            'net' => $rows->sortBy('net'),
-            'name' => $rows->sortBy($title, SORT_NATURAL | SORT_FLAG_CASE),
-            default => $rows->sortBy([
-                ['attention_score', 'desc'],
-                ['arrears', 'desc'],
-                [$title, 'asc'],
-            ]),
-        })->values();
-    }
-
-    /**
-     * @param  Collection<int, array<string, mixed>>  $rows
      * @return list<array{key:string,count:int}>
      */
     private function counts(Collection $rows): array
@@ -134,38 +116,6 @@ final readonly class PortfolioControlIndexQuery
             ])
             ->values()
             ->all());
-    }
-
-    /**
-     * @param  Collection<int, array<string, mixed>>  $rows
-     * @return array<string, int|float|string|null>
-     */
-    private function summary(Collection $rows): array
-    {
-        $currencies = $rows->pluck('currency')->filter()->unique()->values();
-        $rentable = (int) $rows->sum('rentable_units');
-        $occupied = (int) $rows->sum('occupied_units');
-        $scheduled = (float) $rows->sum('scheduled_due');
-        $paid = (float) $rows->sum('scheduled_paid');
-
-        return [
-            'properties' => $rows->count(),
-            'risk' => $rows->where('attention', 'risk')->count(),
-            'occupancy_rate' => $rentable > 0
-                ? round(($occupied / $rentable) * 100, 1)
-                : 0,
-            'collection_rate' => $scheduled > 0
-                ? round(min(100, ($paid / $scheduled) * 100), 1)
-                : 0,
-            'arrears' => (float) $rows->sum('arrears'),
-            'net' => (float) $rows->sum('net'),
-            'currency' => $currencies->count() === 1
-                ? (string) $currencies->first()
-                : null,
-            'currency_count' => $currencies->count(),
-            'open_requests' => (int) $rows->sum('open_requests'),
-            'expiring_leases' => (int) $rows->sum('expiring_leases'),
-        ];
     }
 
     /**

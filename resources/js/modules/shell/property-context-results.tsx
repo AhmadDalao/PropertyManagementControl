@@ -9,6 +9,7 @@ type PropertyContextResultsProps = {
     groups: PropertyContextGroup[];
     resultCount: number;
     updating: boolean;
+    allowAll: boolean;
     onSelect: (propertyId: string) => void;
 };
 
@@ -17,6 +18,7 @@ export function PropertyContextResults({
     groups,
     resultCount,
     updating,
+    allowAll,
     onSelect,
 }: PropertyContextResultsProps) {
     const { locale, t } = useTranslator();
@@ -29,25 +31,27 @@ export function PropertyContextResults({
             className="pmc-property-picker-results"
             data-property-scope-results
         >
-            <button
-                type="button"
-                className={`pmc-property-picker-option pmc-property-picker-all ${
-                    context.selected ? '' : 'is-selected'
-                }`}
-                aria-pressed={!context.selected}
-                disabled={updating}
-                data-property-scope-clear
-                onClick={() => onSelect('')}
-            >
-                <i className="bi bi-grid" aria-hidden="true" />
-                <span>
-                    <strong>{allLabel}</strong>
-                    <small>{t('shell.all_properties_help')}</small>
-                </span>
-                {!context.selected ? (
-                    <i className="bi bi-check-lg" aria-hidden="true" />
-                ) : null}
-            </button>
+            {allowAll ? (
+                <button
+                    type="button"
+                    className={`pmc-property-picker-option pmc-property-picker-all ${
+                        context.selected ? '' : 'is-selected'
+                    }`}
+                    aria-pressed={!context.selected}
+                    disabled={updating}
+                    data-property-scope-clear
+                    onClick={() => onSelect('')}
+                >
+                    <i className="bi bi-grid" aria-hidden="true" />
+                    <span>
+                        <strong>{allLabel}</strong>
+                        <small>{t('shell.all_properties_help')}</small>
+                    </span>
+                    {!context.selected ? (
+                        <i className="bi bi-check-lg" aria-hidden="true" />
+                    ) : null}
+                </button>
+            ) : null}
 
             {groups.map((group) => (
                 <section key={group.key}>

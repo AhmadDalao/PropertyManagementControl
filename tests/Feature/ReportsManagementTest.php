@@ -28,6 +28,9 @@ class ReportsManagementTest extends TestCase
                 ->component('admin/reports/index')
                 ->where('mode', 'portfolio')
                 ->hasAll([
+                    'summary.currency',
+                    'summary.currencyCount',
+                    'summary.currencyTotals',
                     'summary.revenue',
                     'summary.expenses',
                     'summary.net',
@@ -69,6 +72,128 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.1.key', 'finance')
                 ->where('reportLibrary.2.key', 'operations')
                 ->where('reportLibrary.3.key', 'control'));
+    }
+
+    public function test_reports_and_owner_downloads_keep_different_currencies_separate(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio, ['name' => 'Currency Owner']);
+        $sarLease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio, ['currency' => 'SAR']),
+            $owner,
+            ['currency' => 'SAR', 'rent_amount' => 1000],
+        );
+        $usdLease = $this->createLease(
+            $portfolio,
+            $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            ),
+            $this->createAsset($portfolio, ['currency' => 'USD']),
+            $owner,
+            ['currency' => 'USD', 'rent_amount' => 200],
+        );
+
+        foreach ([
+            [$sarLease, 'SAR-PAYMENT', 1000, 'SAR'],
+            [$usdLease, 'USD-PAYMENT', 200, 'USD'],
+        ] as [$lease, $reference, $amount, $currency]) {
+            Payment::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'lease_id' => $lease->id,
+                'tenant_profile_id' => $lease->tenant_profile_id,
+                'recorded_by_user_id' => $owner->id,
+                'reference' => $reference,
+                'type' => 'rent',
+                'method' => 'bank_transfer',
+                'status' => 'posted',
+                'received_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => $currency,
+            ]);
+        }
+
+        foreach ([
+            [$sarLease, 'SAR expense', 100, 'SAR'],
+            [$usdLease, 'USD expense', 20, 'USD'],
+        ] as [$lease, $title, $amount, $currency]) {
+            ExpenseEntry::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'asset_id' => $lease->leaseable_id,
+                'created_by_user_id' => $owner->id,
+                'category' => 'maintenance',
+                'title' => $title,
+                'incurred_on' => now()->toDateString(),
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => 'posted',
+            ]);
+        }
+
+        $this->actingAs($owner)
+            ->get(route('reports.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('summary.currency', null)
+                ->where('summary.currencyCount', 2)
+                ->where('summary.revenue', null)
+                ->where('summary.expenses', null)
+                ->where('summary.net', null)
+                ->where(
+                    'summary.currencyTotals',
+                    fn ($positions): bool => collect($positions)->contains(
+                        fn (array $position): bool => $position['currency'] === 'SAR'
+                            && (float) $position['revenue'] === 1000.0
+                            && (float) $position['expenses'] === 100.0
+                            && (float) $position['net'] === 900.0,
+                    ) && collect($positions)->contains(
+                        fn (array $position): bool => $position['currency'] === 'USD'
+                            && (float) $position['revenue'] === 200.0
+                            && (float) $position['expenses'] === 20.0
+                            && (float) $position['net'] === 180.0,
+                    ),
+                )
+                ->where(
+                    'charts.revenueByMonth',
+                    fn ($rows): bool => collect($rows)->contains('currency', 'SAR')
+                        && collect($rows)->contains('currency', 'USD'),
+                )
+                ->where(
+                    'charts.expenseByCategory',
+                    fn ($rows): bool => collect($rows)->contains('currency', 'SAR')
+                        && collect($rows)->contains('currency', 'USD'),
+                ));
+
+        $sheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)->get(route('reports.export')),
+        );
+        $this->assertStringContainsString('Currency Position', $sheet);
+        $this->assertStringContainsString('SAR', $sheet);
+        $this->assertStringContainsString('USD', $sheet);
+
+        $pdf = $this->actingAs($owner)->get(route('reports.statement.pdf'));
+        $pdf->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+
+        $word = $this->actingAs($owner)->get(route('reports.statement.word'));
+        $word->assertOk();
+        $path = tempnam(sys_get_temp_dir(), 'currency-statement-test-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $word->streamedContent());
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $documentXml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        $this->assertStringContainsString('1,000.00 SAR', $documentXml);
+        $this->assertStringContainsString('200.00 USD', $documentXml);
+        $this->assertStringNotContainsString('1,200.00 SAR', $documentXml);
     }
 
     public function test_report_library_links_keep_the_selected_scope_and_hide_disabled_modules(): void

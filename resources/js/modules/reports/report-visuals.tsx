@@ -7,9 +7,9 @@ import {
     humanLabel,
 } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { localizedNumber } from '@/lib/utils';
+import { currency, localizedNumber } from '@/lib/utils';
 
-import type { ReportRecord } from './types';
+import type { CurrencyBreakdown, ReportRecord } from './types';
 
 export function ReportPulse({
     label,
@@ -38,32 +38,69 @@ export function ReportPulse({
 
 export function BreakdownBars({
     source,
-    format,
+    formatLabel,
 }: {
-    source: Record<string, number>;
-    format: (value: number) => string;
+    source: CurrencyBreakdown[];
+    formatLabel?: (label: string) => string;
 }) {
-    const { t, text } = useTranslator();
-    const entries = Object.entries(source);
-    const maximum = Math.max(...entries.map(([, value]) => value), 1);
+    const { locale, t, text } = useTranslator();
+    const groups = source.reduce<Record<string, CurrencyBreakdown[]>>(
+        (result, item) => {
+            (result[item.currency] ??= []).push(item);
 
-    if (entries.length === 0) {
+            return result;
+        },
+        {},
+    );
+
+    if (source.length === 0) {
         return <ReportEmpty>{t('reports.no_data')}</ReportEmpty>;
     }
 
     return (
-        <div className="pmc-report-bars">
-            {entries.map(([label, value]) => (
-                <div key={label}>
-                    <div>
-                        <span>{text(humanLabel(label))}</span>
-                        <strong>{format(value)}</strong>
-                    </div>
-                    <div>
-                        <i style={{ width: `${(value / maximum) * 100}%` }} />
-                    </div>
-                </div>
-            ))}
+        <div className="pmc-report-currency-breakdowns">
+            {Object.entries(groups).map(([currencyCode, entries]) => {
+                const maximum = Math.max(
+                    ...entries.map((item) => item.amount),
+                    1,
+                );
+
+                return (
+                    <section key={currencyCode}>
+                        <header>
+                            <span>{t('reports.currency')}</span>
+                            <strong>{currencyCode}</strong>
+                        </header>
+                        <div className="pmc-report-bars">
+                            {entries.map((item) => (
+                                <div key={`${currencyCode}-${item.label}`}>
+                                    <div>
+                                        <span>
+                                            {formatLabel
+                                                ? formatLabel(item.label)
+                                                : text(humanLabel(item.label))}
+                                        </span>
+                                        <strong>
+                                            {currency(
+                                                item.amount,
+                                                locale,
+                                                currencyCode,
+                                            )}
+                                        </strong>
+                                    </div>
+                                    <div>
+                                        <i
+                                            style={{
+                                                width: `${(item.amount / maximum) * 100}%`,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+                );
+            })}
         </div>
     );
 }

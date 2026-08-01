@@ -3,6 +3,11 @@ import type { Translator } from '@/lib/i18n';
 import { compactCurrency, currency, localizedNumber } from '@/lib/utils';
 
 import type { OperationsDashboardProps } from '../types';
+import {
+    currencyPositionAmounts,
+    currencyPositionCount,
+    financialMetricValue,
+} from './currency-metric-values';
 import { propertyFocusUrl } from './property-focus-url';
 
 export function platformMetrics(
@@ -11,6 +16,45 @@ export function platformMetrics(
     t: Translator,
 ): WorkspaceMetric[] {
     const propertyId = props.propertyFocus.selected?.id;
+    const valuationSingle =
+        props.stats.valuationTotals.length === 1
+            ? props.stats.valuationTotals[0]
+            : null;
+    const valuationValue =
+        props.stats.totalValue !== null && valuationSingle
+            ? compactCurrency(
+                  props.stats.totalValue,
+                  locale,
+                  valuationSingle.currency,
+              )
+            : currencyPositionCount(
+                  props.stats.valuationTotals.length,
+                  locale,
+                  t,
+              );
+    const valuationDetail = valuationSingle
+        ? t('dashboard.active_leases_count', undefined, {
+              count: localizedNumber(props.stats.activeLeases, locale),
+          })
+        : props.stats.valuationTotals
+              .map((position) =>
+                  currency(position.amount, locale, position.currency),
+              )
+              .join(' · ');
+    const revenue = financialMetricValue(
+        props.financial.revenue,
+        props.financial.currencyTotals,
+        'revenue',
+        locale,
+        t,
+    );
+    const arrears = financialMetricValue(
+        props.financial.arrears,
+        props.financial.currencyTotals,
+        'arrears',
+        locale,
+        t,
+    );
 
     return [
         {
@@ -40,32 +84,41 @@ export function platformMetrics(
         },
         {
             label: t('dashboard.portfolio_value'),
-            value: compactCurrency(props.stats.totalValue, locale),
-            detail: t('dashboard.active_leases_count', undefined, {
-                count: localizedNumber(props.stats.activeLeases, locale),
-            }),
+            value: valuationValue,
+            detail: valuationDetail,
             icon: 'bi-bank',
             tone: 'blue',
             href: propertyFocusUrl('/assets', propertyId),
         },
         {
             label: t('dashboard.collected_this_month'),
-            value: compactCurrency(props.stats.monthlyRevenue, locale),
-            detail: t('dashboard.expenses_amount', undefined, {
-                amount: currency(props.stats.monthlyExpenses, locale),
-            }),
+            value: revenue.value,
+            detail:
+                props.financial.currencyCount === 1
+                    ? t('dashboard.expenses_amount', undefined, {
+                          amount: currency(
+                              props.financial.expenses ?? 0,
+                              locale,
+                              props.financial.currency ?? 'SAR',
+                          ),
+                      })
+                    : currencyPositionAmounts(
+                          props.financial.currencyTotals,
+                          'revenue',
+                          locale,
+                      ),
             icon: 'bi-cash-stack',
             tone: 'teal',
             href: propertyFocusUrl('/payments', propertyId),
         },
         {
             label: t('dashboard.outstanding_rent'),
-            value: compactCurrency(props.stats.arrears, locale),
+            value: arrears.value,
             detail: t('dashboard.open_service_count', undefined, {
                 count: localizedNumber(props.stats.openRequests, locale),
             }),
             icon: 'bi-exclamation-circle',
-            tone: props.stats.arrears > 0 ? 'red' : 'amber',
+            tone: props.financial.hasArrears ? 'red' : 'amber',
             href: propertyFocusUrl(
                 '/rent-collection?status=overdue',
                 propertyId,

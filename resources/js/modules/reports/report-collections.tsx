@@ -76,7 +76,7 @@ export function ReportCollections({ props }: { props: ReportDataProps }) {
                 >
                     <BreakdownBars
                         source={props.charts.revenueByMonth}
-                        format={(value) => currency(value, locale, 'SAR')}
+                        formatLabel={(label) => label}
                     />
                 </WorkspacePanel>
             </div>

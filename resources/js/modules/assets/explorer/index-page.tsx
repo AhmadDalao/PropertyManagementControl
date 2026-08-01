@@ -58,6 +58,7 @@ export default function PropertyExplorerPage() {
                         <ExplorerControls
                             key={Object.values(explorer.filters).join(':')}
                             explorer={explorer}
+                            propertyContext={props.propertyContext}
                         />
                         <ExplorerBreadcrumbs
                             breadcrumbs={explorer.breadcrumbs}

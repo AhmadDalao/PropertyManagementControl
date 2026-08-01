@@ -84,12 +84,15 @@ export type OperationsStats = {
     totalUsers: number;
     totalPortfolios: number;
     totalAssets: number;
-    totalValue: number;
+    totalValue: number | null;
+    valuationCurrency: string | null;
+    valuationTotals: Array<{ currency: string; amount: number }>;
     activeLeases: number;
-    monthlyRevenue: number;
-    monthlyExpenses: number;
+    monthlyRevenue: number | null;
+    monthlyExpenses: number | null;
     openRequests: number;
-    arrears: number;
+    arrears: number | null;
+    hasArrears: boolean;
     vacantUnits: number;
 };
 

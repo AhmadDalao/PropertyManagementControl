@@ -41,15 +41,12 @@ final readonly class OwnerStatementWordExport
             $this->paragraph("Period / الفترة: {$filters['date_from']} - {$filters['date_to']}"),
             $this->paragraph("Prepared for / أعد لصالح: {$context['prepared_for']}"),
             $this->paragraph('Financial summary | الملخص المالي', 'Heading1'),
+            $this->table($this->currencyRows($summary['currencyTotals'])),
             $this->table([
                 ['Metric / البيان', 'Value / القيمة'],
-                ['Collected / المحصل', $this->money($summary['revenue'])],
-                ['Expenses / المصاريف', $this->money($summary['expenses'])],
-                ['Net position / صافي المركز', $this->money($summary['net'])],
-                ['Arrears / المتأخرات', $this->money($summary['arrears'])],
-                ['Contract balance / رصيد العقود', $this->money($summary['contractBalance'])],
-                ['Collection rate / نسبة التحصيل', $this->percentage($summary['collectionRate'])],
                 ['Occupancy / الإشغال', $this->percentage($summary['occupancyRate'])],
+                ['Active leases / العقود النشطة', (string) $summary['activeLeases']],
+                ['Open maintenance / الصيانة المفتوحة', (string) $summary['openRequests']],
             ]),
             $this->paragraph('Contracts in arrears | العقود المتأخرة', 'Heading1'),
             $this->table($this->arrearsRows($data['arrearsLeases'])),
@@ -132,6 +129,38 @@ final readonly class OwnerStatementWordExport
                 (string) ($request['asset'] ?? '-'),
                 (string) $request['status'],
                 (string) $request['priority'],
+            ];
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $positions
+     * @return array<int, array<int, string>>
+     */
+    private function currencyRows(array $positions): array
+    {
+        $rows = [[
+            'Currency / العملة',
+            'Collected / المحصل',
+            'Expenses / المصاريف',
+            'Net / الصافي',
+            'Arrears / المتأخرات',
+            'Contract balance / رصيد العقود',
+            'Collection / التحصيل',
+        ]];
+
+        foreach ($positions as $position) {
+            $currency = (string) $position['currency'];
+            $rows[] = [
+                $currency,
+                $this->money($position['revenue'], $currency),
+                $this->money($position['expenses'], $currency),
+                $this->money($position['net'], $currency),
+                $this->money($position['arrears'], $currency),
+                $this->money($position['contractBalance'], $currency),
+                $this->percentage($position['collectionRate']),
             ];
         }
 

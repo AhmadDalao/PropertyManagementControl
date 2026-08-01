@@ -44,11 +44,34 @@
     <section class="section">
         <h2 class="section-title clearfix">Financial summary <span>الملخص المالي</span></h2>
         <table class="data">
+            <thead>
+                <tr>
+                    <th>Currency / العملة</th>
+                    <th class="amount">Collected / المحصل</th>
+                    <th class="amount">Expenses / المصاريف</th>
+                    <th class="amount">Net / الصافي</th>
+                    <th class="amount">Arrears / المتأخرات</th>
+                    <th class="amount">Contract balance / رصيد العقود</th>
+                    <th class="amount">Collection / التحصيل</th>
+                </tr>
+            </thead>
             <tbody>
-                <tr><td>Collected / المحصل</td><td class="amount">{{ $money($summary['revenue']) }}</td><td>Expenses / المصاريف</td><td class="amount">{{ $money($summary['expenses']) }}</td></tr>
-                <tr><td>Net position / صافي المركز</td><td class="amount">{{ $money($summary['net']) }}</td><td>Arrears / المتأخرات</td><td class="amount">{{ $money($summary['arrears']) }}</td></tr>
-                <tr><td>Collection rate / نسبة التحصيل</td><td class="amount">{{ number_format((float) $summary['collectionRate'], 1) }}%</td><td>Occupancy / الإشغال</td><td class="amount">{{ number_format((float) $summary['occupancyRate'], 1) }}%</td></tr>
-                <tr><td>Active leases / العقود النشطة</td><td class="amount">{{ $summary['activeLeases'] }}</td><td>Open maintenance / الصيانة المفتوحة</td><td class="amount">{{ $summary['openRequests'] }}</td></tr>
+                @foreach($summary['currencyTotals'] as $position)
+                    <tr>
+                        <td>{{ $position['currency'] }}</td>
+                        <td class="amount">{{ $money($position['revenue'], $position['currency']) }}</td>
+                        <td class="amount">{{ $money($position['expenses'], $position['currency']) }}</td>
+                        <td class="amount">{{ $money($position['net'], $position['currency']) }}</td>
+                        <td class="amount">{{ $money($position['arrears'], $position['currency']) }}</td>
+                        <td class="amount">{{ $money($position['contractBalance'], $position['currency']) }}</td>
+                        <td class="amount">{{ number_format((float) $position['collectionRate'], 1) }}%</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <table class="data">
+            <tbody>
+                <tr><td>Occupancy / الإشغال</td><td class="amount">{{ number_format((float) $summary['occupancyRate'], 1) }}%</td><td>Active leases / العقود النشطة</td><td class="amount">{{ $summary['activeLeases'] }}</td><td>Open maintenance / الصيانة المفتوحة</td><td class="amount">{{ $summary['openRequests'] }}</td></tr>
             </tbody>
         </table>
     </section>

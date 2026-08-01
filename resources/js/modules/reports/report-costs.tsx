@@ -18,7 +18,7 @@ export function ReportCosts({ props }: { props: ReportDataProps }) {
                 >
                     <BreakdownBars
                         source={props.charts.expenseByCategory}
-                        format={(value) => currency(value, locale, 'SAR')}
+                        formatLabel={(label) => text(humanLabel(label))}
                     />
                 </WorkspacePanel>
             </div>

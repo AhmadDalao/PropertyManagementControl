@@ -103,9 +103,7 @@ export default function PropertyReportPage() {
             />
             <PropertyReportTabs active={activeTab} onSelect={selectTab} />
 
-            {activeTab === 'overview' ? (
-                <ReportOverview props={props} links={props.property.links} />
-            ) : null}
+            {activeTab === 'overview' ? <ReportOverview props={props} /> : null}
             {activeTab === 'collections' ? (
                 <ReportCollections props={props} />
             ) : null}

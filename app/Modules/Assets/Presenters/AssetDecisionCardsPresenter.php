@@ -7,10 +7,13 @@ use App\Modules\Portfolios\Support\PortfolioModules;
 
 class AssetDecisionCardsPresenter
 {
+    public function __construct(
+        private readonly AssetCurrencySummaryPresenter $currencies,
+    ) {}
+
     /** @return array<int, array<string, mixed>> */
     public function present(AssetDetailData $data): array
     {
-        $asset = $data->asset;
         $operations = $data->operations;
         $propertyId = $operations->propertyRoot->id;
 
@@ -36,26 +39,30 @@ class AssetDecisionCardsPresenter
         if (PortfolioModules::enabledForUser($data->actor, 'reports')) {
             $cards[] = [
                 'title' => trans('app.assets.collection_health'),
-                'value' => $this->rate($operations->collectionRate()),
+                'value' => count($operations->currencyTotals) > 1
+                    ? $this->currencies->countLabel($operations)
+                    : $this->currencies->collectionRate($operations),
                 'detail' => trans('app.assets.collection_summary', [
-                    'paid' => $this->money($operations->monthlyScheduledPaid, $asset->currency),
-                    'due' => $this->money($operations->monthlyScheduledDue, $asset->currency),
+                    'paid' => $this->currencies->money($operations, 'monthlyScheduledPaid'),
+                    'due' => $this->currencies->money($operations, 'monthlyScheduledDue'),
                 ]),
                 'href' => route('reports.properties.show', $propertyId),
                 'actionLabel' => trans('app.assets.review_collections'),
-                'tone' => $operations->monthlyScheduledDue === 0.0
-                    || $operations->collectionRate() >= 90 ? 'teal' : 'primary',
+                'tone' => collect($operations->currencyTotals)->every(
+                    fn (array $total): bool => $total['monthlyScheduledDue'] === 0.0
+                        || $total['collectionRate'] >= 90,
+                ) ? 'teal' : 'primary',
                 'icon' => 'bi-wallet2',
             ];
             $cards[] = [
                 'title' => trans('app.assets.arrears'),
-                'value' => $this->money($operations->arrears, $asset->currency),
-                'detail' => trans($operations->arrears > 0
+                'value' => $this->currencies->money($operations, 'arrears'),
+                'detail' => trans($operations->hasArrears()
                     ? 'app.assets.arrears_follow_up'
                     : 'app.assets.no_arrears'),
                 'href' => route('reports.properties.show', $propertyId),
                 'actionLabel' => trans('app.assets.open_property_report'),
-                'tone' => $operations->arrears > 0 ? 'danger' : 'teal',
+                'tone' => $operations->hasArrears() ? 'danger' : 'teal',
                 'icon' => 'bi-exclamation-circle',
             ];
         }
@@ -77,11 +84,6 @@ class AssetDecisionCardsPresenter
         }
 
         return $cards;
-    }
-
-    private function money(float $amount, string $currency): string
-    {
-        return number_format($amount, 2).' '.$currency;
     }
 
     private function rate(float $rate): string

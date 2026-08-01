@@ -1,7 +1,7 @@
-import { MetricGrid } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
-import { compactCurrency, localizedNumber, percent } from '@/lib/utils';
+import { localizedNumber, percent } from '@/lib/utils';
 
+import { CurrencyPositionGrid } from './currency-position-grid';
 import { ReportPulse } from './report-visuals';
 import type { OwnerStatementPageProps } from './types';
 
@@ -14,51 +14,36 @@ export function OwnerStatementSummary({
 
     return (
         <>
-            <MetricGrid
-                metrics={[
-                    {
-                        label: t('reports.collected'),
-                        value: compactCurrency(props.summary.revenue, locale),
-                        detail: t('reports.statement_posted_income'),
-                        icon: 'bi-cash-stack',
-                        tone: 'ink',
-                    },
-                    {
-                        label: t('reports.expenses'),
-                        value: compactCurrency(props.summary.expenses, locale),
-                        detail: t('reports.statement_posted_costs'),
-                        icon: 'bi-receipt',
-                        tone: 'amber',
-                    },
-                    {
-                        label: t('reports.net_position'),
-                        value: compactCurrency(props.summary.net, locale),
-                        detail: t('reports.statement_income_less_costs'),
-                        icon: 'bi-graph-up-arrow',
-                        tone: props.summary.net >= 0 ? 'teal' : 'red',
-                    },
-                    {
-                        label: t('reports.arrears'),
-                        value: compactCurrency(props.summary.arrears, locale),
-                        detail: t('reports.arrears_count', undefined, {
-                            count: localizedNumber(
-                                props.summary.leasesInArrears,
-                                locale,
-                            ),
-                        }),
-                        icon: 'bi-exclamation-circle',
-                        tone: props.summary.arrears > 0 ? 'red' : 'blue',
-                    },
-                ]}
-            />
+            <CurrencyPositionGrid positions={props.summary.currencyTotals} />
 
             <section className="pmc-statement-health-grid">
                 <ReportPulse
                     label={t('reports.collection_health')}
-                    value={percent(props.summary.collectionRate, locale)}
-                    detail={t('reports.statement_collection_detail')}
+                    value={
+                        props.summary.collectionRate === null
+                            ? localizedNumber(
+                                  props.summary.currencyCount,
+                                  locale,
+                              )
+                            : percent(props.summary.collectionRate, locale)
+                    }
+                    detail={
+                        props.summary.collectionRate === null
+                            ? t('reports.currency_count', undefined, {
+                                  count: localizedNumber(
+                                      props.summary.currencyCount,
+                                      locale,
+                                  ),
+                              })
+                            : t('reports.statement_collection_detail')
+                    }
                     icon="bi-wallet2"
-                    tone={props.summary.collectionRate >= 80 ? 'good' : 'risk'}
+                    tone={
+                        props.summary.collectionRate !== null &&
+                        props.summary.collectionRate >= 80
+                            ? 'good'
+                            : 'risk'
+                    }
                 />
                 <ReportPulse
                     label={t('reports.occupancy')}
