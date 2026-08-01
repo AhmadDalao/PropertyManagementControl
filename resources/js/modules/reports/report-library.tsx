@@ -1,11 +1,34 @@
 import { Link } from '@inertiajs/react';
+import { useState } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 
+import {
+    ReportLibraryTabs,
+    resolveReportLibraryGroup,
+} from './report-library-tabs';
 import type { ReportLibraryGroup } from './types';
 
 export function ReportLibrary({ groups }: { groups: ReportLibraryGroup[] }) {
     const { t } = useTranslator();
+    const [activeGroup, setActiveGroup] = useState(() => {
+        if (typeof window === 'undefined') {
+            return groups[0]?.key ?? '';
+        }
+
+        return resolveReportLibraryGroup(
+            new URLSearchParams(window.location.search).get('library_group'),
+            groups,
+        );
+    });
+    const selectedGroup =
+        groups.find((group) => group.key === activeGroup) ?? groups[0];
+    const selectGroup = (group: string) => {
+        setActiveGroup(group);
+        const url = new URL(window.location.href);
+        url.searchParams.set('library_group', group);
+        window.history.replaceState({}, '', url);
+    };
 
     return (
         <div className="pmc-report-library">
@@ -21,18 +44,29 @@ export function ReportLibrary({ groups }: { groups: ReportLibraryGroup[] }) {
                 </div>
             </header>
 
-            {groups.map((group) => (
-                <section className="pmc-report-library-group" key={group.key}>
+            <ReportLibraryTabs
+                active={selectedGroup?.key ?? ''}
+                groups={groups}
+                onSelect={selectGroup}
+            />
+
+            {selectedGroup ? (
+                <section
+                    id="report-library-panel"
+                    className="pmc-report-library-group"
+                    role="tabpanel"
+                    aria-labelledby={`report-library-tab-${selectedGroup.key}`}
+                >
                     <header>
                         <div>
-                            <h3>{group.title}</h3>
-                            <p>{group.description}</p>
+                            <h3>{selectedGroup.title}</h3>
+                            <p>{selectedGroup.description}</p>
                         </div>
-                        <span>{group.cards.length}</span>
+                        <span>{selectedGroup.cards.length}</span>
                     </header>
 
                     <div className="pmc-report-library-grid">
-                        {group.cards.map((card) => (
+                        {selectedGroup.cards.map((card) => (
                             <article
                                 className="pmc-report-library-card"
                                 key={card.key}
@@ -79,7 +113,7 @@ export function ReportLibrary({ groups }: { groups: ReportLibraryGroup[] }) {
                         ))}
                     </div>
                 </section>
-            ))}
+            ) : null}
         </div>
     );
 }

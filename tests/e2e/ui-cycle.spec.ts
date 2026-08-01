@@ -464,11 +464,13 @@ test.describe('authenticated administration', () => {
                 );
 
                 if ((await metadata.count()) > 0) {
-                    const values = await metadata.locator(':scope > div').count();
+                    const values = await metadata
+                        .locator(':scope > div')
+                        .count();
                     const columns = await metadata.evaluate((element) => {
-                        return getComputedStyle(element).gridTemplateColumns.split(
-                            ' ',
-                        ).length;
+                        return getComputedStyle(
+                            element,
+                        ).gridTemplateColumns.split(' ').length;
                     });
 
                     expect(columns).toBe(Math.min(values, 3));
@@ -563,14 +565,13 @@ test.describe('authenticated administration', () => {
         ).toHaveCount(0);
         expect(
             await firstMobileRecord.locator('dl').evaluate((element) => {
-                return getComputedStyle(element).gridTemplateColumns.split(
-                    ' ',
-                ).length;
+                return getComputedStyle(element).gridTemplateColumns.split(' ')
+                    .length;
             }),
         ).toBe(3);
-        expect((await firstMobileRecord.boundingBox())?.height ?? 0).toBeLessThan(
-            340,
-        );
+        expect(
+            (await firstMobileRecord.boundingBox())?.height ?? 0,
+        ).toBeLessThan(340);
         await expectNoHorizontalOverflow(page);
         await expectMinimumTouchHeight(
             page,
@@ -694,9 +695,7 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.getByRole('tab', { name: 'Overview' }),
             ).toHaveAttribute('aria-selected', 'true');
-            await expect(
-                page.locator('.pmc-report-comparison'),
-            ).toHaveCount(0);
+            await expect(page.locator('.pmc-report-comparison')).toHaveCount(0);
             await expect(
                 page.locator('.pmc-statement-record-grid'),
             ).toHaveCount(0);
@@ -745,9 +744,7 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { level: 1, name: 'كشف المالك' }),
         ).toBeVisible();
-        await expect(
-            page.getByRole('link', { name: 'رجوع' }),
-        ).toBeVisible();
+        await expect(page.getByRole('link', { name: 'رجوع' })).toBeVisible();
         await page.getByRole('tab', { name: 'ما الذي تغير' }).click();
         await expect(page).toHaveURL(/tab=comparison/);
         await expect(
@@ -1456,10 +1453,7 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
-        await page
-            .locator('.pmc-mobile-record-title-link')
-            .first()
-            .click();
+        await page.locator('.pmc-mobile-record-title-link').first().click();
         const contractAction = page.getByRole('link', {
             name: 'العقد PDF',
         });
@@ -2409,13 +2403,23 @@ test.describe('authenticated administration', () => {
                 name: 'اختر الإجابة التي تحتاجها',
             }),
         ).toBeVisible();
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(12);
+        await expect(page.locator('.pmc-report-library-tabs')).toBeVisible();
+        await expect(
+            page.locator('.pmc-report-library-tabs [role="tab"]'),
+        ).toHaveCount(4);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(2);
         await expect(
             page.locator('a[href^="/reports/statement.pdf"]'),
         ).toBeVisible();
         await expect(
             page.locator('a[href^="/reports/statement.docx"]'),
         ).toBeVisible();
+        await page.getByRole('tab', { name: 'التحصيل والتكاليف 3' }).click();
+        await expect(page).toHaveURL(/library_group=finance/);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(2200);
         await page.getByRole('button', { name: 'إظهار التصفيات' }).click();
         await expect(page.locator('#report-filter-panel')).toBeVisible();
         await expect(page.getByLabel('التاريخ من')).toBeVisible();
@@ -2439,6 +2443,8 @@ test.describe('authenticated administration', () => {
             .click();
         await page.getByRole('button', { name: 'تطبيق', exact: true }).click();
         await expect(page).toHaveURL(/period=this_month/);
+        await expect(page).toHaveURL(/library_group=finance/);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
 
         await page.getByRole('link', { name: 'حفظ التقرير الحالي' }).click();
         await expect(page).toHaveURL(/\/reports\/saved\/create/);

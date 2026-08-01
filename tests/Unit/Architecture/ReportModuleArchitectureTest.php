@@ -151,6 +151,7 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
             'resources/js/modules/reports/report-library.tsx',
+            'resources/js/modules/reports/report-library-tabs.tsx',
             'resources/js/modules/reports/report-journal.tsx',
             'resources/js/modules/reports/report-operations.tsx',
             'resources/js/modules/reports/report-overview.tsx',

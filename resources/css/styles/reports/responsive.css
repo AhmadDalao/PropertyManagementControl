@@ -38,13 +38,20 @@
     }
 
     .pmc-report-tabs {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        display: flex;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scrollbar-width: none;
+    }
+
+    .pmc-report-tabs::-webkit-scrollbar {
+        display: none;
     }
 
     .pmc-report-tabs button {
-        width: 100%;
-        min-width: 0;
+        width: auto;
+        min-width: max-content;
+        flex: 0 0 auto;
         padding-inline: 0.5rem;
     }
 
@@ -52,23 +59,12 @@
         position: sticky;
         z-index: 15;
         top: calc(var(--pmc-topbar-height) + 0.5rem);
-        display: flex;
-        overflow-x: auto;
-        overscroll-behavior-inline: contain;
         background: rgb(255 255 255 / 96%);
         box-shadow: 0 0.35rem 1rem rgb(17 17 17 / 6%);
-        scrollbar-width: none;
-    }
-
-    .pmc-owner-statement-tabs::-webkit-scrollbar {
-        display: none;
     }
 
     .pmc-owner-statement-tabs button {
-        width: auto;
-        min-width: max-content;
         min-height: 2.75rem;
-        flex: 0 0 auto;
     }
 
     .pmc-report-breakdown-grid,

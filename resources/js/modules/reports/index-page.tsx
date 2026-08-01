@@ -56,9 +56,21 @@ export default function ReportsIndexPage() {
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+        const libraryGroup =
+            typeof window === 'undefined'
+                ? null
+                : new URLSearchParams(window.location.search).get(
+                      'library_group',
+                  );
         router.get(
             '/reports',
-            { ...cleanReportFilters(filters), tab: activeTab },
+            {
+                ...cleanReportFilters(filters),
+                tab: activeTab,
+                ...(activeTab === 'library' && libraryGroup
+                    ? { library_group: libraryGroup }
+                    : {}),
+            },
             {
                 preserveScroll: true,
                 preserveState: true,
