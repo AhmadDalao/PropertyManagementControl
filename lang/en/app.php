@@ -2861,6 +2861,8 @@ return [
         'maintenance_activity' => 'Maintenance activity',
         'maintenance_opened' => 'Requests opened',
         'maintenance_resolved' => 'Requests resolved',
+        'open_metric_records' => 'Open :metric records',
+        'review_previous_period' => 'Review previous period',
         'occupancy' => 'Occupancy',
         'service_backlog' => 'Service backlog',
         'scheduled_paid' => ':paid paid from :due scheduled',

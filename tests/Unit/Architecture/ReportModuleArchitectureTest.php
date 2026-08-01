@@ -143,6 +143,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
             'resources/js/modules/reports/report-comparison.tsx',
+            'resources/js/modules/reports/report-comparison-links.ts',
             'resources/js/modules/reports/owner-statement-page.tsx',
             'resources/js/modules/reports/owner-statement-records.tsx',
             'resources/js/modules/reports/owner-statement-summary.tsx',

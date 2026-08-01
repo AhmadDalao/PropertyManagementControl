@@ -2861,6 +2861,8 @@ return [
         'maintenance_activity' => 'نشاط الصيانة',
         'maintenance_opened' => 'الطلبات المفتوحة',
         'maintenance_resolved' => 'الطلبات المحلولة',
+        'open_metric_records' => 'فتح سجلات :metric',
+        'review_previous_period' => 'مراجعة الفترة السابقة',
         'occupancy' => 'الإشغال',
         'service_backlog' => 'طلبات الخدمة المتراكمة',
         'scheduled_paid' => 'تم سداد :paid من أصل :due مجدولة',

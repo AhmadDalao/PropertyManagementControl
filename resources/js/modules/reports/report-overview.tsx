@@ -13,7 +13,10 @@ export function ReportOverview({ props }: { props: ReportDataProps }) {
     return (
         <>
             <CurrencyPositionGrid positions={props.summary.currencyTotals} />
-            <ReportComparison comparison={props.comparison} />
+            <ReportComparison
+                comparison={props.comparison}
+                filters={props.filters}
+            />
 
             <section className="pmc-report-pulse-grid">
                 <ReportPulse

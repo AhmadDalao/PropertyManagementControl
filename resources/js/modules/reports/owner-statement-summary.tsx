@@ -16,7 +16,10 @@ export function OwnerStatementSummary({
     return (
         <>
             <CurrencyPositionGrid positions={props.summary.currencyTotals} />
-            <ReportComparison comparison={props.comparison} />
+            <ReportComparison
+                comparison={props.comparison}
+                filters={props.filters}
+            />
 
             <section className="pmc-statement-health-grid">
                 <ReportPulse

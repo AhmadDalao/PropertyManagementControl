@@ -1,15 +1,24 @@
+import { Link } from '@inertiajs/react';
+
 import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate, localizedNumber, percent } from '@/lib/utils';
 
+import {
+    comparisonMetricHref,
+    previousComparisonHref,
+} from './report-comparison-links';
 import type {
     ReportComparison as ReportComparisonData,
     ReportComparisonMetric,
+    ReportDataProps,
 } from './types';
 
 export function ReportComparison({
     comparison,
+    filters,
 }: {
     comparison: ReportComparisonData;
+    filters: ReportDataProps['filters'];
 }) {
     const { locale, t } = useTranslator();
 
@@ -48,12 +57,16 @@ export function ReportComparison({
                         icon="bi-graph-up-arrow"
                         metrics={position.metrics}
                         currencyCode={position.currency}
+                        filters={filters}
+                        comparisonPeriod={comparison.period}
                     />
                 ))}
                 <ComparisonCard
                     title={t('reports.maintenance_activity')}
                     icon="bi-tools"
                     metrics={comparison.serviceMetrics}
+                    filters={filters}
+                    comparisonPeriod={comparison.period}
                 />
             </div>
         </section>
@@ -65,11 +78,15 @@ function ComparisonCard({
     icon,
     metrics,
     currencyCode,
+    filters,
+    comparisonPeriod,
 }: {
     title: string;
     icon: string;
     metrics: ReportComparisonMetric[];
     currencyCode?: string;
+    filters: ReportDataProps['filters'];
+    comparisonPeriod: ReportComparisonData['period'];
 }) {
     const { locale, t } = useTranslator();
     const formatValue = (metric: ReportComparisonMetric): string => {
@@ -116,9 +133,35 @@ function ComparisonCard({
                             </span>
                         </dd>
                         <ChangeBadge metric={metric} />
+                        <Link
+                            className="pmc-report-comparison-card__source"
+                            href={comparisonMetricHref(metric.key, filters)}
+                            aria-label={t(
+                                'reports.open_metric_records',
+                                undefined,
+                                {
+                                    metric: t(`reports.${metric.key}`),
+                                },
+                            )}
+                            title={t('reports.open_metric_records', undefined, {
+                                metric: t(`reports.${metric.key}`),
+                            })}
+                        >
+                            <i
+                                className="bi bi-arrow-up-right"
+                                aria-hidden="true"
+                            />
+                        </Link>
                     </div>
                 ))}
             </dl>
+            <footer>
+                <Link href={previousComparisonHref(filters, comparisonPeriod)}>
+                    <i className="bi bi-clock-history" aria-hidden="true" />
+                    {t('reports.review_previous_period')}
+                    <i className="bi bi-arrow-right" aria-hidden="true" />
+                </Link>
+            </footer>
         </article>
     );
 }

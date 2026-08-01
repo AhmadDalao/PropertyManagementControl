@@ -2437,6 +2437,24 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-report-comparison__period'),
         ).toContainText('مقارنة بالفترة');
+        const collectedSource = page.getByRole('link', {
+            name: 'فتح سجلات المحصل',
+        });
+        await expect(collectedSource).toHaveCount(1);
+        await expect(collectedSource).toHaveAttribute(
+            'href',
+            /\/payments\?.*date_from=.*date_to=.*status=posted/,
+        );
+        const previousPeriodLinks = page.getByRole('link', {
+            name: 'مراجعة الفترة السابقة',
+        });
+        await expect(previousPeriodLinks).toHaveCount(2);
+        const previousPeriodHref = await previousPeriodLinks
+            .first()
+            .getAttribute('href');
+        expect(previousPeriodHref).toContain('/reports?');
+        expect(previousPeriodHref).toContain('period=custom');
+        expect(previousPeriodHref).toContain('tab=overview');
         await expectNoHorizontalOverflow(page);
 
         for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
