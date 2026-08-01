@@ -1,68 +1,63 @@
-.pmc-report-presets-compact {
-    margin-top: 1rem;
+.pmc-saved-report-workspace,
+.pmc-saved-report-form {
     border: 1px solid #e2dfd9;
     border-radius: 0.9rem;
     background: #fff;
 }
 
-.pmc-report-presets-compact > summary {
+.pmc-saved-report-workspace {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.pmc-saved-report-workspace > header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.9rem;
-    cursor: pointer;
-    list-style: none;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid #ece8df;
 }
 
-.pmc-report-presets-compact > summary::-webkit-details-marker {
-    display: none;
+.pmc-saved-report-workspace > header > div {
+    display: grid;
+    gap: 0.2rem;
 }
 
-.pmc-report-presets-compact > summary > div {
-    display: flex;
-    align-items: center;
-    gap: 0.55rem;
+.pmc-saved-report-workspace > header span {
+    color: #9a6a00;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
 }
 
-.pmc-report-presets-compact > summary span,
-.pmc-report-presets-compact > summary strong {
-    font-size: 0.78rem;
+.pmc-saved-report-workspace > header h2,
+.pmc-saved-report-empty h3 {
+    margin: 0;
+    color: #111;
+    font-size: 1rem;
     font-weight: 900;
 }
 
-.pmc-report-presets-body {
-    display: grid;
-    gap: 0.8rem;
-    padding: 0 0.9rem 0.9rem;
+.pmc-saved-report-workspace > header p,
+.pmc-saved-report-empty p {
+    max-width: 44rem;
+    margin: 0;
+    color: #6f6a62;
+    font-size: 0.74rem;
 }
 
-.pmc-report-preset-create {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: end;
-    gap: 0.75rem;
-    padding: 0.8rem;
-    border: 1px solid #ece9e3;
-    border-radius: 0.75rem;
-    background: #fbfaf7;
-}
-
-.pmc-report-preset-create > label:not(.pmc-report-default-check) {
-    display: grid;
-    min-width: 0;
-    gap: 0.35rem;
-}
-
-.pmc-report-preset-create > label > span {
-    color: #494950;
-    font-size: 0.7rem;
-    font-weight: 850;
-}
-
-.pmc-report-preset-create small[role='alert'] {
-    color: #b23d29;
+.pmc-saved-report-workspace > header > strong {
+    flex: 0 0 auto;
+    padding: 0.42rem 0.65rem;
+    border: 1px solid #eadfc4;
+    border-radius: 999px;
+    background: #fff8e8;
+    color: #6f5612;
     font-size: 0.68rem;
+    font-weight: 900;
 }
 
 .pmc-report-default-check {
@@ -83,7 +78,7 @@
 
 .pmc-report-preset-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
     gap: 0.75rem;
 }
 
@@ -92,10 +87,11 @@
     min-width: 0;
     flex-direction: column;
     gap: 0.8rem;
-    padding: 0.85rem;
+    padding: 0.9rem;
     border: 1px solid #e7e2d8;
     border-radius: 0.8rem;
     background: #fff;
+    box-shadow: 0 0.45rem 1.2rem rgb(28 26 22 / 4%);
 }
 
 .pmc-report-preset-list article > header {
@@ -160,7 +156,8 @@
 .pmc-report-preset-list strong,
 .pmc-report-preset-list span,
 .pmc-report-preset-list a,
-.pmc-report-preset-list button {
+.pmc-report-preset-list button,
+.pmc-report-preset-list summary {
     font-size: 0.72rem;
 }
 
@@ -171,8 +168,8 @@
     margin-top: auto;
 }
 
-.pmc-report-preset-actions a,
-.pmc-report-preset-actions button {
+.pmc-report-preset-actions > a,
+.pmc-report-preset-menu > summary {
     display: inline-flex;
     min-height: 2.75rem;
     align-items: center;
@@ -187,12 +184,181 @@
     text-decoration: none;
 }
 
-.pmc-report-preset-actions a:first-child {
+.pmc-report-preset-actions > a:first-child {
     border-color: #111;
     background: #111;
     color: #fff;
 }
 
-.pmc-report-preset-actions button {
+.pmc-report-preset-menu {
+    position: relative;
+}
+
+.pmc-report-preset-menu > summary {
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-report-preset-menu > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-report-preset-menu > div {
+    position: absolute;
+    z-index: 20;
+    inset-inline-end: 0;
+    bottom: calc(100% + 0.35rem);
+    display: grid;
+    width: 11rem;
+    overflow: hidden;
+    padding: 0.3rem;
+    border: 1px solid #ded8cc;
+    border-radius: 0.65rem;
+    background: #fff;
+    box-shadow: 0 0.8rem 2rem rgb(20 18 15 / 14%);
+}
+
+.pmc-report-preset-menu > div a,
+.pmc-report-preset-menu > div button {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.65rem;
+    border: 0;
+    border-radius: 0.45rem;
+    background: transparent;
+    color: #24211d;
+    font-weight: 800;
+    text-align: start;
+    text-decoration: none;
+}
+
+.pmc-report-preset-menu > div a:hover,
+.pmc-report-preset-menu > div button:hover {
+    background: #f7f4ed;
+}
+
+.pmc-report-preset-menu > div button.is-danger {
+    color: #a43725;
+}
+
+.pmc-saved-report-empty {
+    display: flex;
+    min-height: 12rem;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border: 1px dashed #d8d1c4;
+    border-radius: 0.8rem;
+    background: #fbfaf7;
+    text-align: start;
+}
+
+.pmc-saved-report-empty > i {
+    display: grid;
+    width: 3rem;
+    height: 3rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: #f7bf20;
+    color: #111;
+    font-size: 1.1rem;
+}
+
+.pmc-saved-report-empty > div {
+    display: grid;
+    flex: 1;
+    gap: 0.2rem;
+}
+
+.pmc-saved-report-form {
+    display: grid;
+    max-width: 70rem;
+    overflow: hidden;
+}
+
+.pmc-saved-report-form > section {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid #e9e5dc;
+}
+
+.pmc-saved-report-form > section > header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+}
+
+.pmc-saved-report-form > section > header > span {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: #111;
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 900;
+}
+
+.pmc-saved-report-form > section > header > div {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.pmc-saved-report-form h2 {
+    margin: 0;
+    color: #111;
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.pmc-saved-report-form header p {
+    margin: 0;
+    color: #6f6a62;
+    font-size: 0.72rem;
+}
+
+.pmc-saved-report-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: end;
+    gap: 0.8rem;
+}
+
+.pmc-saved-report-form-grid > label {
+    display: grid;
+    min-width: 0;
+    gap: 0.35rem;
+}
+
+.pmc-saved-report-form-grid > label > span,
+.pmc-saved-report-form-grid > .pmc-property-selection-field > span {
+    color: #494950;
+    font-size: 0.68rem;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.pmc-saved-report-form-grid small[role='alert'] {
     color: #b23d29;
+    font-size: 0.68rem;
+}
+
+.pmc-saved-report-form > footer {
+    position: sticky;
+    z-index: 10;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.55rem;
+    padding: 0.8rem 1rem;
+    background: rgb(255 255 255 / 94%);
+    box-shadow: 0 -0.35rem 1rem rgb(20 18 15 / 5%);
+    backdrop-filter: blur(0.6rem);
 }

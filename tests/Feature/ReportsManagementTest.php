@@ -870,12 +870,10 @@ class ReportsManagementTest extends TestCase
         $this->assertArrayNotHasKey('preset', $preset->filters_json);
 
         $this->actingAs($owner)
-            ->get(route('reports.index', [
-                'date_from' => '2026-01-01',
-                'date_to' => '2026-01-31',
-            ]))
+            ->get(route('reports.saved.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved')
                 ->has('savedPresets', 1)
                 ->where('savedPresets.0.title_en', 'Arrears watch')
                 ->where('savedPresets.0.period', 'custom')
@@ -940,7 +938,13 @@ class ReportsManagementTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('filters.period', 'this_month')
                 ->where('filters.date_from', '2026-08-01')
-                ->where('filters.date_to', '2026-08-15')
+                ->where('filters.date_to', '2026-08-15'));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved')
                 ->where('savedPresets.0.period', 'this_month')
                 ->where('savedPresets.0.date_from', '2026-08-01')
                 ->where('savedPresets.0.date_to', '2026-08-15')
@@ -973,7 +977,12 @@ class ReportsManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('filters.date_from', '2026-09-01')
-                ->where('filters.date_to', '2026-09-10')
+                ->where('filters.date_to', '2026-09-10'));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
                 ->where('savedPresets.0.date_from', '2026-09-01')
                 ->where('savedPresets.0.date_to', '2026-09-10'));
 
@@ -1020,15 +1029,185 @@ class ReportsManagementTest extends TestCase
         $this->assertSame('global', $preset->visibility);
 
         $this->actingAs($otherOwner)
-            ->get(route('reports.index'))
+            ->get(route('reports.saved.index'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved')
                 ->has('savedPresets', 1)
                 ->where('savedPresets.0.title_en', 'Global finance view')
                 ->where('savedPresets.0.period', 'custom')
                 ->where('savedPresets.0.date_from', '2026-01-01')
                 ->where('savedPresets.0.date_to', now()->toDateString())
                 ->where('savedPresets.0.can_delete', false));
+    }
+
+    public function test_saved_reports_have_dedicated_create_edit_duplicate_and_index_pages(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Focused Tower',
+            'title_ar' => 'البرج المركز',
+            'rentable' => false,
+        ]);
+
+        $this->travelTo(CarbonImmutable::parse('2026-08-20 12:00:00'));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.create', [
+                'period' => 'this_month',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved-form')
+                ->where('mode', 'create')
+                ->where('preset', null)
+                ->where('filters.period', 'this_month')
+                ->where('filters.date_from', '2026-08-01')
+                ->where('filters.date_to', '2026-08-20')
+                ->where('filters.property_id', $property->id)
+                ->where('visibilityOptions', ['private', 'portfolio']));
+
+        $this->actingAs($owner)
+            ->post(route('reports.saved.store'), [
+                'title_en' => 'Monthly owner review',
+                'title_ar' => 'مراجعة المالك الشهرية',
+                'visibility' => 'portfolio',
+                'is_default' => false,
+                'filters_json' => [
+                    'period' => 'this_month',
+                    'property_id' => $property->id,
+                ],
+            ])
+            ->assertRedirect(route('reports.saved.index'));
+
+        $preset = ReportPreset::query()->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.edit', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved-form')
+                ->where('mode', 'edit')
+                ->where('preset.id', $preset->id)
+                ->where('preset.title_en', 'Monthly owner review')
+                ->where('filters.period', 'this_month')
+                ->where('filters.property_id', $property->id));
+
+        $this->actingAs($owner)
+            ->put(route('reports.saved.update', $preset), [
+                'title_en' => '30-day owner review',
+                'title_ar' => 'مراجعة المالك لثلاثين يوماً',
+                'visibility' => 'private',
+                'is_default' => true,
+                'filters_json' => [
+                    'period' => 'last_30_days',
+                    'property_id' => $property->id,
+                ],
+            ])
+            ->assertRedirect(route('reports.saved.index'));
+
+        $this->assertDatabaseHas('report_presets', [
+            'id' => $preset->id,
+            'title_en' => '30-day owner review',
+            'visibility' => 'private',
+            'is_default' => true,
+        ]);
+        $this->assertSame(
+            [
+                'period' => 'last_30_days',
+                'property_id' => $property->id,
+            ],
+            $preset->refresh()->filters_json,
+        );
+
+        $this->actingAs($owner)
+            ->post(route('reports.saved.duplicate', $preset))
+            ->assertRedirect(route('reports.saved.index'));
+
+        $duplicate = ReportPreset::query()->whereKeyNot($preset->id)->firstOrFail();
+        $this->assertSame($owner->id, $duplicate->user_id);
+        $this->assertSame('private', $duplicate->visibility);
+        $this->assertFalse($duplicate->is_default);
+        $this->assertSame('30-day owner review copy', $duplicate->title_en);
+        $this->assertSame($preset->filters_json, $duplicate->filters_json);
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved')
+                ->has('savedPresets', 2)
+                ->where('savedPresets.0.can_edit', true)
+                ->where('savedPresets.0.can_duplicate', true)
+                ->where('savedPresets.0.edit_url', '/reports/saved/'.$duplicate->id.'/edit'));
+
+        $this->actingAs($tenant)->get(route('reports.saved.index'))->assertForbidden();
+        $this->actingAs($tenant)->get(route('reports.saved.create'))->assertForbidden();
+        $this->actingAs($tenant)
+            ->post(route('reports.saved.duplicate', $preset))
+            ->assertForbidden();
+
+        $this->travelBack();
+    }
+
+    public function test_saved_report_management_respects_creator_team_and_foreign_boundaries(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+
+        $this->actingAs($manager)
+            ->post(route('reports.saved.store'), [
+                'title_en' => 'Team collections',
+                'title_ar' => 'تحصيل الفريق',
+                'visibility' => 'portfolio',
+                'filters_json' => ['period' => 'this_month'],
+            ])
+            ->assertRedirect(route('reports.saved.index'));
+
+        $preset = ReportPreset::query()->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('savedPresets.0.can_edit', false)
+                ->where('savedPresets.0.can_duplicate', true)
+                ->where('savedPresets.0.can_delete', true));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.edit', $preset))
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->put(route('reports.saved.update', $preset), [
+                'title_en' => 'Changed',
+                'title_ar' => 'معدل',
+                'visibility' => 'portfolio',
+                'filters_json' => [],
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($owner)
+            ->post(route('reports.saved.duplicate', $preset))
+            ->assertRedirect(route('reports.saved.index'));
+        $this->assertDatabaseHas('report_presets', [
+            'user_id' => $owner->id,
+            'title_en' => 'Team collections copy',
+            'visibility' => 'private',
+        ]);
+
+        $this->actingAs($foreignOwner)
+            ->post(route('reports.saved.duplicate', $preset))
+            ->assertNotFound();
+        $this->actingAs($foreignOwner)
+            ->get(route('reports.saved.edit', $preset))
+            ->assertForbidden();
     }
 
     public function test_report_filters_reject_invalid_ranges_and_foreign_portfolios(): void

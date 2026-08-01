@@ -38,12 +38,22 @@ final readonly class ReportPresetPresenter
             'visibility' => $preset->visibility,
             'is_default' => $preset->is_default,
             'can_delete' => $this->access->canDeletePreset($actor, $preset),
+            'can_edit' => $this->access->canEditPreset($actor, $preset),
+            'can_duplicate' => $this->access->canViewPreset($actor, $preset),
             'period' => $period,
             'date_from' => $dates['date_from'],
             'date_to' => $dates['date_to'],
             'scope_label' => $this->scopeLabel($actor, $stored),
-            'url' => route('reports.index', $stored),
-            'export_url' => route('reports.export', $stored),
+            'filters' => [
+                'period' => $period,
+                'date_from' => $dates['date_from'],
+                'date_to' => $dates['date_to'],
+                'portfolio_id' => $stored['portfolio_id'] ?? null,
+                'property_id' => $stored['property_id'] ?? null,
+            ],
+            'url' => route('reports.index', $stored, false),
+            'export_url' => route('reports.export', $stored, false),
+            'edit_url' => route('reports.saved.edit', $preset, false),
         ];
     }
 

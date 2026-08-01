@@ -2,16 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReportPreset;
-use App\Modules\Reports\Actions\ManageReportPresets;
 use App\Modules\Reports\Actions\ReportWorkbookExport;
 use App\Modules\Reports\Presenters\ReportPagePresenter;
 use App\Modules\Reports\Queries\PortfolioReportQuery;
 use App\Modules\Reports\Queries\ReportPresetQuery;
 use App\Modules\Reports\Requests\ReportIndexRequest;
-use App\Modules\Reports\Requests\StoreReportPresetRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -22,7 +18,6 @@ class ReportController extends Controller
         private readonly ReportPagePresenter $pagePresenter,
         private readonly PortfolioReportQuery $reports,
         private readonly ReportPresetQuery $presetQuery,
-        private readonly ManageReportPresets $presets,
         private readonly ReportWorkbookExport $workbook,
     ) {}
 
@@ -48,21 +43,6 @@ class ReportController extends Controller
             'admin/reports/index',
             $this->pagePresenter->present($actor, $request->filters()),
         );
-    }
-
-    public function storePreset(StoreReportPresetRequest $request): RedirectResponse
-    {
-        $preset = $this->presets->create($this->actor($request), $request->validated());
-
-        return to_route('reports.index', $preset->filters_json ?? [])
-            ->with('success', trans('app.messages.preset_saved'));
-    }
-
-    public function destroyPreset(Request $request, ReportPreset $reportPreset): RedirectResponse
-    {
-        $this->presets->delete($this->actor($request), $reportPreset);
-
-        return to_route('reports.index')->with('success', trans('app.messages.preset_removed'));
     }
 
     public function export(ReportIndexRequest $request): BinaryFileResponse

@@ -66,11 +66,24 @@
         grid-template-columns: 1fr;
     }
 
-    .pmc-report-preset-create {
+    .pmc-saved-report-form-grid {
         grid-template-columns: 1fr;
     }
 
-    .pmc-report-preset-actions > * {
+    .pmc-report-preset-actions > *,
+    .pmc-saved-report-form > footer > * {
         flex: 1 1 100%;
+    }
+
+    .pmc-saved-report-workspace > header,
+    .pmc-saved-report-empty,
+    .pmc-saved-report-form > footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-report-preset-menu > div {
+        inset-inline: 0;
+        width: auto;
     }
 }

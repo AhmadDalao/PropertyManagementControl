@@ -52,6 +52,8 @@ const primaryAdminRoutes = [
     '/system/showcase-data',
     '/system/readiness',
     '/reports',
+    '/reports/saved',
+    '/reports/saved/create',
     '/reports/statement',
     '/documentation',
 ] as const;
@@ -2321,18 +2323,28 @@ test.describe('authenticated administration', () => {
         await page.getByRole('button', { name: 'تطبيق', exact: true }).click();
         await expect(page).toHaveURL(/period=this_month/);
 
-        const savedViews = page.locator('.pmc-report-presets-compact');
-        await savedViews.locator('summary').click();
-        await savedViews
+        await page.getByRole('link', { name: 'حفظ التقرير الحالي' }).click();
+        await expect(page).toHaveURL(/\/reports\/saved\/create/);
+        await expect(page).toHaveURL(/period=this_month/);
+        await expect(page).toHaveURL(/property_id=\d+/);
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'إنشاء تقرير محفوظ',
+            }),
+        ).toBeVisible();
+        await expect(page.getByLabel('فترة التقرير')).toHaveValue('this_month');
+        await page
             .getByLabel('اسم العرض بالإنجليزية')
             .fill('Rolling property report');
-        await savedViews
+        await page
             .getByLabel('اسم العرض بالعربية')
             .fill('تقرير العقار المتجدد');
-        await savedViews
-            .getByRole('button', { name: 'حفظ التصفيات الحالية' })
-            .click();
-        const savedCard = savedViews
+        await page.getByRole('button', { name: 'إنشاء تقرير محفوظ' }).click();
+        await expect(page).toHaveURL(/\/reports\/saved$/);
+
+        const savedLibrary = page.locator('.pmc-saved-report-workspace');
+        const savedCard = savedLibrary
             .locator('.pmc-report-preset-list article')
             .filter({ hasText: 'تقرير العقار المتجدد' });
         await expect(savedCard).toBeVisible();
@@ -2347,8 +2359,62 @@ test.describe('authenticated administration', () => {
         expect((await savedWorkbook.body()).subarray(0, 2).toString()).toBe(
             'PK',
         );
-        await savedCard.getByRole('button', { name: 'إزالة' }).click();
-        await expect(savedCard).toHaveCount(0);
+        await savedCard.getByText('إدارة', { exact: true }).click();
+        await savedCard.getByRole('link', { name: 'تعديل' }).click();
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'تعديل التقرير المحفوظ',
+            }),
+        ).toBeVisible();
+        await page
+            .getByLabel('اسم العرض بالعربية')
+            .fill('تقرير العقار المتجدد المعدل');
+        await page
+            .getByRole('button', { name: 'تحديث التقرير المحفوظ' })
+            .click();
+
+        const updatedCard = page
+            .locator('.pmc-report-preset-list article')
+            .filter({
+                has: page.getByText('تقرير العقار المتجدد المعدل', {
+                    exact: true,
+                }),
+            });
+        await expect(updatedCard).toBeVisible();
+        await updatedCard.getByText('إدارة', { exact: true }).click();
+        await updatedCard.getByRole('button', { name: 'إنشاء نسخة' }).click();
+
+        const duplicateCard = page
+            .locator('.pmc-report-preset-list article')
+            .filter({
+                has: page.getByText('نسخة من تقرير العقار المتجدد المعدل', {
+                    exact: true,
+                }),
+            });
+        await expect(duplicateCard).toBeVisible();
+        await duplicateCard.getByText('إدارة', { exact: true }).click();
+        page.once('dialog', (dialog) => dialog.accept());
+        await duplicateCard.getByRole('button', { name: 'إزالة' }).click();
+        await expect(duplicateCard).toHaveCount(0);
+
+        const updatedMenu = updatedCard.locator('.pmc-report-preset-menu');
+
+        if ((await updatedMenu.getAttribute('open')) === null) {
+            await updatedCard.getByText('إدارة', { exact: true }).click();
+        }
+
+        page.once('dialog', (dialog) => dialog.accept());
+        await updatedCard.getByRole('button', { name: 'إزالة' }).click();
+        await expect(updatedCard).toHaveCount(0);
+        await expect(
+            page.getByRole('heading', {
+                name: 'لا توجد تقارير محفوظة بعد',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/reports?locale=ar&period=this_month');
 
         for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
             await page.getByRole('button', { name: tab, exact: true }).click();

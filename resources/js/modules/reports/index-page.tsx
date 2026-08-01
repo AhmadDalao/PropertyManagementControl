@@ -14,7 +14,6 @@ import { ReportFilters } from './report-filters';
 import { ReportLibrary } from './report-library';
 import { ReportOperations } from './report-operations';
 import { ReportOverview } from './report-overview';
-import { ReportPresets } from './report-presets';
 import { cleanReportFilters } from './report-query';
 import { isReportTab, ReportTabs } from './report-tabs';
 import type { ReportFilterValues, ReportsPageProps, ReportTab } from './types';
@@ -51,9 +50,9 @@ export default function ReportsIndexPage() {
     const exportHref = exportQuery
         ? `/reports/export?${exportQuery}`
         : '/reports/export';
-    const statementHref = exportQuery
-        ? `/reports/statement?${exportQuery}`
-        : '/reports/statement';
+    const saveReportHref = exportQuery
+        ? `/reports/saved/create?${exportQuery}`
+        : '/reports/saved/create';
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -90,15 +89,15 @@ export default function ReportsIndexPage() {
                 description={t('reports.description')}
                 actions={[
                     {
-                        label: t('reports.guide'),
-                        href: '/documentation',
-                        icon: 'bi-question-circle',
+                        label: t('reports.manage_saved_reports'),
+                        href: '/reports/saved',
+                        icon: 'bi-bookmark',
                         tone: 'quiet',
                     },
                     {
-                        label: t('reports.owner_statement'),
-                        href: statementHref,
-                        icon: 'bi-file-earmark-text',
+                        label: t('reports.save_current_report'),
+                        href: saveReportHref,
+                        icon: 'bi-bookmark',
                         tone: 'secondary',
                     },
                     {
@@ -135,13 +134,6 @@ export default function ReportsIndexPage() {
             {activeTab === 'operations' ? (
                 <ReportOperations props={props} />
             ) : null}
-
-            <ReportPresets
-                key={props.presetVisibilityOptions.join('-')}
-                filters={filters}
-                presets={props.savedPresets}
-                visibilityOptions={props.presetVisibilityOptions}
-            />
         </AdminLayout>
     );
 }

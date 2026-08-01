@@ -73,24 +73,77 @@ export function ReportPresetList({ presets }: { presets: ReportPreset[] }) {
                             />
                             {t('reports.download_saved_xlsx')}
                         </a>
-                        {preset.can_delete ? (
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    router.delete(
-                                        `/reports/presets/${preset.id}`,
-                                        {
-                                            preserveScroll: true,
-                                        },
-                                    )
-                                }
-                            >
-                                <i
-                                    className="bi bi-trash3"
-                                    aria-hidden="true"
-                                />
-                                {t('reports.remove')}
-                            </button>
+                        {preset.can_edit ||
+                        preset.can_duplicate ||
+                        preset.can_delete ? (
+                            <details className="pmc-report-preset-menu">
+                                <summary>
+                                    <i
+                                        className="bi bi-three-dots"
+                                        aria-hidden="true"
+                                    />
+                                    {t('reports.manage_saved_report')}
+                                </summary>
+                                <div>
+                                    {preset.can_edit ? (
+                                        <Link href={preset.edit_url}>
+                                            <i
+                                                className="bi bi-pencil"
+                                                aria-hidden="true"
+                                            />
+                                            {t('actions.edit')}
+                                        </Link>
+                                    ) : null}
+                                    {preset.can_duplicate ? (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                router.post(
+                                                    `/reports/saved/${preset.id}/duplicate`,
+                                                    {},
+                                                    {
+                                                        preserveScroll: true,
+                                                    },
+                                                )
+                                            }
+                                        >
+                                            <i
+                                                className="bi bi-copy"
+                                                aria-hidden="true"
+                                            />
+                                            {t('reports.duplicate')}
+                                        </button>
+                                    ) : null}
+                                    {preset.can_delete ? (
+                                        <button
+                                            type="button"
+                                            className="is-danger"
+                                            onClick={() => {
+                                                if (
+                                                    window.confirm(
+                                                        t(
+                                                            'reports.remove_saved_confirm',
+                                                        ),
+                                                    )
+                                                ) {
+                                                    router.delete(
+                                                        `/reports/saved/${preset.id}`,
+                                                        {
+                                                            preserveScroll: true,
+                                                        },
+                                                    );
+                                                }
+                                            }}
+                                        >
+                                            <i
+                                                className="bi bi-trash3"
+                                                aria-hidden="true"
+                                            />
+                                            {t('reports.remove')}
+                                        </button>
+                                    ) : null}
+                                </div>
+                            </details>
                         ) : null}
                     </div>
                 </article>

@@ -15,11 +15,17 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(90, substr_count($source, "\n") + 1);
         $this->assertStringContainsString('ReportPagePresenter', $source);
         $this->assertStringContainsString('PortfolioReportQuery', $source);
-        $this->assertStringContainsString('ManageReportPresets', $source);
         $this->assertStringContainsString('ReportWorkbookExport', $source);
         $this->assertStringNotContainsString('Payment::query()', $source);
         $this->assertStringNotContainsString('ReportPreset::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
+
+        $presets = $this->source($this->path('app/Http/Controllers/ReportPresetController.php'));
+        $this->assertLessThanOrEqual(80, substr_count($presets, "\n") + 1);
+        $this->assertStringContainsString('ReportPresetPagePresenter', $presets);
+        $this->assertStringContainsString('ManageReportPresets', $presets);
+        $this->assertStringNotContainsString('ReportPreset::query()', $presets);
+        $this->assertStringNotContainsString('->validate([', $presets);
 
         $statement = $this->source($this->path('app/Http/Controllers/ReportStatementController.php'));
         $this->assertLessThanOrEqual(60, substr_count($statement, "\n") + 1);
@@ -43,16 +49,22 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(160, substr_count($source, "\n") + 1);
         $this->assertStringContainsString("from './report-filters'", $source);
         $this->assertStringContainsString("from './report-overview'", $source);
-        $this->assertStringContainsString("from './report-presets'", $source);
+        $this->assertStringNotContainsString("from './report-presets'", $source);
         $this->assertStringContainsString("from './types'", $source);
         $this->assertStringNotContainsString('function BreakdownBars', $source);
+
+        $savedForm = $this->source($this->path('resources/js/modules/reports/saved-report-form-page.tsx'));
+        $this->assertLessThanOrEqual(135, substr_count($savedForm, "\n") + 1);
+        $this->assertStringContainsString("from './saved-report-identity-section'", $savedForm);
+        $this->assertStringContainsString("from './saved-report-scope-section'", $savedForm);
+        $this->assertStringContainsString("from './saved-report-form-actions'", $savedForm);
     }
 
     #[Test]
     public function report_query_and_saved_view_shell_delegate_bounded_responsibilities(): void
     {
         $query = $this->source($this->path('app/Modules/Reports/Queries/PortfolioReportQuery.php'));
-        $presets = $this->source($this->path('resources/js/modules/reports/report-presets.tsx'));
+        $presets = $this->source($this->path('resources/js/modules/reports/saved-reports-page.tsx'));
 
         $this->assertLessThanOrEqual(70, substr_count($query, "\n") + 1);
         $this->assertStringContainsString('PortfolioReportDatasetQuery', $query);
@@ -62,8 +74,7 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('Payment::query()', $query);
         $this->assertStringNotContainsString('->groupBy(', $query);
 
-        $this->assertLessThanOrEqual(60, substr_count($presets, "\n") + 1);
-        $this->assertStringContainsString("from './report-preset-form'", $presets);
+        $this->assertLessThanOrEqual(85, substr_count($presets, "\n") + 1);
         $this->assertStringContainsString("from './report-preset-list'", $presets);
         $this->assertStringNotContainsString('useForm(', $presets);
         $this->assertStringNotContainsString('router.delete(', $presets);
@@ -101,6 +112,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
             'app/Modules/Reports/Presenters/ReportPagePresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetPagePresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetPresenter.php',
             'app/Modules/Reports/Presenters/OwnerStatementPresenter.php',
             'app/Modules/Reports/Presenters/ReportChartsPresenter.php',
@@ -119,6 +131,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
             'app/Modules/Reports/Requests/PropertyReportRequest.php',
             'app/Modules/Reports/Requests/StoreReportPresetRequest.php',
+            'app/Modules/Reports/Requests/UpdateReportPresetRequest.php',
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
             'app/Modules/Reports/Support/ReportPeriod.php',
@@ -135,9 +148,14 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/report-journal.tsx',
             'resources/js/modules/reports/report-operations.tsx',
             'resources/js/modules/reports/report-overview.tsx',
-            'resources/js/modules/reports/report-preset-form.tsx',
             'resources/js/modules/reports/report-preset-list.tsx',
-            'resources/js/modules/reports/report-presets.tsx',
+            'resources/js/modules/reports/saved-report-form-actions.tsx',
+            'resources/js/modules/reports/saved-report-form-page.tsx',
+            'resources/js/modules/reports/saved-report-identity-section.tsx',
+            'resources/js/modules/reports/saved-report-period-fields.tsx',
+            'resources/js/modules/reports/saved-report-property-fields.tsx',
+            'resources/js/modules/reports/saved-report-scope-section.tsx',
+            'resources/js/modules/reports/saved-reports-page.tsx',
             'resources/js/modules/reports/report-tabs.tsx',
             'resources/js/modules/reports/report-visuals.tsx',
             'resources/js/modules/reports/property-report-context.tsx',

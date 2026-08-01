@@ -126,12 +126,22 @@ export type ReportPreset = {
     visibility: PresetVisibility;
     is_default: boolean;
     can_delete: boolean;
+    can_edit: boolean;
+    can_duplicate: boolean;
     period: ReportPeriod;
     date_from: string;
     date_to: string;
     scope_label: string;
+    filters: {
+        period: ReportPeriod;
+        date_from: string;
+        date_to: string;
+        portfolio_id?: number | null;
+        property_id?: number | null;
+    };
     url: string;
     export_url: string;
+    edit_url: string;
 };
 
 export type ReportDataProps = SharedProps & {
@@ -193,9 +203,33 @@ export type ReportsPageProps = ReportDataProps & {
         portfolio_id: number;
         name: string;
     }>;
-    presetVisibilityOptions: PresetVisibility[];
-    savedPresets: ReportPreset[];
     reportLibrary: ReportLibraryGroup[];
+};
+
+export type SavedReportsPageProps = SharedProps & {
+    savedPresets: ReportPreset[];
+};
+
+export type SavedReportFormData = {
+    resource: 'portfolio-report';
+    title_en: string;
+    title_ar: string;
+    visibility: PresetVisibility;
+    is_default: boolean;
+    filters_json: Record<string, string>;
+};
+
+export type SavedReportFormPageProps = SharedProps & {
+    mode: 'create' | 'edit';
+    preset: ReportPreset | null;
+    filters: ReportDataProps['filters'];
+    portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: Array<{
+        id: number;
+        portfolio_id: number;
+        name: string;
+    }>;
+    visibilityOptions: PresetVisibility[];
 };
 
 export type OwnerStatementPageProps = ReportDataProps & {

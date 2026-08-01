@@ -55,13 +55,53 @@ class ReportAccess
 
     public function canDeletePreset(User $actor, ReportPreset $preset): bool
     {
-        return $actor->hasRole('superadmin')
+        return $preset->resource === 'portfolio-report'
+            && (
+                $actor->hasRole('superadmin')
             || $preset->user_id === $actor->id
             || (
                 $actor->hasRole('owner')
                 && $preset->visibility === 'portfolio'
                 && $preset->portfolio_id === $actor->portfolio_id
+            )
             );
+    }
+
+    public function canViewPreset(User $actor, ReportPreset $preset): bool
+    {
+        if ($preset->resource !== 'portfolio-report') {
+            return false;
+        }
+
+        if ($preset->user_id === $actor->id) {
+            return true;
+        }
+
+        if ($preset->visibility === 'global' && $preset->portfolio_id === null) {
+            return true;
+        }
+
+        return $actor->portfolio_id !== null
+            && $preset->visibility === 'portfolio'
+            && $preset->portfolio_id === $actor->portfolio_id;
+    }
+
+    public function canEditPreset(User $actor, ReportPreset $preset): bool
+    {
+        return $preset->resource === 'portfolio-report'
+            && ($actor->hasRole('superadmin') || $preset->user_id === $actor->id);
+    }
+
+    public function ensureCanViewPreset(User $actor, ReportPreset $preset): void
+    {
+        $this->ensureManager($actor);
+        abort_unless($this->canViewPreset($actor, $preset), 404);
+    }
+
+    public function ensureCanEditPreset(User $actor, ReportPreset $preset): void
+    {
+        $this->ensureManager($actor);
+        abort_unless($this->canEditPreset($actor, $preset), 403, trans('app.errors.section_access_denied'));
     }
 
     public function ensureCanDeletePreset(User $actor, ReportPreset $preset): void

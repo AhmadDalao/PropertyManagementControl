@@ -263,6 +263,8 @@ $authChecks = [
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',
+    '/reports/saved' => 'admin/reports/saved',
+    '/reports/saved/create' => 'admin/reports/saved-form',
     '/reports/statement' => 'admin/reports/statement',
 ];
 

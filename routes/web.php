@@ -40,6 +40,7 @@ use App\Http\Controllers\PropertyReportController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ReportPresetController;
 use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemReadinessController;
@@ -231,13 +232,20 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/saved', [ReportPresetController::class, 'index'])->name('reports.saved.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/saved/create', [ReportPresetController::class, 'create'])->name('reports.saved.create')->middleware('portfolio.module:reports');
+    Route::post('/reports/saved', [ReportPresetController::class, 'store'])->name('reports.saved.store')->middleware('portfolio.module:reports');
+    Route::get('/reports/saved/{reportPreset}/edit', [ReportPresetController::class, 'edit'])->name('reports.saved.edit')->middleware('portfolio.module:reports');
+    Route::put('/reports/saved/{reportPreset}', [ReportPresetController::class, 'update'])->name('reports.saved.update')->middleware('portfolio.module:reports');
+    Route::post('/reports/saved/{reportPreset}/duplicate', [ReportPresetController::class, 'duplicate'])->name('reports.saved.duplicate')->middleware('portfolio.module:reports');
+    Route::delete('/reports/saved/{reportPreset}', [ReportPresetController::class, 'destroy'])->name('reports.saved.destroy')->middleware('portfolio.module:reports');
     Route::get('/reports/properties/{asset}', PropertyReportController::class)->name('reports.properties.show')->middleware('portfolio.module:reports');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
     Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.docx', [ReportStatementController::class, 'word'])->name('reports.statement.word')->middleware('portfolio.module:reports');
-    Route::post('/reports/presets', [ReportController::class, 'storePreset'])->name('reports.presets.store')->middleware('portfolio.module:reports');
-    Route::delete('/reports/presets/{reportPreset}', [ReportController::class, 'destroyPreset'])->name('reports.presets.destroy')->middleware('portfolio.module:reports');
+    Route::post('/reports/presets', [ReportPresetController::class, 'store'])->name('reports.presets.store')->middleware('portfolio.module:reports');
+    Route::delete('/reports/presets/{reportPreset}', [ReportPresetController::class, 'destroy'])->name('reports.presets.destroy')->middleware('portfolio.module:reports');
     Route::resource('documents', DocumentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:documents')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download')->middleware('portfolio.module:documents');
 

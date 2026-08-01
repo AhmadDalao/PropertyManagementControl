@@ -44,7 +44,7 @@ class ReportPresetQuery
                     });
                 }
             })
-            ->latest()
+            ->latest('id')
             ->get()
             ->filter(fn (ReportPreset $preset): bool => $this->accessible($actor, $preset))
             ->map(fn (ReportPreset $preset): array => $this->presenter->present($actor, $preset))
