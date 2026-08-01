@@ -82,6 +82,25 @@ export function WordingFiltersPanel({
                     </option>
                 </select>
             </label>
+            <label>
+                <span>{t('wording.rows_per_page')}</span>
+                <select
+                    className="form-select"
+                    value={filters.perPage}
+                    onChange={(event) =>
+                        onApply({
+                            per_page: Number(event.currentTarget.value),
+                            page: 1,
+                        })
+                    }
+                >
+                    {[10, 25, 50, 100].map((pageSize) => (
+                        <option key={pageSize} value={pageSize}>
+                            {pageSize}
+                        </option>
+                    ))}
+                </select>
+            </label>
             <button type="submit" className="btn btn-primary">
                 <i className="bi bi-funnel" />
                 {t('actions.filter')}

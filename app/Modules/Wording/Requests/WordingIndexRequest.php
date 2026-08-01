@@ -19,7 +19,7 @@ class WordingIndexRequest extends FormRequest
             'search' => trim((string) $this->query('search', '')),
             'group' => trim((string) $this->query('group', 'all')),
             'state' => trim((string) $this->query('state', 'all')),
-            'per_page' => (int) $this->query('per_page', 25),
+            'per_page' => (int) $this->query('per_page', 10),
             'page' => (int) $this->query('page', 1),
             'content_module' => trim((string) $this->query('content_module', 'all')),
         ]);

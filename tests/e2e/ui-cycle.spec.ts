@@ -2660,6 +2660,11 @@ test.describe('authenticated administration', () => {
         await page.setViewportSize(viewports.mobile);
         await page.goto('/wording');
         await expect(page.locator('.pmc-wording-row').first()).toBeVisible();
+        await expect(page.locator('.pmc-wording-row')).toHaveCount(10);
+        await expect(page.getByLabel('Rows per page')).toHaveValue('10');
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(3200);
         await page.locator('.pmc-wording-row').first().click();
 
         const editor = page.locator('.pmc-wording-editor[role="dialog"]');
@@ -2676,8 +2681,13 @@ test.describe('authenticated administration', () => {
             await page.locator('body').evaluate((node) => node.style.overflow),
         ).not.toBe('hidden');
 
+        await page.getByLabel('Rows per page').selectOption('25');
+        await expect(page).toHaveURL(/per_page=25/);
+        await expect(page.locator('.pmc-wording-row')).toHaveCount(25);
+
         await page.goto('/wording?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(page.getByLabel('عدد الصفوف في الصفحة')).toHaveValue('10');
         await page.getByRole('button', { name: /ترجمة المحتوى/ }).click();
         await expect(
             page.getByRole('button', { name: /المحافظ/ }),

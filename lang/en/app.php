@@ -3014,6 +3014,7 @@ return [
         'area' => 'Page area',
         'all_areas' => 'All page areas',
         'showing' => ':count labels shown',
+        'rows_per_page' => 'Rows per page',
         'english' => 'English wording',
         'arabic' => 'Arabic wording',
         'system_default' => 'System default',

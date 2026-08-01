@@ -71,6 +71,8 @@ class LocalizationAndWordingTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/wording/index')
                 ->has('entries')
+                ->where('entries.per_page', 10)
+                ->where('filters.perPage', 10)
                 ->where('groups', fn (mixed $groups): bool => $groups instanceof Collection
                     ? $groups->contains('nav')
                     : is_array($groups) && in_array('nav', $groups, true))
