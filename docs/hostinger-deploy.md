@@ -59,6 +59,23 @@ Configure a working Hostinger SMTP mailbox before enabling password recovery for
 ## Deploy steps
 
 1. Upload or deploy the repository contents, including `vendor/` and `public/build/` when the target does not build dependencies itself.
+
+For an exact release archive, do not let tar replace the live application
+directory's permissions. Temporary staging directories created by `mktemp`
+normally use mode `0700`; applying that mode to the web root makes LiteSpeed
+return static `403`/`404` responses before Laravel runs. Extract with:
+
+```bash
+tar --no-overwrite-dir -xzf /home/<hostinger-account>/property-release.tar.gz \
+    -C /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
+chmod 755 /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
+stat -c '%a' /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
+```
+
+The final command must print `755`. Keep the application in maintenance mode
+during extraction and always register a cleanup path that runs
+`php artisan up` when a release command fails.
+
 2. Rebuild Composer's production autoloader after every PHP source deployment. The production autoloader is authoritative, so newly added application classes otherwise cause HTTP 500 responses.
 3. Set correct file permissions for `storage/` and `bootstrap/cache/`.
 4. Create the production `.env` and run `php artisan key:generate --force` only on the first deployment. Never rotate `APP_KEY` during a routine release.
@@ -76,7 +93,7 @@ If dependencies are uploaded instead of installed on Hostinger, run `composer du
 
 The Composer lifecycle clears Laravel's generated package manifest before rebuilding the autoloader. This prevents development-only providers from a previous local build being loaded during a production `--no-dev` deployment. Do not bypass Composer scripts when preparing a release.
 
-6. Verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
+6. Require `https://property.ahmaddalao.com/up` to return HTTP `200` before running the authenticated smoke cycle. Then verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
 
 ## Cron
 
