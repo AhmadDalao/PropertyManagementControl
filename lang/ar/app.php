@@ -1744,6 +1744,7 @@ return [
         'resolution_summary_help' => 'مطلوب عند إغلاق الطلب. وضّح العمل المنجز والنتيجة التي يجب على المستأجر التحقق منها.',
         'tenant_confirmation' => 'اعتماد المستأجر',
         'pending_confirmation' => 'بانتظار اعتماد المستأجر',
+        'pending_confirmations' => ':count بانتظار اعتماد المستأجر',
         'confirmed' => 'مؤكد',
         'confirmed_at' => 'تم التأكيد في :date',
         'not_ready' => 'غير جاهز',

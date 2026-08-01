@@ -47,8 +47,8 @@ export function MaintenanceMetrics({
                 {
                     label: t('maintenance.overdue'),
                     value: insights.overdue,
-                    detail: t('maintenance.resolved', undefined, {
-                        count: insights.resolved,
+                    detail: t('maintenance.pending_confirmations', undefined, {
+                        count: insights.pending_confirmation,
                     }),
                     icon: 'bi-clock-history',
                     tone: insights.overdue > 0 ? 'amber' : 'blue',

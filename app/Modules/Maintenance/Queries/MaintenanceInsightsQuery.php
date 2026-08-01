@@ -19,6 +19,7 @@ class MaintenanceInsightsQuery
             ->selectRaw("SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) as open_count")
             ->selectRaw("SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END) as in_progress_count")
             ->selectRaw("SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END) as resolved_count")
+            ->selectRaw("SUM(CASE WHEN status = 'resolved' AND tenant_confirmed_at IS NULL THEN 1 ELSE 0 END) as pending_confirmation_count")
             ->selectRaw("SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) as cancelled_count")
             ->selectRaw("SUM(CASE WHEN status IN ('open', 'in_progress') AND priority = 'urgent' THEN 1 ELSE 0 END) as urgent_count")
             ->selectRaw(
@@ -33,6 +34,7 @@ class MaintenanceInsightsQuery
             'open' => (int) ($summary?->getAttribute('open_count') ?? 0),
             'in_progress' => (int) ($summary?->getAttribute('in_progress_count') ?? 0),
             'resolved' => (int) ($summary?->getAttribute('resolved_count') ?? 0),
+            'pending_confirmation' => (int) ($summary?->getAttribute('pending_confirmation_count') ?? 0),
             'cancelled' => (int) ($summary?->getAttribute('cancelled_count') ?? 0),
             'urgent' => (int) ($summary?->getAttribute('urgent_count') ?? 0),
             'overdue' => (int) ($summary?->getAttribute('overdue_count') ?? 0),

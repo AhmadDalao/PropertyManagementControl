@@ -102,6 +102,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Presenters/MaintenanceDetailPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceFormOptionPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceProgressPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceQueueCounts.php',
             'app/Modules/Maintenance/Presenters/MaintenanceRelatedPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceResolutionFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceTableRowPresenter.php',

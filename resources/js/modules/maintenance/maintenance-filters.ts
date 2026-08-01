@@ -27,6 +27,17 @@ export function useMaintenanceFilterFields({
 
     const fields: TableFilterField[] = [
         selectField('status', t('maintenance.status'), statuses, t),
+        {
+            name: 'confirmation',
+            label: t('maintenance.tenant_confirmation'),
+            options: [
+                { label: t('maintenance.all'), value: 'all' },
+                {
+                    label: t('maintenance.pending_confirmation'),
+                    value: 'pending',
+                },
+            ],
+        },
         selectField('category', t('maintenance.category'), categories, t),
         selectField('priority', t('maintenance.priority'), priorities, t),
         { name: 'date_from', label: t('maintenance.from'), type: 'date' },

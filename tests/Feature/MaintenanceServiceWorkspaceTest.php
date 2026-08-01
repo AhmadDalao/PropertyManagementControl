@@ -6,8 +6,10 @@ use App\Models\Asset;
 use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Modules\Maintenance\Actions\ManageMaintenance;
+use App\Modules\Maintenance\Queries\MaintenanceIndexQuery;
 use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
@@ -88,6 +90,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('requests.data.0.assigned_to.name', 'Service Manager')
                 ->where('requests.data.0.expense_total', 350)
                 ->where('requests.data.0.is_overdue', false)
+                ->where('requests.data.0.awaiting_confirmation', false)
                 ->where('requests.data.0', fn ($row) => collect($row)->only([
                     'description',
                     'internal_notes',
@@ -533,11 +536,86 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                 ->where('maintenanceInsights.open', 1)
                 ->where('maintenanceInsights.in_progress', 1)
                 ->where('maintenanceInsights.resolved', 1)
+                ->where('maintenanceInsights.pending_confirmation', 1)
                 ->where('maintenanceInsights.cancelled', 1)
                 ->where('maintenanceInsights.urgent', 1)
                 ->where('maintenanceInsights.overdue', 1)
                 ->where('maintenanceInsights.unassigned', 1)
                 ->where('maintenanceInsights.posted_expenses', 125));
+    }
+
+    public function test_pending_tenant_confirmation_is_visible_and_filterable_for_management_and_tenant(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $asset = $this->createAsset($portfolio);
+        $pending = $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+            ['status' => 'resolved', 'title' => 'Awaiting sign-off'],
+        );
+        $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+            [
+                'status' => 'resolved',
+                'title' => 'Already confirmed',
+                'tenant_confirmed_at' => now(),
+            ],
+        );
+        $this->maintenanceRecord(
+            $portfolio->id,
+            $asset->id,
+            $tenant->id,
+            $tenantUser->id,
+            ['status' => 'open', 'title' => 'Still active'],
+        );
+
+        foreach ([$owner, $tenantUser] as $actor) {
+            $this->actingAs($actor)
+                ->get(route('maintenance-requests.index', ['confirmation' => 'pending']))
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('filters.confirmation', 'pending')
+                    ->where('requests.total', 1)
+                    ->where('requests.data.0.id', $pending->id)
+                    ->where('requests.data.0.awaiting_confirmation', true)
+                    ->where('maintenanceInsights.pending_confirmation', 1)
+                    ->where('counts', fn ($counts) => collect($counts)->contains(
+                        fn ($count) => $count['label'] === 'Awaiting tenant confirmation'
+                            && $count['value'] === 1
+                            && $count['active'] === true
+                            && $count['filter'] === [
+                                'status' => 'all',
+                                'confirmation' => 'pending',
+                            ],
+                    )));
+        }
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.index', ['confirmation' => 'invalid']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.confirmation', 'all')
+                ->where('requests.total', 3));
+
+        $exportIds = app(MaintenanceIndexQuery::class)
+            ->forExport(
+                Request::create('/exports/maintenance-requests', 'GET', [
+                    'confirmation' => 'pending',
+                ]),
+                $owner,
+            )
+            ->pluck('id')
+            ->all();
+
+        $this->assertSame([$pending->id], $exportIds);
     }
 
     public function test_arabic_create_and_detail_pages_use_structured_maintenance_copy(): void
@@ -569,6 +647,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
                     'قيد التنفيذ',
                     'تم الحل',
                     'ملغي',
+                    'بانتظار اعتماد المستأجر',
                 ]));
 
         $this->actingAs($owner)

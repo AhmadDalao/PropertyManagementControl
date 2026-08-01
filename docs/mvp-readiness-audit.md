@@ -19,6 +19,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Owners and managers compare every accessible property in one card-based Portfolio Control workspace, rank pressure by arrears, occupancy, collection, or cash flow, and continue directly into the selected property dashboard, Action Center, or reports.
 - Owners and managers open a dedicated Operating Report for one authorized top-level property, keep its hierarchy, ownership, occupancy, period finances, maintenance, and source queues in context, and download the same scope as PDF, DOCX, or XLSX.
 - Lease, payment, maintenance, and expense details expose a role-aware Next Step panel instead of hiding lifecycle actions across edit forms and index menus.
+- Maintenance stays accountable after management marks work resolved: tenant sign-off or reopen actions, service-report PDFs, and a shared “awaiting tenant confirmation” queue/filter keep unresolved handoffs visible to both sides and to scoped XLSX exports.
 - Public pages, authentication, admin, forms, tables, reports, documentation, CMS, map, validation, and statuses support English and Arabic with RTL rendering.
 
 ## UI and scale evidence

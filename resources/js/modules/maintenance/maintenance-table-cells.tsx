@@ -89,6 +89,13 @@ export function MaintenanceStatusDue({ request }: MaintenanceCellProps) {
     return (
         <div className="pmc-stacked-cell">
             <StatusBadge value={request.status} />
+            {request.awaiting_confirmation ? (
+                <StatusBadge
+                    value="pending"
+                    tone="warning"
+                    label={t('maintenance.pending_confirmation')}
+                />
+            ) : null}
             <span>
                 {t('maintenance.due_label')} {humanDate(request.due_at, locale)}
             </span>

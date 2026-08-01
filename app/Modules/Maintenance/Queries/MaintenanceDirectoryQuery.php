@@ -25,14 +25,20 @@ class MaintenanceDirectoryQuery
     /** @return array<string, mixed> */
     public function filters(Request $request): array
     {
-        return $this->tables->filters($request, [
+        $filters = $this->tables->filters($request, [
             'status' => 'all',
+            'confirmation' => 'all',
             'category' => 'all',
             'priority' => 'all',
             'date_from' => '',
             'date_to' => '',
             'property_id' => 'all',
         ]);
+        $filters['confirmation'] = in_array($filters['confirmation'], ['all', 'pending'], true)
+            ? $filters['confirmation']
+            : 'all';
+
+        return $filters;
     }
 
     /** @return Builder<MaintenanceRequest> */
@@ -74,6 +80,7 @@ class MaintenanceDirectoryQuery
             'requested_at',
             'due_at',
             'resolved_at',
+            'tenant_confirmed_at',
             'created_at',
         ])->with([
             'asset:id,portfolio_id,title_en,title_ar,code',
@@ -182,6 +189,12 @@ class MaintenanceDirectoryQuery
     {
         foreach (['status', 'category', 'priority'] as $filter) {
             $this->tables->exact($query, $filters, $filter);
+        }
+
+        if (($filters['confirmation'] ?? 'all') === 'pending') {
+            $query
+                ->where('status', 'resolved')
+                ->whereNull('tenant_confirmed_at');
         }
 
         $this->tables->dateRange($query, $filters, 'created_at');

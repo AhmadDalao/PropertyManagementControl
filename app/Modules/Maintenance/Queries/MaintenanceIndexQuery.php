@@ -5,10 +5,10 @@ namespace App\Modules\Maintenance\Queries;
 use App\Models\MaintenanceRequest;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
+use App\Modules\Maintenance\Presenters\MaintenanceQueueCounts;
 use App\Modules\Maintenance\Presenters\MaintenanceTableRowPresenter;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
 use App\Modules\Portfolios\Support\PortfolioModules;
-use App\Modules\Shared\LocalizedStatusCounts;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,7 +23,7 @@ class MaintenanceIndexQuery
         private readonly PortfolioScope $portfolios,
         private readonly PropertyScope $properties,
         private readonly TableQuery $tables,
-        private readonly LocalizedStatusCounts $statusCounts,
+        private readonly MaintenanceQueueCounts $counts,
     ) {}
 
     /** @return array<string, mixed> */
@@ -64,10 +64,7 @@ class MaintenanceIndexQuery
             'maintenanceInsights' => $this->insights->get($summaryQuery, $financialsEnabled),
             'financialsEnabled' => $financialsEnabled,
             'filters' => $filters,
-            'counts' => $this->statusCounts->present(
-                $this->tables->statusCounts($summaryQuery, MaintenanceOptions::STATUSES, $filters),
-                'app.maintenance.all',
-            ),
+            'counts' => $this->counts->present($summaryQuery, $filters),
             'categoryOptions' => MaintenanceOptions::CATEGORIES,
             'priorityOptions' => MaintenanceOptions::PRIORITIES,
             'statusOptions' => MaintenanceOptions::STATUSES,

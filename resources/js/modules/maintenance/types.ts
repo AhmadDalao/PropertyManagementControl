@@ -15,6 +15,7 @@ export type MaintenanceRecord = {
     created_at: string;
     due_at?: string | null;
     is_overdue: boolean;
+    awaiting_confirmation: boolean;
     assigned_to?: { id: number; name: string } | null;
     asset?: {
         id: number;
@@ -34,6 +35,7 @@ export type MaintenanceInsights = {
     open: number;
     in_progress: number;
     resolved: number;
+    pending_confirmation: number;
     cancelled: number;
     urgent: number;
     overdue: number;

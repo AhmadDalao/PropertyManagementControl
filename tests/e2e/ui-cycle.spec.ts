@@ -1597,6 +1597,14 @@ test.describe('authenticated administration', () => {
         const cardCount = await cards.count();
         expect(cardCount).toBeGreaterThan(0);
         expect(cardCount).toBeLessThanOrEqual(10);
+        const pendingSignoff = page.getByRole('button', {
+            name: /بانتظار اعتماد المستأجر/,
+        });
+        await expect(pendingSignoff).toBeVisible();
+        await pendingSignoff.click();
+        await expect(page).toHaveURL(/confirmation=pending/);
+        expect(await cards.count()).toBeGreaterThan(0);
+        await expect(cards.first()).toContainText('بانتظار اعتماد المستأجر');
         await expect(page.locator('body')).not.toContainText('maintenance.');
         await expectNoHorizontalOverflow(page);
 

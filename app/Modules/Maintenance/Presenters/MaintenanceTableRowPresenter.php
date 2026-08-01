@@ -22,6 +22,8 @@ class MaintenanceTableRowPresenter
             'is_overdue' => $request->due_at
                 ? $request->due_at->isPast() && ! in_array($request->status, ['resolved', 'cancelled'], true)
                 : false,
+            'awaiting_confirmation' => $request->status === 'resolved'
+                && $request->tenant_confirmed_at === null,
             'assigned_to' => $request->assignedTo ? [
                 'id' => $request->assignedTo->id,
                 'name' => $request->assignedTo->name,

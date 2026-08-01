@@ -1744,6 +1744,7 @@ return [
         'resolution_summary_help' => 'Required when resolving. Explain the work completed and the result the tenant should verify.',
         'tenant_confirmation' => 'Tenant confirmation',
         'pending_confirmation' => 'Awaiting tenant confirmation',
+        'pending_confirmations' => ':count awaiting tenant sign-off',
         'confirmed' => 'Confirmed',
         'confirmed_at' => 'Confirmed :date',
         'not_ready' => 'Not ready',
