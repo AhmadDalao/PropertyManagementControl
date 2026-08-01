@@ -66,8 +66,11 @@
         grid-template-columns: 1fr;
     }
 
-    .pmc-report-preset-create,
-    .pmc-report-preset-list article {
+    .pmc-report-preset-create {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-report-preset-actions > * {
+        flex: 1 1 100%;
     }
 }

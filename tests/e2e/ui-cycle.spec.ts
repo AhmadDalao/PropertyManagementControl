@@ -2301,6 +2301,12 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('#report-filter-panel')).toBeVisible();
         await expect(page.getByLabel('التاريخ من')).toBeVisible();
         await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+        await page.getByLabel('فترة التقرير').selectOption('this_month');
+        await expect(page.getByLabel('التاريخ من')).toHaveCount(0);
+        await expect(page.getByLabel('التاريخ إلى')).toHaveCount(0);
+        await expect(
+            page.getByText('تتحدث التواريخ تلقائياً كلما تم فتح هذا التقرير.'),
+        ).toBeVisible();
         await page.getByTestId('report-property-filter').click();
         await page.locator('[data-property-scope-search]').fill('Rose');
         await expect(
@@ -2312,6 +2318,37 @@ test.describe('authenticated administration', () => {
             .locator('[data-property-scope-option]')
             .filter({ hasText: 'ROSE-TOWER' })
             .click();
+        await page.getByRole('button', { name: 'تطبيق', exact: true }).click();
+        await expect(page).toHaveURL(/period=this_month/);
+
+        const savedViews = page.locator('.pmc-report-presets-compact');
+        await savedViews.locator('summary').click();
+        await savedViews
+            .getByLabel('اسم العرض بالإنجليزية')
+            .fill('Rolling property report');
+        await savedViews
+            .getByLabel('اسم العرض بالعربية')
+            .fill('تقرير العقار المتجدد');
+        await savedViews
+            .getByRole('button', { name: 'حفظ التصفيات الحالية' })
+            .click();
+        const savedCard = savedViews
+            .locator('.pmc-report-preset-list article')
+            .filter({ hasText: 'تقرير العقار المتجدد' });
+        await expect(savedCard).toBeVisible();
+        await expect(savedCard).toContainText('هذا الشهر');
+        await expect(savedCard).toContainText('ROSE-TOWER');
+        const savedWorkbookHref = await savedCard
+            .getByRole('link', { name: 'تنزيل XLSX' })
+            .getAttribute('href');
+        expect(savedWorkbookHref).toContain('period=this_month');
+        const savedWorkbook = await page.request.get(savedWorkbookHref!);
+        expect(savedWorkbook.ok()).toBeTruthy();
+        expect((await savedWorkbook.body()).subarray(0, 2).toString()).toBe(
+            'PK',
+        );
+        await savedCard.getByRole('button', { name: 'إزالة' }).click();
+        await expect(savedCard).toHaveCount(0);
 
         for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
             await page.getByRole('button', { name: tab, exact: true }).click();

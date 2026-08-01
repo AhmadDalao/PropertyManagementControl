@@ -5,7 +5,7 @@ import { useTranslator } from '@/lib/i18n';
 import { PropertySelectionField } from '@/modules/shell/property-selection-field';
 import type { PropertyContext } from '@/types';
 
-import type { ReportFilterValues, ReportMode } from './types';
+import type { ReportFilterValues, ReportMode, ReportPeriod } from './types';
 
 type Props = {
     filters: ReportFilterValues;
@@ -69,33 +69,68 @@ export function ReportFilters({
                 onSubmit={onSubmit}
             >
                 <label>
-                    <span>{t('reports.date_from')}</span>
-                    <input
-                        type="date"
-                        className="form-control"
-                        value={filters.date_from}
+                    <span>{t('reports.period')}</span>
+                    <select
+                        className="form-select"
+                        value={filters.period}
                         onChange={(event) =>
                             onChange({
                                 ...filters,
-                                date_from: event.currentTarget.value,
+                                period: event.currentTarget
+                                    .value as ReportPeriod,
                             })
                         }
-                    />
+                    >
+                        {[
+                            'custom',
+                            'this_month',
+                            'last_month',
+                            'last_30_days',
+                            'year_to_date',
+                        ].map((period) => (
+                            <option key={period} value={period}>
+                                {t(`reports.period_${period}`)}
+                            </option>
+                        ))}
+                    </select>
                 </label>
-                <label>
-                    <span>{t('reports.date_to')}</span>
-                    <input
-                        type="date"
-                        className="form-control"
-                        value={filters.date_to}
-                        onChange={(event) =>
-                            onChange({
-                                ...filters,
-                                date_to: event.currentTarget.value,
-                            })
-                        }
-                    />
-                </label>
+                {filters.period === 'custom' ? (
+                    <>
+                        <label>
+                            <span>{t('reports.date_from')}</span>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={filters.date_from}
+                                onChange={(event) =>
+                                    onChange({
+                                        ...filters,
+                                        date_from: event.currentTarget.value,
+                                    })
+                                }
+                            />
+                        </label>
+                        <label>
+                            <span>{t('reports.date_to')}</span>
+                            <input
+                                type="date"
+                                className="form-control"
+                                value={filters.date_to}
+                                onChange={(event) =>
+                                    onChange({
+                                        ...filters,
+                                        date_to: event.currentTarget.value,
+                                    })
+                                }
+                            />
+                        </label>
+                    </>
+                ) : (
+                    <div className="pmc-report-period-note">
+                        <i className="bi bi-arrow-repeat" aria-hidden="true" />
+                        <span>{t('reports.rolling_period_help')}</span>
+                    </div>
+                )}
                 {mode === 'superadmin' ? (
                     <label>
                         <span>{t('reports.portfolio')}</span>

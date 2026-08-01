@@ -83,21 +83,78 @@
 
 .pmc-report-preset-list {
     display: grid;
-    gap: 0.45rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 0.75rem;
 }
 
 .pmc-report-preset-list article {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.65rem;
-    border-radius: 0.65rem;
-    background: #f6f6f7;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 0.85rem;
+    border: 1px solid #e7e2d8;
+    border-radius: 0.8rem;
+    background: #fff;
 }
 
-.pmc-report-preset-list article > div {
+.pmc-report-preset-list article > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    gap: 0.65rem;
+}
+
+.pmc-report-preset-list article > header > div {
     display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-report-preset-icon {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.65rem;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-report-preset-list dl {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-report-preset-list dl > div {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.65rem;
+}
+
+.pmc-report-preset-list dt {
+    color: #777169;
+    font-size: 0.65rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.pmc-report-preset-list dd {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+    margin: 0;
+    color: #171717;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-report-preset-list dd small {
+    color: #777169;
+    font-size: 0.64rem;
+    font-weight: 650;
 }
 
 .pmc-report-preset-list strong,
@@ -107,8 +164,35 @@
     font-size: 0.72rem;
 }
 
-.pmc-report-preset-list button {
-    border: 0;
-    background: transparent;
+.pmc-report-preset-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-top: auto;
+}
+
+.pmc-report-preset-actions a,
+.pmc-report-preset-actions button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid #ded8cc;
+    border-radius: 0.6rem;
+    background: #fff;
+    color: #171717;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pmc-report-preset-actions a:first-child {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-report-preset-actions button {
     color: #b23d29;
 }

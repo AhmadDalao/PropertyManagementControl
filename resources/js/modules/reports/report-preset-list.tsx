@@ -1,6 +1,7 @@
 import { Link, router } from '@inertiajs/react';
 
 import { useTranslator } from '@/lib/i18n';
+import { humanDate } from '@/lib/utils';
 
 import type { ReportPreset } from './types';
 
@@ -19,32 +20,79 @@ export function ReportPresetList({ presets }: { presets: ReportPreset[] }) {
         <div className="pmc-report-preset-list">
             {presets.map((preset) => (
                 <article key={preset.id}>
-                    <div>
-                        <strong>
-                            {locale === 'ar'
-                                ? preset.title_ar || preset.title_en
-                                : preset.title_en || preset.title_ar}
-                        </strong>
-                        <span>
-                            {t(`reports.visibility_${preset.visibility}`)}
-                            {preset.is_default
-                                ? ` · ${t('reports.default_view')}`
-                                : ''}
+                    <header>
+                        <span className="pmc-report-preset-icon">
+                            <i
+                                className="bi bi-bar-chart-line"
+                                aria-hidden="true"
+                            />
                         </span>
+                        <div>
+                            <strong>
+                                {locale === 'ar'
+                                    ? preset.title_ar || preset.title_en
+                                    : preset.title_en || preset.title_ar}
+                            </strong>
+                            <span>
+                                {t(`reports.visibility_${preset.visibility}`)}
+                                {preset.is_default
+                                    ? ` · ${t('reports.default_view')}`
+                                    : ''}
+                            </span>
+                        </div>
+                    </header>
+                    <dl>
+                        <div>
+                            <dt>{t('reports.report_period')}</dt>
+                            <dd>
+                                {t(`reports.period_${preset.period}`)}
+                                <small>
+                                    {humanDate(preset.date_from, locale)}
+                                    {' – '}
+                                    {humanDate(preset.date_to, locale)}
+                                </small>
+                            </dd>
+                        </div>
+                        <div>
+                            <dt>{t('reports.report_scope')}</dt>
+                            <dd>{preset.scope_label}</dd>
+                        </div>
+                    </dl>
+                    <div className="pmc-report-preset-actions">
+                        <Link href={preset.url}>
+                            <i
+                                className="bi bi-arrow-up-right"
+                                aria-hidden="true"
+                            />
+                            {t('reports.open_saved_view')}
+                        </Link>
+                        <a href={preset.export_url}>
+                            <i
+                                className="bi bi-file-earmark-excel"
+                                aria-hidden="true"
+                            />
+                            {t('reports.download_saved_xlsx')}
+                        </a>
+                        {preset.can_delete ? (
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    router.delete(
+                                        `/reports/presets/${preset.id}`,
+                                        {
+                                            preserveScroll: true,
+                                        },
+                                    )
+                                }
+                            >
+                                <i
+                                    className="bi bi-trash3"
+                                    aria-hidden="true"
+                                />
+                                {t('reports.remove')}
+                            </button>
+                        ) : null}
                     </div>
-                    <Link href={preset.url}>{t('actions.open')}</Link>
-                    {preset.can_delete ? (
-                        <button
-                            type="button"
-                            onClick={() =>
-                                router.delete(`/reports/presets/${preset.id}`, {
-                                    preserveScroll: true,
-                                })
-                            }
-                        >
-                            {t('reports.remove')}
-                        </button>
-                    ) : null}
                 </article>
             ))}
         </div>

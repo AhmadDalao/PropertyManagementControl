@@ -7,6 +7,7 @@ use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\ReportPreset;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -876,13 +877,115 @@ class ReportsManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('savedPresets', 1)
-                ->where('savedPresets.0.title_en', 'Arrears watch'));
+                ->where('savedPresets.0.title_en', 'Arrears watch')
+                ->where('savedPresets.0.period', 'custom')
+                ->where('savedPresets.0.date_from', '2026-01-01')
+                ->where('savedPresets.0.date_to', '2026-01-31')
+                ->where(
+                    'savedPresets.0.export_url',
+                    fn (string $url): bool => str_contains($url, '/reports/export')
+                        && str_contains($url, 'date_from=2026-01-01')
+                        && str_contains($url, 'date_to=2026-01-31'),
+                ));
 
         $this->actingAs($owner)
             ->delete(route('reports.presets.destroy', $preset))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('report_presets', ['id' => $preset->id]);
+    }
+
+    public function test_rolling_report_presets_follow_the_calendar_and_keep_the_property_scope(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'title_en' => 'Calendar Tower',
+            'title_ar' => 'برج التقويم',
+            'rentable' => false,
+        ]);
+
+        $this->travelTo(CarbonImmutable::parse('2026-08-15 12:00:00'));
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), [
+                'title_en' => 'Current month',
+                'title_ar' => 'الشهر الحالي',
+                'visibility' => 'private',
+                'is_default' => true,
+                'filters_json' => [
+                    'period' => 'this_month',
+                    'date_from' => '2020-01-01',
+                    'date_to' => '2020-01-31',
+                    'property_id' => $property->id,
+                ],
+            ])
+            ->assertRedirect();
+
+        $preset = ReportPreset::query()->firstOrFail();
+
+        $this->assertTrue($preset->is_default);
+        $this->assertSame([
+            'period' => 'this_month',
+            'property_id' => $property->id,
+        ], $preset->filters_json);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'period' => 'this_month',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.period', 'this_month')
+                ->where('filters.date_from', '2026-08-01')
+                ->where('filters.date_to', '2026-08-15')
+                ->where('savedPresets.0.period', 'this_month')
+                ->where('savedPresets.0.date_from', '2026-08-01')
+                ->where('savedPresets.0.date_to', '2026-08-15')
+                ->where(
+                    'savedPresets.0.scope_label',
+                    fn (string $label): bool => str_contains($label, 'Calendar Tower')
+                        && str_contains($label, $property->code),
+                )
+                ->where(
+                    'savedPresets.0.url',
+                    fn (string $url): bool => str_contains($url, 'period=this_month')
+                        && str_contains($url, 'property_id='.$property->id)
+                        && ! str_contains($url, 'date_from='),
+                )
+                ->where(
+                    'savedPresets.0.export_url',
+                    fn (string $url): bool => str_contains($url, '/reports/export')
+                        && str_contains($url, 'period=this_month')
+                        && str_contains($url, 'property_id='.$property->id)
+                        && ! str_contains($url, 'date_from='),
+                ));
+
+        $this->travelTo(CarbonImmutable::parse('2026-09-10 12:00:00'));
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'period' => 'this_month',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.date_from', '2026-09-01')
+                ->where('filters.date_to', '2026-09-10')
+                ->where('savedPresets.0.date_from', '2026-09-01')
+                ->where('savedPresets.0.date_to', '2026-09-10'));
+
+        $sheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)->get(route('reports.export', [
+                'period' => 'this_month',
+                'property_id' => $property->id,
+            ])),
+        );
+        $this->assertStringContainsString('Calendar Tower', $sheet);
+
+        $this->travelBack();
     }
 
     public function test_only_superadmin_can_create_global_report_presets(): void
@@ -922,6 +1025,9 @@ class ReportsManagementTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('savedPresets', 1)
                 ->where('savedPresets.0.title_en', 'Global finance view')
+                ->where('savedPresets.0.period', 'custom')
+                ->where('savedPresets.0.date_from', '2026-01-01')
+                ->where('savedPresets.0.date_to', now()->toDateString())
                 ->where('savedPresets.0.can_delete', false));
     }
 
@@ -946,6 +1052,20 @@ class ReportsManagementTest extends TestCase
             ]))
             ->assertRedirect()
             ->assertSessionHasErrors('date_to');
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['period' => 'never']))
+            ->assertRedirect()
+            ->assertSessionHasErrors('period');
+
+        $this->actingAs($owner)
+            ->post(route('reports.presets.store'), [
+                'title_en' => 'Invalid period',
+                'title_ar' => 'فترة غير صالحة',
+                'visibility' => 'private',
+                'filters_json' => ['period' => 'never'],
+            ])
+            ->assertSessionHasErrors('filters_json.period');
 
         $this->actingAs($owner)
             ->get(route('reports.index', ['portfolio_id' => $foreignPortfolio->id]))

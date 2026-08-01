@@ -18,6 +18,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Owners and managers start each day in one prioritized Action Center rather than checking four separate modules. Collections, maintenance, renewals, and move-outs retain their original scoped source records and direct action pages; the combined queue adds property, responsible-person, priority, type, pagination, and XLSX controls without duplicating workflow state.
 - Owners and managers compare every accessible property in one card-based Portfolio Control workspace, rank pressure by arrears, occupancy, collection, or cash flow, and continue directly into the selected property dashboard, Action Center, or reports.
 - Owners and managers open a dedicated Operating Report for one authorized top-level property, keep its hierarchy, ownership, occupancy, period finances, maintenance, and source queues in context, and download the same scope as PDF, DOCX, or XLSX.
+- Owners and managers save report scopes as responsive cards, reopen them with fixed or rolling periods, and download the same property and date scope as a real XLSX workbook without rebuilding filters.
 - Owners and managers open a dedicated Account Statement from one authorized tenant record, review all scoped contracts plus period installments, payments, documents, and maintenance in focused tabs, and download the same bounded ledger as PDF, DOCX, or XLSX. Currency totals remain separate, and assigned managers never receive records from an unassigned property.
 - Lease, payment, maintenance, and expense details expose a role-aware Next Step panel instead of hiding lifecycle actions across edit forms and index menus.
 - Maintenance stays accountable after management marks work resolved: tenant sign-off or reopen actions, service-report PDFs, and a shared “awaiting tenant confirmation” queue/filter keep unresolved handoffs visible to both sides and to scoped XLSX exports.
@@ -29,7 +30,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
-- The main CSS bundle is 314.45 KB before gzip, below the 325 KB release ceiling. Property Operating Reports, Action Center, Map, and other heavy route styles/scripts remain lazy chunks.
+- The main CSS bundle is 314.44 KB before gzip, below the 325 KB release ceiling. Property Operating Reports, Action Center, Map, and other heavy route styles/scripts remain lazy chunks.
 - The Playwright PHP server now runs with a 1 GB test memory limit; the previous 128 MB long-suite process accumulated memory and died during the repeated route sweep.
 
 ## Data and security integrity
@@ -63,7 +64,7 @@ The workspace also evaluates each portfolio for an active owner, manager coverag
 - Payments are entered manually. There is no gateway, bank feed, or reconciliation engine.
 - Signing is PDF upload/download, not cryptographic e-signature.
 - Finance is operational reporting, not double-entry accounting or tax filing.
-- Email is queue-ready, but there is no notification inbox, SMS, or WhatsApp integration.
+- Email is queue-ready and the scoped in-app notification inbox is operational. Production SMTP still needs proof; SMS and WhatsApp integrations remain outside the MVP.
 - Maintenance has internal workflow and expenses, but no vendor portal, procurement, SLA escalation, or inventory of spare parts.
 
 ## Next delivery goal

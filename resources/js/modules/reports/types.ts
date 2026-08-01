@@ -4,6 +4,8 @@ export type ReportMode = 'portfolio' | 'superadmin';
 export type ReportTab =
     'library' | 'overview' | 'collections' | 'costs' | 'operations';
 export type PresetVisibility = 'global' | 'portfolio' | 'private';
+export type ReportPeriod =
+    'custom' | 'this_month' | 'last_month' | 'last_30_days' | 'year_to_date';
 
 export type CurrencyPosition = {
     currency: string;
@@ -41,6 +43,7 @@ export type ReportLibraryGroup = {
 };
 
 export type ReportFilterValues = {
+    period: ReportPeriod;
     date_from: string;
     date_to: string;
     portfolio_id: string;
@@ -123,12 +126,18 @@ export type ReportPreset = {
     visibility: PresetVisibility;
     is_default: boolean;
     can_delete: boolean;
+    period: ReportPeriod;
+    date_from: string;
+    date_to: string;
+    scope_label: string;
     url: string;
+    export_url: string;
 };
 
 export type ReportDataProps = SharedProps & {
     mode: ReportMode;
     filters: {
+        period: ReportPeriod;
         date_from: string;
         date_to: string;
         portfolio_id?: number | null;

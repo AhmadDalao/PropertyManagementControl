@@ -23,6 +23,7 @@ export default function ReportsIndexPage() {
     const { props } = usePage<ReportsPageProps>();
     const { t } = useTranslator();
     const [filters, setFilters] = useState<ReportFilterValues>({
+        period: props.filters.period,
         date_from: props.filters.date_from,
         date_to: props.filters.date_to,
         portfolio_id: props.filters.portfolio_id

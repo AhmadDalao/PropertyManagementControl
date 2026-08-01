@@ -19,7 +19,7 @@ class ReportPagePresenter
     ) {}
 
     /**
-     * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
+     * @param  array{period:string,date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<string, mixed>
      */
     public function present(User $actor, array $filters): array

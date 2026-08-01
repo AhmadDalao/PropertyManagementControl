@@ -8,7 +8,7 @@ use App\Modules\Portfolios\Support\PortfolioModules;
 final class ReportLibraryPresenter
 {
     /**
-     * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
+     * @param  array{period:string,date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<int, array{key:string,title:string,description:string,cards:array<int, array<string, mixed>>}>
      */
     public function present(User $actor, array $filters): array

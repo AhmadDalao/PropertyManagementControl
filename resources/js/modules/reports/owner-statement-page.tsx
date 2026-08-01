@@ -16,6 +16,7 @@ export default function OwnerStatementPage() {
     const { locale, t } = useTranslator();
     const query = new URLSearchParams(
         cleanReportFilters({
+            period: props.filters.period,
             date_from: props.filters.date_from,
             date_to: props.filters.date_to,
             portfolio_id: props.filters.portfolio_id

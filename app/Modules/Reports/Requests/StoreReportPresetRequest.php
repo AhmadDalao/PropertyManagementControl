@@ -2,6 +2,7 @@
 
 namespace App\Modules\Reports\Requests;
 
+use App\Modules\Reports\Support\ReportPeriod;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -40,6 +41,7 @@ class StoreReportPresetRequest extends FormRequest
             'visibility' => ['required', Rule::in(['private', 'portfolio', 'global'])],
             'is_default' => ['sometimes', 'boolean'],
             'filters_json' => ['present', 'array'],
+            'filters_json.period' => ['nullable', Rule::in(app(ReportPeriod::class)->values())],
             'filters_json.date_from' => ['nullable', 'date_format:Y-m-d'],
             'filters_json.date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:filters_json.date_from'],
             'filters_json.portfolio_id' => ['nullable', 'integer', 'min:1', 'exists:portfolios,id'],

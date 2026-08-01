@@ -65,3 +65,17 @@
 .pmc-report-toolbar-actions .btn {
     min-height: 2.75rem;
 }
+
+.pmc-report-period-note {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #eadfc4;
+    border-radius: 0.65rem;
+    background: #fff8e8;
+    color: #6f5612;
+    font-size: 0.72rem;
+    font-weight: 750;
+}
