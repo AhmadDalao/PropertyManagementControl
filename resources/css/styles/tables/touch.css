@@ -18,7 +18,7 @@
         min-height: 2.75rem;
     }
 
-    .pmc-mobile-record-head > div > a {
+    .pmc-mobile-record-title-link {
         display: inline-flex;
         min-height: 2.75rem;
         align-items: center;
@@ -30,7 +30,6 @@
         border-radius: 999px;
     }
 
-    .pmc-mobile-record-card .pmc-record-open,
     .pmc-mobile-record-card .pmc-record-actions .btn,
     .pmc-mobile-record-card .pmc-record-actions button,
     .pmc-mobile-action-menu > div .btn {

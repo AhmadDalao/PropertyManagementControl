@@ -533,9 +533,28 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-operations-table > .pmc-table-scroll'),
         ).toBeHidden();
+        const firstMobileRecord = page
+            .locator('.pmc-mobile-record-card')
+            .first();
+        await expect(firstMobileRecord).toBeVisible();
         await expect(
-            page.locator('.pmc-mobile-record-card').first(),
+            firstMobileRecord.locator('.pmc-mobile-record-title-link'),
         ).toBeVisible();
+        await expect(
+            firstMobileRecord.locator(
+                ':scope > .pmc-mobile-record-footer > .pmc-record-open',
+            ),
+        ).toHaveCount(0);
+        expect(
+            await firstMobileRecord.locator('dl').evaluate((element) => {
+                return getComputedStyle(element).gridTemplateColumns.split(
+                    ' ',
+                ).length;
+            }),
+        ).toBe(3);
+        expect((await firstMobileRecord.boundingBox())?.height ?? 0).toBeLessThan(
+            340,
+        );
         await expectNoHorizontalOverflow(page);
         await expectMinimumTouchHeight(
             page,
@@ -545,8 +564,7 @@ test.describe('authenticated administration', () => {
                 '.pmc-table-search .form-control',
                 '.pmc-mobile-filter-trigger',
                 '.pmc-active-filters button',
-                '.pmc-mobile-record-head > div > a',
-                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-record-title-link',
                 '.pmc-mobile-action-menu > summary',
             ].join(', '),
         );
@@ -842,7 +860,7 @@ test.describe('authenticated administration', () => {
                 '.pmc-filter-chip',
                 '.pmc-table-search .form-control',
                 '.pmc-mobile-filter-trigger',
-                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-record-title-link',
                 '.pmc-mobile-action-menu > summary',
             ].join(', '),
         );
@@ -891,7 +909,7 @@ test.describe('authenticated administration', () => {
                 '.pmc-filter-chip',
                 '.pmc-table-search .form-control',
                 '.pmc-mobile-filter-trigger',
-                '.pmc-mobile-record-card .pmc-record-open',
+                '.pmc-mobile-record-title-link',
                 '.pmc-mobile-action-menu > summary',
             ].join(', '),
         );
@@ -1383,7 +1401,7 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page
-            .locator('.pmc-mobile-record-card .pmc-record-open')
+            .locator('.pmc-mobile-record-title-link')
             .first()
             .click();
         const contractAction = page.getByRole('link', {
@@ -1435,7 +1453,9 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('body')).not.toContainText('payments.');
         await expectNoHorizontalOverflow(page);
 
-        const detailLink = paymentCards.locator('.pmc-record-open').first();
+        const detailLink = paymentCards
+            .locator('.pmc-mobile-record-title-link')
+            .first();
         await expect(detailLink).toBeVisible();
         await detailLink.click();
         const receiptAction = page.getByRole('link', {
@@ -1649,7 +1669,7 @@ test.describe('authenticated administration', () => {
         );
         await expectNoHorizontalOverflow(page);
 
-        await cards.locator('.pmc-record-open').first().click();
+        await cards.locator('.pmc-mobile-record-title-link').first().click();
         await expect(
             page.getByText('تفاصيل المستند', { exact: true }),
         ).toBeVisible();

@@ -42,8 +42,15 @@ export function MobileRecordList<T extends DataTableRow>({
                             <div className="pmc-mobile-record-head">
                                 <div>
                                     {rowHref ? (
-                                        <Link href={rowHref(row)}>
+                                        <Link
+                                            href={rowHref(row)}
+                                            className="pmc-mobile-record-title-link"
+                                        >
                                             {config.title(row)}
+                                            <i
+                                                className="bi bi-arrow-up-right"
+                                                aria-hidden="true"
+                                            />
                                         </Link>
                                     ) : (
                                         config.title(row)
@@ -69,19 +76,8 @@ export function MobileRecordList<T extends DataTableRow>({
                                     ))}
                                 </dl>
                             ) : null}
-                            <div className="pmc-mobile-record-footer">
-                                {rowHref ? (
-                                    <Link
-                                        href={rowHref(row)}
-                                        className="pmc-record-open"
-                                    >
-                                        {t('actions.open', 'Open')}
-                                        <i className="bi bi-arrow-up-right" />
-                                    </Link>
-                                ) : (
-                                    <span />
-                                )}
-                                {actions ? (
+                            {actions ? (
+                                <div className="pmc-mobile-record-footer">
                                     <details className="pmc-mobile-action-menu">
                                         <summary
                                             aria-label={t(
@@ -93,8 +89,8 @@ export function MobileRecordList<T extends DataTableRow>({
                                         </summary>
                                         <div>{actions}</div>
                                     </details>
-                                ) : null}
-                            </div>
+                                </div>
+                            ) : null}
                         </article>
                     );
                 })
