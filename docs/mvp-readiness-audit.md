@@ -11,6 +11,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Superadmin creates a portfolio, assigns owners/managers, creates the asset hierarchy, and controls modules, CMS, wording, reports, audit, media, and showcase data.
 - Owners create and assign portfolio records. Managers perform tenant, lease, payment, PDF, expense, and maintenance work only inside owner-assigned properties/buildings and their descendants; an unassigned manager has no operational access.
 - Tenants see only their own lease, posted payments, public PDF documents, contract balance/days remaining, and maintenance requests.
+- Owners and assigned managers can open a focused Portal Access page from a user or tenant record, generate a fresh 60-minute password-setup link, and share it privately without retaining or exposing a temporary password. New links revoke older reset links, inactive accounts are blocked, and generation is audited without storing the token.
 - Active or expired leases can create one linked renewal draft. Renewal dates, source lineage, status, and occupancy activation are guarded at the action layer.
 - Active or expired leases use a controlled move-out plan instead of direct termination. The handover requires returned keys, a deposit decision, termination and inspection PDFs, and a reached move-out date; completion snapshots remaining debt, releases occupancy, and remains visible in lease history.
 - Owners and managers have a durable collection-control cycle for every open installment: assign the account, record each contact, capture promises, schedule the next action, identify missed promises, and keep the history visible from the collection queue, lease, dashboard, reports, and XLSX export.
@@ -21,7 +22,7 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## UI and scale evidence
 
-- Playwright and axe cover 49 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
+- Playwright and axe cover 54 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes have no page-level horizontal overflow.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.

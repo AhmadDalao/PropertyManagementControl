@@ -1,0 +1,63 @@
+@media (max-width: 1199.98px) {
+    .pmc-portal-access-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-portal-access-aside {
+        grid-row: 1;
+    }
+
+    .pmc-portal-account-card {
+        position: static;
+    }
+
+    .pmc-portal-account-card dl {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-portal-access-layout {
+        gap: 0.75rem;
+    }
+
+    .pmc-portal-access-primary {
+        gap: 0.75rem;
+    }
+
+    .pmc-portal-account-card,
+    .pmc-portal-access-generator,
+    .pmc-portal-access-steps {
+        padding: 1rem;
+    }
+
+    .pmc-portal-account-card dl,
+    .pmc-portal-access-steps ol {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-portal-access-link {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-portal-access-link button,
+    .pmc-portal-access-generate {
+        width: 100%;
+        min-width: 0;
+        min-height: 2.9rem;
+    }
+
+    .pmc-portal-access-result-meta {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-portal-access-generator *,
+    .pmc-portal-access-steps * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}

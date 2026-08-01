@@ -1,0 +1,145 @@
+.pmc-portal-access-generator {
+    display: grid;
+    min-width: 0;
+    gap: 0.9rem;
+    padding: clamp(1.1rem, 2.5vw, 1.65rem);
+    border-top: 4px solid var(--pmc-amber);
+}
+
+.pmc-portal-access-icon {
+    display: grid;
+    width: 2.9rem;
+    height: 2.9rem;
+    place-items: center;
+    border-radius: 0.9rem;
+    color: #5f4800;
+    background: #fff3c9;
+    font-size: 1.25rem;
+}
+
+.pmc-portal-access-copy > span {
+    color: #775800;
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-portal-access-copy h2 {
+    margin: 0.2rem 0 0;
+    font-size: clamp(1.2rem, 3vw, 1.65rem);
+}
+
+.pmc-portal-access-copy p {
+    max-width: 46rem;
+    margin: 0.45rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.86rem;
+}
+
+.pmc-portal-access-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    padding: 0.75rem 0.85rem;
+    border-radius: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 750;
+}
+
+.pmc-portal-access-alert.is-danger {
+    color: #8b2520;
+    background: #fff0ed;
+}
+
+.pmc-portal-access-result {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.9rem;
+    border: 1px solid #b9dfd3;
+    border-radius: 0.9rem;
+    background: #f1faf7;
+}
+
+.pmc-portal-access-result label {
+    color: #17483e;
+    font-size: 0.74rem;
+    font-weight: 850;
+}
+
+.pmc-portal-access-link {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+}
+
+.pmc-portal-access-link input {
+    width: 100%;
+    min-width: 0;
+    height: 2.8rem;
+    padding: 0 0.8rem;
+    border: 1px solid #a7cfc3;
+    border-radius: 0.7rem;
+    background: #fff;
+    font-size: 0.76rem;
+}
+
+.pmc-portal-access-link button,
+.pmc-portal-access-generate {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: 0.7rem;
+    font-size: 0.8rem;
+    font-weight: 850;
+}
+
+.pmc-portal-access-link button {
+    padding: 0 0.9rem;
+    border: 1px solid #7cb5a5;
+    color: #17483e;
+    background: #fff;
+}
+
+.pmc-portal-access-result-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: #35685b;
+    font-size: 0.74rem;
+    font-weight: 750;
+}
+
+.pmc-portal-access-result-meta span,
+.pmc-portal-access-result-meta a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.pmc-portal-access-result-meta a {
+    color: #086d59;
+}
+
+.pmc-portal-access-generate {
+    width: fit-content;
+    min-width: 13rem;
+    padding: 0 1.15rem;
+    border: 1px solid #dcae00;
+    color: #251d00;
+    background: var(--pmc-amber);
+}
+
+.pmc-portal-access-generate:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.pmc-portal-access-revoke-note {
+    margin: -0.35rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}

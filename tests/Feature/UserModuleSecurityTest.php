@@ -122,7 +122,9 @@ class UserModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.href', route('tenants.show', $tenant))
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Edit user')
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'Portal access')
+                ->where('detailPage.header.actions.2.variant', 'secondary'));
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
@@ -132,7 +134,9 @@ class UserModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.label', 'فتح ملف المستأجر')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'تعديل المستخدم')
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'صلاحية البوابة')
+                ->where('detailPage.header.actions.2.variant', 'secondary'));
     }
 
     public function test_user_detail_payload_obeys_disabled_portfolio_modules(): void
@@ -193,6 +197,7 @@ class UserModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
                     'Edit user',
+                    'Portal access',
                     'Suspend user',
                 ])
                 ->where('detailPage.header.actions.0.variant', 'primary')

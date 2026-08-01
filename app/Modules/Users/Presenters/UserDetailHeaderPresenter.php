@@ -40,6 +40,12 @@ final class UserDetailHeaderPresenter
             'variant' => $actions === [] ? 'primary' : 'secondary',
         ];
 
+        $actions[] = [
+            'label' => trans('app.users.manage_portal_access'),
+            'href' => route('users.portal-access.show', $user),
+            'variant' => 'secondary',
+        ];
+
         if ($user->status !== 'suspended') {
             $actions[] = [
                 'label' => trans('app.users.suspend_user'),

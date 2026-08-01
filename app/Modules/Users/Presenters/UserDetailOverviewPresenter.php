@@ -34,6 +34,8 @@ final class UserDetailOverviewPresenter
                 'title' => trans('app.users.portal_access'),
                 'value' => trans("app.status.{$user->status}"),
                 'detail' => $user->email,
+                'href' => route('users.portal-access.show', $user),
+                'actionLabel' => trans('app.users.manage_portal_access'),
                 'tone' => $user->status === 'active' ? 'teal' : 'danger',
                 'icon' => 'bi-person-lock',
             ],

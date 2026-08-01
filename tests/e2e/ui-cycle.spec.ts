@@ -1728,6 +1728,7 @@ test.describe('authenticated administration', () => {
         expect(
             (await assignmentLink.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
+        await page.locator('.pmc-resource-action-menu summary').click();
         await expect(page.getByRole('link', { name: 'Edit user' })).toHaveClass(
             /btn-outline-secondary/,
         );
@@ -1751,6 +1752,7 @@ test.describe('authenticated administration', () => {
         expect(
             (await tenantProfileLink.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
+        await page.locator('.pmc-resource-action-menu summary').click();
         await expect(
             page.getByRole('link', { name: 'تعديل المستخدم' }),
         ).toHaveClass(/btn-outline-secondary/);
@@ -1781,6 +1783,73 @@ test.describe('authenticated administration', () => {
                 .locator('.pmc-property-assignment-search input')
                 .evaluate((node) => node.getBoundingClientRect().height),
         ).toBeGreaterThanOrEqual(44);
+    });
+
+    test('owner can hand off tenant portal access securely on mobile', async ({
+        context,
+        page,
+    }) => {
+        await page.context().clearCookies();
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        await login(page, localAccounts[1].email, 'password');
+        await page.setViewportSize(viewports.mobile);
+        await page.goto(
+            `/users?search=${encodeURIComponent(localAccounts[3].email)}&per_page=10&locale=ar`,
+        );
+
+        const tenantUserLink = page
+            .locator('.pmc-mobile-record-card a[href^="/users/"]')
+            .first();
+        await expect(tenantUserLink).toBeVisible();
+        const tenantUserHref = await tenantUserLink.getAttribute('href');
+        expect(tenantUserHref).toBeTruthy();
+        await page.goto(`${tenantUserHref}?locale=ar`);
+
+        const portalAccess = page.getByRole('link', {
+            name: 'صلاحية البوابة',
+        });
+        await expect(portalAccess).toBeVisible();
+        expect(
+            (await portalAccess.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await portalAccess.click();
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                name: /صلاحية بوابة/,
+                level: 1,
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                name: 'إنشاء رابط إعداد لمرة واحدة',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page
+            .getByRole('button', { name: 'إنشاء رابط الإعداد' })
+            .click();
+        const linkInput = page.getByLabel('رابط الإعداد');
+        await expect(linkInput).toHaveValue(/\/reset-password\//);
+        await expect(
+            page.getByRole('link', { name: 'فتح الرابط' }),
+        ).toBeVisible();
+
+        await page.getByRole('button', { name: 'نسخ الرابط' }).click();
+        await expect(
+            page.getByRole('button', { name: 'تم نسخ الرابط' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const results = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(results.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await expectNoHorizontalOverflow(page);
     });
 
     test('Arabic portfolio workspace, form, and detail stay localized', async ({

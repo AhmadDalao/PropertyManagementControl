@@ -25,6 +25,13 @@ final class TenantDetailOverviewPresenter
             'title' => trans('app.tenants.portal_account'),
             'value' => trans('app.status.'.($user ? $user->status : 'inactive')),
             'detail' => $user ? $user->email : trans('app.tenants.no_login_account'),
+            'href' => $user
+                ? route('users.portal-access.show', [
+                    'user' => $user,
+                    'origin' => 'tenant',
+                ])
+                : null,
+            'actionLabel' => $user ? trans('app.users.manage_portal_access') : null,
             'tone' => $user?->status === 'active' ? 'teal' : 'danger',
             'icon' => 'bi-person-lock',
         ]];

@@ -47,6 +47,9 @@
 .bi-arrow-repeat::before {
     content: '\f130';
 }
+.bi-clock::before {
+    content: '\f293';
+}
 .bi-arrow-right::before {
     content: '\f138';
 }
@@ -272,6 +275,9 @@
 .bi-key::before {
     content: '\f44f';
 }
+.bi-link-45deg::before {
+    content: '\f470';
+}
 .bi-layout-sidebar-inset::before {
     content: '\f45d';
 }
@@ -355,6 +361,9 @@
 }
 .bi-search::before {
     content: '\f52a';
+}
+.bi-send::before {
+    content: '\f6c0';
 }
 .bi-shield-check::before {
     content: '\f52f';

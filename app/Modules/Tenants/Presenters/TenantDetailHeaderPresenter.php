@@ -45,6 +45,17 @@ final class TenantDetailHeaderPresenter
             ];
         }
 
+        if ($tenant->user) {
+            $actions[] = [
+                'label' => trans('app.users.manage_portal_access'),
+                'href' => route('users.portal-access.show', [
+                    'user' => $tenant->user,
+                    'origin' => 'tenant',
+                ]),
+                'variant' => 'secondary',
+            ];
+        }
+
         return [
             'eyebrow' => trans('app.tenants.detail_eyebrow'),
             'title' => filled($tenant->user?->name)

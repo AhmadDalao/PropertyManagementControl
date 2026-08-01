@@ -44,6 +44,7 @@ use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemReadinessController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserPortalAccessController;
 use App\Http\Controllers\WordingController;
 use Illuminate\Support\Facades\Route;
 
@@ -93,6 +94,11 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:users')->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::get('/portal-accounts/{user}/access', [UserPortalAccessController::class, 'show'])
+        ->name('users.portal-access.show');
+    Route::post('/portal-accounts/{user}/access-link', [UserPortalAccessController::class, 'store'])
+        ->middleware('throttle:6,10')
+        ->name('users.portal-access.store');
     Route::get('/users/{user}/property-assignments', [ManagerPropertyAssignmentController::class, 'edit'])
         ->name('users.property-assignments.edit')
         ->middleware('portfolio.module:users');

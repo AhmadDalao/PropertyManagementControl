@@ -50,7 +50,10 @@ class ManagerPropertyAssignmentWorkspaceTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Edit user')
                 ->where('detailPage.header.actions.1.href', route('users.edit', $manager))
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'Portal access')
+                ->where('detailPage.header.actions.2.href', route('users.portal-access.show', $manager))
+                ->where('detailPage.header.actions.2.variant', 'secondary'));
 
         $this->actingAs($owner)
             ->get(route('users.property-assignments.edit', $manager))

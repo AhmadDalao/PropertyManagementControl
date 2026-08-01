@@ -158,7 +158,9 @@ class TenantModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.actions.0.label', 'Edit tenant')
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->has('detailPage.header.actions', 1)
+                ->where('detailPage.header.actions.1.label', 'Portal access')
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->has('detailPage.header.actions', 2)
                 ->has('detailPage.decisionCards', 1)
                 ->has('detailPage.stats', 1)
                 ->has('detailPage.sections', 1)
