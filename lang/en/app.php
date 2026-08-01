@@ -2760,6 +2760,7 @@ return [
         'hide_filters' => 'Hide filters',
         'date_from' => 'Date from',
         'date_to' => 'Date to',
+        'apply_period' => 'Apply period',
         'all_portfolios' => 'All portfolios',
         'portfolio' => 'Portfolio',
         'all_properties' => 'All properties',

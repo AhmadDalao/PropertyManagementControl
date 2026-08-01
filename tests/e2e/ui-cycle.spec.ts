@@ -681,6 +681,9 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.locator('a[href^="/tenants/1/account-statement.xlsx"]'),
             ).toBeVisible();
+            await expect(
+                page.getByRole('button', { name: 'Apply period' }),
+            ).toBeVisible();
             await expectNoHorizontalOverflow(page);
         }
 
@@ -705,6 +708,9 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByRole('button', { name: 'الدفعات' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'تطبيق الفترة' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 

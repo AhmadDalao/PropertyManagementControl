@@ -2760,6 +2760,7 @@ return [
         'hide_filters' => 'إخفاء التصفيات',
         'date_from' => 'التاريخ من',
         'date_to' => 'التاريخ إلى',
+        'apply_period' => 'تطبيق الفترة',
         'all_portfolios' => 'جميع المحافظ',
         'portfolio' => 'المحفظة',
         'all_properties' => 'جميع العقارات',

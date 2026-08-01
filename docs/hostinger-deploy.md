@@ -93,6 +93,19 @@ If dependencies are uploaded instead of installed on Hostinger, run `composer du
 
 The Composer lifecycle clears Laravel's generated package manifest before rebuilding the autoloader. This prevents development-only providers from a previous local build being loaded during a production `--no-dev` deployment. Do not bypass Composer scripts when preparing a release.
 
+For the FTP fallback, never upload `vendor/composer/` by itself. Composer's
+generated loader files and `vendor/autoload.php` share one initialization ID;
+mixing releases takes the entire site down before Laravel can log the error. If
+dependencies did not change, preserve the known-working production `vendor/`
+tree. If they did change, upload a complete production `vendor/` directory as
+one release and switch the directory atomically.
+
+Always synchronize `routes/` and remove any old
+`bootstrap/cache/routes-v*.php` file before marking an FTP release complete.
+A stale route cache can make deployed controllers and links return 404 or 500
+even when `routes/web.php` is correct. Update `storage/app/.deployed-revision`
+only after the manifest, routes, and cache cleanup are complete.
+
 6. Require `https://property.ahmaddalao.com/up` to return HTTP `200` before running the authenticated smoke cycle. Then verify login, dashboard loading, PDF generation, uploads, and Arabic locale switching.
 
 ## Cron

@@ -336,10 +336,14 @@ if (is_array($tenantRows) && isset($tenantRows[0]['id'])) {
         'GET',
         "/tenants/{$tenantId}/account-statement?locale=ar",
     );
+    $tenantStatementComponent = smoke_component($tenantStatement['body']);
 
     if ($tenantStatement['status'] !== 200
-        || smoke_component($tenantStatement['body']) !== 'admin/tenants/statement') {
-        smoke_fail("Tenant account statement {$tenantId} did not load.");
+        || $tenantStatementComponent !== 'admin/tenants/statement') {
+        smoke_fail(
+            "Tenant account statement {$tenantId} returned status "
+            .$tenantStatement['status']." and component {$tenantStatementComponent}.",
+        );
     }
 
     smoke_note("/tenants/{$tenantId}/account-statement admin/tenants/statement");
