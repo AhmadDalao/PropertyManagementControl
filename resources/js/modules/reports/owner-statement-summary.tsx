@@ -2,6 +2,7 @@ import { useTranslator } from '@/lib/i18n';
 import { localizedNumber, percent } from '@/lib/utils';
 
 import { CurrencyPositionGrid } from './currency-position-grid';
+import { ReportComparison } from './report-comparison';
 import { ReportPulse } from './report-visuals';
 import type { OwnerStatementPageProps } from './types';
 
@@ -15,6 +16,7 @@ export function OwnerStatementSummary({
     return (
         <>
             <CurrencyPositionGrid positions={props.summary.currencyTotals} />
+            <ReportComparison comparison={props.comparison} />
 
             <section className="pmc-statement-health-grid">
                 <ReportPulse

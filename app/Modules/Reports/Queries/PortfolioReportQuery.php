@@ -25,6 +25,7 @@ final readonly class PortfolioReportQuery
         private ReportMaintenanceRowsPresenter $maintenanceRows,
         private ReportJournalPresenter $journal,
         private ReportCollectionControlQuery $collectionControl,
+        private ReportComparisonQuery $comparison,
     ) {}
 
     /**
@@ -47,6 +48,12 @@ final readonly class PortfolioReportQuery
                 ...$summary,
                 ...$this->collectionControl->handle($actor, $filters),
             ],
+            'comparison' => $this->comparison->handle(
+                $actor,
+                $filters,
+                $data,
+                $leaseSnapshot,
+            ),
             'charts' => $this->charts->present($data),
             'arrearsLeases' => $this->leaseRows->present($leaseSnapshot),
             ...$this->paymentRows->present($data),

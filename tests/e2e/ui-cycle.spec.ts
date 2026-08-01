@@ -651,6 +651,12 @@ test.describe('authenticated administration', () => {
                 page.locator('.pmc-report-currency-grid article').first(),
             ).toBeVisible();
             await expect(
+                page.getByRole('heading', { name: 'What changed' }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-report-comparison-card').first(),
+            ).toBeVisible();
+            await expect(
                 page.locator('.pmc-statement-health-grid .pmc-report-pulse'),
             ).toHaveCount(3);
             await expect(
@@ -669,6 +675,9 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { level: 1, name: 'كشف المالك' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'ما الذي تغير' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -2415,6 +2424,20 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/reports?locale=ar&period=this_month');
+
+        await page
+            .getByRole('button', { name: 'نظرة عامة', exact: true })
+            .click();
+        await expect(
+            page.getByRole('heading', { name: 'ما الذي تغير' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-report-comparison-card')).toHaveCount(
+            2,
+        );
+        await expect(
+            page.locator('.pmc-report-comparison__period'),
+        ).toContainText('مقارنة بالفترة');
+        await expectNoHorizontalOverflow(page);
 
         for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
             await page.getByRole('button', { name: tab, exact: true }).click();

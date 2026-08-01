@@ -48,6 +48,11 @@ final readonly class OwnerStatementWordExport
                 ['Active leases / العقود النشطة', (string) $summary['activeLeases']],
                 ['Open maintenance / الصيانة المفتوحة', (string) $summary['openRequests']],
             ]),
+            $this->paragraph('Period comparison | مقارنة الفترات', 'Heading1'),
+            $this->paragraph(
+                "Previous period / الفترة السابقة: {$data['comparison']['period']['date_from']} - {$data['comparison']['period']['date_to']}",
+            ),
+            $this->table($this->comparisonRows($data['comparison'])),
             $this->paragraph('Contracts in arrears | العقود المتأخرة', 'Heading1'),
             $this->table($this->arrearsRows($data['arrearsLeases'])),
             $this->paragraph('Recent payments | أحدث الدفعات', 'Heading1'),
@@ -165,6 +170,86 @@ final readonly class OwnerStatementWordExport
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $comparison
+     * @return array<int, array<int, string>>
+     */
+    private function comparisonRows(array $comparison): array
+    {
+        $rows = [[
+            'Group / المجموعة',
+            'Metric / المؤشر',
+            'Current / الحالي',
+            'Previous / السابق',
+            'Change / التغير',
+        ]];
+
+        foreach ($comparison['currencyPositions'] as $position) {
+            foreach ($position['metrics'] as $metric) {
+                $rows[] = $this->comparisonMetricRow(
+                    (string) $position['currency'],
+                    $metric,
+                    (string) $position['currency'],
+                );
+            }
+        }
+
+        foreach ($comparison['serviceMetrics'] as $metric) {
+            $rows[] = $this->comparisonMetricRow(
+                'Maintenance / الصيانة',
+                $metric,
+            );
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $metric
+     * @return array<int, string>
+     */
+    private function comparisonMetricRow(
+        string $group,
+        array $metric,
+        ?string $currency = null,
+    ): array {
+        return [
+            $group,
+            trans("app.reports.{$metric['key']}", locale: 'en')
+                .' / '
+                .trans("app.reports.{$metric['key']}", locale: 'ar'),
+            $this->comparisonValue($metric['current'], $metric['format'], $currency),
+            $this->comparisonValue($metric['previous'], $metric['format'], $currency),
+            $this->comparisonChange($metric),
+        ];
+    }
+
+    private function comparisonValue(
+        float|int|string $value,
+        string $format,
+        ?string $currency,
+    ): string {
+        return match ($format) {
+            'money' => $this->money($value, $currency ?? 'SAR'),
+            'percent' => $this->percentage($value),
+            default => number_format((float) $value, 0),
+        };
+    }
+
+    /** @param array<string, mixed> $metric */
+    private function comparisonChange(array $metric): string
+    {
+        if ($metric['change'] === null) {
+            return 'New activity / نشاط جديد';
+        }
+
+        $suffix = $metric['changeKind'] === 'points'
+            ? ' pp / نقطة مئوية'
+            : '%';
+
+        return number_format((float) $metric['change'], 1).$suffix;
     }
 
     private function money(float|int|string $amount, string $currency = 'SAR'): string

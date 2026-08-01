@@ -1,0 +1,168 @@
+.pmc-report-comparison {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-report-comparison__header {
+    align-items: end;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.pmc-report-comparison__header > div:first-child > span {
+    color: var(--pmc-teal);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.3rem;
+    text-transform: uppercase;
+}
+
+.pmc-report-comparison__header h2 {
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    margin: 0;
+}
+
+.pmc-report-comparison__header p {
+    color: var(--pmc-muted);
+    margin: 0.35rem 0 0;
+    max-width: 52rem;
+}
+
+.pmc-report-comparison__period {
+    align-items: center;
+    background: var(--pmc-surface-soft);
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.75rem;
+    color: var(--pmc-muted);
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 0.8rem;
+    font-weight: 700;
+    gap: 0.5rem;
+    padding: 0.65rem 0.8rem;
+}
+
+.pmc-report-comparison__grid {
+    display: grid;
+    gap: 0.85rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 1fr));
+}
+
+.pmc-report-comparison-card {
+    background: #fff;
+    border: 1px solid var(--pmc-line);
+    border-radius: 1rem;
+    min-width: 0;
+    overflow: hidden;
+}
+
+.pmc-report-comparison-card > header {
+    align-items: center;
+    background: var(--pmc-surface-soft);
+    border-bottom: 1px solid var(--pmc-line);
+    display: flex;
+    gap: 0.7rem;
+    padding: 0.8rem 0.9rem;
+}
+
+.pmc-report-comparison-card > header h3 {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.pmc-report-comparison-card__icon {
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.65rem;
+    color: var(--pmc-teal);
+    display: inline-flex;
+    height: 2rem;
+    justify-content: center;
+    width: 2rem;
+}
+
+.pmc-report-comparison-card dl {
+    margin: 0;
+}
+
+.pmc-report-comparison-card dl > div {
+    align-items: center;
+    display: grid;
+    gap: 0.35rem 0.75rem;
+    grid-template-columns: minmax(7rem, 1fr) auto;
+    padding: 0.75rem 0.9rem;
+}
+
+.pmc-report-comparison-card dl > div + div {
+    border-top: 1px solid #ece9e3;
+}
+
+.pmc-report-comparison-card dt {
+    color: var(--pmc-muted);
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.pmc-report-comparison-card dd {
+    display: grid;
+    justify-items: end;
+    margin: 0;
+}
+
+.pmc-report-comparison-card dd strong {
+    color: var(--pmc-ink);
+    font-size: 0.92rem;
+}
+
+.pmc-report-comparison-card dd span {
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-report-comparison-card__change {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.68rem;
+    font-weight: 800;
+    gap: 0.2rem;
+    grid-column: 1 / -1;
+    justify-self: end;
+    padding: 0.18rem 0.45rem;
+}
+
+.pmc-report-comparison-card__change.is-up {
+    background: #eaf0ff;
+    color: var(--pmc-blue);
+}
+
+.pmc-report-comparison-card__change.is-down {
+    background: #fff0e8;
+    color: var(--pmc-orange);
+}
+
+.pmc-report-comparison-card__change.is-flat {
+    background: #fff2c7;
+    color: #856a00;
+}
+
+.pmc-report-comparison-card__change.is-new {
+    background: #e2f8ef;
+    color: var(--pmc-teal);
+}
+
+@media (max-width: 767.98px) {
+    .pmc-report-comparison__header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-report-comparison__period {
+        align-self: stretch;
+    }
+}

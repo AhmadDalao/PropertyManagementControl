@@ -97,6 +97,11 @@ class ReportWorkbookExport
             ];
         }
 
+        $rows = [
+            ...$rows,
+            ...$this->comparisonRows($report['comparison']),
+        ];
+
         $rows[] = [];
         $rows[] = $this->labels(['Revenue by Month', 'Month', 'Currency', 'Amount']);
         foreach ($report['charts']['revenueByMonth'] as $item) {
@@ -172,6 +177,72 @@ class ReportWorkbookExport
         }
 
         return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $comparison
+     * @return array<int, array<int, mixed>>
+     */
+    private function comparisonRows(array $comparison): array
+    {
+        $period = $comparison['period'];
+        $rows = [
+            [],
+            [
+                trans('app.reports.comparison_title'),
+                trans('app.reports.comparison_period'),
+                $period['date_from'],
+                $period['date_to'],
+            ],
+            [
+                trans('app.reports.comparison_title'),
+                trans('app.reports.currency'),
+                $this->copy('Metric'),
+                trans('app.reports.current_period_value'),
+                trans('app.reports.previous_period_value'),
+                trans('app.reports.change'),
+                trans('app.reports.change_type'),
+            ],
+        ];
+
+        foreach ($comparison['currencyPositions'] as $position) {
+            foreach ($position['metrics'] as $metric) {
+                $rows[] = $this->comparisonMetricRow(
+                    $metric,
+                    (string) $position['currency'],
+                );
+            }
+        }
+
+        foreach ($comparison['serviceMetrics'] as $metric) {
+            $rows[] = $this->comparisonMetricRow(
+                $metric,
+                trans('app.reports.maintenance_activity'),
+            );
+        }
+
+        return $rows;
+    }
+
+    /**
+     * @param  array<string, mixed>  $metric
+     * @return array<int, mixed>
+     */
+    private function comparisonMetricRow(array $metric, string $group): array
+    {
+        return [
+            trans('app.reports.comparison_title'),
+            $group,
+            trans("app.reports.{$metric['key']}"),
+            $metric['current'],
+            $metric['previous'],
+            $metric['change'] ?? trans('app.reports.change_new_activity'),
+            trans(
+                $metric['changeKind'] === 'points'
+                    ? 'app.reports.change_points_label'
+                    : 'app.reports.change_percent_label',
+            ),
+        ];
     }
 
     /**

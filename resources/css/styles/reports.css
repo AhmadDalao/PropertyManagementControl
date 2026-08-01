@@ -1,6 +1,7 @@
 @import './reports/filters.css';
 @import './reports/library.css';
 @import './reports/metrics.css';
+@import './reports/comparison.css';
 @import './reports/journal.css';
 @import './reports/records.css';
 @import './reports/presets.css';

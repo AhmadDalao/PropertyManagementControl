@@ -25,6 +25,35 @@ export type CurrencyBreakdown = {
     amount: number;
 };
 
+export type ReportComparisonMetric = {
+    key:
+        | 'collected'
+        | 'expenses'
+        | 'net_position'
+        | 'scheduled_due'
+        | 'collection_health'
+        | 'maintenance_opened'
+        | 'maintenance_resolved';
+    format: 'money' | 'number' | 'percent';
+    current: number;
+    previous: number;
+    change: number | null;
+    changeKind: 'percent' | 'points';
+    trend: 'up' | 'down' | 'flat' | 'new';
+};
+
+export type ReportComparison = {
+    period: {
+        date_from: string;
+        date_to: string;
+    };
+    currencyPositions: Array<{
+        currency: string;
+        metrics: ReportComparisonMetric[];
+    }>;
+    serviceMetrics: ReportComparisonMetric[];
+};
+
 export type ReportLibraryCard = {
     key: string;
     icon: string;
@@ -175,6 +204,7 @@ export type ReportDataProps = SharedProps & {
         followUpDueCount: number;
         brokenPromisesCount: number;
     };
+    comparison: ReportComparison;
     charts: {
         revenueByMonth: CurrencyBreakdown[];
         expenseByCategory: CurrencyBreakdown[];

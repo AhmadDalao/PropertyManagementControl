@@ -8,12 +8,27 @@
 <body>
     @php
         $summary = $data['summary'];
+        $comparison = $data['comparison'];
         $filters = $data['filters'];
         $context = $data['statement'];
         $money = static fn ($value, $currency = 'SAR') => number_format((float) $value, 2).' '.$currency;
         $option = static fn ($value, $locale) => trans()->has("app.status.{$value}")
             ? trans("app.status.{$value}", locale: $locale)
             : str($value)->replace('_', ' ')->headline();
+        $comparisonValue = static fn ($metric, $currency = 'SAR') => match ($metric['format']) {
+            'money' => $money($metric['current'], $currency),
+            'percent' => number_format((float) $metric['current'], 1).'%',
+            default => number_format((float) $metric['current'], 0),
+        };
+        $comparisonPrevious = static fn ($metric, $currency = 'SAR') => match ($metric['format']) {
+            'money' => $money($metric['previous'], $currency),
+            'percent' => number_format((float) $metric['previous'], 1).'%',
+            default => number_format((float) $metric['previous'], 0),
+        };
+        $comparisonChange = static fn ($metric) => $metric['change'] === null
+            ? 'New / جديد'
+            : number_format((float) $metric['change'], 1)
+                .($metric['changeKind'] === 'points' ? ' pp / نقطة' : '%');
     @endphp
 
     <table class="document-header">
@@ -72,6 +87,44 @@
         <table class="data">
             <tbody>
                 <tr><td>Occupancy / الإشغال</td><td class="amount">{{ number_format((float) $summary['occupancyRate'], 1) }}%</td><td>Active leases / العقود النشطة</td><td class="amount">{{ $summary['activeLeases'] }}</td><td>Open maintenance / الصيانة المفتوحة</td><td class="amount">{{ $summary['openRequests'] }}</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="section allow-break">
+        <h2 class="section-title clearfix">Period comparison <span>مقارنة الفترات</span></h2>
+        <div class="notice">Previous period / الفترة السابقة: {{ $comparison['period']['date_from'] }} - {{ $comparison['period']['date_to'] }}</div>
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>Group / المجموعة</th>
+                    <th>Metric / المؤشر</th>
+                    <th class="amount">Current / الحالي</th>
+                    <th class="amount">Previous / السابق</th>
+                    <th class="amount">Change / التغير</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($comparison['currencyPositions'] as $position)
+                    @foreach($position['metrics'] as $metric)
+                        <tr>
+                            <td>{{ $position['currency'] }}</td>
+                            <td>{{ trans("app.reports.{$metric['key']}", locale: 'en') }} / {{ trans("app.reports.{$metric['key']}", locale: 'ar') }}</td>
+                            <td class="amount">{{ $comparisonValue($metric, $position['currency']) }}</td>
+                            <td class="amount">{{ $comparisonPrevious($metric, $position['currency']) }}</td>
+                            <td class="amount">{{ $comparisonChange($metric) }}</td>
+                        </tr>
+                    @endforeach
+                @endforeach
+                @foreach($comparison['serviceMetrics'] as $metric)
+                    <tr>
+                        <td>Maintenance / الصيانة</td>
+                        <td>{{ trans("app.reports.{$metric['key']}", locale: 'en') }} / {{ trans("app.reports.{$metric['key']}", locale: 'ar') }}</td>
+                        <td class="amount">{{ $comparisonValue($metric) }}</td>
+                        <td class="amount">{{ $comparisonPrevious($metric) }}</td>
+                        <td class="amount">{{ $comparisonChange($metric) }}</td>
+                    </tr>
+                @endforeach
             </tbody>
         </table>
     </section>

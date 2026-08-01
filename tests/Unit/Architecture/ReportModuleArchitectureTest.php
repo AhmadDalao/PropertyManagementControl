@@ -89,13 +89,13 @@ class ReportModuleArchitectureTest extends TestCase
         $statement = $this->source($this->path('resources/js/modules/reports/owner-statement-page.tsx'));
         $property = $this->source($this->path('resources/js/modules/reports/property-report-page.tsx'));
 
-        $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
+        $this->assertLessThanOrEqual(12, substr_count($facade, "\n") + 1);
         $this->assertStringNotContainsString("styles/reports.css';", $global);
         $this->assertStringContainsString("css/styles/reports.css';", $index);
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
         $this->assertStringContainsString("css/styles/reports.css';", $property);
 
-        foreach (['filters', 'library', 'metrics', 'journal', 'records', 'presets', 'statement', 'property', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -116,6 +116,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportPresetPresenter.php',
             'app/Modules/Reports/Presenters/OwnerStatementPresenter.php',
             'app/Modules/Reports/Presenters/ReportChartsPresenter.php',
+            'app/Modules/Reports/Presenters/ReportComparisonPresenter.php',
             'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLibraryPresenter.php',
@@ -127,6 +128,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Queries/PortfolioReportDatasetQuery.php',
             'app/Modules/Reports/Queries/PortfolioReportQuery.php',
             'app/Modules/Reports/Queries/PropertyReportContextQuery.php',
+            'app/Modules/Reports/Queries/ReportComparisonQuery.php',
             'app/Modules/Reports/Queries/ReportPresetQuery.php',
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
             'app/Modules/Reports/Requests/PropertyReportRequest.php',
@@ -135,10 +137,12 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
             'app/Modules/Reports/Support/ReportPeriod.php',
+            'app/Modules/Reports/Support/ReportComparisonPeriod.php',
             'app/Modules/Reports/Support/ReportPropertyScope.php',
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
+            'resources/js/modules/reports/report-comparison.tsx',
             'resources/js/modules/reports/owner-statement-page.tsx',
             'resources/js/modules/reports/owner-statement-records.tsx',
             'resources/js/modules/reports/owner-statement-summary.tsx',

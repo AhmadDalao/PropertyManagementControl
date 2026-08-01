@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Document;
 use App\Models\ExpenseEntry;
+use App\Models\LeaseInstallment;
 use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\ReportPreset;
@@ -49,6 +50,10 @@ class ReportsManagementTest extends TestCase
                     'summary.untrackedOverdueCount',
                     'summary.followUpDueCount',
                     'summary.brokenPromisesCount',
+                    'comparison.period.date_from',
+                    'comparison.period.date_to',
+                    'comparison.currencyPositions',
+                    'comparison.serviceMetrics',
                     'charts.revenueByMonth',
                     'charts.expenseByCategory',
                     'charts.assetMix',
@@ -73,6 +78,171 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.1.key', 'finance')
                 ->where('reportLibrary.2.key', 'operations')
                 ->where('reportLibrary.3.key', 'control'));
+    }
+
+    public function test_reports_compare_the_previous_equivalent_period_and_export_the_evidence(): void
+    {
+        CarbonImmutable::setTestNow('2026-08-15 12:00:00');
+
+        try {
+            $portfolio = $this->createPortfolio();
+            $owner = $this->createUserWithRole('owner', $portfolio);
+            $asset = $this->createAsset($portfolio, [
+                'title_en' => 'Comparison Unit',
+                'occupancy_status' => 'occupied',
+            ]);
+            $tenant = $this->createTenantProfile(
+                $portfolio,
+                $this->createUserWithRole('tenant', $portfolio),
+            );
+            $lease = $this->createLease(
+                $portfolio,
+                $tenant,
+                $asset,
+                $owner,
+                [
+                    'started_at' => '2026-07-01',
+                    'ends_at' => '2026-09-30',
+                    'rent_amount' => 2000,
+                ],
+                syncInstallments: false,
+            );
+
+            foreach ([
+                [1, '2026-07-05', 1000],
+                [2, '2026-08-05', 1500],
+            ] as [$sequence, $dueDate, $amountPaid]) {
+                LeaseInstallment::query()->create([
+                    'lease_id' => $lease->id,
+                    'sequence' => $sequence,
+                    'line_type' => 'rent',
+                    'label' => "Rent {$sequence}",
+                    'due_date' => $dueDate,
+                    'amount_due' => 2000,
+                    'amount_paid' => $amountPaid,
+                    'status' => 'partial',
+                ]);
+            }
+
+            foreach ([
+                ['PREVIOUS-COLLECTION', '2026-07-10', 1000],
+                ['CURRENT-COLLECTION', '2026-08-10', 1500],
+            ] as [$reference, $receivedOn, $amount]) {
+                Payment::query()->create([
+                    'portfolio_id' => $portfolio->id,
+                    'lease_id' => $lease->id,
+                    'tenant_profile_id' => $tenant->id,
+                    'recorded_by_user_id' => $owner->id,
+                    'reference' => $reference,
+                    'type' => 'rent',
+                    'method' => 'bank_transfer',
+                    'status' => 'posted',
+                    'received_on' => $receivedOn,
+                    'amount' => $amount,
+                    'currency' => 'SAR',
+                ]);
+            }
+
+            foreach ([
+                ['Previous repair', '2026-07-08', 400],
+                ['Current repair', '2026-08-08', 300],
+            ] as [$title, $incurredOn, $amount]) {
+                ExpenseEntry::query()->create([
+                    'portfolio_id' => $portfolio->id,
+                    'asset_id' => $asset->id,
+                    'created_by_user_id' => $owner->id,
+                    'category' => 'maintenance',
+                    'title' => $title,
+                    'incurred_on' => $incurredOn,
+                    'amount' => $amount,
+                    'currency' => 'SAR',
+                    'status' => 'posted',
+                ]);
+            }
+
+            foreach ([
+                ['Previous request', '2026-07-09 09:00:00', null],
+                ['Current request', '2026-08-09 09:00:00', null],
+                ['Current resolved', '2026-08-11 09:00:00', '2026-08-12 09:00:00'],
+            ] as [$title, $createdAt, $resolvedAt]) {
+                MaintenanceRequest::query()->create([
+                    'portfolio_id' => $portfolio->id,
+                    'asset_id' => $asset->id,
+                    'tenant_profile_id' => $tenant->id,
+                    'submitted_by_user_id' => $owner->id,
+                    'resolved_by_user_id' => $resolvedAt ? $owner->id : null,
+                    'category' => 'general',
+                    'priority' => 'medium',
+                    'status' => $resolvedAt ? 'resolved' : 'open',
+                    'title' => $title,
+                    'description' => $title,
+                    'requested_at' => $createdAt,
+                    'created_at' => $createdAt,
+                    'resolved_at' => $resolvedAt,
+                ]);
+            }
+
+            $query = ['period' => 'this_month'];
+
+            $this->actingAs($owner)
+                ->get(route('reports.index', $query))
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->where('comparison.period.date_from', '2026-07-01')
+                    ->where('comparison.period.date_to', '2026-07-15')
+                    ->where(
+                        'comparison.currencyPositions.0',
+                        fn ($position): bool => $position['currency'] === 'SAR'
+                            && $this->comparisonMetricMatches($position->toArray(), 'collected', 1500, 1000, 50)
+                            && $this->comparisonMetricMatches($position->toArray(), 'expenses', 300, 400, -25)
+                            && $this->comparisonMetricMatches($position->toArray(), 'net_position', 1200, 600, 100)
+                            && $this->comparisonMetricMatches($position->toArray(), 'collection_health', 75, 50, 25),
+                    )
+                    ->where(
+                        'comparison.serviceMetrics',
+                        fn ($metrics): bool => $metrics->contains(
+                            fn (array $metric): bool => $metric['key'] === 'maintenance_opened'
+                                && (float) $metric['current'] === 2.0
+                                && (float) $metric['previous'] === 1.0,
+                        ) && $metrics->contains(
+                            fn (array $metric): bool => $metric['key'] === 'maintenance_resolved'
+                                && (float) $metric['current'] === 1.0
+                                && (float) $metric['previous'] === 0.0,
+                        ),
+                    ));
+
+            $sheet = $this->xlsxWorksheetXml(
+                $this->actingAs($owner)->get(route('reports.export', $query)),
+            );
+            $this->assertStringContainsString('What changed', $sheet);
+            $this->assertStringContainsString('Previous comparison period', $sheet);
+            $this->assertStringContainsString('2026-07-15', $sheet);
+
+            $word = $this->actingAs($owner)
+                ->get(route('reports.statement.word', $query))
+                ->assertOk();
+            $path = tempnam(sys_get_temp_dir(), 'comparison-statement-');
+            $this->assertNotFalse($path);
+            file_put_contents($path, $word->streamedContent());
+            $zip = new ZipArchive;
+            $this->assertTrue($zip->open($path));
+            $documentXml = (string) $zip->getFromName('word/document.xml');
+            $zip->close();
+            @unlink($path);
+
+            $this->assertStringContainsString('Period comparison', $documentXml);
+            $this->assertStringContainsString('مقارنة الفترات', $documentXml);
+            $this->assertStringContainsString('1,500.00 SAR', $documentXml);
+            $this->assertStringContainsString('1,000.00 SAR', $documentXml);
+
+            $pdf = $this->actingAs($owner)
+                ->get(route('reports.statement.pdf', $query))
+                ->assertOk()
+                ->assertHeader('content-type', 'application/pdf');
+            $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+        } finally {
+            CarbonImmutable::setTestNow();
+        }
     }
 
     public function test_reports_and_owner_downloads_keep_different_currencies_separate(): void
@@ -195,6 +365,22 @@ class ReportsManagementTest extends TestCase
         $this->assertStringContainsString('1,000.00 SAR', $documentXml);
         $this->assertStringContainsString('200.00 USD', $documentXml);
         $this->assertStringNotContainsString('1,200.00 SAR', $documentXml);
+    }
+
+    /** @param array<string, mixed> $position */
+    private function comparisonMetricMatches(
+        array $position,
+        string $key,
+        float $current,
+        float $previous,
+        float $change,
+    ): bool {
+        return collect($position['metrics'])->contains(
+            fn (array $metric): bool => $metric['key'] === $key
+                && (float) $metric['current'] === $current
+                && (float) $metric['previous'] === $previous
+                && (float) $metric['change'] === $change,
+        );
     }
 
     public function test_report_library_links_keep_the_selected_scope_and_hide_disabled_modules(): void
