@@ -2733,7 +2733,7 @@ return [
         'guide' => 'Report guide',
         'owner_statement' => 'Owner statement',
         'statement_eyebrow' => 'Owner-ready report',
-        'statement_description' => 'Review a concise property statement, then download the same scoped figures as PDF or Word.',
+        'statement_description' => 'Review a concise property statement, then download the same scoped figures as PDF, Word, or Excel.',
         'property_report_eyebrow' => 'Property operating statement',
         'property_report_title' => ':property report',
         'property_report_description' => 'Review one property without losing its hierarchy, financial scope, tenant records, service work, or source documents.',

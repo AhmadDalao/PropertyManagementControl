@@ -2733,7 +2733,7 @@ return [
         'guide' => 'دليل التقارير',
         'owner_statement' => 'كشف المالك',
         'statement_eyebrow' => 'تقرير جاهز للمالك',
-        'statement_description' => 'راجع كشفاً عقارياً موجزاً ثم نزّل الأرقام نفسها ضمن النطاق المحدد بصيغة PDF أو Word.',
+        'statement_description' => 'راجع كشفاً عقارياً موجزاً ثم نزّل الأرقام نفسها ضمن النطاق المحدد بصيغة PDF أو Word أو Excel.',
         'property_report_eyebrow' => 'كشف تشغيل العقار',
         'property_report_title' => 'تقرير :property',
         'property_report_description' => 'راجع عقاراً واحداً مع الحفاظ على هيكله ونطاقه المالي وسجلات المستأجرين وأعمال الخدمة والمستندات المصدرية.',

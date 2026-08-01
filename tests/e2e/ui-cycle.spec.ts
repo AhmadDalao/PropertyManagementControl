@@ -682,26 +682,61 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
             await expect(page.locator('.pmc-statement-context')).toBeVisible();
             await expect(
+                page.getByRole('link', { name: 'Back' }),
+            ).toBeVisible();
+            await expect(
                 page.locator('.pmc-report-currency-grid article').first(),
-            ).toBeVisible();
-            await expect(
-                page.getByRole('heading', { name: 'What changed' }),
-            ).toBeVisible();
-            await expect(
-                page.locator('.pmc-report-comparison-card').first(),
             ).toBeVisible();
             await expect(
                 page.locator('.pmc-statement-health-grid .pmc-report-pulse'),
             ).toHaveCount(3);
+            await expect(page.getByRole('tab')).toHaveCount(5);
+            await expect(
+                page.getByRole('tab', { name: 'Overview' }),
+            ).toHaveAttribute('aria-selected', 'true');
+            await expect(
+                page.locator('.pmc-report-comparison'),
+            ).toHaveCount(0);
             await expect(
                 page.locator('.pmc-statement-record-grid'),
-            ).toBeVisible();
+            ).toHaveCount(0);
             await expect(
                 page.locator('a[href^="/reports/statement.pdf"]'),
             ).toBeVisible();
             await expect(
                 page.locator('a[href^="/reports/statement.docx"]'),
             ).toBeVisible();
+            await expect(
+                page.locator('a[href^="/reports/export"]'),
+            ).toBeVisible();
+
+            await page.getByRole('tab', { name: 'What changed' }).click();
+            await expect(page).toHaveURL(/tab=comparison/);
+            await expect(
+                page.locator('.pmc-report-comparison-card').first(),
+            ).toBeVisible();
+
+            await page
+                .getByRole('tab', { name: 'Contracts in arrears' })
+                .click();
+            await expect(page).toHaveURL(/tab=arrears/);
+            await expect(
+                page.locator('.pmc-statement-record-grid'),
+            ).toBeVisible();
+            await expect(
+                page.locator(
+                    '.pmc-statement-record-grid .pmc-report-record-panel',
+                ),
+            ).toHaveCount(1);
+
+            if (viewport.width < 768) {
+                expect(
+                    await page.evaluate(
+                        () => document.documentElement.scrollHeight,
+                    ),
+                ).toBeLessThan(2600);
+            }
+
             await expectNoHorizontalOverflow(page);
         }
 
@@ -710,6 +745,11 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { level: 1, name: 'كشف المالك' }),
         ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'رجوع' }),
+        ).toBeVisible();
+        await page.getByRole('tab', { name: 'ما الذي تغير' }).click();
+        await expect(page).toHaveURL(/tab=comparison/);
         await expect(
             page.getByRole('heading', { name: 'ما الذي تغير' }),
         ).toBeVisible();

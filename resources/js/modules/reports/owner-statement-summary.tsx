@@ -6,7 +6,7 @@ import { ReportComparison } from './report-comparison';
 import { ReportPulse } from './report-visuals';
 import type { OwnerStatementPageProps } from './types';
 
-export function OwnerStatementSummary({
+export function OwnerStatementOverview({
     props,
 }: {
     props: OwnerStatementPageProps;
@@ -16,11 +16,6 @@ export function OwnerStatementSummary({
     return (
         <>
             <CurrencyPositionGrid positions={props.summary.currencyTotals} />
-            <ReportComparison
-                comparison={props.comparison}
-                filters={props.filters}
-            />
-
             <section className="pmc-statement-health-grid">
                 <ReportPulse
                     label={t('reports.collection_health')}
@@ -71,5 +66,18 @@ export function OwnerStatementSummary({
                 />
             </section>
         </>
+    );
+}
+
+export function OwnerStatementComparison({
+    props,
+}: {
+    props: OwnerStatementPageProps;
+}) {
+    return (
+        <ReportComparison
+            comparison={props.comparison}
+            filters={props.filters}
+        />
     );
 }

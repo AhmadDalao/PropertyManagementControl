@@ -147,6 +147,7 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/owner-statement-page.tsx',
             'resources/js/modules/reports/owner-statement-records.tsx',
             'resources/js/modules/reports/owner-statement-summary.tsx',
+            'resources/js/modules/reports/owner-statement-tabs.tsx',
             'resources/js/modules/reports/report-costs.tsx',
             'resources/js/modules/reports/report-filters.tsx',
             'resources/js/modules/reports/report-library.tsx',

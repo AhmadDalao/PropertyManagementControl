@@ -271,6 +271,9 @@ export type OwnerStatementPageProps = ReportDataProps & {
     };
 };
 
+export type OwnerStatementTab =
+    'overview' | 'comparison' | 'arrears' | 'payments' | 'maintenance';
+
 export type PropertyReportTab =
     'overview' | 'collections' | 'costs' | 'operations';
 

@@ -47,6 +47,10 @@
     margin: 0;
 }
 
+.pmc-owner-statement-panel {
+    min-width: 0;
+}
+
 @media (max-width: 575.98px) {
     .pmc-statement-context {
         grid-template-columns: repeat(2, minmax(0, 1fr));

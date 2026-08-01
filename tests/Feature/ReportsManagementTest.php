@@ -75,6 +75,7 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.0.key', 'owner-statement')
                 ->where('reportLibrary.0.cards.0.downloads.0.label', 'Download PDF')
                 ->where('reportLibrary.0.cards.0.downloads.1.label', 'Download DOCX')
+                ->where('reportLibrary.0.cards.0.downloads.2.label', 'Download XLSX')
                 ->where('reportLibrary.1.key', 'finance')
                 ->where('reportLibrary.2.key', 'operations')
                 ->where('reportLibrary.3.key', 'control'));

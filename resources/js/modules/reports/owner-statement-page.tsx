@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 import '../../../css/styles/reports.css';
 
@@ -7,9 +8,16 @@ import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 
 import { OwnerStatementRecords } from './owner-statement-records';
-import { OwnerStatementSummary } from './owner-statement-summary';
+import {
+    OwnerStatementComparison,
+    OwnerStatementOverview,
+} from './owner-statement-summary';
+import {
+    isOwnerStatementTab,
+    OwnerStatementTabs,
+} from './owner-statement-tabs';
 import { cleanReportFilters } from './report-query';
-import type { OwnerStatementPageProps } from './types';
+import type { OwnerStatementPageProps, OwnerStatementTab } from './types';
 
 export default function OwnerStatementPage() {
     const { props } = usePage<OwnerStatementPageProps>();
@@ -28,6 +36,23 @@ export default function OwnerStatementPage() {
         }),
     ).toString();
     const suffix = query ? `?${query}` : '';
+    const [activeTab, setActiveTab] = useState<OwnerStatementTab>(() => {
+        if (typeof window === 'undefined') {
+            return 'overview';
+        }
+
+        const requested = new URLSearchParams(window.location.search).get(
+            'tab',
+        );
+
+        return isOwnerStatementTab(requested) ? requested : 'overview';
+    });
+    const selectTab = (tab: OwnerStatementTab) => {
+        setActiveTab(tab);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        window.history.replaceState({}, '', url);
+    };
 
     return (
         <AdminLayout>
@@ -39,7 +64,7 @@ export default function OwnerStatementPage() {
                 description={t('reports.statement_description')}
                 actions={[
                     {
-                        label: t('actions.back'),
+                        label: t('common.back'),
                         href: `/reports${suffix}`,
                         icon: 'bi-arrow-left',
                         tone: 'quiet',
@@ -55,6 +80,13 @@ export default function OwnerStatementPage() {
                         label: t('reports.download_word'),
                         href: `/reports/statement.docx${suffix}`,
                         icon: 'bi-file-earmark-word',
+                        tone: 'primary',
+                        native: true,
+                    },
+                    {
+                        label: t('actions.export_xlsx'),
+                        href: `/reports/export${suffix}`,
+                        icon: 'bi-file-earmark-excel',
                         tone: 'primary',
                         native: true,
                     },
@@ -82,8 +114,25 @@ export default function OwnerStatementPage() {
                 </div>
             </section>
 
-            <OwnerStatementSummary props={props} />
-            <OwnerStatementRecords props={props} />
+            <OwnerStatementTabs active={activeTab} onSelect={selectTab} />
+            <section
+                id="owner-statement-panel"
+                className="pmc-owner-statement-panel"
+                role="tabpanel"
+                aria-labelledby={`owner-statement-tab-${activeTab}`}
+            >
+                {activeTab === 'overview' ? (
+                    <OwnerStatementOverview props={props} />
+                ) : null}
+                {activeTab === 'comparison' ? (
+                    <OwnerStatementComparison props={props} />
+                ) : null}
+                {activeTab === 'arrears' ||
+                activeTab === 'payments' ||
+                activeTab === 'maintenance' ? (
+                    <OwnerStatementRecords props={props} section={activeTab} />
+                ) : null}
+            </section>
         </AdminLayout>
     );
 }

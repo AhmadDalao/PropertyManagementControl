@@ -48,6 +48,29 @@
         padding-inline: 0.5rem;
     }
 
+    .pmc-owner-statement-tabs {
+        position: sticky;
+        z-index: 15;
+        top: calc(var(--pmc-topbar-height) + 0.5rem);
+        display: flex;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        background: rgb(255 255 255 / 96%);
+        box-shadow: 0 0.35rem 1rem rgb(17 17 17 / 6%);
+        scrollbar-width: none;
+    }
+
+    .pmc-owner-statement-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .pmc-owner-statement-tabs button {
+        width: auto;
+        min-width: max-content;
+        min-height: 2.75rem;
+        flex: 0 0 auto;
+    }
+
     .pmc-report-breakdown-grid,
     .pmc-report-record-grid {
         grid-template-columns: 1fr;
