@@ -1,6 +1,6 @@
 # MVP Readiness Audit
 
-Updated: July 25, 2026
+Updated: August 1, 2026
 
 ## Decision
 
@@ -18,13 +18,14 @@ The product is an operational MVP release candidate. It does not need another br
 - Owners and managers start each day in one prioritized Action Center rather than checking four separate modules. Collections, maintenance, renewals, and move-outs retain their original scoped source records and direct action pages; the combined queue adds property, responsible-person, priority, type, pagination, and XLSX controls without duplicating workflow state.
 - Owners and managers compare every accessible property in one card-based Portfolio Control workspace, rank pressure by arrears, occupancy, collection, or cash flow, and continue directly into the selected property dashboard, Action Center, or reports.
 - Owners and managers open a dedicated Operating Report for one authorized top-level property, keep its hierarchy, ownership, occupancy, period finances, maintenance, and source queues in context, and download the same scope as PDF, DOCX, or XLSX.
+- Owners and managers open a dedicated Account Statement from one authorized tenant record, review all scoped contracts plus period installments, payments, documents, and maintenance in focused tabs, and download the same bounded ledger as PDF, DOCX, or XLSX. Currency totals remain separate, and assigned managers never receive records from an unassigned property.
 - Lease, payment, maintenance, and expense details expose a role-aware Next Step panel instead of hiding lifecycle actions across edit forms and index menus.
 - Maintenance stays accountable after management marks work resolved: tenant sign-off or reopen actions, service-report PDFs, and a shared “awaiting tenant confirmation” queue/filter keep unresolved handoffs visible to both sides and to scoped XLSX exports.
 - Public pages, authentication, admin, forms, tables, reports, documentation, CMS, map, validation, and statuses support English and Arabic with RTL rendering.
 
 ## UI and scale evidence
 
-- Playwright and axe cover 55 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes and every Property Operating Report tab have no page-level horizontal overflow.
+- Playwright and axe cover 56 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes, every Property Operating Report tab, and the tenant Account Statement have no page-level horizontal overflow.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
@@ -37,6 +38,7 @@ The product is an operational MVP release candidate. It does not need another br
 - Financial writes use database transactions, allocation locks, reversible void flows, and lease-derived portfolio/tenant/currency authority.
 - Signed uploads require a genuine PDF signature. Contracts, statements, receipts, and tenant-visible files use authorized private downloads.
 - Reports and exports are real XLSX workbooks, not renamed CSV files.
+- Tenant Account Statement totals are calculated from the complete authorized dataset even when the browser ledger reaches its 100-row safety limit; mixed SAR/USD history is never collapsed into one fake total.
 - Move-out evidence remains PDF-only, move-out exports are real XLSX workbooks, and direct active/expired lease deletion cannot bypass the handover guard.
 - Maintenance states are guarded: open/in-progress work may resolve or cancel; resolved/cancelled work must reopen before continuing.
 - Activity history covers operational state changes without exposing secrets or private server paths.

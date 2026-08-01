@@ -56,6 +56,17 @@ final class TenantDetailHeaderPresenter
             ];
         }
 
+        if (PortfolioModules::enabledForUser($data->actor, 'reports')
+            && collect(['leases', 'payments', 'maintenance', 'documents'])->contains(
+                fn (string $module): bool => PortfolioModules::enabledForUser($data->actor, $module),
+            )) {
+            $actions[] = [
+                'label' => trans('app.tenants.account_statement'),
+                'href' => route('tenants.statement.show', $tenant),
+                'variant' => 'secondary',
+            ];
+        }
+
         return [
             'eyebrow' => trans('app.tenants.detail_eyebrow'),
             'title' => filled($tenant->user?->name)

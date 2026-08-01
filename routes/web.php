@@ -43,6 +43,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemReadinessController;
+use App\Http\Controllers\TenantAccountStatementController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserPortalAccessController;
@@ -114,6 +115,18 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->middleware('portfolio.module:assets');
     Route::resource('assets', AssetController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:assets')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::resource('tenants', TenantController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:tenants')->middlewareFor(['create', 'store'], 'property.assigned');
+    Route::get('/tenants/{tenant}/account-statement', [TenantAccountStatementController::class, 'show'])
+        ->name('tenants.statement.show')
+        ->middleware(['portfolio.module:tenants', 'portfolio.module:reports']);
+    Route::get('/tenants/{tenant}/account-statement.pdf', [TenantAccountStatementController::class, 'pdf'])
+        ->name('tenants.statement.pdf')
+        ->middleware(['portfolio.module:tenants', 'portfolio.module:reports']);
+    Route::get('/tenants/{tenant}/account-statement.docx', [TenantAccountStatementController::class, 'word'])
+        ->name('tenants.statement.word')
+        ->middleware(['portfolio.module:tenants', 'portfolio.module:reports']);
+    Route::get('/tenants/{tenant}/account-statement.xlsx', [TenantAccountStatementController::class, 'workbook'])
+        ->name('tenants.statement.workbook')
+        ->middleware(['portfolio.module:tenants', 'portfolio.module:reports']);
     Route::resource('leases', LeaseController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:leases')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/leases/{lease}/renew', [LeaseController::class, 'renew'])->name('leases.renew')->middleware('portfolio.module:leases');
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');

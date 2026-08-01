@@ -324,6 +324,52 @@ if (! $activeSignoffCount) {
 
 smoke_note('/maintenance-requests tenant sign-off queue scoped');
 
+$tenantIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/tenants?per_page=10&locale=en');
+$tenantPayload = smoke_page_payload($tenantIndex['body']);
+$tenantRows = $tenantPayload['props']['tenants']['data'] ?? [];
+
+if (is_array($tenantRows) && isset($tenantRows[0]['id'])) {
+    $tenantId = (int) $tenantRows[0]['id'];
+    $tenantStatement = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/tenants/{$tenantId}/account-statement?locale=ar",
+    );
+
+    if ($tenantStatement['status'] !== 200
+        || smoke_component($tenantStatement['body']) !== 'admin/tenants/statement') {
+        smoke_fail("Tenant account statement {$tenantId} did not load.");
+    }
+
+    smoke_note("/tenants/{$tenantId}/account-statement admin/tenants/statement");
+
+    foreach ([
+        'pdf' => 'application/pdf',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ] as $extension => $contentType) {
+        $download = smoke_request(
+            $baseUrl,
+            $cookieFile,
+            'GET',
+            "/tenants/{$tenantId}/account-statement.{$extension}",
+        );
+        $downloadHeaders = strtolower((string) $download['headers']);
+        $signature = $extension === 'pdf' ? '%PDF-' : 'PK';
+
+        if ($download['status'] !== 200
+            || ! str_contains($downloadHeaders, $contentType)
+            || ! str_starts_with((string) $download['body'], $signature)) {
+            smoke_fail("Tenant account statement {$extension} download was invalid.");
+        }
+
+        smoke_note("/tenants/{$tenantId}/account-statement.{$extension} valid");
+    }
+} else {
+    smoke_note('No tenant available for the account statement check.');
+}
+
 $reportsIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/reports?locale=ar');
 $reportsPayload = smoke_page_payload($reportsIndex['body']);
 $propertyOptions = $reportsPayload['props']['propertyOptions'] ?? [];

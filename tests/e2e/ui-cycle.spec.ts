@@ -648,6 +648,65 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('tenant account statement stays compact, scoped, and bilingual', async ({
+        page,
+    }) => {
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/tenants/1/account-statement?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: /account statement$/i,
+                }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-tenant-statement-context'),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+            await expect(
+                page.locator('.pmc-tenant-financial-card').first(),
+            ).toBeVisible();
+            await expect(
+                page.locator('a[href^="/tenants/1/account-statement.pdf"]'),
+            ).toBeVisible();
+            await expect(
+                page.locator('a[href^="/tenants/1/account-statement.xlsx"]'),
+            ).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.getByRole('button', { name: 'Payments' }).click();
+        await expect(page).toHaveURL(/tab=payments/);
+        await expect(
+            page.getByText('Payment ledger', { exact: true }),
+        ).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-tenant-statement-tabs button, .pmc-tenant-statement-period button',
+        );
+
+        await page.goto('/tenants/1/account-statement?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: /^كشف حساب /,
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'الدفعات' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+    });
+
     test('action center keeps daily work prioritized, card-first, and bilingual', async ({
         page,
     }) => {

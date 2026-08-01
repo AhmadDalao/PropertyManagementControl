@@ -1,0 +1,32 @@
+.pmc-tenant-statement-tabs {
+    display: flex;
+    gap: 0.35rem;
+    margin: 0.9rem 0;
+    padding: 0.3rem;
+    overflow-x: auto;
+    border: 1px solid var(--pmc-border, #e4ded3);
+    border-radius: 0.9rem;
+    background: #f7f4ee;
+    scrollbar-width: none;
+}
+
+.pmc-tenant-statement-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.pmc-tenant-statement-tabs button {
+    flex: 0 0 auto;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.8rem;
+    border: 0;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: #625d55;
+    font-size: 0.76rem;
+    font-weight: 800;
+}
+
+.pmc-tenant-statement-tabs button.is-active {
+    background: #111;
+    color: #fff;
+}

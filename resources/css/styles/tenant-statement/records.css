@@ -1,0 +1,130 @@
+.pmc-tenant-statement-panel {
+    padding: 0.8rem;
+}
+
+.pmc-tenant-statement-panel > header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.8rem;
+    margin-bottom: 0.75rem;
+}
+
+.pmc-tenant-statement-panel > header div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-tenant-statement-panel > header p {
+    margin: 0;
+    color: #171614;
+    font-size: 0.95rem;
+    font-weight: 900;
+}
+
+.pmc-tenant-statement-panel > header span {
+    color: #746e65;
+    font-size: 0.74rem;
+}
+
+.pmc-tenant-statement-panel > header > strong {
+    display: grid;
+    place-items: center;
+    min-width: 2rem;
+    min-height: 2rem;
+    border-radius: 999px;
+    background: #111;
+    color: #fff;
+    font-size: 0.75rem;
+}
+
+.pmc-tenant-statement-record {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid #e7e1d7;
+    border-radius: 0.8rem;
+    background: #fff;
+    color: inherit;
+    text-decoration: none;
+    transition:
+        border-color 140ms ease,
+        transform 140ms ease;
+}
+
+.pmc-tenant-statement-record:hover {
+    border-color: #d19c25;
+    color: inherit;
+    transform: translateY(-1px);
+}
+
+.pmc-tenant-statement-record__head,
+.pmc-tenant-statement-record__meta {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 0.65rem;
+}
+
+.pmc-tenant-statement-record__head > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-tenant-statement-record__head strong,
+.pmc-tenant-statement-record__meta strong {
+    color: #171614;
+    font-size: 0.79rem;
+    font-weight: 900;
+}
+
+.pmc-tenant-statement-record__head span,
+.pmc-tenant-statement-record__meta span {
+    overflow-wrap: anywhere;
+    color: #746e65;
+    font-size: 0.7rem;
+}
+
+.pmc-tenant-statement-record__meta {
+    align-items: end;
+    padding-top: 0.55rem;
+    border-top: 1px solid #f0ece5;
+}
+
+.pmc-tenant-statement-record__meta strong {
+    flex: 0 0 auto;
+}
+
+.pmc-tenant-statement-record__alert {
+    padding: 0.4rem 0.55rem;
+    border-radius: 0.5rem;
+    background: #fff1ed;
+    color: #9d321e;
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.pmc-tenant-statement-empty {
+    padding: 2rem 1rem;
+    border: 1px dashed #dcd4c8;
+    border-radius: 0.75rem;
+    color: #746e65;
+    text-align: center;
+}
+
+.pmc-tenant-statement-limit {
+    margin: 0.75rem 0 0;
+    color: #746e65;
+    font-size: 0.7rem;
+    text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-tenant-statement-record {
+        transition: none;
+    }
+}

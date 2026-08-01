@@ -1,0 +1,87 @@
+.pmc-tenant-financial-grid,
+.pmc-tenant-statement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    gap: 0.7rem;
+}
+
+.pmc-tenant-financial-grid {
+    margin-bottom: 0.8rem;
+}
+
+.pmc-tenant-financial-card,
+.pmc-tenant-statement-panel {
+    min-width: 0;
+    border: 1px solid var(--pmc-border, #e4ded3);
+    border-radius: 1rem;
+    background: #fff;
+}
+
+.pmc-tenant-financial-card {
+    overflow: hidden;
+}
+
+.pmc-tenant-financial-card > header,
+.pmc-tenant-financial-card > footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem;
+    background: #f8f5ef;
+}
+
+.pmc-tenant-financial-card > header span,
+.pmc-tenant-financial-card > footer span {
+    color: #6e685f;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-tenant-financial-card > header strong {
+    color: #111;
+    font-size: 0.8rem;
+}
+
+.pmc-tenant-financial-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+}
+
+.pmc-tenant-financial-card dl > div {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+    padding: 0.75rem 0.8rem;
+    border-top: 1px solid #eee9df;
+}
+
+.pmc-tenant-financial-card dl > div:nth-child(even) {
+    border-inline-start: 1px solid #eee9df;
+}
+
+.pmc-tenant-financial-card dt {
+    color: #777168;
+    font-size: 0.67rem;
+}
+
+.pmc-tenant-financial-card dd {
+    margin: 0;
+    color: #111;
+    font-size: 0.9rem;
+    font-weight: 900;
+}
+
+.pmc-tenant-financial-card > footer.is-overdue {
+    background: #fff1ed;
+    color: #a5311e;
+}
+
+@media (max-width: 575.98px) {
+    .pmc-tenant-financial-grid,
+    .pmc-tenant-statement-grid {
+        grid-template-columns: 1fr;
+    }
+}
