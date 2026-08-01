@@ -456,7 +456,23 @@ test.describe('authenticated administration', () => {
             const mobileCards = page.locator('.pmc-mobile-record-card');
 
             if ((await mobileCards.count()) > 0) {
-                await expect(mobileCards.first()).toBeVisible();
+                const firstMobileCard = mobileCards.first();
+                await expect(firstMobileCard).toBeVisible();
+
+                const metadata = firstMobileCard.locator(
+                    '.pmc-mobile-record-meta',
+                );
+
+                if ((await metadata.count()) > 0) {
+                    const values = await metadata.locator(':scope > div').count();
+                    const columns = await metadata.evaluate((element) => {
+                        return getComputedStyle(element).gridTemplateColumns.split(
+                            ' ',
+                        ).length;
+                    });
+
+                    expect(columns).toBe(Math.min(values, 3));
+                }
             }
         }
     });

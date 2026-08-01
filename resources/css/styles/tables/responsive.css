@@ -178,11 +178,19 @@
         font-size: 0.66rem;
     }
 
-    .pmc-mobile-record-card dl {
+    .pmc-mobile-record-meta {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: minmax(0, 1fr);
         gap: 0.35rem;
         margin: 0;
+    }
+
+    .pmc-mobile-record-meta.is-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-mobile-record-meta.is-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .pmc-mobile-record-card dl > div {

@@ -67,7 +67,9 @@ export function MobileRecordList<T extends DataTableRow>({
                                 {config.status ? config.status(row) : null}
                             </div>
                             {config.meta && config.meta.length > 0 ? (
-                                <dl>
+                                <dl
+                                    className={`pmc-mobile-record-meta is-${Math.min(config.meta.length, 3)}`}
+                                >
                                     {config.meta.slice(0, 3).map((item) => (
                                         <div key={item.label}>
                                             <dt>{text(item.label)}</dt>
