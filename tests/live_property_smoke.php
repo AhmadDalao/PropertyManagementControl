@@ -240,6 +240,7 @@ $authChecks = [
     '/payments/create?locale=en' => 'admin/resource-form',
     '/payments/create?locale=ar' => 'admin/resource-form',
     '/maintenance-requests' => 'admin/maintenance/index',
+    '/maintenance-requests?confirmation=pending&locale=ar' => 'admin/maintenance/index',
     '/expenses?locale=en' => 'admin/expenses/index',
     '/expenses?locale=ar' => 'admin/expenses/index',
     '/expenses/create?locale=en' => 'admin/resource-form',
@@ -280,6 +281,48 @@ foreach ($authChecks as $path => $expectedComponent) {
 
     smoke_note("{$path} {$component}");
 }
+
+$maintenanceSignoffs = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/maintenance-requests?confirmation=pending&locale=ar',
+);
+$maintenancePayload = smoke_page_payload($maintenanceSignoffs['body']);
+$maintenanceProps = $maintenancePayload['props'] ?? [];
+$maintenanceRows = $maintenanceProps['requests']['data'] ?? [];
+$maintenanceCounts = $maintenanceProps['counts'] ?? [];
+
+if (($maintenanceProps['filters']['confirmation'] ?? null) !== 'pending') {
+    smoke_fail('Maintenance tenant sign-off filter did not persist.');
+}
+
+if (is_array($maintenanceRows)) {
+    foreach ($maintenanceRows as $row) {
+        if (! is_array($row) || ($row['awaiting_confirmation'] ?? null) !== true) {
+            smoke_fail('Maintenance tenant sign-off filter returned an unrelated row.');
+        }
+    }
+}
+
+$activeSignoffCount = false;
+
+if (is_array($maintenanceCounts)) {
+    foreach ($maintenanceCounts as $count) {
+        if (is_array($count)
+            && ($count['filter']['confirmation'] ?? null) === 'pending'
+            && ($count['active'] ?? false) === true) {
+            $activeSignoffCount = true;
+            break;
+        }
+    }
+}
+
+if (! $activeSignoffCount) {
+    smoke_fail('Maintenance tenant sign-off quick filter was not active.');
+}
+
+smoke_note('/maintenance-requests tenant sign-off queue scoped');
 
 $reportsIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/reports?locale=ar');
 $reportsPayload = smoke_page_payload($reportsIndex['body']);
