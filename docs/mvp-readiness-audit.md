@@ -25,7 +25,7 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## UI and scale evidence
 
-- Playwright and axe cover 56 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes, every Property Operating Report tab, and the tenant Account Statement have no page-level horizontal overflow.
+- Playwright and axe cover 58 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes, every Property Operating Report tab, and the tenant Account Statement have no page-level horizontal overflow. Browser titles use the localized product name instead of framework starter branding, and the tenant command center keeps its payment, maintenance, and contract panels fully translated in Arabic.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.

@@ -4,13 +4,17 @@ import type { ResolvedComponent } from '@inertiajs/react';
 import { createInertiaApp } from '@inertiajs/react';
 import { createRoot } from 'react-dom/client';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Property Management Control';
 type PageModule = { default: ResolvedComponent };
 
 const pages = import.meta.glob<PageModule>('./pages/**/*.tsx');
+const fallbackAppName = 'Property Management Control';
+
+function appName(): string {
+    return document.documentElement.dataset.appName?.trim() || fallbackAppName;
+}
 
 createInertiaApp({
-    title: (title) => (title ? `${title} | ${appName}` : appName),
+    title: (title) => (title ? `${title} | ${appName()}` : appName()),
     resolve: async (name) => {
         const page = pages[`./pages/${name}.tsx`];
 

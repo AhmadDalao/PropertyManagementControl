@@ -86,6 +86,22 @@ test.describe('public shell', () => {
         }
     });
 
+    test('document titles use the localized product name without starter branding', async ({
+        page,
+    }) => {
+        await page.goto('/login?locale=en');
+        await expect(page).toHaveTitle(
+            /Property Control Login \| Property Management Control$/,
+        );
+        await expect(page).not.toHaveTitle(/Laravel/);
+
+        await page.goto('/login?locale=ar');
+        await expect(page).toHaveTitle(
+            /تسجيل الدخول إلى نظام العقارات \| نظام إدارة العقارات$/,
+        );
+        await expect(page).not.toHaveTitle(/Laravel/);
+    });
+
     test('mobile public navigation locks the page and restores focus', async ({
         page,
     }) => {
@@ -2671,6 +2687,37 @@ test.describe('local role dashboards', () => {
             await expectNoHorizontalOverflow(page);
         });
     }
+
+    test('tenant dashboard panels are fully localized in Arabic', async ({
+        page,
+    }) => {
+        await login(
+            page,
+            process.env.E2E_TENANT_EMAIL ?? localAccounts[3].email,
+            process.env.E2E_PASSWORD ?? 'password',
+        );
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/dashboard?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByText('سجل الدفعات', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('طلبات الصيانة', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('العقد والمستندات', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('body')).not.toContainText('Payment history');
+        await expect(page.locator('body')).not.toContainText(
+            'Maintenance requests',
+        );
+        await expect(page.locator('body')).not.toContainText(
+            'Lease and documents',
+        );
+        await expectNoHorizontalOverflow(page);
+    });
 });
 
 async function login(page: Page, email: string, password: string) {

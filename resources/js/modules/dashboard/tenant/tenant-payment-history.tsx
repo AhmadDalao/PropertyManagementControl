@@ -14,9 +14,9 @@ export function TenantPaymentHistory({
 
     return (
         <WorkspacePanel
-            eyebrow="Payments"
-            title="Payment history"
-            description="Posted rent payments and downloadable receipts."
+            eyebrow={t('dashboard.tenant_payments_eyebrow')}
+            title={t('dashboard.tenant_payment_history')}
+            description={t('dashboard.tenant_payment_history_description')}
         >
             <div className="pmc-command-list">
                 {payments.length > 0 ? (

@@ -2,6 +2,7 @@
 <html
     lang="{{ str_replace('_', '-', app()->getLocale()) }}"
     dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}"
+    data-app-name="{{ trans('app.app_name') }}"
 >
     <head>
         <meta charset="utf-8">
@@ -16,7 +17,7 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
         <x-inertia::head>
-            <title>{{ config('app.name', 'Laravel') }}</title>
+            <title>{{ trans('app.app_name') }}</title>
         </x-inertia::head>
     </head>
     <body>

@@ -50,7 +50,7 @@ class LocalizationSourceGuardTest extends TestCase
             'resources/js/layouts/public-layout.tsx',
         ];
 
-        foreach (['auth', 'public-site', 'system-readiness'] as $module) {
+        foreach (['auth', 'dashboard/tenant', 'public-site', 'system-readiness'] as $module) {
             $moduleFiles = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator(
                     resource_path("js/modules/{$module}"),

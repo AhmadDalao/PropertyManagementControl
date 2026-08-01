@@ -11,16 +11,16 @@ export function TenantMaintenancePanel({
 }: {
     props: TenantDashboardProps;
 }) {
-    const { text } = useTranslator();
+    const { t, text } = useTranslator();
     const requests = props.tenantPortal.requests;
 
     return (
         <WorkspacePanel
-            eyebrow="Service"
-            title="Maintenance requests"
-            description="Track every request you submitted for this rental."
+            eyebrow={t('dashboard.tenant_service_eyebrow')}
+            title={t('dashboard.tenant_maintenance_requests')}
+            description={t('dashboard.tenant_maintenance_requests_description')}
             action={{
-                label: 'Submit request',
+                label: t('dashboard.tenant_submit_request'),
                 href: '/maintenance-requests/create',
             }}
         >

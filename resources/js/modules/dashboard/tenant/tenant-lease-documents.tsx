@@ -17,9 +17,9 @@ export function TenantLeaseDocuments({
 
     return (
         <WorkspacePanel
-            eyebrow="Contract"
-            title="Lease and documents"
-            description="Your contract period and downloadable PDF files."
+            eyebrow={t('dashboard.tenant_contract_eyebrow')}
+            title={t('dashboard.tenant_lease_documents')}
+            description={t('dashboard.tenant_lease_documents_description')}
         >
             <div className="pmc-tenant-lease-summary">
                 <div>
