@@ -22,10 +22,47 @@
 }
 
 @media (max-width: 767.98px) {
-    .pmc-doc-discovery nav > div,
+    .pmc-doc-discovery nav > div {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
     .pmc-doc-workflow-grid,
     .pmc-doc-guide-grid {
-        grid-template-columns: minmax(0, 1fr);
+        display: flex;
+        gap: 0.6rem;
+        padding-bottom: 0.25rem;
+        overflow-x: auto;
+        overscroll-behavior-inline: contain;
+        scroll-snap-type: inline proximity;
+        scrollbar-width: thin;
+    }
+
+    .pmc-doc-workflow-card {
+        flex: 0 0 min(18rem, calc(100vw - 4.25rem));
+        scroll-snap-align: start;
+    }
+
+    .pmc-doc-guide-link {
+        min-height: 7rem;
+        flex: 0 0 min(17rem, calc(100vw - 4.25rem));
+        scroll-snap-align: start;
+    }
+
+    .pmc-doc-shortcut-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.45rem;
+    }
+
+    .pmc-doc-shortcut-list > a {
+        min-height: 4.75rem;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-content: center;
+        padding: 0.6rem;
+    }
+
+    .pmc-doc-shortcut-list em {
+        grid-column: 1 / -1;
+        padding-inline-start: 2.85rem;
     }
 
     .pmc-doc-detail-layout > aside {
@@ -71,6 +108,12 @@
     }
 
     .pmc-doc-controls > div {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 359.98px) {
+    .pmc-doc-shortcut-list {
         grid-template-columns: minmax(0, 1fr);
     }
 }

@@ -2276,6 +2276,38 @@ test.describe('authenticated administration', () => {
                 }),
             ).toBeVisible();
             await expect(page.locator('.pmc-doc-role-card')).toBeVisible();
+
+            if (viewport.width < 768) {
+                const guideRow = page.locator('.pmc-doc-guide-grid');
+                const workflowRow = page.locator('.pmc-doc-workflow-grid');
+                const shortcuts = page.locator('.pmc-doc-shortcut-list');
+                await expect(guideRow).toBeVisible();
+                await expect(workflowRow).toBeVisible();
+                expect(
+                    await guideRow.evaluate(
+                        (node) => node.scrollWidth > node.clientWidth,
+                    ),
+                ).toBe(true);
+                expect(
+                    await workflowRow.evaluate(
+                        (node) => node.scrollWidth > node.clientWidth,
+                    ),
+                ).toBe(true);
+                expect(
+                    await shortcuts.evaluate(
+                        (node) =>
+                            getComputedStyle(node).gridTemplateColumns.split(
+                                ' ',
+                            ).length,
+                    ),
+                ).toBe(2);
+                expect(
+                    await page.evaluate(
+                        () => document.documentElement.scrollHeight,
+                    ),
+                ).toBeLessThan(3000);
+            }
+
             await page.getByLabel('Search guides').fill('no-such-guide');
             await expect(
                 page.getByText('No guides match this search'),

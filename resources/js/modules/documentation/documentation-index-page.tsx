@@ -34,11 +34,11 @@ export default function DocumentationIndexPage() {
                 />
                 {search.hasResults ? (
                     <>
-                        <DocumentationWorkflows workflows={search.workflows} />
                         <DocumentationLibrary
                             guides={search.guides}
                             shortcuts={search.shortcuts}
                         />
+                        <DocumentationWorkflows workflows={search.workflows} />
                         <DocumentationControlChecks
                             checks={search.checks}
                             searchActive={search.query.trim() !== ''}
