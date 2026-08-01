@@ -59,6 +59,9 @@ export type CollectionQueueItem = {
     assigned_to?: string | null;
 };
 
+export type OperationsWorkSection =
+    'actions' | 'collections' | 'maintenance' | 'move_outs';
+
 export type PropertyPerformance = {
     id: number;
     title_en: string;

@@ -21,6 +21,7 @@ export type {
     PropertyFocusOption,
     PropertyPerformance,
 } from './operations-types';
+export type { OperationsWorkSection } from './operations-types';
 export type { NextAction } from './shared-types';
 export type { TenantDashboardProps } from './tenant-types';
 

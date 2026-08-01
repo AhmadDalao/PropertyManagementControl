@@ -2978,6 +2978,30 @@ test.describe('local role dashboards', () => {
                 await expect(
                     todayGroup.locator(':scope > button'),
                 ).toHaveAttribute('aria-expanded', 'true');
+                const workTabs = todayGroup.locator(
+                    '.pmc-dashboard-today-tabs button',
+                );
+                await expect(workTabs).toHaveCount(4);
+                await expect(
+                    todayGroup.locator('[data-dashboard-work-panel="actions"]'),
+                ).toBeVisible();
+                await expect(
+                    todayGroup.locator(
+                        '[data-dashboard-work-panel="collections"]',
+                    ),
+                ).toBeHidden();
+                await todayGroup
+                    .locator('[data-dashboard-work-tab="collections"]')
+                    .click();
+                await expect(page).toHaveURL(/work=collections/);
+                await expect(
+                    todayGroup.locator('[data-dashboard-work-panel="actions"]'),
+                ).toBeHidden();
+                await expect(
+                    todayGroup.locator(
+                        '[data-dashboard-work-panel="collections"]',
+                    ),
+                ).toBeVisible();
                 await expect(
                     portfolioGroup.locator(':scope > button'),
                 ).toHaveAttribute('aria-expanded', 'false');

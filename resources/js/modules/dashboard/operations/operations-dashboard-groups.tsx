@@ -2,10 +2,9 @@ import { useTranslator } from '@/lib/i18n';
 
 import { DashboardSectionGroup } from '../shared/dashboard-section-group';
 import type { OperationsDashboardProps } from '../types';
-import { OperationsActionQueue } from './action-queue';
 import { LaunchReadinessPanel } from './launch-readiness-panel';
 import { OperationsInsightPanels } from './operations-insight-panels';
-import { OperationsPriorityPanels } from './operations-priority-panels';
+import { OperationsTodayWorkspace } from './operations-today-workspace';
 import { PlatformStatusPanel } from './platform-status-panel';
 import { PropertyPerformanceGrid } from './property-performance-grid';
 
@@ -25,8 +24,7 @@ export function OperationsDashboardGroups({
                 icon="bi-list-check"
                 defaultOpen
             >
-                <OperationsActionQueue actions={props.nextActions} />
-                <OperationsPriorityPanels props={props} />
+                <OperationsTodayWorkspace props={props} />
             </DashboardSectionGroup>
 
             <DashboardSectionGroup
