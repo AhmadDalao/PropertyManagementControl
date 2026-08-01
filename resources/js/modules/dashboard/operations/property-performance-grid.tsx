@@ -114,7 +114,7 @@ export function PropertyPerformanceGrid({
                                 })}
                             </span>
                             <Link
-                                href={`/reports?property_id=${property.id}`}
+                                href={`/reports/properties/${property.id}`}
                                 aria-label={t(
                                     'dashboard.open_property_report',
                                     undefined,

@@ -281,6 +281,29 @@ foreach ($authChecks as $path => $expectedComponent) {
     smoke_note("{$path} {$component}");
 }
 
+$reportsIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/reports?locale=ar');
+$reportsPayload = smoke_page_payload($reportsIndex['body']);
+$propertyOptions = $reportsPayload['props']['propertyOptions'] ?? [];
+
+if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
+    $propertyId = (int) $propertyOptions[0]['id'];
+    $propertyReport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/reports/properties/{$propertyId}?locale=ar",
+    );
+
+    if ($propertyReport['status'] !== 200
+        || smoke_component($propertyReport['body']) !== 'admin/reports/property') {
+        smoke_fail("Property report {$propertyId} did not load.");
+    }
+
+    smoke_note("/reports/properties/{$propertyId} admin/reports/property");
+} else {
+    smoke_note('No property available for the dedicated operating report check.');
+}
+
 $leaseIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/leases');
 $leasePayload = smoke_page_payload($leaseIndex['body']);
 $leaseRows = $leasePayload['props']['leases']['data'] ?? [];

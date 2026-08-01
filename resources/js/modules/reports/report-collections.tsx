@@ -3,9 +3,9 @@ import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate, localizedNumber } from '@/lib/utils';
 
 import { BreakdownBars, ReportRecordSection } from './report-visuals';
-import type { ReportsPageProps } from './types';
+import type { ReportDataProps } from './types';
 
-export function ReportCollections({ props }: { props: ReportsPageProps }) {
+export function ReportCollections({ props }: { props: ReportDataProps }) {
     const { locale, t } = useTranslator();
 
     return (
@@ -137,7 +137,7 @@ export function ReportCollections({ props }: { props: ReportsPageProps }) {
 }
 
 function collectionHref(
-    props: ReportsPageProps,
+    props: ReportDataProps,
     status: string,
     followUp?: string,
 ): string {

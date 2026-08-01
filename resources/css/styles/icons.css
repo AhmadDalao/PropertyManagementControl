@@ -110,6 +110,9 @@
 .bi-calendar-event::before {
     content: '\f1e8';
 }
+.bi-calendar-range::before {
+    content: '\f1f1';
+}
 .bi-calendar2-check::before {
     content: '\f1f8';
 }
@@ -190,6 +193,9 @@
 }
 .bi-display::before {
     content: '\f302';
+}
+.bi-door-open::before {
+    content: '\f308';
 }
 .bi-download::before {
     content: '\f30a';
@@ -293,8 +299,14 @@
 .bi-layout-wtf::before {
     content: '\f466';
 }
+.bi-layers::before {
+    content: '\f45b';
+}
 .bi-list::before {
     content: '\f479';
+}
+.bi-list-check::before {
+    content: '\f473';
 }
 .bi-lock::before {
     content: '\f47b';

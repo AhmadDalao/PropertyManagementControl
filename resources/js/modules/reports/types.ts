@@ -108,7 +108,7 @@ export type ReportPreset = {
     url: string;
 };
 
-export type ReportsPageProps = SharedProps & {
+export type ReportDataProps = SharedProps & {
     mode: ReportMode;
     filters: {
         date_from: string;
@@ -116,13 +116,6 @@ export type ReportsPageProps = SharedProps & {
         portfolio_id?: number | null;
         property_id?: number | null;
     };
-    portfolioOptions: Array<{ id: number; name: string }>;
-    propertyOptions: Array<{
-        id: number;
-        portfolio_id: number;
-        name: string;
-    }>;
-    presetVisibilityOptions: PresetVisibility[];
     summary: {
         revenue: number;
         expenses: number;
@@ -161,23 +154,77 @@ export type ReportsPageProps = SharedProps & {
         documentsAdded: number;
     };
     operationalJournal: OperationalJournalEvent[];
+};
+
+export type ReportsPageProps = ReportDataProps & {
+    portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: Array<{
+        id: number;
+        portfolio_id: number;
+        name: string;
+    }>;
+    presetVisibilityOptions: PresetVisibility[];
     savedPresets: ReportPreset[];
     reportLibrary: ReportLibraryGroup[];
 };
 
-export type OwnerStatementPageProps = Omit<
-    ReportsPageProps,
-    | 'portfolioOptions'
-    | 'propertyOptions'
-    | 'presetVisibilityOptions'
-    | 'savedPresets'
-    | 'reportLibrary'
-> & {
+export type OwnerStatementPageProps = ReportDataProps & {
     statement: {
         portfolio: { en: string; ar: string };
         property: { en: string; ar: string };
         prepared_for: string;
         generated_at: string;
+    };
+};
+
+export type PropertyReportTab =
+    'overview' | 'collections' | 'costs' | 'operations';
+
+export type PropertyReportPageProps = ReportDataProps & {
+    property: {
+        id: number;
+        code: string;
+        title_en: string;
+        title_ar?: string | null;
+        address_en?: string | null;
+        address_ar?: string | null;
+        status: string;
+        usage_type: string;
+        valuation_amount: number;
+        currency: string;
+        is_showcase: boolean;
+        portfolio: {
+            id: number;
+            code?: string | null;
+            name_en?: string | null;
+            name_ar?: string | null;
+        };
+        owner?: { id: number; name: string } | null;
+        manager?: { id: number; name: string } | null;
+        structure: {
+            records: number;
+            floors: number;
+            units: number;
+            rentable: number;
+            occupied: number;
+            vacant: number;
+            active_tenants: number;
+        };
+        links: {
+            asset: string;
+            explorer: string;
+            action_center: string;
+            payments: string;
+            expenses: string;
+            leases: string;
+            maintenance: string;
+            documents: string;
+        };
+        downloads: {
+            xlsx: string;
+            pdf: string;
+            docx: string;
+        };
     };
 };
 

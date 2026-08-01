@@ -36,6 +36,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyExplorerController;
 use App\Http\Controllers\PropertyMapController;
+use App\Http\Controllers\PropertyReportController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\ReportController;
@@ -217,6 +218,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/properties/{asset}', PropertyReportController::class)->name('reports.properties.show')->middleware('portfolio.module:reports');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
     Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');

@@ -8,9 +8,19 @@ import {
 } from '@/lib/utils';
 
 import { ReportPulse } from './report-visuals';
-import type { ReportsPageProps } from './types';
+import type { ReportDataProps } from './types';
 
-export function ReportOverview({ props }: { props: ReportsPageProps }) {
+export function ReportOverview({
+    props,
+    links,
+}: {
+    props: ReportDataProps;
+    links?: {
+        payments?: string;
+        expenses?: string;
+        leases?: string;
+    };
+}) {
     const { locale, t } = useTranslator();
     const collectionRate = props.summary.collectionRate;
 
@@ -33,7 +43,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                         ),
                         icon: 'bi-cash-stack',
                         tone: 'ink',
-                        href: '/payments',
+                        href: links?.payments ?? '/payments',
                     },
                     {
                         label: t('reports.expenses'),
@@ -49,7 +59,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                         }),
                         icon: 'bi-receipt',
                         tone: 'amber',
-                        href: '/expenses',
+                        href: links?.expenses ?? '/expenses',
                     },
                     {
                         label: t('reports.net_position'),
@@ -77,7 +87,7 @@ export function ReportOverview({ props }: { props: ReportsPageProps }) {
                         }),
                         icon: 'bi-exclamation-circle',
                         tone: props.summary.arrears > 0 ? 'red' : 'blue',
-                        href: '/leases',
+                        href: links?.leases ?? '/leases',
                     },
                 ]}
             />

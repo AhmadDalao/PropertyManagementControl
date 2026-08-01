@@ -27,6 +27,12 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('OwnerStatementPdfExport', $statement);
         $this->assertStringContainsString('OwnerStatementWordExport', $statement);
         $this->assertStringNotContainsString('Payment::query()', $statement);
+
+        $property = $this->source($this->path('app/Http/Controllers/PropertyReportController.php'));
+        $this->assertLessThanOrEqual(40, substr_count($property, "\n") + 1);
+        $this->assertStringContainsString('PropertyReportPresenter', $property);
+        $this->assertStringContainsString('PropertyReportRequest', $property);
+        $this->assertStringNotContainsString('Asset::query()', $property);
     }
 
     #[Test]
@@ -70,13 +76,15 @@ class ReportModuleArchitectureTest extends TestCase
         $global = $this->source($this->path('resources/css/app.css'));
         $index = $this->source($this->path('resources/js/modules/reports/index-page.tsx'));
         $statement = $this->source($this->path('resources/js/modules/reports/owner-statement-page.tsx'));
+        $property = $this->source($this->path('resources/js/modules/reports/property-report-page.tsx'));
 
         $this->assertLessThanOrEqual(10, substr_count($facade, "\n") + 1);
         $this->assertStringNotContainsString("styles/reports.css';", $global);
         $this->assertStringContainsString("css/styles/reports.css';", $index);
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
+        $this->assertStringContainsString("css/styles/reports.css';", $property);
 
-        foreach (['filters', 'library', 'metrics', 'journal', 'records', 'presets', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'journal', 'records', 'presets', 'statement', 'property', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -101,11 +109,14 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportJournalPresenter.php',
             'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',
+            'app/Modules/Reports/Presenters/PropertyReportPresenter.php',
             'app/Modules/Reports/Presenters/ReportSummaryPresenter.php',
             'app/Modules/Reports/Queries/PortfolioReportDatasetQuery.php',
             'app/Modules/Reports/Queries/PortfolioReportQuery.php',
+            'app/Modules/Reports/Queries/PropertyReportContextQuery.php',
             'app/Modules/Reports/Queries/ReportPresetQuery.php',
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
+            'app/Modules/Reports/Requests/PropertyReportRequest.php',
             'app/Modules/Reports/Requests/StoreReportPresetRequest.php',
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
@@ -127,6 +138,10 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/report-presets.tsx',
             'resources/js/modules/reports/report-tabs.tsx',
             'resources/js/modules/reports/report-visuals.tsx',
+            'resources/js/modules/reports/property-report-context.tsx',
+            'resources/js/modules/reports/property-report-page.tsx',
+            'resources/js/modules/reports/property-report-period.tsx',
+            'resources/js/modules/reports/property-report-tabs.tsx',
             'resources/js/modules/reports/types.ts',
         ] as $relativePath) {
             $this->assertFileExists($this->path($relativePath));

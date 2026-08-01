@@ -3,9 +3,9 @@ import { useTranslator } from '@/lib/i18n';
 import { currency } from '@/lib/utils';
 
 import { BreakdownBars, ReportRecordSection } from './report-visuals';
-import type { ReportsPageProps } from './types';
+import type { ReportDataProps } from './types';
 
-export function ReportCosts({ props }: { props: ReportsPageProps }) {
+export function ReportCosts({ props }: { props: ReportDataProps }) {
     const { locale, t, text } = useTranslator();
 
     return (

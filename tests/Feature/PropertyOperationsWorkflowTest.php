@@ -144,9 +144,10 @@ class PropertyOperationsWorkflowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
-                ->where('detailPage.header.actions.2.href', route('reports.index', [
-                    'property_id' => $property->id,
-                ]))
+                ->where(
+                    'detailPage.header.actions.2.href',
+                    route('reports.properties.show', $property),
+                )
                 ->has('detailPage.header.actions', 3)
                 ->where('detailPage.workflow.title', 'Collect overdue rent first')
                 ->where('detailPage.workflow.status', '1,500.00 SAR')

@@ -29,15 +29,29 @@ final class ReportLibraryPresenter
                     ],
                     'reports',
                 ),
-                $this->card(
-                    'portfolio-performance',
-                    'bi-graph-up-arrow',
-                    'portfolio_performance',
-                    'portfolio_performance_description',
-                    $this->url('reports.index', [...$query, 'tab' => 'overview']),
-                    [$this->download('XLSX', $this->url('reports.export', $query))],
-                    'reports',
-                ),
+                $filters['property_id'] !== null
+                    ? $this->card(
+                        'property-operating-report',
+                        'bi-building-check',
+                        'property_operating_report',
+                        'property_operating_report_description',
+                        $this->url('reports.properties.show', [
+                            'asset' => $filters['property_id'],
+                            'date_from' => $filters['date_from'],
+                            'date_to' => $filters['date_to'],
+                        ]),
+                        [$this->download('XLSX', $this->url('reports.export', $query))],
+                        'reports',
+                    )
+                    : $this->card(
+                        'portfolio-performance',
+                        'bi-graph-up-arrow',
+                        'portfolio_performance',
+                        'portfolio_performance_description',
+                        $this->url('reports.index', [...$query, 'tab' => 'overview']),
+                        [$this->download('XLSX', $this->url('reports.export', $query))],
+                        'reports',
+                    ),
             ], $actor),
             $this->group('finance', [
                 $this->resourceCard(

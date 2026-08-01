@@ -8,9 +8,19 @@ import { localizedNumber } from '@/lib/utils';
 
 import { ReportJournal } from './report-journal';
 import { BreakdownCards, ReportRecordSection } from './report-visuals';
-import type { ReportsPageProps } from './types';
+import type { ReportDataProps } from './types';
 
-export function ReportOperations({ props }: { props: ReportsPageProps }) {
+export function ReportOperations({
+    props,
+    links,
+}: {
+    props: ReportDataProps;
+    links?: {
+        leases?: string;
+        maintenance?: string;
+        documents?: string;
+    };
+}) {
     const { locale, t, text } = useTranslator();
 
     return (
@@ -36,7 +46,7 @@ export function ReportOperations({ props }: { props: ReportsPageProps }) {
                         detail: t('reports.journal_new_leases_help'),
                         icon: 'bi-file-earmark-text',
                         tone: 'blue',
-                        href: '/leases',
+                        href: links?.leases ?? '/leases',
                     },
                     {
                         label: t('reports.journal_service_activity'),
@@ -64,7 +74,7 @@ export function ReportOperations({ props }: { props: ReportsPageProps }) {
                             props.journalSummary.serviceOpened > 0
                                 ? 'amber'
                                 : 'teal',
-                        href: '/maintenance-requests',
+                        href: links?.maintenance ?? '/maintenance-requests',
                     },
                     {
                         label: t('reports.journal_documents'),
@@ -75,7 +85,7 @@ export function ReportOperations({ props }: { props: ReportsPageProps }) {
                         detail: t('reports.journal_documents_help'),
                         icon: 'bi-file-earmark-pdf',
                         tone: 'teal',
-                        href: '/documents',
+                        href: links?.documents ?? '/documents',
                     },
                 ]}
             />

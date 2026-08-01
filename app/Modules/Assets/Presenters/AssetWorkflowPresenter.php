@@ -27,7 +27,7 @@ final class AssetWorkflowPresenter
                 'actions' => [
                     $this->action(
                         trans('app.assets.review_collections'),
-                        route('reports.index', ['property_id' => $propertyId]),
+                        route('reports.properties.show', $propertyId),
                         'primary',
                     ),
                 ],
@@ -99,7 +99,7 @@ final class AssetWorkflowPresenter
                         ? 'app.assets.open_property_report'
                         : 'app.assets.open_all_spaces'),
                     $reportsEnabled
-                        ? route('reports.index', ['property_id' => $propertyId])
+                        ? route('reports.properties.show', $propertyId)
                         : route('assets.index', ['property_id' => $propertyId]),
                     'secondary',
                 ),

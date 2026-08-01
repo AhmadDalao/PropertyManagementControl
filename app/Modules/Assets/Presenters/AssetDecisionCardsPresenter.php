@@ -41,7 +41,7 @@ class AssetDecisionCardsPresenter
                     'paid' => $this->money($operations->monthlyScheduledPaid, $asset->currency),
                     'due' => $this->money($operations->monthlyScheduledDue, $asset->currency),
                 ]),
-                'href' => route('reports.index', ['property_id' => $propertyId]),
+                'href' => route('reports.properties.show', $propertyId),
                 'actionLabel' => trans('app.assets.review_collections'),
                 'tone' => $operations->monthlyScheduledDue === 0.0
                     || $operations->collectionRate() >= 90 ? 'teal' : 'primary',
@@ -53,7 +53,7 @@ class AssetDecisionCardsPresenter
                 'detail' => trans($operations->arrears > 0
                     ? 'app.assets.arrears_follow_up'
                     : 'app.assets.no_arrears'),
-                'href' => route('reports.index', ['property_id' => $propertyId]),
+                'href' => route('reports.properties.show', $propertyId),
                 'actionLabel' => trans('app.assets.open_property_report'),
                 'tone' => $operations->arrears > 0 ? 'danger' : 'teal',
                 'icon' => 'bi-exclamation-circle',

@@ -111,7 +111,7 @@ export function PropertyControlCard({
                 <Link href={`/action-center?property_id=${property.id}`}>
                     {t('nav.action_center')}
                 </Link>
-                <Link href={`/reports?property_id=${property.id}`}>
+                <Link href={`/reports/properties/${property.id}`}>
                     {t('nav.reports')}
                 </Link>
             </footer>

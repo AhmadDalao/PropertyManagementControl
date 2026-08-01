@@ -1828,9 +1828,7 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
-        await page
-            .getByRole('button', { name: 'إنشاء رابط الإعداد' })
-            .click();
+        await page.getByRole('button', { name: 'إنشاء رابط الإعداد' }).click();
         const linkInput = page.getByLabel('رابط الإعداد');
         await expect(linkInput).toHaveValue(/\/reset-password\//);
         await expect(
@@ -2242,6 +2240,61 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'Operational journal' }),
         ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('property operating report keeps one building scope across mobile drill-downs and downloads', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/portfolio-control?locale=ar');
+        const reportLink = page
+            .locator('a[href^="/reports/properties/"]')
+            .first();
+        await expect(reportLink).toBeVisible();
+        const reportHref = await reportLink.getAttribute('href');
+        expect(reportHref).toBeTruthy();
+
+        await page.goto(`${reportHref}?locale=ar`);
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: /تقرير/,
+            }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-property-report-context'),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-property-report-structure article'),
+        ).toHaveCount(7);
+        await expect(page.getByLabel('التاريخ من')).toBeVisible();
+        await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+
+        for (const tab of ['نظرة عامة', 'التحصيل', 'التكاليف', 'التشغيل']) {
+            await page.getByRole('button', { name: tab, exact: true }).click();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        const workbookLink = page.locator('a[href^="/reports/export"]').first();
+        const workbookHref = await workbookLink.getAttribute('href');
+        expect(workbookHref).toContain('property_id=');
+        const workbook = await page.request.get(workbookHref!);
+        expect(workbook.ok()).toBeTruthy();
+        expect(workbook.headers()['content-type']).toContain(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.reload();
+        await expect(page.locator('.pmc-property-report-period')).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 

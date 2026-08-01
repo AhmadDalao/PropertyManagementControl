@@ -85,7 +85,9 @@ export function portfolioMetrics(
             }),
             icon: 'bi-graph-up-arrow',
             tone: props.financial.net >= 0 ? 'blue' : 'red',
-            href: propertyFocusUrl('/reports?tab=overview', propertyId),
+            href: propertyId
+                ? `/reports/properties/${propertyId}?tab=overview`
+                : '/reports?tab=overview',
         },
         {
             label: t('dashboard.occupancy_rate'),

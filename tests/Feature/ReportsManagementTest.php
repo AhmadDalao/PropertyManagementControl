@@ -96,6 +96,14 @@ class ReportsManagementTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('reportLibrary', 4)
                 ->has('reportLibrary.1.cards', 2)
+                ->where('reportLibrary.0.cards.1.key', 'property-operating-report')
+                ->where(
+                    'reportLibrary.0.cards.1.openHref',
+                    fn (string $href): bool => str_contains(
+                        $href,
+                        '/reports/properties/'.$property->id,
+                    ),
+                )
                 ->where('reportLibrary.1.cards.0.key', 'rent-collection')
                 ->where(
                     'reportLibrary.1.cards.0.downloads.0.href',

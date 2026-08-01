@@ -37,9 +37,10 @@ class AssetDetailOverviewPresenter
         $mapHref = route('property-map.index', $data->actor->hasRole('superadmin')
             ? ['portfolio_id' => $asset->portfolio_id]
             : []);
-        $propertyReportHref = route('reports.index', [
-            'property_id' => $operations->propertyRoot->id,
-        ]);
+        $propertyReportHref = route(
+            'reports.properties.show',
+            $operations->propertyRoot,
+        );
         $reportsEnabled = PortfolioModules::enabledForUser($data->actor, 'reports');
         $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
         $canStartTenancy = $leasesEnabled && $asset->rentable && ! $lease;
