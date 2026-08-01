@@ -94,6 +94,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/action-queue.tsx',
             'operations/launch-readiness-panel.tsx',
             'operations/operations-header.tsx',
+            'operations/operations-dashboard-groups.tsx',
             'operations/operations-insight-panels.tsx',
             'operations/operations-metrics.tsx',
             'operations/operations-priority-panels.tsx',
@@ -107,6 +108,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations-types.ts',
             'shared-types.ts',
             'shared/health-signals.tsx',
+            'shared/dashboard-section-group.tsx',
             'shared/record-list.tsx',
             'tenant/tenant-header.tsx',
             'tenant/tenant-lease-documents.tsx',
@@ -133,6 +135,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('./dashboard/focus.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/panels.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/groups.css', $stylesheet);
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');

@@ -1,0 +1,86 @@
+.pmc-dashboard-section-group,
+.pmc-dashboard-section-body {
+    display: contents;
+}
+
+.pmc-dashboard-section-group > button {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-dashboard-section-group {
+        display: block;
+        min-width: 0;
+        margin-bottom: 1rem;
+    }
+
+    .pmc-dashboard-section-group > button {
+        display: grid;
+        width: 100%;
+        min-height: 4.25rem;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.7rem 0.8rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.85rem;
+        background: #fff;
+        color: #111;
+        text-align: start;
+    }
+
+    .pmc-dashboard-section-group > button > span:nth-child(2) {
+        display: grid;
+        min-width: 0;
+        gap: 0.15rem;
+    }
+
+    .pmc-dashboard-section-group > button strong {
+        font-size: 0.8rem;
+        font-weight: 900;
+    }
+
+    .pmc-dashboard-section-group > button small {
+        overflow: hidden;
+        color: var(--pmc-muted);
+        font-size: 0.65rem;
+        line-height: 1.35;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pmc-dashboard-section-icon {
+        display: grid;
+        width: 2.5rem;
+        height: 2.5rem;
+        place-items: center;
+        border-radius: 0.7rem;
+        background: var(--pmc-amber-soft);
+        color: #6f5400;
+    }
+
+    .pmc-dashboard-section-chevron {
+        color: #6f6b65;
+        font-size: 0.72rem;
+        transition: transform 160ms ease;
+    }
+
+    .pmc-dashboard-section-group.is-open .pmc-dashboard-section-chevron {
+        transform: rotate(180deg);
+    }
+
+    .pmc-dashboard-section-body {
+        display: none;
+        padding-top: 0.75rem;
+    }
+
+    .pmc-dashboard-section-group.is-open > .pmc-dashboard-section-body {
+        display: block;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-dashboard-section-chevron {
+        transition: none;
+    }
+}

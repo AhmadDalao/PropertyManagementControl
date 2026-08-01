@@ -2853,8 +2853,24 @@ test.describe('local role dashboards', () => {
             await expect(
                 navigation.locator('a[href="/dashboard"]'),
             ).toHaveAttribute('aria-current', 'page');
+            await page.keyboard.press('Escape');
+            await expect(navigation).not.toHaveClass(/\bis-open\b/);
 
             if (account.role === 'superadmin') {
+                expect(
+                    await page.evaluate(
+                        () => document.documentElement.scrollHeight,
+                    ),
+                ).toBeLessThan(3500);
+                const systemGroup = page.locator(
+                    '[data-dashboard-group="system"]',
+                );
+                const systemToggle = systemGroup.locator(':scope > button');
+                await expect(systemToggle).toHaveAttribute(
+                    'aria-expanded',
+                    'false',
+                );
+                await systemToggle.click();
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
                 ).toBeVisible();
@@ -2862,6 +2878,41 @@ test.describe('local role dashboards', () => {
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
                 ).toHaveCount(0);
+            }
+
+            if (account.role !== 'tenant') {
+                const todayGroup = page.locator(
+                    '[data-dashboard-group="today"]',
+                );
+                const portfolioGroup = page.locator(
+                    '[data-dashboard-group="portfolio"]',
+                );
+                await expect(
+                    todayGroup.locator(':scope > button'),
+                ).toHaveAttribute('aria-expanded', 'true');
+                await expect(
+                    portfolioGroup.locator(':scope > button'),
+                ).toHaveAttribute('aria-expanded', 'false');
+                await portfolioGroup.locator(':scope > button').click();
+                await expect(
+                    portfolioGroup.locator('.pmc-property-performance'),
+                ).toBeVisible();
+            }
+
+            if (account.role === 'superadmin') {
+                await page.setViewportSize(viewports.desktop);
+                await page.reload();
+                const desktopGroupToggles = page.locator(
+                    '[data-dashboard-group] > button',
+                );
+                await expect(desktopGroupToggles).toHaveCount(3);
+                await expect(desktopGroupToggles.first()).toBeHidden();
+                await expect(
+                    page.locator('.pmc-dashboard-launch-readiness'),
+                ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-property-performance'),
+                ).toBeVisible();
             }
 
             await expectNoHorizontalOverflow(page);

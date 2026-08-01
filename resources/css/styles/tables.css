@@ -2,5 +2,6 @@
 @import './tables/toolbar.css';
 @import './tables/desktop.css';
 @import './tables/pagination.css';
+@import './tables/mobile-records.css';
 @import './tables/responsive.css';
 @import './tables/touch.css';

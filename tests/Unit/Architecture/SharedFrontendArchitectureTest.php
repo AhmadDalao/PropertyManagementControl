@@ -149,6 +149,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'toolbar.css',
             'desktop.css',
             'pagination.css',
+            'mobile-records.css',
             'responsive.css',
             'touch.css',
         ], 300);
