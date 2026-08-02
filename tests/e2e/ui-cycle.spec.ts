@@ -556,8 +556,13 @@ test.describe('authenticated administration', () => {
                     cards.map((card) => card.getBoundingClientRect().height),
                 );
 
-                for (const cardHeight of cardHeights) {
-                    expect(cardHeight).toBeLessThanOrEqual(220);
+                for (const [index, cardHeight] of cardHeights.entries()) {
+                    expect
+                        .soft(
+                            cardHeight,
+                            `${path} mobile card ${index + 1} is too tall`,
+                        )
+                        .toBeLessThanOrEqual(220);
                 }
 
                 await expect(
@@ -603,6 +608,8 @@ test.describe('authenticated administration', () => {
             '/assets',
             '/tenants',
             '/leases',
+            '/maintenance-requests',
+            '/maintenance-work-orders',
             '/documents',
             '/cms',
         ]) {
@@ -617,8 +624,13 @@ test.describe('authenticated administration', () => {
                 records.map((record) => record.getBoundingClientRect().height),
             );
 
-            for (const cardHeight of cardHeights) {
-                expect(cardHeight).toBeLessThanOrEqual(220);
+            for (const [index, cardHeight] of cardHeights.entries()) {
+                expect
+                    .soft(
+                        cardHeight,
+                        `${path} Arabic mobile card ${index + 1} is too tall`,
+                    )
+                    .toBeLessThanOrEqual(220);
             }
         }
     });

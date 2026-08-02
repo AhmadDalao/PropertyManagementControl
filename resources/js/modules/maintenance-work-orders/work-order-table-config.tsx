@@ -10,12 +10,14 @@ import {
     WorkOrderResponsibility,
     WorkOrderSchedule,
 } from './work-order-cells';
+import { useWorkOrderMobileCard } from './work-order-mobile-card';
 
 export function useWorkOrderTableConfig(): {
     columns: Array<TableColumn<WorkOrderRecord>>;
     mobileCard: MobileTableConfig<WorkOrderRecord>;
 } {
     const { t } = useTranslator();
+    const mobileCard = useWorkOrderMobileCard();
     const identity = (order: WorkOrderRecord) => (
         <WorkOrderIdentity order={order} />
     );
@@ -34,19 +36,7 @@ export function useWorkOrderTableConfig(): {
     );
 
     return {
-        mobileCard: {
-            title: identity,
-            status: schedule,
-            meta: [
-                { label: t('work_orders.property_tenant'), value: property },
-                {
-                    label: t('work_orders.responsibility'),
-                    value: responsibility,
-                },
-                { label: t('work_orders.costs'), value: costs },
-            ],
-            actions,
-        },
+        mobileCard,
         columns: [
             {
                 key: 'order',

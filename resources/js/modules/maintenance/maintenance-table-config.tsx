@@ -1,6 +1,7 @@
 import type { MobileTableConfig, TableColumn } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
 
+import { useMaintenanceMobileCard } from './maintenance-mobile-card';
 import {
     MaintenanceActions,
     MaintenanceAssignment,
@@ -16,6 +17,7 @@ export function useMaintenanceTableConfig(props: MaintenanceTableProps): {
     mobileCard: MobileTableConfig<MaintenanceRecord>;
 } {
     const { t } = useTranslator();
+    const mobileCard = useMaintenanceMobileCard(props);
     const identity = (request: MaintenanceRecord) => (
         <MaintenanceIdentity request={request} />
     );
@@ -30,16 +32,7 @@ export function useMaintenanceTableConfig(props: MaintenanceTableProps): {
     );
 
     return {
-        mobileCard: {
-            title: identity,
-            subtitle: (request) => <MaintenancePriority request={request} />,
-            status: (request) => <MaintenanceStatusDue request={request} />,
-            meta: [
-                { label: t('maintenance.asset_tenant'), value: assetTenant },
-                { label: t('maintenance.assignment'), value: assignment },
-            ],
-            actions,
-        },
+        mobileCard,
         columns: [
             {
                 key: 'request',
