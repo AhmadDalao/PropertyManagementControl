@@ -20,7 +20,10 @@ class ReportsManagementTest extends TestCase
 
     public function test_report_payload_contract_stays_stable_for_dashboard_and_workbook(): void
     {
-        $portfolio = $this->createPortfolio();
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Owner Operations',
+            'name_ar' => 'عمليات المالك',
+        ]);
         $owner = $this->createUserWithRole('owner', $portfolio);
 
         $this->actingAs($owner)
@@ -76,11 +79,15 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.0.downloads.0.label', 'Download PDF')
                 ->where('reportLibrary.0.cards.0.downloads.1.label', 'Download DOCX')
                 ->where('reportLibrary.0.cards.0.downloads.2.label', 'Download XLSX')
-                ->where('reportLibrary.0.cards.0.scopeLabels', [
-                    'Selected period',
-                    'Portfolio scope',
-                    'Property scope',
-                ])
+                ->where(
+                    'reportLibrary.0.cards.0.scope',
+                    fn ($scope): bool => collect($scope)->keyBy('label')->get('Portfolio scope')['value'] === 'Owner Operations'
+                        && collect($scope)->keyBy('label')->get('Property scope')['value'] === 'All properties'
+                        && str_contains(
+                            collect($scope)->keyBy('label')->get('Selected period')['value'],
+                            'Custom dates',
+                        ),
+                )
                 ->where('reportLibrary.1.key', 'finance')
                 ->where('reportLibrary.2.key', 'operations')
                 ->where('reportLibrary.3.key', 'control'));
@@ -400,6 +407,9 @@ class ReportsManagementTest extends TestCase
         $property = $this->createAsset($portfolio, [
             'asset_type' => 'building',
             'rentable' => false,
+            'title_en' => 'Scope Tower',
+            'title_ar' => 'برج النطاق',
+            'code' => 'SCOPE-TOWER',
         ]);
         $query = [
             'date_from' => '2026-01-01',
@@ -419,6 +429,20 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.1.downloads.0.label', 'Download PDF')
                 ->where('reportLibrary.0.cards.1.downloads.1.label', 'Download DOCX')
                 ->where('reportLibrary.0.cards.1.downloads.2.label', 'Download XLSX')
+                ->where('reportLibrary.0.cards.1.scope', [
+                    [
+                        'label' => 'Selected period',
+                        'value' => 'Custom dates · 1 Jan 2026 – 30 Jun 2026',
+                    ],
+                    [
+                        'label' => 'Portfolio scope',
+                        'value' => $portfolio->name_en,
+                    ],
+                    [
+                        'label' => 'Property scope',
+                        'value' => 'Scope Tower · SCOPE-TOWER',
+                    ],
+                ])
                 ->where(
                     'reportLibrary.0.cards.1.openHref',
                     fn (string $href): bool => str_contains(
@@ -442,18 +466,87 @@ class ReportsManagementTest extends TestCase
                 )
                 ->where(
                     'reportLibrary.2.cards',
-                    fn ($cards): bool => collect($cards)
-                        ->firstWhere('key', 'occupancy')['scopeLabels'] === [
-                            'Current snapshot',
-                            'Portfolio scope',
-                            'Property scope',
-                        ],
+                    fn ($cards): bool => collect(
+                        collect($cards)->firstWhere('key', 'occupancy')['scope'],
+                    )->keyBy('label')->get('Portfolio scope')['value'] === $portfolio->name_en
+                        && collect(
+                            collect($cards)->firstWhere('key', 'occupancy')['scope'],
+                        )->keyBy('label')->get('Property scope')['value'] === 'Scope Tower · SCOPE-TOWER',
                 )
                 ->where(
                     'reportLibrary.3.cards',
                     fn ($cards): bool => collect($cards)->doesntContain(
                         fn (array $card): bool => $card['key'] === 'audit',
                     ),
+                ));
+    }
+
+    public function test_report_library_scope_values_are_fully_localized_in_arabic(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Arabic Portfolio',
+            'name_ar' => 'محفظة التقارير',
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'title_en' => 'Arabic Scope Tower',
+            'title_ar' => 'برج التقارير',
+            'code' => 'AR-SCOPE',
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'locale' => 'ar',
+                'period' => 'custom',
+                'date_from' => '2026-01-01',
+                'date_to' => '2026-06-30',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reportLibrary.0.cards.0.scope', [
+                    [
+                        'label' => 'الفترة المحددة',
+                        'value' => 'تواريخ مخصصة · 1 يناير 2026 – 30 يونيو 2026',
+                    ],
+                    [
+                        'label' => 'نطاق المحفظة',
+                        'value' => 'محفظة التقارير',
+                    ],
+                    [
+                        'label' => 'نطاق العقار',
+                        'value' => 'برج التقارير · AR-SCOPE',
+                    ],
+                ]));
+    }
+
+    public function test_selected_property_resolves_its_portfolio_for_superadmin_scope(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Resolved Client Portfolio',
+        ]);
+        $superadmin = $this->createUserWithRole('superadmin');
+        $property = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'title_en' => 'Resolved Property',
+            'code' => 'RESOLVED-001',
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('reports.index', [
+                'period' => 'this_month',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where(
+                    'reportLibrary.0.cards.0.scope',
+                    fn ($scope): bool => collect($scope)
+                        ->keyBy('label')
+                        ->get('Portfolio scope')['value'] === 'Resolved Client Portfolio',
                 ));
     }
 

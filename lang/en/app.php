@@ -2805,6 +2805,7 @@ return [
         'scope_portfolio' => 'Portfolio scope',
         'scope_property' => 'Property scope',
         'scope_current' => 'Current snapshot',
+        'scope_period_detail' => ':period · :from – :to',
         'library_group_owner' => 'Owner packs',
         'library_group_owner_description' => 'Concise files prepared for owners and portfolio reviews.',
         'library_group_finance' => 'Collections and costs',

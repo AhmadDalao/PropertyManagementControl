@@ -22,12 +22,20 @@ class ReportPagePresenter
      */
     public function present(User $actor, array $filters): array
     {
+        $portfolioOptions = $this->portfolios->options($actor);
+        $propertyOptions = $this->properties->options($actor);
+
         return [
             ...$this->reports->handle($actor, $filters),
             'filters' => $filters,
-            'portfolioOptions' => $this->portfolios->options($actor),
-            'propertyOptions' => $this->properties->options($actor),
-            'reportLibrary' => $this->library->present($actor, $filters),
+            'portfolioOptions' => $portfolioOptions,
+            'propertyOptions' => $propertyOptions,
+            'reportLibrary' => $this->library->present(
+                $actor,
+                $filters,
+                $portfolioOptions,
+                $propertyOptions,
+            ),
         ];
     }
 }

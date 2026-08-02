@@ -212,21 +212,38 @@
     gap: 0.35rem;
 }
 
-.pmc-report-card-scope span {
-    display: inline-flex;
-    min-height: 1.75rem;
+.pmc-report-card-scope > div {
+    display: grid;
+    min-width: min(100%, 8rem);
+    min-height: 2.5rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.08rem 0.35rem;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.3rem 0.5rem;
+    padding: 0.35rem 0.55rem;
     border: 1px solid #e5ded0;
-    border-radius: 999px;
+    border-radius: 0.6rem;
     background: #fffaf0;
     color: #68551c;
+}
+
+.pmc-report-card-scope dt {
     font-size: 0.63rem;
     font-weight: 800;
 }
 
+.pmc-report-card-scope dd {
+    grid-column: 2;
+    overflow: hidden;
+    margin: 0;
+    color: #17130d;
+    font-size: 0.65rem;
+    font-weight: 850;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .pmc-report-card-scope i {
+    grid-row: 1 / span 2;
     color: #007b68;
 }
 

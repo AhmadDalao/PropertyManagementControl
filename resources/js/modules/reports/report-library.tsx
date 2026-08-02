@@ -85,7 +85,7 @@ export function ReportLibrary({ groups }: { groups: ReportLibraryGroup[] }) {
                                     </div>
                                 </div>
 
-                                <ReportCardScope labels={card.scopeLabels} />
+                                <ReportCardScope scope={card.scope} />
 
                                 <div className="pmc-report-library-card-actions">
                                     <Link

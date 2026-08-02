@@ -2548,6 +2548,12 @@ test.describe('authenticated administration', () => {
             propertyReportCard.getByRole('link', { name: 'تنزيل XLSX' }),
         ).toBeVisible();
         await expect(propertyReportCard).toContainText('نطاق العقار');
+        await expect(propertyReportCard).toContainText('ROSE-TOWER');
+        await expect(
+            propertyReportCard
+                .locator('.pmc-report-card-scope > div')
+                .filter({ hasText: 'نطاق المحفظة' }),
+        ).toContainText('محفظة أحمد الرئيسية');
 
         await page.getByRole('link', { name: 'حفظ التقرير الحالي' }).click();
         await expect(page).toHaveURL(/\/reports\/saved\/create/);

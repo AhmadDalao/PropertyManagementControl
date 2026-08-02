@@ -430,11 +430,22 @@ foreach ($reportsPayload['props']['reportLibrary'] ?? [] as $group) {
 $hasArabicScope = false;
 
 foreach ($reportLibrary as $card) {
-    if (($card['scopeLabels'] ?? []) === [
-        'الفترة المحددة',
-        'نطاق المحفظة',
-        'نطاق العقار',
-    ]) {
+    $scope = [];
+
+    foreach ($card['scope'] ?? [] as $item) {
+        if (is_array($item) && isset($item['label'], $item['value'])) {
+            $scope[$item['label']] = $item['value'];
+        }
+    }
+
+    if (isset(
+        $scope['الفترة المحددة'],
+        $scope['نطاق المحفظة'],
+        $scope['نطاق العقار'],
+    )
+        && $scope['الفترة المحددة'] !== ''
+        && $scope['نطاق المحفظة'] !== ''
+        && $scope['نطاق العقار'] !== '') {
         $hasArabicScope = true;
         break;
     }
@@ -485,6 +496,21 @@ if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     if (! is_array($propertyReportCard)
         || count($propertyReportCard['downloads'] ?? []) !== 3) {
         smoke_fail('The property operating report did not expose PDF, Word, and Excel downloads.');
+    }
+
+    $propertyScope = [];
+
+    foreach ($propertyReportCard['scope'] ?? [] as $item) {
+        if (is_array($item) && isset($item['label'], $item['value'])) {
+            $propertyScope[$item['label']] = $item['value'];
+        }
+    }
+
+    if (! str_contains(
+        (string) ($propertyScope['نطاق العقار'] ?? ''),
+        (string) ($propertyOptions[0]['name'] ?? ''),
+    )) {
+        smoke_fail('The property operating report did not name its selected property scope.');
     }
 
     $scopedDocuments = smoke_request(

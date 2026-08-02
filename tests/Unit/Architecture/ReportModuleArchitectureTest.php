@@ -120,6 +120,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportExpenseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLibraryPresenter.php',
+            'app/Modules/Reports/Presenters/ReportLibraryScopePresenter.php',
             'app/Modules/Reports/Presenters/ReportJournalPresenter.php',
             'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',

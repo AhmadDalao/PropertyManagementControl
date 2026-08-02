@@ -7,13 +7,29 @@ use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class ReportLibraryPresenter
 {
+    public function __construct(
+        private readonly ReportLibraryScopePresenter $scopes,
+    ) {}
+
     /**
      * @param  array{period:string,date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
+     * @param  array<int, array{id:int,name:string}>  $portfolioOptions
+     * @param  array<int, array{id:int,portfolio_id:int,name:string}>  $propertyOptions
      * @return array<int, array{key:string,title:string,description:string,cards:array<int, array<string, mixed>>}>
      */
-    public function present(User $actor, array $filters): array
-    {
+    public function present(
+        User $actor,
+        array $filters,
+        array $portfolioOptions,
+        array $propertyOptions,
+    ): array {
         $query = array_filter($filters, static fn (mixed $value): bool => $value !== null && $value !== '');
+        $scope = $this->scopes->present(
+            $actor,
+            $filters,
+            $portfolioOptions,
+            $propertyOptions,
+        );
 
         return array_values(array_filter([
             $this->group('owner', [
@@ -29,6 +45,7 @@ final class ReportLibraryPresenter
                         $this->download('XLSX', $this->url('reports.export', $query)),
                     ],
                     'reports',
+                    $scope['period'],
                 ),
                 $filters['property_id'] !== null
                     ? $this->card(
@@ -47,6 +64,7 @@ final class ReportLibraryPresenter
                             $this->download('XLSX', $this->url('reports.export', $query)),
                         ],
                         'reports',
+                        $scope['period'],
                     )
                     : $this->card(
                         'portfolio-performance',
@@ -56,6 +74,7 @@ final class ReportLibraryPresenter
                         $this->url('reports.index', [...$query, 'tab' => 'overview']),
                         [$this->download('XLSX', $this->url('reports.export', $query))],
                         'reports',
+                        $scope['period'],
                     ),
             ], $actor),
             $this->group('finance', [
@@ -67,6 +86,7 @@ final class ReportLibraryPresenter
                     $this->url('rent-collection.index', $query),
                     $this->url('exports.resource', ['resource' => 'rent-collection', ...$query]),
                     'payments',
+                    $scope['period'],
                 ),
                 $this->resourceCard(
                     'payments',
@@ -76,6 +96,7 @@ final class ReportLibraryPresenter
                     $this->url('payments.index', $query),
                     $this->url('exports.resource', ['resource' => 'payments', ...$query]),
                     'payments',
+                    $scope['period'],
                 ),
                 $this->resourceCard(
                     'expenses',
@@ -85,6 +106,7 @@ final class ReportLibraryPresenter
                     $this->url('expenses.index', $query),
                     $this->url('exports.resource', ['resource' => 'expenses', ...$query]),
                     'expenses',
+                    $scope['period'],
                 ),
             ], $actor),
             $this->group('operations', [
@@ -96,6 +118,7 @@ final class ReportLibraryPresenter
                     $this->url('lease-renewals.index', $query),
                     $this->url('exports.resource', ['resource' => 'lease-renewals', ...$query]),
                     'leases',
+                    $scope['period'],
                 ),
                 $this->resourceCard(
                     'lease-move-outs',
@@ -105,6 +128,7 @@ final class ReportLibraryPresenter
                     $this->url('lease-move-outs.index', $query),
                     $this->url('exports.resource', ['resource' => 'lease-move-outs', ...$query]),
                     'leases',
+                    $scope['period'],
                 ),
                 $this->resourceCard(
                     'maintenance',
@@ -114,6 +138,7 @@ final class ReportLibraryPresenter
                     $this->url('maintenance-requests.index', $query),
                     $this->url('exports.resource', ['resource' => 'maintenance-requests', ...$query]),
                     'maintenance',
+                    $scope['period'],
                 ),
                 $this->resourceCard(
                     'occupancy',
@@ -125,7 +150,7 @@ final class ReportLibraryPresenter
                     ]),
                     $this->url('exports.resource', ['resource' => 'assets', ...$query]),
                     'assets',
-                    true,
+                    $scope['current'],
                 ),
             ], $actor),
             $this->group('control', [
@@ -137,7 +162,7 @@ final class ReportLibraryPresenter
                     $this->url('tenants.index', $query),
                     $this->url('exports.resource', ['resource' => 'tenants', ...$query]),
                     'tenants',
-                    true,
+                    $scope['current'],
                 ),
                 $this->resourceCard(
                     'documents',
@@ -147,6 +172,7 @@ final class ReportLibraryPresenter
                     $this->url('documents.index', $query),
                     $this->url('exports.resource', ['resource' => 'documents', ...$query]),
                     'documents',
+                    $scope['period'],
                 ),
                 $actor->hasRole('superadmin')
                     ? $this->card(
@@ -156,7 +182,7 @@ final class ReportLibraryPresenter
                         'audit_trail_description',
                         $this->url('audit-logs.index', $query),
                         [$this->download('XLSX', $this->url('audit-logs.export', $query))],
-                        scopeLabels: $this->scope(['period', 'portfolio']),
+                        scope: $scope['audit'],
                     )
                     : null,
             ], $actor),
@@ -183,7 +209,7 @@ final class ReportLibraryPresenter
 
     /**
      * @param  array<int, array{label:string,href:string}>  $downloads
-     * @param  array<int, string>|null  $scopeLabels
+     * @param  array<int, array{label:string,value:string}>  $scope
      * @return array<string, mixed>
      */
     private function card(
@@ -194,7 +220,7 @@ final class ReportLibraryPresenter
         string $openHref,
         array $downloads,
         ?string $module = null,
-        ?array $scopeLabels = null,
+        array $scope = [],
     ): array {
         return [
             'key' => $key,
@@ -203,13 +229,16 @@ final class ReportLibraryPresenter
             'description' => trans("app.reports.{$descriptionKey}"),
             'openLabel' => trans('app.reports.open_source'),
             'openHref' => $openHref,
-            'scopeLabels' => $scopeLabels ?? $this->scope(['period', 'portfolio', 'property']),
+            'scope' => $scope,
             'downloads' => $downloads,
             'module' => $module,
         ];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param  array<int, array{label:string,value:string}>  $scope
+     * @return array<string, mixed>
+     */
     private function resourceCard(
         string $key,
         string $icon,
@@ -218,7 +247,7 @@ final class ReportLibraryPresenter
         string $openHref,
         string $downloadHref,
         string $module,
-        bool $currentSnapshot = false,
+        array $scope,
     ): array {
         return $this->card(
             $key,
@@ -228,21 +257,7 @@ final class ReportLibraryPresenter
             $openHref,
             [$this->download('XLSX', $downloadHref)],
             $module,
-            $currentSnapshot
-                ? $this->scope(['current', 'portfolio', 'property'])
-                : null,
-        );
-    }
-
-    /**
-     * @param  array<int, string>  $keys
-     * @return array<int, string>
-     */
-    private function scope(array $keys): array
-    {
-        return array_map(
-            fn (string $key): string => trans("app.reports.scope_{$key}"),
-            $keys,
+            $scope,
         );
     }
 

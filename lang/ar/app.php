@@ -2805,6 +2805,7 @@ return [
         'scope_portfolio' => 'نطاق المحفظة',
         'scope_property' => 'نطاق العقار',
         'scope_current' => 'الحالة الحالية',
+        'scope_period_detail' => ':period · :from – :to',
         'library_group_owner' => 'حزم المالك',
         'library_group_owner_description' => 'ملفات موجزة جاهزة للملاك ومراجعات المحافظ.',
         'library_group_finance' => 'التحصيل والتكاليف',
