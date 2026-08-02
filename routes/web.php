@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\CmsPageSectionController;
 use App\Http\Controllers\CmsSectionController;
+use App\Http\Controllers\CompanyControlController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\DocumentController;
@@ -81,6 +82,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/portfolio-control', PortfolioControlController::class)
         ->name('portfolio-control.index')
         ->middleware('portfolio.module:assets');
+    Route::get('/company-control', [CompanyControlController::class, 'index'])
+        ->name('company-control.index');
+    Route::get('/company-control/export.xlsx', [CompanyControlController::class, 'export'])
+        ->name('company-control.export');
     Route::get('/action-center', [ActionCenterController::class, 'index'])
         ->name('action-center.index');
     Route::get('/action-center/export', [ActionCenterController::class, 'export'])

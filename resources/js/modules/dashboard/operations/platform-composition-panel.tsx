@@ -23,8 +23,8 @@ export function PlatformCompositionPanel({
             title={t('dashboard.company_composition_title')}
             description={t('dashboard.company_composition_description')}
             action={{
-                label: t('dashboard.manage_company_accounts'),
-                href: '/users',
+                label: t('dashboard.open_company_control'),
+                href: '/company-control',
             }}
         >
             <div className="pmc-platform-composition-grid">

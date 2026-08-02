@@ -28,6 +28,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-envelope',
             },
             {
+                labelKey: 'nav.company_control',
+                href: '/company-control',
+                icon: 'bi-building-check',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.portfolio_control',
                 href: '/portfolio-control',
                 icon: 'bi-buildings',

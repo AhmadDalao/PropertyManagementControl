@@ -1,0 +1,228 @@
+.pmc-company-control-card {
+    display: grid;
+    min-width: 0;
+    gap: 0.9rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+    box-shadow: 0 8px 24px rgb(31 27 19 / 4%);
+}
+
+.pmc-company-control-card.is-risk {
+    border-color: #efc8c1;
+    background: linear-gradient(145deg, #fff9f7, #fff);
+}
+
+.pmc-company-control-card.is-watch {
+    border-color: #eadcae;
+    background: linear-gradient(145deg, #fffcf3, #fff);
+}
+
+.pmc-company-control-card > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-company-control-card > header > div:first-child {
+    display: grid;
+    min-width: 0;
+    gap: 0.16rem;
+}
+
+.pmc-company-control-card > header > div:first-child > span {
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    font-weight: 900;
+    letter-spacing: 0.045em;
+}
+
+.pmc-company-control-card > header a {
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 1rem;
+    font-weight: 950;
+    text-decoration: none;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-company-control-card > header small {
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+}
+
+.pmc-company-control-card-badges {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: flex-end;
+    gap: 0.28rem;
+    flex-direction: column;
+}
+
+.pmc-company-control-card-badges span,
+.pmc-company-control-card-badges em {
+    padding: 0.28rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pmc-sand);
+    color: var(--pmc-muted);
+    font-size: 0.61rem;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.pmc-company-control-card-badges em {
+    background: #e6f6ed;
+    color: #12633b;
+}
+
+.is-risk .pmc-company-control-card-badges em {
+    background: #ffe4df;
+    color: #a33625;
+}
+
+.is-watch .pmc-company-control-card-badges em {
+    background: #fff1c2;
+    color: #765b00;
+}
+
+.pmc-company-control-readiness {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.7rem;
+    border-radius: 0.7rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-company-control-readiness > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.68rem;
+    font-weight: 850;
+}
+
+.pmc-company-control-readiness strong {
+    font-size: 0.78rem;
+    font-weight: 950;
+}
+
+.pmc-company-control-readiness small {
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+}
+
+.pmc-company-control-progress {
+    height: 0.4rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #e8e4da;
+}
+
+.pmc-company-control-progress span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--pmc-teal);
+}
+
+.is-risk .pmc-company-control-progress span {
+    background: #d5523c;
+}
+
+.is-watch .pmc-company-control-progress span {
+    background: #c99800;
+}
+
+.pmc-company-control-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-company-control-card dl > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.14rem;
+    padding: 0.65rem;
+    border-radius: 0.65rem;
+    background: rgb(247 245 239 / 75%);
+}
+
+.pmc-company-control-card dt {
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+    font-weight: 800;
+}
+
+.pmc-company-control-card dd {
+    display: grid;
+    gap: 0.1rem;
+    margin: 0;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.84rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-company-control-card dd small {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+}
+
+.pmc-company-control-facts {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.pmc-company-control-facts span {
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.32rem 0.5rem;
+    border-radius: 0.5rem;
+    background: #f5f2eb;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-company-control-card footer {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--pmc-line);
+}
+
+.pmc-company-control-card footer a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.6rem;
+    color: var(--pmc-ink);
+    font-size: 0.67rem;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.pmc-company-control-card footer a.is-primary {
+    margin-inline-end: auto;
+    border-color: var(--pmc-amber);
+    background: var(--pmc-amber);
+}

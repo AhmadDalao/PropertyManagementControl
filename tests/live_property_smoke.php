@@ -214,6 +214,8 @@ if ($login['status'] !== 302 || ! str_contains((string) $login['location'], '/da
 
 $authChecks = [
     '/dashboard' => 'dashboard',
+    '/company-control?locale=en' => 'admin/company-control/index',
+    '/company-control?locale=ar' => 'admin/company-control/index',
     '/notifications?locale=en' => 'admin/notifications/index',
     '/notifications?locale=ar' => 'admin/notifications/index',
     '/action-center?locale=en' => 'admin/action-center/index',
@@ -336,6 +338,45 @@ if (! is_array($composition)
 }
 
 smoke_note('/dashboard global company composition present');
+
+$companyControl = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/company-control?locale=ar',
+);
+$companyPayload = smoke_page_payload($companyControl['body']);
+
+if (($companyPayload['props']['filters']['data_source'] ?? null) !== 'live'
+    || ! is_array($companyPayload['props']['summary'] ?? null)
+    || ! is_array($companyPayload['props']['portfolios']['data'] ?? null)) {
+    smoke_fail('Company control did not expose a bounded live-client decision view.');
+}
+
+foreach ($companyPayload['props']['portfolios']['data'] as $portfolio) {
+    if (! is_array($portfolio) || ($portfolio['is_showcase'] ?? true) !== false) {
+        smoke_fail('Company control live scope included showcase data.');
+    }
+}
+
+$companyWorkbook = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/company-control/export.xlsx?data_source=live&status=active&locale=ar',
+);
+$companyWorkbookHeaders = strtolower((string) $companyWorkbook['headers']);
+
+if ($companyWorkbook['status'] !== 200
+    || ! str_contains(
+        $companyWorkbookHeaders,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    || ! str_starts_with((string) $companyWorkbook['body'], 'PK')) {
+    smoke_fail('Company control workbook was invalid.');
+}
+
+smoke_note('/company-control live scope and XLSX export valid');
 
 $maintenanceSignoffs = smoke_request(
     $baseUrl,

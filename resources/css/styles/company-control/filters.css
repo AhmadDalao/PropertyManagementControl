@@ -1,0 +1,108 @@
+.pmc-company-control-filters {
+    display: grid;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: linear-gradient(135deg, #fffaf0, #f4fbf8);
+}
+
+.pmc-company-control-chips {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.pmc-company-control-chips::-webkit-scrollbar {
+    display: none;
+}
+
+.pmc-company-control-chips button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 0.65rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 900;
+}
+
+.pmc-company-control-chips button.is-active {
+    border-color: var(--pmc-ink);
+    background: var(--pmc-ink);
+    color: #fff;
+}
+
+.pmc-company-control-chips strong {
+    display: grid;
+    min-width: 1.45rem;
+    min-height: 1.45rem;
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 17%);
+}
+
+.pmc-company-control-filters form {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(5, minmax(7rem, 1fr));
+    gap: 0.65rem;
+    align-items: end;
+}
+
+.pmc-company-control-filters label {
+    display: grid;
+    min-width: 0;
+    gap: 0.28rem;
+}
+
+.pmc-company-control-filters label > span {
+    color: var(--pmc-muted);
+    font-size: 0.63rem;
+    font-weight: 900;
+}
+
+.pmc-company-control-filters input,
+.pmc-company-control-filters select {
+    width: 100%;
+    min-width: 0;
+    min-height: 2.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--pmc-line-strong);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+}
+
+.pmc-company-control-filter-actions {
+    display: flex;
+    grid-column: 1 / -1;
+    gap: 0.45rem;
+}
+
+.pmc-company-control-filter-actions button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--pmc-line-strong);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.pmc-company-control-filter-actions button:first-child {
+    border-color: var(--pmc-amber);
+    background: var(--pmc-amber);
+}

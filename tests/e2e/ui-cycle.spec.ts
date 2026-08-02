@@ -25,6 +25,7 @@ const localAccounts = [
 
 const primaryAdminRoutes = [
     '/dashboard',
+    '/company-control',
     '/portfolio-control',
     '/action-center',
     '/profile',
@@ -367,6 +368,49 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByRole('link', { name: 'تركيز لوحة التحكم' }).first(),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('company control compares client portfolios without tables or mobile overflow', async ({
+        page,
+    }) => {
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/company-control?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Company control',
+                }),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-company-control-card').first(),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
+            await expectMinimumTouchHeight(
+                page,
+                [
+                    '.pmc-company-control-chips button',
+                    '.pmc-company-control-filter-actions button',
+                    '.pmc-company-control-card footer a',
+                ].join(', '),
+            );
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/company-control?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'تحكم الشركة',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByPlaceholder('المحفظة أو الرمز أو المالك'),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -3015,6 +3059,7 @@ test.describe('authenticated administration', () => {
 
             for (const path of [
                 '/dashboard',
+                '/company-control',
                 '/action-center',
                 '/profile',
                 '/assets',
@@ -3048,6 +3093,7 @@ test.describe('local role dashboards', () => {
         superadmin: {
             visible: [
                 '/action-center',
+                '/company-control',
                 '/property-explorer',
                 '/rent-collection',
                 '/lease-renewals',
@@ -3069,6 +3115,7 @@ test.describe('local role dashboards', () => {
             ],
             hidden: [
                 '/cms',
+                '/company-control',
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
@@ -3085,6 +3132,7 @@ test.describe('local role dashboards', () => {
             ],
             hidden: [
                 '/cms',
+                '/company-control',
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
@@ -3094,6 +3142,7 @@ test.describe('local role dashboards', () => {
             visible: ['/dashboard', '/maintenance-requests', '/documentation'],
             hidden: [
                 '/action-center',
+                '/company-control',
                 '/property-explorer',
                 '/lease-renewals',
                 '/rent-collection',
