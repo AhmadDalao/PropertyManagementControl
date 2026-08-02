@@ -49,8 +49,11 @@
     .pmc-mobile-record-subtitle {
         min-width: 0;
         max-width: 100%;
+        overflow: hidden;
         color: var(--pmc-muted);
         font-size: 0.66rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .pmc-mobile-record-controls {
@@ -104,6 +107,7 @@
         font-weight: 750;
         line-height: 1.25;
         text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .pmc-mobile-record-card .pmc-table-showcase-badge {

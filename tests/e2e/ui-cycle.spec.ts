@@ -598,6 +598,7 @@ test.describe('authenticated administration', () => {
         await page.setViewportSize(viewports.mobile);
 
         for (const path of [
+            '/portfolios',
             '/users',
             '/assets',
             '/tenants',

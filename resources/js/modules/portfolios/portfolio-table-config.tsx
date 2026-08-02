@@ -1,6 +1,7 @@
 import type { MobileTableConfig, TableColumn } from '@/components/data-table';
 import { StatusBadge } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
+import { currency } from '@/lib/utils';
 
 import {
     PortfolioAccess,
@@ -9,6 +10,7 @@ import {
     PortfolioIdentity,
     PortfolioOperations,
     PortfolioOwnerLocation,
+    portfolioName,
 } from './portfolio-table-cells';
 import type { PortfolioRecord, PortfolioTableProps } from './types';
 
@@ -16,7 +18,7 @@ export function usePortfolioTableConfig(props: PortfolioTableProps): {
     columns: Array<TableColumn<PortfolioRecord>>;
     mobileCard: MobileTableConfig<PortfolioRecord>;
 } {
-    const { t } = useTranslator();
+    const { locale, t } = useTranslator();
     const identity = (portfolio: PortfolioRecord) => (
         <PortfolioIdentity portfolio={portfolio} />
     );
@@ -39,19 +41,33 @@ export function usePortfolioTableConfig(props: PortfolioTableProps): {
 
     return {
         mobileCard: {
-            title: identity,
-            subtitle: (portfolio) => <StatusBadge value={portfolio.status} />,
-            status: (portfolio) => portfolio.code,
+            title: (portfolio) => portfolioName(portfolio, locale),
+            subtitle: (portfolio) => portfolio.code,
+            status: (portfolio) => <StatusBadge value={portfolio.status} />,
             meta: [
                 {
-                    label: t('portfolios.owner_location'),
-                    value: ownerLocation,
+                    label: t('portfolios.owner'),
+                    value: (portfolio) =>
+                        portfolio.owner?.name ??
+                        t('portfolios.owner_not_assigned'),
                 },
                 {
                     label: t('portfolios.operations'),
-                    value: operations,
+                    value: (portfolio) =>
+                        t('portfolios.assets_users', undefined, {
+                            assets: portfolio.assets_count ?? 0,
+                            users: portfolio.users_count ?? 0,
+                        }),
                 },
-                { label: t('portfolios.finance'), value: finance },
+                {
+                    label: t('portfolios.finance'),
+                    value: (portfolio) =>
+                        currency(
+                            portfolio.valuation_total ?? 0,
+                            props.app.locale,
+                            portfolio.default_currency,
+                        ),
+                },
             ],
             actions,
         },
