@@ -1,0 +1,92 @@
+.pmc-explorer-view-tabs {
+    display: none;
+}
+
+.pmc-explorer-view-panel,
+.pmc-explorer-detail-panel {
+    display: contents;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-explorer-view-tabs {
+        display: grid;
+        gap: 0.45rem;
+        margin-bottom: 0.85rem;
+        padding: 0.3rem;
+        border: 1px solid var(--pmc-line);
+        border-radius: 0.85rem;
+        background: var(--pmc-sand);
+    }
+
+    .pmc-explorer-view-tabs button {
+        display: flex;
+        min-width: 0;
+        min-height: 2.85rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.5rem;
+        border: 0;
+        border-radius: 0.65rem;
+        background: transparent;
+        color: var(--pmc-muted);
+        font-size: 0.68rem;
+        font-weight: 900;
+        text-align: center;
+    }
+
+    .pmc-explorer-view-tabs button > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pmc-explorer-view-tabs button > strong {
+        display: grid;
+        width: 1.5rem;
+        height: 1.5rem;
+        place-items: center;
+        flex: 0 0 auto;
+        border-radius: 999px;
+        background: #fff;
+        color: var(--pmc-ink);
+        font-size: 0.63rem;
+    }
+
+    .pmc-explorer-view-tabs button.is-active {
+        background: var(--pmc-ink);
+        color: #fff;
+    }
+
+    .pmc-explorer-view-tabs button.is-active > strong {
+        background: var(--pmc-amber);
+    }
+
+    .pmc-explorer-view-panel,
+    .pmc-explorer-detail-panel {
+        display: none;
+        min-width: 0;
+    }
+
+    .pmc-explorer-view-panel.is-active,
+    .pmc-explorer-detail-panel.is-active {
+        display: contents;
+    }
+
+    .pmc-explorer-focus.is-overview [data-explorer-focus-section='tenancy'],
+    .pmc-explorer-focus.is-tenancy [data-explorer-focus-section='overview'] {
+        display: none;
+    }
+
+    .pmc-explorer-focus.is-overview .pmc-explorer-focus-body,
+    .pmc-explorer-focus.is-tenancy .pmc-explorer-focus-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-explorer-view-tabs button {
+        transition: none;
+    }
+}

@@ -633,6 +633,32 @@ test.describe('authenticated administration', () => {
         }
 
         await page.setViewportSize(viewports.mobile);
+        const explorerTabs = page.locator('[data-explorer-view-tab]');
+        await expect(explorerTabs).toHaveCount(3);
+        await expect(
+            page.locator('[data-explorer-view-tab="structure"]'),
+        ).toHaveAttribute('aria-pressed', 'true');
+        await expect(
+            page.locator('[data-explorer-view-panel="structure"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('[data-explorer-view-panel="record"]'),
+        ).toBeHidden();
+        await page.locator('[data-explorer-view-tab="overview"]').click();
+        await expect(page).toHaveURL(/view=overview/);
+        await expect(
+            page.locator('[data-explorer-view-panel="structure"]'),
+        ).toBeHidden();
+        await expect(
+            page.locator('[data-explorer-view-panel="record"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('[data-explorer-focus-section="overview"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('[data-explorer-focus-section="tenancy"]'),
+        ).toBeHidden();
+
         await page.getByTestId('property-explorer-property').click();
         await page
             .locator('[data-property-scope-option]')
@@ -653,6 +679,20 @@ test.describe('authenticated administration', () => {
             '.pmc-explorer-focus-actions .btn, .pmc-explorer-record footer a',
         );
         await expectNoHorizontalOverflow(page);
+        const matchingUnit = page.locator(
+            '.pmc-explorer-record footer a.is-primary',
+        );
+        await expect(matchingUnit).toHaveCount(1);
+        await matchingUnit.click();
+        await expect(
+            page.locator('[data-explorer-view-tab="tenancy"]'),
+        ).toHaveAttribute('aria-pressed', 'true');
+        await expect(
+            page.locator('[data-explorer-focus-section="tenancy"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('[data-explorer-focus-section="overview"]'),
+        ).toBeHidden();
 
         await page.goto('/property-explorer?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');

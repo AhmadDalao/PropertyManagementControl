@@ -9,6 +9,8 @@ export type PropertyExplorerFilters = {
     page: number;
 };
 
+export type PropertyExplorerView = 'structure' | 'overview' | 'tenancy';
+
 export type PropertyExplorerLease = {
     id: number;
     code: string;

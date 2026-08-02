@@ -9,9 +9,7 @@ import { useTranslator } from '@/lib/i18n';
 
 import { ExplorerBreadcrumbs } from './explorer-breadcrumbs';
 import { ExplorerControls } from './explorer-controls';
-import { ExplorerFocusPanel } from './explorer-focus-panel';
-import { ExplorerRecords } from './explorer-records';
-import { ExplorerSummary } from './explorer-summary';
+import { ExplorerWorkspace } from './explorer-workspace';
 import type { PropertyExplorerPageProps } from './types';
 
 export default function PropertyExplorerPage() {
@@ -63,12 +61,13 @@ export default function PropertyExplorerPage() {
                         <ExplorerBreadcrumbs
                             breadcrumbs={explorer.breadcrumbs}
                         />
-                        <ExplorerSummary explorer={explorer} />
-                        <ExplorerFocusPanel
-                            explorer={explorer}
-                            canCreate={canCreate}
-                        />
-                        <ExplorerRecords
+                        <ExplorerWorkspace
+                            key={[
+                                explorer.selected.id,
+                                explorer.filters.search,
+                                explorer.filters.asset_type,
+                                explorer.filters.occupancy_status,
+                            ].join(':')}
                             explorer={explorer}
                             canCreate={canCreate}
                         />

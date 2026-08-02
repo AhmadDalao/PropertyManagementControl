@@ -154,6 +154,10 @@ class AssetModuleArchitectureTest extends TestCase
         $presenter = $this->source($this->path('app/Modules/Assets/Presenters/PropertyExplorerPresenter.php'));
         $entry = $this->source($this->path('resources/js/modules/assets/explorer/index-page.tsx'));
         $focus = $this->source($this->path('resources/js/modules/assets/explorer/explorer-focus-panel.tsx'));
+        $nodeFacts = $this->source($this->path('resources/js/modules/assets/explorer/explorer-node-facts.tsx'));
+        $tenancy = $this->source($this->path('resources/js/modules/assets/explorer/explorer-tenancy-panel.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/assets/explorer/explorer-workspace.tsx'));
+        $viewTabs = $this->source($this->path('resources/js/modules/assets/explorer/explorer-view-tabs.tsx'));
         $facade = $this->source($this->path('resources/css/styles/property-explorer.css'));
 
         $this->assertLinesAtMost($controller, 35);
@@ -163,7 +167,11 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertLinesAtMost($metrics, 75);
         $this->assertLinesAtMost($presenter, 110);
         $this->assertLinesAtMost($entry, 100);
-        $this->assertLinesAtMost($focus, 245);
+        $this->assertLinesAtMost($focus, 105);
+        $this->assertLinesAtMost($nodeFacts, 75);
+        $this->assertLinesAtMost($tenancy, 145);
+        $this->assertLinesAtMost($workspace, 145);
+        $this->assertLinesAtMost($viewTabs, 65);
         $this->assertStringContainsString('PropertyExplorerPresenter', $controller);
         $this->assertStringContainsString('PropertyExplorerSelectionQuery', $presenter);
         $this->assertStringContainsString('leaseableTypes()', $activeLeases);
@@ -172,6 +180,7 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('Asset::query()', $controller);
         $this->assertStringContainsString("@import './property-explorer/controls.css';", $facade);
         $this->assertStringContainsString("@import './property-explorer/content.css';", $facade);
+        $this->assertStringContainsString("@import './property-explorer/workspace.css';", $facade);
         $this->assertStringContainsString("@import './property-explorer/responsive.css';", $facade);
     }
 
@@ -249,6 +258,11 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/assets/building-setup/index-page.tsx'),
             $this->path('resources/js/modules/assets/building-setup/types.ts'),
             $this->path('resources/js/modules/assets/explorer/index-page.tsx'),
+            $this->path('resources/js/modules/assets/explorer/explorer-fact.tsx'),
+            $this->path('resources/js/modules/assets/explorer/explorer-node-facts.tsx'),
+            $this->path('resources/js/modules/assets/explorer/explorer-tenancy-panel.tsx'),
+            $this->path('resources/js/modules/assets/explorer/explorer-view-tabs.tsx'),
+            $this->path('resources/js/modules/assets/explorer/explorer-workspace.tsx'),
             $this->path('resources/js/modules/assets/explorer/types.ts'),
             $this->path('resources/js/modules/assets/types.ts'),
         ] as $path) {
