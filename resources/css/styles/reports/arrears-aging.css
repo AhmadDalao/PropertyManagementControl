@@ -1,0 +1,263 @@
+.pmc-aging-scope,
+.pmc-aging-summary {
+    margin-block: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: var(--pmc-surface);
+}
+
+.pmc-aging-scope {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.15rem;
+}
+
+.pmc-aging-scope > header,
+.pmc-aging-scope > header span {
+    display: flex;
+}
+
+.pmc-aging-scope > header {
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pmc-aging-scope > header > i {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff6d7;
+    color: var(--pmc-ink);
+}
+
+.pmc-aging-scope > header span {
+    flex-direction: column;
+}
+
+.pmc-aging-scope small,
+.pmc-aging-summary p,
+.pmc-aging-summary small,
+.pmc-aging-primary small,
+.pmc-aging-age small,
+.pmc-aging-money small,
+.pmc-aging-follow-up small {
+    color: var(--pmc-muted);
+}
+
+.pmc-aging-scope dl {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.65rem;
+    margin: 0;
+}
+
+.pmc-aging-scope dl div {
+    min-width: 9rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--pmc-radius);
+    background: var(--pmc-sand);
+}
+
+.pmc-aging-scope dt,
+.pmc-aging-scope dd {
+    margin: 0;
+}
+
+.pmc-aging-scope dt {
+    font-size: 0.72rem;
+    color: var(--pmc-muted);
+}
+
+.pmc-aging-scope dd {
+    font-weight: 700;
+}
+
+.pmc-aging-summary {
+    padding: 1.2rem;
+}
+
+.pmc-aging-summary > header span {
+    color: var(--pmc-amber-strong);
+    font-size: 0.74rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-aging-summary h2 {
+    margin: 0.2rem 0;
+    font-size: 1.2rem;
+}
+
+.pmc-aging-summary p {
+    max-width: 46rem;
+    margin: 0;
+}
+
+.pmc-aging-currency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 19rem), 1fr));
+    gap: 0.85rem;
+    margin-top: 1rem;
+}
+
+.pmc-aging-currency-grid article {
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: linear-gradient(145deg, #fff 45%, var(--pmc-sand) 100%);
+}
+
+.pmc-aging-currency-grid article > header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.15rem 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-aging-currency-grid article > header span {
+    width: fit-content;
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-aging-currency-grid article > header strong {
+    color: var(--pmc-red);
+    font-size: 1.15rem;
+}
+
+.pmc-aging-currency-grid article > header small {
+    grid-column: 1 / -1;
+}
+
+.pmc-aging-currency-grid dl {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.7rem;
+    margin: 0.8rem 0 0;
+}
+
+.pmc-aging-currency-grid dl div {
+    min-width: 0;
+}
+
+.pmc-aging-currency-grid dt {
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-aging-currency-grid dd {
+    margin: 0.12rem 0 0;
+    font-weight: 750;
+}
+
+.pmc-aging-empty {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: var(--pmc-radius);
+    background: #e7f5f1;
+    color: var(--pmc-teal);
+}
+
+.pmc-aging-primary,
+.pmc-aging-age,
+.pmc-aging-money,
+.pmc-aging-follow-up,
+.pmc-aging-follow-up span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.pmc-aging-primary strong,
+.pmc-aging-primary small,
+.pmc-aging-age strong,
+.pmc-aging-age small,
+.pmc-aging-money strong,
+.pmc-aging-money small {
+    overflow-wrap: anywhere;
+}
+
+.pmc-aging-money strong,
+.pmc-aging-age small {
+    color: var(--pmc-red);
+}
+
+.pmc-aging-follow-up {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 0.45rem;
+}
+
+.pmc-aging-follow-up > i {
+    flex: 0 0 auto;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-top: 0.35rem;
+    border-radius: 50%;
+    background: currentColor;
+    color: var(--pmc-amber-strong);
+}
+
+.pmc-aging-follow-up.is-broken > i,
+.pmc-aging-follow-up.is-untracked > i,
+.pmc-aging-follow-up.is-due > i {
+    color: var(--pmc-red);
+}
+
+.pmc-aging-bucket {
+    display: inline-flex;
+    width: fit-content;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: #fff6d7;
+    color: var(--pmc-ink);
+    font-size: 0.72rem;
+    font-weight: 800;
+}
+
+.pmc-aging-bucket.is-over_90 {
+    background: #fbe9e5;
+    color: var(--pmc-red);
+}
+
+@media (max-width: 991.98px) {
+    .pmc-aging-scope {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-aging-scope dl {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-aging-scope dl div {
+        min-width: 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-aging-scope dl,
+    .pmc-aging-currency-grid dl {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-aging-scope,
+    .pmc-aging-summary {
+        padding: 0.9rem;
+    }
+}

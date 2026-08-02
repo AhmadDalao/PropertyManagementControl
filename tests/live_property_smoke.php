@@ -277,6 +277,7 @@ $authChecks = [
     '/reports/saved/create' => 'admin/reports/saved-form',
     '/reports/statement' => 'admin/reports/statement',
     '/reports/rent-roll?locale=ar' => 'admin/reports/rent-roll',
+    '/reports/arrears-aging?locale=ar' => 'admin/reports/arrears-aging',
 ];
 
 foreach ($authChecks as $path => $expectedComponent) {
@@ -656,10 +657,15 @@ foreach ($reportsPayload['props']['reportLibrary'] ?? [] as $group) {
 
 $hasArabicScope = false;
 $rentRollCard = null;
+$arrearsAgingCard = null;
 
 foreach ($reportLibrary as $card) {
     if (($card['key'] ?? null) === 'rent-roll') {
         $rentRollCard = $card;
+    }
+
+    if (($card['key'] ?? null) === 'arrears-aging') {
+        $arrearsAgingCard = $card;
     }
 
     $scope = [];
@@ -741,6 +747,32 @@ if ($rentRollResponse['status'] !== 200
 }
 
 smoke_note('/reports/rent-roll Arabic schedule and scope');
+
+if (! is_array($arrearsAgingCard)
+    || count($arrearsAgingCard['downloads'] ?? []) !== 3
+    || ! str_contains((string) ($arrearsAgingCard['openHref'] ?? ''), '/reports/arrears-aging')) {
+    smoke_fail('The report library did not expose arrears aging and its three downloads.');
+}
+
+$arrearsAgingResponse = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/reports/arrears-aging?locale=ar&per_page=10',
+);
+$arrearsAgingPayload = smoke_page_payload($arrearsAgingResponse['body']);
+$arrearsAgingRecords = $arrearsAgingPayload['props']['records']['data'] ?? null;
+$arrearsAgingPositions = $arrearsAgingPayload['props']['currencyPositions'] ?? null;
+
+if ($arrearsAgingResponse['status'] !== 200
+    || smoke_component($arrearsAgingResponse['body']) !== 'admin/reports/arrears-aging'
+    || ! is_array($arrearsAgingRecords)
+    || count($arrearsAgingRecords) > 10
+    || ! is_array($arrearsAgingPositions)) {
+    smoke_fail('The Arabic arrears aging report did not expose a bounded schedule.');
+}
+
+smoke_note('/reports/arrears-aging Arabic schedule');
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     $propertyId = (int) $propertyOptions[0]['id'];
@@ -1185,6 +1217,28 @@ foreach ([
     }
 
     smoke_note("/reports/rent-roll.{$extension} valid");
+}
+
+foreach ([
+    'pdf' => ['application/pdf', '%PDF-'],
+    'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'PK'],
+    'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'PK'],
+] as $extension => [$contentType, $signature]) {
+    $agingExport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/reports/arrears-aging.{$extension}",
+    );
+    $agingHeaders = strtolower((string) $agingExport['headers']);
+
+    if ($agingExport['status'] !== 200
+        || ! str_contains($agingHeaders, $contentType)
+        || ! str_starts_with((string) $agingExport['body'], $signature)) {
+        smoke_fail("Arrears aging {$extension} download was invalid.");
+    }
+
+    smoke_note("/reports/arrears-aging.{$extension} valid");
 }
 
 $ownerStatementPdf = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/statement.pdf');

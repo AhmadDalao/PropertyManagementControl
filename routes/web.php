@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ActionCenterController;
 use App\Http\Controllers\AdminExportController;
+use App\Http\Controllers\ArrearsAgingController;
 use App\Http\Controllers\AssetController;
 use App\Http\Controllers\AssetStructureController;
 use App\Http\Controllers\AuditLogController;
@@ -277,6 +278,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/reports/rent-roll.pdf', [RentRollController::class, 'pdf'])->name('reports.rent-roll.pdf')->middleware('portfolio.module:reports');
     Route::get('/reports/rent-roll.docx', [RentRollController::class, 'word'])->name('reports.rent-roll.word')->middleware('portfolio.module:reports');
     Route::get('/reports/rent-roll.xlsx', [RentRollController::class, 'workbook'])->name('reports.rent-roll.workbook')->middleware('portfolio.module:reports');
+    Route::get('/reports/arrears-aging', [ArrearsAgingController::class, 'index'])->name('reports.arrears-aging.index')->middleware(['portfolio.module:reports', 'portfolio.module:payments']);
+    Route::get('/reports/arrears-aging.pdf', [ArrearsAgingController::class, 'pdf'])->name('reports.arrears-aging.pdf')->middleware(['portfolio.module:reports', 'portfolio.module:payments']);
+    Route::get('/reports/arrears-aging.docx', [ArrearsAgingController::class, 'word'])->name('reports.arrears-aging.word')->middleware(['portfolio.module:reports', 'portfolio.module:payments']);
+    Route::get('/reports/arrears-aging.xlsx', [ArrearsAgingController::class, 'workbook'])->name('reports.arrears-aging.workbook')->middleware(['portfolio.module:reports', 'portfolio.module:payments']);
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
     Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');

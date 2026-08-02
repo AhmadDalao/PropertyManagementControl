@@ -52,6 +52,12 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(35, substr_count($presetDetail, "\n") + 1);
         $this->assertStringContainsString('ReportPresetDetailPresenter', $presetDetail);
         $this->assertStringNotContainsString('ReportPreset::query()', $presetDetail);
+
+        $aging = $this->source($this->path('app/Http/Controllers/ArrearsAgingController.php'));
+        $this->assertLessThanOrEqual(60, substr_count($aging, "\n") + 1);
+        $this->assertStringContainsString('ArrearsAgingQuery', $aging);
+        $this->assertStringContainsString('ArrearsAgingWorkbookExport', $aging);
+        $this->assertStringNotContainsString('LeaseInstallment::query()', $aging);
     }
 
     #[Test]
@@ -78,6 +84,8 @@ class ReportModuleArchitectureTest extends TestCase
     {
         $query = $this->source($this->path('app/Modules/Reports/Queries/PortfolioReportQuery.php'));
         $rentRoll = $this->source($this->path('app/Modules/Reports/Queries/RentRollQuery.php'));
+        $aging = $this->source($this->path('app/Modules/Reports/Queries/ArrearsAgingQuery.php'));
+        $agingMetrics = $this->source($this->path('app/Modules/Reports/Queries/ArrearsAgingMetricsQuery.php'));
         $presets = $this->source($this->path('resources/js/modules/reports/saved-reports-page.tsx'));
 
         $this->assertLessThanOrEqual(70, substr_count($query, "\n") + 1);
@@ -88,6 +96,11 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('Payment::query()', $query);
         $this->assertStringNotContainsString('->groupBy(', $query);
         $this->assertStringNotContainsString("'is_showcase',", $rentRoll);
+        $this->assertLessThanOrEqual(150, substr_count($aging, "\n") + 1);
+        $this->assertLessThanOrEqual(130, substr_count($agingMetrics, "\n") + 1);
+        $this->assertStringContainsString('ArrearsAgingMetricsQuery', $aging);
+        $this->assertStringContainsString('ArrearsAgingScope', $aging);
+        $this->assertStringNotContainsString('->join(', $aging);
 
         $this->assertLessThanOrEqual(85, substr_count($presets, "\n") + 1);
         $this->assertStringContainsString("from './report-preset-list'", $presets);
@@ -105,14 +118,14 @@ class ReportModuleArchitectureTest extends TestCase
         $statementFilters = $this->source($this->path('resources/js/modules/reports/owner-statement-filters.tsx'));
         $property = $this->source($this->path('resources/js/modules/reports/property-report-page.tsx'));
 
-        $this->assertLessThanOrEqual(12, substr_count($facade, "\n") + 1);
+        $this->assertLessThanOrEqual(13, substr_count($facade, "\n") + 1);
         $this->assertStringNotContainsString("styles/reports.css';", $global);
         $this->assertStringContainsString("css/styles/reports.css';", $index);
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
         $this->assertStringContainsString("from './report-filters'", $statementFilters);
         $this->assertStringContainsString("css/styles/reports.css';", $property);
 
-        foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'rent-roll', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'rent-roll', 'arrears-aging', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -132,6 +145,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Actions/RentRollPdfExport.php',
             'app/Modules/Reports/Actions/RentRollWordExport.php',
             'app/Modules/Reports/Actions/RentRollWorkbookExport.php',
+            'app/Modules/Reports/Actions/ArrearsAgingPdfExport.php',
+            'app/Modules/Reports/Actions/ArrearsAgingWordExport.php',
+            'app/Modules/Reports/Actions/ArrearsAgingWorkbookExport.php',
             'app/Modules/Reports/Actions/ReportWorkbookExport.php',
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
@@ -206,6 +222,12 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/rent-roll-scope.tsx',
             'resources/js/modules/reports/rent-roll-state.tsx',
             'resources/js/modules/reports/rent-roll-types.ts',
+            'resources/js/modules/reports/arrears-aging-cells.tsx',
+            'resources/js/modules/reports/arrears-aging-page.tsx',
+            'resources/js/modules/reports/arrears-aging-records.tsx',
+            'resources/js/modules/reports/arrears-aging-scope.tsx',
+            'resources/js/modules/reports/arrears-aging-summary.tsx',
+            'resources/js/modules/reports/arrears-aging-types.ts',
             'resources/js/modules/reports/property-report-context.tsx',
             'resources/js/modules/reports/property-report-page.tsx',
             'resources/js/modules/reports/property-report-period.tsx',

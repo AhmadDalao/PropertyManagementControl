@@ -108,6 +108,7 @@ final readonly class RentCollectionDirectoryQuery
             ])
             ->with([
                 'lease:id,portfolio_id,tenant_profile_id,leaseable_type,leaseable_id,code,status,currency',
+                'lease.portfolio:id,name_en,name_ar,code',
                 'lease.tenantProfile:id,user_id',
                 'lease.tenantProfile.user:id,name,email,phone',
                 'lease.leaseable',

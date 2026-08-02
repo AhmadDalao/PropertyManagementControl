@@ -126,7 +126,7 @@ return [
                 ['label' => 'Record contact and next follow-up', 'route' => '/rent-collection', 'module' => 'payments'],
                 ['label' => 'Post manual payment', 'route' => '/payments', 'module' => 'payments'],
                 ['label' => 'Download receipt', 'route' => '/payments', 'module' => 'payments'],
-                ['label' => 'Review arrears report', 'route' => '/reports', 'module' => 'reports'],
+                ['label' => 'Review arrears aging', 'route' => '/reports/arrears-aging', 'module' => 'reports'],
             ],
         ],
         [

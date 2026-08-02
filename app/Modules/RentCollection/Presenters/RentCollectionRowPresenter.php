@@ -45,6 +45,12 @@ final readonly class RentCollectionRowPresenter
                 'code' => $lease->code,
                 'status' => $lease->status,
             ] : null,
+            'portfolio' => $lease?->portfolio ? [
+                'id' => $lease->portfolio->id,
+                'name_en' => $lease->portfolio->name_en,
+                'name_ar' => $lease->portfolio->name_ar,
+                'code' => $lease->portfolio->code,
+            ] : null,
             'tenant' => $lease?->tenantProfile?->user ? [
                 'name' => $lease->tenantProfile->user->name,
                 'email' => $lease->tenantProfile->user->email,

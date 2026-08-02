@@ -61,6 +61,7 @@ const primaryAdminRoutes = [
     '/reports/saved/create',
     '/reports/statement',
     '/reports/rent-roll',
+    '/reports/arrears-aging',
     '/documentation',
 ] as const;
 
@@ -76,7 +77,9 @@ test.describe('public shell', () => {
                 await expect(page.locator('body')).toBeVisible();
 
                 if (path !== '/login') {
-                    await expect(page.locator('.pmc-site-footer')).toBeVisible();
+                    await expect(
+                        page.locator('.pmc-site-footer'),
+                    ).toBeVisible();
                 }
 
                 await expectNoHorizontalOverflow(page);
@@ -2803,9 +2806,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('a[href^="/reports/statement.docx"]'),
         ).toBeVisible();
-        await page.getByRole('tab', { name: 'التحصيل والتكاليف 3' }).click();
+        await page.getByRole('tab', { name: 'التحصيل والتكاليف 4' }).click();
         await expect(page).toHaveURL(/library_group=finance/);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(4);
         expect(
             await page.evaluate(() => document.documentElement.scrollHeight),
         ).toBeLessThan(2200);
@@ -2833,7 +2836,7 @@ test.describe('authenticated administration', () => {
         await page.getByRole('button', { name: 'تطبيق', exact: true }).click();
         await expect(page).toHaveURL(/period=this_month/);
         await expect(page).toHaveURL(/library_group=finance/);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(4);
         await page.getByRole('tab', { name: 'حزم المالك 3' }).click();
         const propertyReportCard = page
             .locator('.pmc-report-library-card')
@@ -3110,6 +3113,74 @@ test.describe('authenticated administration', () => {
             ],
             [
                 '/reports/rent-roll.xlsx',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'PK',
+            ],
+        ] as const) {
+            const response = await page.request.get(path);
+            expect(response.ok()).toBeTruthy();
+            expect(response.headers()['content-type']).toContain(contentType);
+            expect(
+                (await response.body())
+                    .subarray(0, signature.length)
+                    .toString(),
+            ).toBe(signature);
+        }
+    });
+
+    test('arrears aging stays action-first, bilingual, and usable at every width', async ({
+        page,
+    }) => {
+        test.setTimeout(60_000);
+
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/reports/arrears-aging?locale=ar');
+
+            await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'أعمار المتأخرات',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-aging-scope')).toBeVisible();
+            await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+            await expect(page.locator('.pmc-aging-summary')).toBeVisible();
+            await expect(
+                page.locator('.pmc-table-search input[type="search"]'),
+            ).toBeVisible();
+
+            if (viewport.width < 992) {
+                await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+                await expectPagedMobileCards(page, 10);
+            } else {
+                await expect(page.locator('.pmc-table-scroll')).toBeVisible();
+            }
+
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/reports/arrears-aging?locale=ar');
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        await expect(page.getByLabel('فترة التأخير')).toBeVisible();
+        await page.getByLabel('فترة التأخير').selectOption('over_90');
+        await expect(page).toHaveURL(/bucket=over_90/);
+        await expect(page.locator('.pmc-filter-chip.active')).toContainText(
+            'أكثر من 90 يوماً',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        for (const [path, contentType, signature] of [
+            ['/reports/arrears-aging.pdf', 'application/pdf', '%PDF-'],
+            [
+                '/reports/arrears-aging.docx',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'PK',
+            ],
+            [
+                '/reports/arrears-aging.xlsx',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'PK',
             ],

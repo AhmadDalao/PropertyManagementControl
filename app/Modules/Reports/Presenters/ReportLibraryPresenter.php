@@ -118,6 +118,20 @@ final class ReportLibraryPresenter
                     'payments',
                     $scope['period'],
                 ),
+                $this->card(
+                    'arrears-aging',
+                    'bi-hourglass-split',
+                    'arrears_aging',
+                    'arrears_aging_description',
+                    $this->url('reports.arrears-aging.index', $currentQuery),
+                    [
+                        $this->download('PDF', $this->url('reports.arrears-aging.pdf', $currentQuery)),
+                        $this->download('DOCX', $this->url('reports.arrears-aging.word', $currentQuery)),
+                        $this->download('XLSX', $this->url('reports.arrears-aging.workbook', $currentQuery)),
+                    ],
+                    'payments',
+                    $scope['current'],
+                ),
                 $this->resourceCard(
                     'payments',
                     'bi-cash-stack',

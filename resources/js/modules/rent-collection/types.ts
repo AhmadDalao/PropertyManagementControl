@@ -28,6 +28,12 @@ export type RentCollectionRecord = {
         code: string;
         status: string;
     } | null;
+    portfolio?: {
+        id: number;
+        name_en: string;
+        name_ar: string;
+        code: string;
+    } | null;
     tenant?: {
         name: string;
         email?: string | null;

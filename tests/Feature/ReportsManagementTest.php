@@ -427,7 +427,7 @@ class ReportsManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->has('reportLibrary', 4)
-                ->has('reportLibrary.1.cards', 2)
+                ->has('reportLibrary.1.cards', 3)
                 ->where('reportLibrary.0.cards.1.key', 'property-operating-report')
                 ->has('reportLibrary.0.cards.1.downloads', 3)
                 ->where('reportLibrary.0.cards.1.downloads.0.label', 'Download PDF')
