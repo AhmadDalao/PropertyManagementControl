@@ -14,6 +14,7 @@ export type UiTranslationKey =
     | `dashboard.${string}`
     | `documents.${string}`
     | `docs.${string}`
+    | `email_delivery.${string}`
     | `errors.${string}`
     | `expenses.${string}`
     | `fields.${string}`

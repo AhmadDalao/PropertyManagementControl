@@ -53,6 +53,7 @@ const primaryAdminRoutes = [
     '/wording',
     '/system/showcase-data',
     '/system/readiness',
+    '/system/email-delivery',
     '/reports',
     '/reports/saved',
     '/reports/saved/create',
@@ -485,6 +486,7 @@ test.describe('authenticated administration', () => {
             '/documents',
             '/media-files',
             '/audit-logs',
+            '/system/email-delivery',
             '/reports',
             '/documentation',
             '/cms',
@@ -3041,6 +3043,66 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('email delivery control explains transport evidence in Arabic, mobile cards, and XLSX', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/system/email-delivery?locale=ar');
+
+        await expect(
+            page.getByRole('heading', {
+                name: 'إرسال البريد',
+                exact: true,
+            }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+        await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expect(
+            page.locator('.pmc-mobile-record-card').first(),
+        ).toBeVisible();
+
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        await expect(page.getByLabel('نوع البريد')).toBeVisible();
+        await expect(page.getByLabel('التاريخ من')).toBeVisible();
+        await expect(page.getByLabel('التاريخ إلى')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const acceptedCard = page
+            .locator('.pmc-mobile-record-card')
+            .filter({ has: page.getByText('مقبول', { exact: true }) });
+        await acceptedCard.locator('.pmc-mobile-record-title-link').click();
+        await expect(
+            page.getByText('دليل الرسالة', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('دليل الناقل', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('body')).toContainText(
+            'ولا يثبت وصولها إلى صندوق الوارد',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        const workbook = await page.request.get(
+            '/system/email-delivery/export?locale=ar',
+        );
+        expect(workbook.ok()).toBeTruthy();
+        expect(workbook.headers()['content-type']).toContain(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/system/email-delivery?locale=en');
+        await expect(page.locator('.pmc-table-scroll')).toBeVisible();
+        await expect(page.locator('.pmc-data-table')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('wording workspace keeps editing focused, responsive, and Arabic', async ({
         page,
     }) => {
@@ -3107,6 +3169,7 @@ test.describe('authenticated administration', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/email-delivery',
             ]) {
                 await page.goto(path);
                 const results = await new AxeBuilder({ page })
@@ -3132,6 +3195,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/email-delivery',
             ],
             hidden: [] as string[],
         },
@@ -3150,6 +3214,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/email-delivery',
             ],
         },
         manager: {
@@ -3167,6 +3232,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/email-delivery',
             ],
         },
         tenant: {
@@ -3181,6 +3247,7 @@ test.describe('local role dashboards', () => {
                 '/users',
                 '/cms',
                 '/system/readiness',
+                '/system/email-delivery',
             ],
         },
     } as const;

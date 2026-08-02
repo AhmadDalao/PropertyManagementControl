@@ -218,6 +218,12 @@
 .bi-envelope::before {
     content: '\f32f';
 }
+.bi-envelope-check::before {
+    content: '\f68c';
+}
+.bi-envelope-paper::before {
+    content: '\f73d';
+}
 .bi-exclamation-circle::before {
     content: '\f333';
 }

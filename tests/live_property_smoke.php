@@ -264,6 +264,8 @@ $authChecks = [
     '/system/showcase-data?locale=ar' => 'admin/showcase-data/index',
     '/system/readiness' => 'admin/system-readiness/index',
     '/system/readiness?locale=ar' => 'admin/system-readiness/index',
+    '/system/email-delivery' => 'admin/email-delivery/index',
+    '/system/email-delivery?locale=ar' => 'admin/email-delivery/index',
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',
@@ -541,6 +543,24 @@ if (! $hasArabicScope) {
 }
 
 smoke_note('/reports Arabic report scope');
+
+$emailDeliveryExport = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/system/email-delivery/export?locale=ar',
+);
+
+if ($emailDeliveryExport['status'] !== 200
+    || ! str_contains(
+        strtolower((string) $emailDeliveryExport['headers']),
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    || ! str_starts_with((string) $emailDeliveryExport['body'], 'PK')) {
+    smoke_fail('The email delivery workbook was invalid.');
+}
+
+smoke_note('/system/email-delivery/export valid XLSX');
 
 if (! is_array($rentRollCard)
     || count($rentRollCard['downloads'] ?? []) !== 3

@@ -28,10 +28,16 @@ use App\Models\Portfolio;
 use App\Models\ReportPreset;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\EmailDelivery\Actions\RecordEmailDelivery;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Notifications\Events\NotificationFailed;
+use Illuminate\Notifications\Events\NotificationSending;
+use Illuminate\Notifications\Events\NotificationSent;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -64,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+        $this->registerEmailDeliveryTracking();
     }
 
     /**
@@ -114,6 +121,26 @@ class AppServiceProvider extends ServiceProvider
                 ->symbols()
                 ->uncompromised()
             : null,
+        );
+    }
+
+    private function registerEmailDeliveryTracking(): void
+    {
+        Event::listen(
+            NotificationSending::class,
+            fn (NotificationSending $event) => app(RecordEmailDelivery::class)->starting($event),
+        );
+        Event::listen(
+            MessageSending::class,
+            fn (MessageSending $event) => app(RecordEmailDelivery::class)->message($event),
+        );
+        Event::listen(
+            NotificationSent::class,
+            fn (NotificationSent $event) => app(RecordEmailDelivery::class)->accepted($event),
+        );
+        Event::listen(
+            NotificationFailed::class,
+            fn (NotificationFailed $event) => app(RecordEmailDelivery::class)->failed($event),
         );
     }
 }

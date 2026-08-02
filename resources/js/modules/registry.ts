@@ -201,6 +201,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin'],
             },
             {
+                labelKey: 'nav.email_delivery',
+                href: '/system/email-delivery',
+                icon: 'bi-envelope-check',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.media',
                 href: '/media-files',
                 icon: 'bi-images',

@@ -330,6 +330,15 @@ return [
             'icon' => 'bi-layout-wtf',
             'roles' => ['superadmin'],
         ],
+        [
+            'label' => 'Email Delivery',
+            'category' => 'System',
+            'route' => '/system/email-delivery',
+            'description' => 'Review password-reset and readiness email transport attempts, failures, retries, and XLSX evidence.',
+            'action' => 'Open delivery log',
+            'icon' => 'bi-envelope-check',
+            'roles' => ['superadmin'],
+        ],
     ],
     'control_checks' => [
         [
@@ -365,6 +374,14 @@ return [
             'icon' => 'bi-shield-check',
             'checks' => ['Draft pages stay private', 'Section reorder persists', 'Arabic/English content renders with correct direction'],
         ],
+        [
+            'title' => 'Email delivery evidence',
+            'roles' => ['superadmin'],
+            'summary' => 'Mail transport acceptance and failure must be traceable without storing SMTP passwords or message bodies.',
+            'route' => '/system/email-delivery',
+            'icon' => 'bi-envelope-check',
+            'checks' => ['Password resets create one delivery record', 'Retries increment the same notification', 'Accepted does not claim inbox delivery'],
+        ],
     ],
     'role_guides' => [
         [
@@ -372,7 +389,7 @@ return [
             'title' => 'System owner',
             'summary' => 'Owns the platform-level setup, website, global users, portfolio oversight, and audit trail.',
             'responsibilities' => ['Control public website', 'Create portfolios', 'Monitor platform totals', 'Audit permissions and content'],
-            'routes' => ['/dashboard', '/portfolios', '/users', '/cms', '/reports'],
+            'routes' => ['/dashboard', '/portfolios', '/users', '/cms', '/reports', '/system/email-delivery'],
             'icon' => 'bi-shield-lock',
         ],
         [
@@ -477,6 +494,17 @@ return [
             'steps' => ['Create or select a page', 'Create reusable bilingual sections', 'Attach sections to the page', 'Drag sections to reorder and preview'],
             'rules' => ['Only superadmin controls the global website', 'Use predefined sections instead of raw scripts'],
             'icon' => 'bi-layout-wtf',
+        ],
+        [
+            'title' => 'Email Delivery',
+            'audience' => 'Superadmin',
+            'roles' => ['superadmin'],
+            'route' => '/system/email-delivery',
+            'summary' => 'Email Delivery records transport evidence for password resets and readiness tests without exposing mail credentials.',
+            'features' => ['Transport acceptance and failure states', 'Retry count and technical IDs', 'Search and date filters', 'Scoped XLSX evidence export'],
+            'steps' => ['Send a readiness test email', 'Open Email Delivery', 'Inspect the newest attempt', 'Confirm inbox receipt separately before launch sign-off'],
+            'rules' => ['Accepted means the mail server accepted the message, not that it reached the inbox', 'Never paste SMTP passwords into notes or error reports', 'Use a new password-reset request instead of replaying an old token'],
+            'icon' => 'bi-envelope-check',
         ],
     ],
 ];

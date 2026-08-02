@@ -203,6 +203,23 @@ final class ReportLibraryPresenter
                         scope: $scope['audit'],
                     )
                     : null,
+                $actor->hasRole('superadmin')
+                    ? $this->card(
+                        'email-delivery',
+                        'bi-envelope-check',
+                        'email_delivery',
+                        'email_delivery_description',
+                        $this->url('email-delivery.index', [
+                            'date_from' => $filters['date_from'],
+                            'date_to' => $filters['date_to'],
+                        ]),
+                        [$this->download('XLSX', $this->url('email-delivery.export', [
+                            'date_from' => $filters['date_from'],
+                            'date_to' => $filters['date_to'],
+                        ]))],
+                        scope: $scope['audit'],
+                    )
+                    : null,
             ], $actor),
         ], static fn (array $group): bool => $group['cards'] !== []));
     }

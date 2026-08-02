@@ -82,6 +82,7 @@ class DemoDataSeeder extends Seeder
             ]);
 
             $this->seedCmsAndMedia($superadmin);
+            $this->call(EmailDeliveryDemoSeeder::class, silent: true);
         });
     }
 

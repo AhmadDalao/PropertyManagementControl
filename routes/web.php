@@ -15,6 +15,7 @@ use App\Http\Controllers\CompanyControlController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\EmailDeliveryController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LeaseController;
@@ -290,6 +291,12 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::post('/system/readiness/test-email', [SystemReadinessController::class, 'testEmail'])
         ->middleware('throttle:3,10')
         ->name('system-readiness.test-email');
+    Route::get('/system/email-delivery', [EmailDeliveryController::class, 'index'])
+        ->name('email-delivery.index');
+    Route::get('/system/email-delivery/export', [EmailDeliveryController::class, 'export'])
+        ->name('email-delivery.export');
+    Route::get('/system/email-delivery/{emailDeliveryLog}', [EmailDeliveryController::class, 'show'])
+        ->name('email-delivery.show');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
     Route::get('/cms/sections/create', [CmsSectionController::class, 'create'])->name('cms.sections.create');
     Route::get('/cms/sections/{cmsSection}/edit', [CmsSectionController::class, 'edit'])->name('cms.sections.edit');
