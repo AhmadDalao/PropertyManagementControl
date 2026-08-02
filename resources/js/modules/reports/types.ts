@@ -171,6 +171,7 @@ export type ReportPreset = {
     };
     url: string;
     export_url: string;
+    show_url: string;
     edit_url: string;
 };
 

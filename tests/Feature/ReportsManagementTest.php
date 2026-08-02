@@ -1211,12 +1211,35 @@ class ReportsManagementTest extends TestCase
                 ->where('savedPresets.0.period', 'custom')
                 ->where('savedPresets.0.date_from', '2026-01-01')
                 ->where('savedPresets.0.date_to', '2026-01-31')
+                ->where('savedPresets.0.show_url', '/reports/saved/'.$preset->id)
                 ->where(
                     'savedPresets.0.export_url',
                     fn (string $url): bool => str_contains($url, '/reports/export')
                         && str_contains($url, 'date_from=2026-01-01')
                         && str_contains($url, 'date_to=2026-01-31'),
                 ));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.show', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.header.title', 'Arrears watch')
+                ->where('detailPage.header.actions.0.label', 'Run report')
+                ->where('detailPage.decisionCards.0.value', 'Custom dates')
+                ->where('detailPage.decisionCards.1.value', $portfolio->name_en)
+                ->where('detailPage.documents.0.badge', 'PDF')
+                ->where('detailPage.documents.0.href', route('reports.statement.pdf', [
+                    'date_from' => '2026-01-01',
+                    'date_to' => '2026-01-31',
+                ]))
+                ->where('detailPage.documents.1.badge', 'DOCX')
+                ->where('detailPage.documents.2.badge', 'XLSX')
+                ->where('detailPage.documents.2.href', route('reports.statement.workbook', [
+                    'date_from' => '2026-01-01',
+                    'date_to' => '2026-01-31',
+                ]))
+                ->has('detailPage.timeline'));
 
         $this->actingAs($owner)
             ->delete(route('reports.presets.destroy', $preset))
@@ -1371,6 +1394,20 @@ class ReportsManagementTest extends TestCase
                 ->where('savedPresets.0.date_from', '2026-01-01')
                 ->where('savedPresets.0.date_to', now()->toDateString())
                 ->where('savedPresets.0.can_delete', false));
+
+        $this->actingAs($otherOwner)
+            ->get(route('reports.saved.show', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.decisionCards.1.value', $otherPortfolio->name_en)
+                ->where('detailPage.sections.1.items.3.value', $otherPortfolio->name_en));
+
+        $this->actingAs($superadmin)
+            ->get(route('reports.saved.show', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.decisionCards.1.value', 'All portfolios')
+                ->where('detailPage.sections.1.items.3.value', 'All portfolios'));
     }
 
     public function test_saved_reports_have_dedicated_create_edit_duplicate_and_index_pages(): void
@@ -1417,6 +1454,37 @@ class ReportsManagementTest extends TestCase
             ->assertRedirect(route('reports.saved.index'));
 
         $preset = ReportPreset::query()->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.show', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.header.title', 'Monthly owner review')
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->all() === ['Run report', 'Edit saved report', 'Duplicate', 'Remove'])
+                ->where('detailPage.decisionCards.0.value', 'This month')
+                ->where(
+                    'detailPage.decisionCards.1.value',
+                    fn (string $scope): bool => str_contains($scope, 'Focused Tower'),
+                )
+                ->where('detailPage.documents.0.href', route('reports.properties.pdf', [
+                    'asset' => $property->id,
+                    'date_from' => '2026-08-01',
+                    'date_to' => '2026-08-20',
+                ]))
+                ->where('detailPage.documents.1.href', route('reports.properties.word', [
+                    'asset' => $property->id,
+                    'date_from' => '2026-08-01',
+                    'date_to' => '2026-08-20',
+                ]))
+                ->where('detailPage.documents.2.href', route('reports.properties.workbook', [
+                    'asset' => $property->id,
+                    'date_from' => '2026-08-01',
+                    'date_to' => '2026-08-20',
+                ]))
+                ->where('detailPage.sections.1.items.1.value', 'Portfolio team'));
 
         $this->actingAs($owner)
             ->get(route('reports.saved.edit', $preset))
@@ -1475,10 +1543,14 @@ class ReportsManagementTest extends TestCase
                 ->has('savedPresets', 2)
                 ->where('savedPresets.0.can_edit', true)
                 ->where('savedPresets.0.can_duplicate', true)
+                ->where('savedPresets.0.show_url', '/reports/saved/'.$duplicate->id)
                 ->where('savedPresets.0.edit_url', '/reports/saved/'.$duplicate->id.'/edit'));
 
         $this->actingAs($tenant)->get(route('reports.saved.index'))->assertForbidden();
         $this->actingAs($tenant)->get(route('reports.saved.create'))->assertForbidden();
+        $this->actingAs($tenant)
+            ->get(route('reports.saved.show', $preset))
+            ->assertForbidden();
         $this->actingAs($tenant)
             ->post(route('reports.saved.duplicate', $preset))
             ->assertForbidden();
@@ -1514,6 +1586,16 @@ class ReportsManagementTest extends TestCase
                 ->where('savedPresets.0.can_delete', true));
 
         $this->actingAs($owner)
+            ->get(route('reports.saved.show', $preset))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-show')
+                ->where('detailPage.header.title', 'Team collections')
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->all() === ['Run report', 'Duplicate', 'Remove']));
+
+        $this->actingAs($owner)
             ->get(route('reports.saved.edit', $preset))
             ->assertForbidden();
         $this->actingAs($owner)
@@ -1536,6 +1618,9 @@ class ReportsManagementTest extends TestCase
 
         $this->actingAs($foreignOwner)
             ->post(route('reports.saved.duplicate', $preset))
+            ->assertNotFound();
+        $this->actingAs($foreignOwner)
+            ->get(route('reports.saved.show', $preset))
             ->assertNotFound();
         $this->actingAs($foreignOwner)
             ->get(route('reports.saved.edit', $preset))

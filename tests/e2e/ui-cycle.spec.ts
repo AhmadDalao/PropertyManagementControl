@@ -2784,6 +2784,43 @@ test.describe('authenticated administration', () => {
         await expect(savedCard).toBeVisible();
         await expect(savedCard).toContainText('هذا الشهر');
         await expect(savedCard).toContainText('ROSE-TOWER');
+        const savedDetailLink = savedCard.locator(
+            '.pmc-report-preset-title',
+        );
+        await expect(savedDetailLink).toHaveCount(1);
+        await savedDetailLink.click();
+        await expect(page).toHaveURL(/\/reports\/saved\/\d+/);
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'تقرير العقار المتجدد',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تشغيل التقرير' }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-resource-decision-card')).toHaveCount(
+            4,
+        );
+        await expect(page.getByText('PDF · DOCX · XLSX')).toBeVisible();
+        await page
+            .getByRole('combobox', { name: 'أقسام السجل' })
+            .selectOption('documents');
+        const savedReportFiles = page.locator('.pmc-document-strip > a');
+        await expect(savedReportFiles).toHaveCount(3);
+        await expect(
+            savedReportFiles.filter({ hasText: 'PDF' }),
+        ).toHaveAttribute('href', /operating-report\.pdf/);
+        await expect(
+            savedReportFiles.filter({ hasText: 'DOCX' }),
+        ).toHaveAttribute('href', /operating-report\.docx/);
+        await expect(
+            savedReportFiles.filter({ hasText: 'XLSX' }),
+        ).toHaveAttribute('href', /operating-report\.xlsx/);
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto('/reports/saved?locale=ar');
+        await expect(savedCard).toBeVisible();
         const savedWorkbookHref = await savedCard
             .getByRole('link', { name: 'تنزيل XLSX' })
             .getAttribute('href');

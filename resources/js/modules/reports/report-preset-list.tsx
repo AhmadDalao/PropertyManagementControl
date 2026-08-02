@@ -28,11 +28,20 @@ export function ReportPresetList({ presets }: { presets: ReportPreset[] }) {
                             />
                         </span>
                         <div>
-                            <strong>
-                                {locale === 'ar'
-                                    ? preset.title_ar || preset.title_en
-                                    : preset.title_en || preset.title_ar}
-                            </strong>
+                            <Link
+                                href={preset.show_url}
+                                className="pmc-report-preset-title"
+                            >
+                                <strong>
+                                    {locale === 'ar'
+                                        ? preset.title_ar || preset.title_en
+                                        : preset.title_en || preset.title_ar}
+                                </strong>
+                                <i
+                                    className="bi bi-arrow-up-right"
+                                    aria-hidden="true"
+                                />
+                            </Link>
                             <span>
                                 {t(`reports.visibility_${preset.visibility}`)}
                                 {preset.is_default

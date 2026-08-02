@@ -47,6 +47,7 @@ use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\RentRollController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportPresetController;
+use App\Http\Controllers\ReportPresetDetailController;
 use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemBackupController;
@@ -258,6 +259,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/reports/saved', [ReportPresetController::class, 'index'])->name('reports.saved.index')->middleware('portfolio.module:reports');
     Route::get('/reports/saved/create', [ReportPresetController::class, 'create'])->name('reports.saved.create')->middleware('portfolio.module:reports');
     Route::post('/reports/saved', [ReportPresetController::class, 'store'])->name('reports.saved.store')->middleware('portfolio.module:reports');
+    Route::get('/reports/saved/{reportPreset}', ReportPresetDetailController::class)->name('reports.saved.show')->middleware('portfolio.module:reports');
     Route::get('/reports/saved/{reportPreset}/edit', [ReportPresetController::class, 'edit'])->name('reports.saved.edit')->middleware('portfolio.module:reports');
     Route::put('/reports/saved/{reportPreset}', [ReportPresetController::class, 'update'])->name('reports.saved.update')->middleware('portfolio.module:reports');
     Route::post('/reports/saved/{reportPreset}/duplicate', [ReportPresetController::class, 'duplicate'])->name('reports.saved.duplicate')->middleware('portfolio.module:reports');

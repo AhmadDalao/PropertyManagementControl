@@ -26,11 +26,13 @@ class ReportPreset extends Model
         ];
     }
 
+    /** @return BelongsTo<Portfolio, $this> */
     public function portfolio(): BelongsTo
     {
         return $this->belongsTo(Portfolio::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

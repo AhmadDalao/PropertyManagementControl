@@ -37,18 +37,6 @@ parameters:
 			path: app/Models/ReportPreset.php
 
 		-
-			message: '#^Method App\\Models\\ReportPreset\:\:portfolio\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportPreset.php
-
-		-
-			message: '#^Method App\\Models\\ReportPreset\:\:user\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\BelongsTo does not specify its types\: TRelatedModel, TDeclaringModel$#'
-			identifier: missingType.generics
-			count: 1
-			path: app/Models/ReportPreset.php
-
-		-
 			message: '#^Class App\\Models\\TenantProfile uses generic trait Illuminate\\Database\\Eloquent\\Factories\\HasFactory but does not specify its types\: TFactory$#'
 			identifier: missingType.generics
 			count: 1

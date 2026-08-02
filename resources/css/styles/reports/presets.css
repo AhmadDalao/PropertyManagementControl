@@ -107,6 +107,21 @@
     gap: 0.12rem;
 }
 
+.pmc-report-preset-title {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: #111;
+    text-decoration: none;
+}
+
+.pmc-report-preset-title:hover,
+.pmc-report-preset-title:focus-visible {
+    color: var(--pmc-teal);
+}
+
 .pmc-report-preset-icon {
     display: grid;
     width: 2.25rem;

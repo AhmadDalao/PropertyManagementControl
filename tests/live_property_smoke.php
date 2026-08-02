@@ -293,6 +293,34 @@ foreach ($authChecks as $path => $expectedComponent) {
     smoke_note("{$path} {$component}");
 }
 
+$savedReports = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/saved?locale=ar');
+$savedReportsPayload = smoke_page_payload($savedReports['body']);
+$savedPresets = $savedReportsPayload['props']['savedPresets'] ?? [];
+
+if (is_array($savedPresets) && isset($savedPresets[0]['show_url'])) {
+    $savedReportDetail = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        (string) $savedPresets[0]['show_url'].'?locale=ar',
+    );
+    $savedReportPayload = smoke_page_payload($savedReportDetail['body']);
+    $documents = $savedReportPayload['props']['detailPage']['documents'] ?? [];
+    $badges = is_array($documents)
+        ? array_column($documents, 'badge')
+        : [];
+
+    if ($savedReportDetail['status'] !== 200
+        || smoke_component($savedReportDetail['body']) !== 'admin/resource-show'
+        || $badges !== ['PDF', 'DOCX', 'XLSX']) {
+        smoke_fail('Saved report detail did not expose the expected PDF, DOCX, and XLSX outputs.');
+    }
+
+    smoke_note($savedPresets[0]['show_url'].' saved report detail and outputs');
+} else {
+    smoke_note('No saved report available; detail smoke skipped without creating production data.');
+}
+
 $openingTemplate = smoke_request($baseUrl, $cookieFile, 'GET', '/opening-data/template');
 $openingTemplateHeaders = strtolower((string) $openingTemplate['headers']);
 

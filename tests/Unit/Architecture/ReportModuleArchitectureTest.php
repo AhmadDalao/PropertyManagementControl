@@ -47,6 +47,11 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('PropertyOperatingReportWordExport', $propertyExports);
         $this->assertStringContainsString('PropertyOperatingReportWorkbookExport', $propertyExports);
         $this->assertStringNotContainsString('Payment::query()', $propertyExports);
+
+        $presetDetail = $this->source($this->path('app/Http/Controllers/ReportPresetDetailController.php'));
+        $this->assertLessThanOrEqual(35, substr_count($presetDetail, "\n") + 1);
+        $this->assertStringContainsString('ReportPresetDetailPresenter', $presetDetail);
+        $this->assertStringNotContainsString('ReportPreset::query()', $presetDetail);
     }
 
     #[Test]
@@ -131,6 +136,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
             'app/Modules/Reports/Presenters/ReportPagePresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailActionPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetOutputPresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetPagePresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetPresenter.php',
             'app/Modules/Reports/Presenters/OwnerStatementPresenter.php',

@@ -53,6 +53,7 @@ final readonly class ReportPresetPresenter
             ],
             'url' => route('reports.index', $stored, false),
             'export_url' => route('reports.export', $stored, false),
+            'show_url' => route('reports.saved.show', $preset, false),
             'edit_url' => route('reports.saved.edit', $preset, false),
         ];
     }

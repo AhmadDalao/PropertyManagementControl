@@ -67,6 +67,12 @@ class ReportPresetQuery
             : [];
     }
 
+    public function ensureAccessible(User $actor, ReportPreset $preset): void
+    {
+        $this->access->ensureCanViewPreset($actor, $preset);
+        abort_unless($this->accessible($actor, $preset), 404);
+    }
+
     private function accessible(User $actor, ReportPreset $preset): bool
     {
         $filters = $this->filters->stored($preset->filters_json);
