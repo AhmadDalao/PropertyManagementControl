@@ -232,6 +232,77 @@ class CmsManagementTest extends TestCase
         );
     }
 
+    public function test_builder_updates_only_a_section_attached_to_its_page(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $owner = $this->createUserWithRole('owner');
+        $page = CmsPage::query()->create([
+            'slug' => 'builder-page',
+            'title_en' => 'Builder page',
+            'title_ar' => 'صفحة المنشئ',
+            'status' => 'draft',
+            'is_homepage' => false,
+            'is_visible' => true,
+        ]);
+        $otherPage = CmsPage::query()->create([
+            'slug' => 'other-page',
+            'title_en' => 'Other page',
+            'title_ar' => 'صفحة أخرى',
+            'status' => 'draft',
+            'is_homepage' => false,
+            'is_visible' => true,
+        ]);
+        $section = CmsSection::query()->create([
+            'section_type' => 'hero',
+            'name_en' => 'Builder hero',
+            'name_ar' => 'واجهة المنشئ',
+            'content_en' => ['headline' => 'Before'],
+            'content_ar' => ['headline' => 'قبل'],
+            'status' => 'active',
+        ]);
+        CmsPageSection::query()->create([
+            'cms_page_id' => $page->id,
+            'cms_section_id' => $section->id,
+            'sort_order' => 1,
+            'is_visible' => true,
+        ]);
+        $payload = [
+            'section_type' => 'hero',
+            'name_en' => 'Builder hero updated',
+            'name_ar' => 'واجهة المنشئ المحدثة',
+            'content_en' => ['headline' => 'After'],
+            'content_ar' => ['headline' => 'بعد'],
+            'settings_json' => [],
+            'status' => 'active',
+        ];
+
+        $this->actingAs($owner)
+            ->put(
+                route('cms.pages.sections.content.update', [$page, $section]),
+                $payload,
+            )
+            ->assertForbidden();
+
+        $this->actingAs($superadmin)
+            ->put(
+                route('cms.pages.sections.content.update', [$otherPage, $section]),
+                $payload,
+            )
+            ->assertNotFound();
+
+        $this->actingAs($superadmin)
+            ->put(
+                route('cms.pages.sections.content.update', [$page, $section]),
+                $payload,
+            )
+            ->assertRedirect(route('cms.pages.show', $page));
+
+        $section->refresh();
+        $this->assertSame('Builder hero updated', $section->name_en);
+        $this->assertSame('After', $section->content_en['headline']);
+        $this->assertSame('بعد', $section->content_ar['headline']);
+    }
+
     public function test_superadmin_can_update_navigation_item_placement_and_visibility(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');

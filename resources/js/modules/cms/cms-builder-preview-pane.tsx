@@ -76,10 +76,39 @@ export function CmsBuilderPreviewPane({
             >
                 <div className="pmc-cms-preview-document">
                     {builder.visibleSections.length > 0 ? (
-                        <CmsRenderer
-                            sections={builder.visibleSections}
-                            locale={builder.previewLocale}
-                        />
+                        builder.visibleSections.map((item) => (
+                            <article
+                                key={item.id}
+                                className={`pmc-cms-preview-section ${
+                                    builder.selected?.id === item.id
+                                        ? 'is-selected'
+                                        : ''
+                                }`}
+                            >
+                                <button
+                                    type="button"
+                                    className="pmc-cms-preview-edit"
+                                    aria-label={t(
+                                        'cms.edit_section_from_canvas',
+                                        undefined,
+                                        {
+                                            title: builder.localizedSectionName(
+                                                item.section,
+                                                builder.previewLocale,
+                                            ),
+                                        },
+                                    )}
+                                    onClick={() => builder.openEditor(item)}
+                                >
+                                    <i className="bi bi-pencil" />
+                                    <span>{t('cms.edit_copy')}</span>
+                                </button>
+                                <CmsRenderer
+                                    sections={[item]}
+                                    locale={builder.previewLocale}
+                                />
+                            </article>
+                        ))
                     ) : (
                         <div className="pmc-empty-state">
                             <i className="bi bi-layout-text-window" />

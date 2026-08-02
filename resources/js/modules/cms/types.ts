@@ -1,5 +1,6 @@
 import type { FormDataConvertible } from '@inertiajs/core';
 
+import type { MediaPickerOption } from '@/modules/media/types';
 import type {
     PaginatedData,
     SharedProps,
@@ -93,6 +94,7 @@ export type CmsTimelineRecord = {
 export type CmsBuilderPageProps = SharedProps & {
     page: CmsPageRecord & { page_sections: CmsPageSectionRecord[] };
     sections: CmsSectionRecord[];
+    mediaOptions: MediaPickerOption[];
     libraryLimitReached: boolean;
     timeline: CmsTimelineRecord[];
 };

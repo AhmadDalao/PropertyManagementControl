@@ -4,16 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\CmsPage;
 use App\Models\CmsPageSection;
+use App\Models\CmsSection;
 use App\Modules\Cms\Actions\ComposeCmsPage;
+use App\Modules\Cms\Actions\UpdateAttachedCmsSection;
 use App\Modules\Cms\Requests\AttachCmsSectionRequest;
 use App\Modules\Cms\Requests\ReorderCmsPageSectionsRequest;
+use App\Modules\Cms\Requests\SaveCmsSectionRequest;
 use App\Modules\Cms\Requests\UpdateCmsPageSectionRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 
 class CmsPageSectionController extends Controller
 {
-    public function __construct(private readonly ComposeCmsPage $composition) {}
+    public function __construct(
+        private readonly ComposeCmsPage $composition,
+        private readonly UpdateAttachedCmsSection $sectionContent,
+    ) {}
 
     public function store(AttachCmsSectionRequest $request, CmsPage $cmsPage): RedirectResponse
     {
@@ -34,6 +40,22 @@ class CmsPageSectionController extends Controller
         $this->composition->reorder($this->actor($request), $cmsPage, $request->orderedIds());
 
         return to_route('cms.pages.show', $cmsPage)->with('success', trans('app.messages.cms_sections_reordered'));
+    }
+
+    public function updateContent(
+        SaveCmsSectionRequest $request,
+        CmsPage $cmsPage,
+        CmsSection $cmsSection,
+    ): RedirectResponse {
+        $this->sectionContent->handle(
+            $this->actor($request),
+            $cmsPage,
+            $cmsSection,
+            $request->validated(),
+        );
+
+        return to_route('cms.pages.show', $cmsPage)
+            ->with('success', trans('app.messages.cms_section_updated'));
     }
 
     public function destroy(Request $request, CmsPageSection $cmsPageSection): RedirectResponse

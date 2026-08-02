@@ -333,6 +333,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::delete('/cms/sections/{cmsSection}', [CmsSectionController::class, 'destroy'])->name('cms.sections.destroy');
     Route::post('/cms/pages/{cmsPage}/sections', [CmsPageSectionController::class, 'store'])->name('cms.pages.sections.store');
     Route::put('/cms/pages/{cmsPage}/sections/reorder', [CmsPageSectionController::class, 'reorder'])->name('cms.pages.sections.reorder');
+    Route::put('/cms/pages/{cmsPage}/sections/{cmsSection}/content', [CmsPageSectionController::class, 'updateContent'])->name('cms.pages.sections.content.update');
     Route::put('/cms/page-sections/{cmsPageSection}', [CmsPageSectionController::class, 'update'])->name('cms.page-sections.update');
     Route::delete('/cms/page-sections/{cmsPageSection}', [CmsPageSectionController::class, 'destroy'])->name('cms.page-sections.destroy');
 

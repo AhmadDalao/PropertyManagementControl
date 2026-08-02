@@ -1,0 +1,57 @@
+.pmc-cms-preview-section {
+    position: relative;
+    min-width: 0;
+    outline: 0 solid transparent;
+    outline-offset: -3px;
+    transition: outline-color 160ms ease;
+}
+
+.pmc-cms-preview-section.is-selected {
+    outline: 3px solid #e6b900;
+}
+
+.pmc-cms-preview-edit {
+    position: absolute;
+    z-index: 5;
+    inset-block-start: 0.55rem;
+    inset-inline-end: 0.55rem;
+    display: inline-flex;
+    min-height: 2rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid #111;
+    border-radius: 0.5rem;
+    background: #111;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 900;
+    box-shadow: 0 0.35rem 1rem rgb(17 17 17 / 18%);
+    opacity: 0;
+    transform: translateY(-0.2rem);
+    transition:
+        opacity 140ms ease,
+        transform 140ms ease;
+}
+
+.pmc-cms-preview-section:hover .pmc-cms-preview-edit,
+.pmc-cms-preview-section:focus-within .pmc-cms-preview-edit,
+.pmc-cms-preview-section.is-selected .pmc-cms-preview-edit {
+    opacity: 1;
+    transform: none;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-cms-preview-edit {
+        min-height: 2.75rem;
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-cms-preview-edit,
+    .pmc-cms-preview-section {
+        transition: none;
+    }
+}

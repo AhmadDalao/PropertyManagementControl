@@ -1,5 +1,3 @@
-import { Link } from '@inertiajs/react';
-
 import { useTranslator } from '@/lib/i18n';
 
 import type { CmsBuilderController } from './use-cms-builder';
@@ -39,12 +37,13 @@ export function CmsBuilderSelection({
             ) : null}
             <div className="pmc-cms-selection-actions">
                 {selected.section ? (
-                    <Link
-                        href={`/cms/sections/${selected.section.id}/edit`}
+                    <button
+                        type="button"
                         className="btn btn-primary"
+                        onClick={() => builder.openEditor(selected)}
                     >
                         {t('cms.edit_bilingual_content')}
-                    </Link>
+                    </button>
                 ) : null}
                 <button
                     type="button"

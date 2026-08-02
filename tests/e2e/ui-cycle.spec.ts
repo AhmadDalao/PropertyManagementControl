@@ -2590,10 +2590,29 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('button', { name: 'نقل القسم للأسفل' }),
         ).toBeVisible();
-        const sectionEditHref = await page
-            .locator('.pmc-cms-selection a[href^="/cms/sections/"]')
-            .getAttribute('href');
-        expect(sectionEditHref).toBeTruthy();
+        const inspectorEditButton = page.getByRole('button', {
+            name: 'تعديل المحتوى العربي والإنجليزي',
+        });
+        await inspectorEditButton.click();
+        await expect(page.getByRole('dialog', { name: /تعديل/ })).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                name: 'تعديل واجهة الصفحة الرئيسية',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('body')).toHaveClass(/pmc-cms-editor-open/);
+        await expect(page.locator('.pmc-section-language')).toHaveCount(2);
+        await expect(page.locator('.pmc-section-json')).toBeVisible();
+        const editorAccessibility = await new AxeBuilder({ page })
+            .include('.pmc-cms-editor-dialog')
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(editorAccessibility.violations).toEqual([]);
+        await page.getByRole('button', { name: 'إغلاق', exact: true }).click();
+        await expect(page.locator('body')).not.toHaveClass(
+            /pmc-cms-editor-open/,
+        );
+        await expect(inspectorEditButton).toBeFocused();
         await expectNoHorizontalOverflow(page);
 
         await page.setViewportSize(viewports.desktop);
@@ -2604,13 +2623,13 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-cms-preview-frame')).toHaveClass(
             /is-desktop/,
         );
-        await expectNoHorizontalOverflow(page);
-
-        await page.setViewportSize(viewports.mobile);
-        await page.goto(`${sectionEditHref}?locale=ar`);
-        await expect(page.locator('.pmc-section-editor')).toBeVisible();
-        await expect(page.locator('.pmc-section-language')).toHaveCount(2);
-        await expect(page.locator('.pmc-section-json')).toBeVisible();
+        await expect(page.locator('.pmc-cms-preview-edit')).toHaveCount(8);
+        const canvasEditButton = page.locator('.pmc-cms-preview-edit').first();
+        await canvasEditButton.click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toBeHidden();
+        await expect(canvasEditButton).toBeFocused();
         await expectNoHorizontalOverflow(page);
     });
 

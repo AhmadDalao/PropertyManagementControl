@@ -21,6 +21,9 @@ export function useCmsBuilderState(props: CmsBuilderPageProps) {
     const [selectedId, setSelectedId] = useState<number | null>(
         orderedSections[0]?.id ?? null,
     );
+    const [editingSectionId, setEditingSectionId] = useState<number | null>(
+        null,
+    );
     const [draggingId, setDraggingId] = useState<number | null>(null);
     const [mobilePanel, setMobilePanel] = useState<CmsBuilderPanel>('sections');
     const [previewLocale, setPreviewLocale] = useState<CmsPreviewLocale>(
@@ -40,6 +43,9 @@ export function useCmsBuilderState(props: CmsBuilderPageProps) {
     const selectedLibraryRecord = props.sections.find(
         (section) => section.id === selected?.cms_section_id,
     );
+    const editingSection =
+        props.sections.find((section) => section.id === editingSectionId) ??
+        null;
     const visibleSections = orderedSections.filter(
         (item) => item.is_visible && item.section,
     );
@@ -60,9 +66,14 @@ export function useCmsBuilderState(props: CmsBuilderPageProps) {
             ? section.name_ar || section.name_en || t('cms.missing_section')
             : section.name_en || section.name_ar || t('cms.missing_section');
     };
+    const openEditor = (item: CmsPageSectionRecord) => {
+        setSelectedId(item.id);
+        setEditingSectionId(item.cms_section_id);
+    };
 
     return {
         draggingId,
+        editingSection,
         localizedPageTitle,
         localizedSectionName,
         mobilePanel,
@@ -72,6 +83,8 @@ export function useCmsBuilderState(props: CmsBuilderPageProps) {
         saveState,
         selected,
         selectedLibraryRecord,
+        closeEditor: () => setEditingSectionId(null),
+        openEditor,
         setDraggingId,
         setMobilePanel,
         setOrderedSections,

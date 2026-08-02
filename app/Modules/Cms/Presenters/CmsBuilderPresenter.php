@@ -6,6 +6,7 @@ use App\Models\CmsPage;
 use App\Models\User;
 use App\Modules\Cms\Queries\CmsBuilderQuery;
 use App\Modules\Cms\Support\CmsAccess;
+use App\Modules\Media\Queries\CmsMediaPickerQuery;
 use App\Modules\Shared\ResourcePresenter;
 
 class CmsBuilderPresenter
@@ -13,6 +14,7 @@ class CmsBuilderPresenter
     public function __construct(
         private readonly CmsAccess $access,
         private readonly CmsBuilderQuery $builder,
+        private readonly CmsMediaPickerQuery $media,
         private readonly ResourcePresenter $resources,
     ) {}
 
@@ -23,6 +25,7 @@ class CmsBuilderPresenter
 
         return [
             ...$this->builder->handle($page),
+            'mediaOptions' => $this->media->options($actor),
             'timeline' => $this->resources->activityTimeline($page),
         ];
     }

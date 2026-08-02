@@ -7,6 +7,7 @@ import { useTranslator } from '@/lib/i18n';
 import { CmsBuilderInspectorPane } from './cms-builder-inspector-pane';
 import { CmsBuilderLibraryPane } from './cms-builder-library-pane';
 import { CmsBuilderPreviewPane } from './cms-builder-preview-pane';
+import { CmsBuilderSectionEditor } from './cms-builder-section-editor';
 import { CmsBuilderToolbar } from './cms-builder-toolbar';
 import type { CmsBuilderPageProps } from './types';
 import { useCmsBuilder } from './use-cms-builder';
@@ -55,6 +56,18 @@ export default function CmsBuilderPage() {
                 <CmsBuilderPreviewPane builder={builder} />
                 <CmsBuilderInspectorPane builder={builder} />
             </section>
+
+            {builder.editingSection ? (
+                <CmsBuilderSectionEditor
+                    pageId={builder.page.id}
+                    section={builder.editingSection}
+                    mediaOptions={props.mediaOptions}
+                    sharedCount={
+                        builder.editingSection.page_sections_count ?? 0
+                    }
+                    onClose={builder.closeEditor}
+                />
+            ) : null}
         </AdminLayout>
     );
 }

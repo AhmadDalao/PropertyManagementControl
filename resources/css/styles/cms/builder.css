@@ -2,3 +2,5 @@
 @import './builder/library.css';
 @import './builder/preview.css';
 @import './builder/inspector.css';
+@import './builder/editor.css';
+@import './builder/canvas-controls.css';

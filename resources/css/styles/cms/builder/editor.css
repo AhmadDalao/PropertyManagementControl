@@ -1,0 +1,110 @@
+body.pmc-cms-editor-open {
+    overflow: hidden;
+}
+
+.pmc-cms-editor-backdrop {
+    position: fixed;
+    z-index: 1085;
+    inset: 0;
+    display: grid;
+    align-items: end;
+    padding: 1rem;
+    overflow: auto;
+    background: rgb(17 17 17 / 55%);
+}
+
+.pmc-cms-editor-dialog {
+    display: grid;
+    width: min(100%, 76rem);
+    max-height: calc(100dvh - 2rem);
+    margin: auto auto 0;
+    overflow: hidden;
+    border: 1px solid var(--pmc-line);
+    border-radius: 1rem 1rem 0 0;
+    background: #fff;
+    box-shadow: 0 -1rem 4rem rgb(17 17 17 / 18%);
+}
+
+.pmc-cms-editor-dialog > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid var(--pmc-line);
+}
+
+.pmc-cms-editor-dialog > header > div {
+    display: grid;
+    gap: 0.15rem;
+}
+
+.pmc-cms-editor-dialog > header span {
+    color: #806400;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.pmc-cms-editor-dialog > header h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 950;
+}
+
+.pmc-cms-editor-dialog > header p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+}
+
+.pmc-cms-editor-dialog > form {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    overflow-y: auto;
+}
+
+.pmc-cms-editor-identity {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(10rem, 0.55fr);
+    gap: 0.75rem;
+}
+
+.pmc-cms-editor-dialog footer {
+    position: sticky;
+    z-index: 2;
+    bottom: -1rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    margin: 0 -1rem -1rem;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid var(--pmc-line);
+    background: rgb(255 255 255 / 96%);
+    backdrop-filter: blur(10px);
+}
+
+@media (max-width: 767.98px) {
+    .pmc-cms-editor-backdrop {
+        padding: 0;
+    }
+
+    .pmc-cms-editor-dialog {
+        width: 100%;
+        max-height: 100dvh;
+        min-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+    }
+
+    .pmc-cms-editor-identity {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-cms-editor-dialog footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+}
