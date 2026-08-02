@@ -63,7 +63,9 @@ export default function SystemReadinessIndexPage() {
     return (
         <AdminLayout>
             <Head title={t('readiness.title')} />
-            <ReadinessHeader />
+            <ReadinessHeader
+                portfolioId={props.portfolioReadiness?.portfolio.id}
+            />
             <ReadinessSummary
                 summary={props.summary}
                 checkedAt={props.checkedAt}

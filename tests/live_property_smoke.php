@@ -301,6 +301,29 @@ if ($openingTemplate['status'] !== 200
 
 smoke_note('/opening-data/template valid XLSX');
 
+foreach ([
+    'pdf' => 'application/pdf',
+    'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+] as $extension => $contentType) {
+    $readinessReport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/system/readiness/report.{$extension}?locale=ar",
+    );
+    $readinessHeaders = strtolower((string) $readinessReport['headers']);
+    $signature = $extension === 'pdf' ? '%PDF-' : 'PK';
+
+    if ($readinessReport['status'] !== 200
+        || ! str_contains($readinessHeaders, $contentType)
+        || ! str_starts_with((string) $readinessReport['body'], $signature)) {
+        smoke_fail("Launch readiness {$extension} report was invalid.");
+    }
+
+    smoke_note("/system/readiness/report.{$extension} valid");
+}
+
 $dashboard = smoke_request($baseUrl, $cookieFile, 'GET', '/dashboard?locale=en');
 $dashboardPayload = smoke_page_payload($dashboard['body']);
 $composition = $dashboardPayload['props']['platformComposition'] ?? null;

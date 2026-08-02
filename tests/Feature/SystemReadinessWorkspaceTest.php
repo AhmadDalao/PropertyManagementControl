@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\PendingCommand;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 final class SystemReadinessWorkspaceTest extends TestCase
 {
@@ -82,6 +83,98 @@ final class SystemReadinessWorkspaceTest extends TestCase
         $this->actingAs($tenant)
             ->get(route('system-readiness.index'))
             ->assertForbidden();
+    }
+
+    public function test_superadmin_can_download_scoped_readiness_pdf_word_and_excel_reports(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Pilot Portfolio',
+            'name_ar' => 'محفظة التجربة',
+            'code' => 'PILOT-READY',
+        ]);
+        $superadmin = $this->createUserWithRole('superadmin', attributes: [
+            'name' => 'Readiness Admin',
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+
+        OperationalReadinessCheck::query()->create([
+            'scope_key' => 'system',
+            'portfolio_id' => null,
+            'key' => 'database_backup',
+            'is_confirmed' => true,
+            'evidence' => 'Backup DB-PILOT verified and restored.',
+            'confirmed_by_user_id' => $superadmin->id,
+            'confirmed_at' => now(),
+        ]);
+
+        $parameters = ['portfolio_id' => $portfolio->id];
+        $pdf = $this->actingAs($superadmin)
+            ->get(route('system-readiness.report.pdf', $parameters));
+        $pdf->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString(
+            '.pdf',
+            (string) $pdf->headers->get('content-disposition'),
+        );
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+
+        $word = $this->actingAs($superadmin)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('system-readiness.report.word', $parameters));
+        $word->assertOk()->assertHeader(
+            'content-type',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        );
+        $wordContent = $word->streamedContent();
+        $this->assertSame('PK', substr($wordContent, 0, 2));
+        $wordPath = tempnam(sys_get_temp_dir(), 'readiness-word-');
+        $this->assertNotFalse($wordPath);
+        file_put_contents($wordPath, $wordContent);
+        $wordZip = new ZipArchive;
+        $this->assertTrue($wordZip->open($wordPath));
+        $documentXml = (string) $wordZip->getFromName('word/document.xml');
+        $wordZip->close();
+        @unlink($wordPath);
+        $this->assertStringContainsString('تقرير جاهزية الإطلاق', $documentXml);
+        $this->assertStringContainsString('محفظة التجربة', $documentXml);
+        $this->assertStringContainsString('Backup DB-PILOT verified', $documentXml);
+
+        $workbook = $this->actingAs($superadmin)
+            ->withSession(['locale' => 'en'])
+            ->get(route('system-readiness.report.workbook', $parameters))
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            );
+        $workbookPath = $workbook->baseResponse->getFile()->getPathname();
+        $this->assertSame('PK', substr((string) file_get_contents($workbookPath), 0, 2));
+        $workbookZip = new ZipArchive;
+        $this->assertTrue($workbookZip->open($workbookPath));
+        $workbookXml = (string) $workbookZip->getFromName('xl/workbook.xml');
+        $summaryXml = (string) $workbookZip->getFromName('xl/worksheets/sheet1.xml');
+        $evidenceXml = (string) $workbookZip->getFromName('xl/worksheets/sheet3.xml');
+        $portfolioXml = (string) $workbookZip->getFromName('xl/worksheets/sheet4.xml');
+        $workbookZip->close();
+
+        foreach (['Summary', 'Infrastructure', 'Evidence', 'Portfolio'] as $sheet) {
+            $this->assertStringContainsString('name="'.$sheet.'"', $workbookXml);
+        }
+
+        $this->assertStringContainsString('Readiness Admin', $summaryXml);
+        $this->assertStringContainsString('Backup DB-PILOT verified', $evidenceXml);
+        $this->assertStringContainsString('Pilot Portfolio', $portfolioXml);
+
+        foreach ([
+            'system-readiness.report.pdf',
+            'system-readiness.report.word',
+            'system-readiness.report.workbook',
+        ] as $route) {
+            $this->actingAs($owner)
+                ->get(route($route, $parameters))
+                ->assertForbidden();
+        }
     }
 
     public function test_readiness_exposes_a_direct_live_portfolio_launch_path(): void

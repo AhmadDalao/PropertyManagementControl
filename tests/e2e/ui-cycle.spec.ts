@@ -1183,6 +1183,24 @@ test.describe('authenticated administration', () => {
                 page.getByRole('link', { name: 'Open portfolio' }).first(),
             ).toBeVisible();
             await expect(
+                page.getByRole('link', { name: 'Download PDF' }),
+            ).toHaveAttribute(
+                'href',
+                /\/system\/readiness\/report\.pdf\?portfolio_id=\d+/,
+            );
+            await expect(
+                page.getByRole('link', { name: 'Download Word' }),
+            ).toHaveAttribute(
+                'href',
+                /\/system\/readiness\/report\.docx\?portfolio_id=\d+/,
+            );
+            await expect(
+                page.getByRole('link', { name: 'Download Excel' }),
+            ).toHaveAttribute(
+                'href',
+                /\/system\/readiness\/report\.xlsx\?portfolio_id=\d+/,
+            );
+            await expect(
                 page
                     .locator('.pmc-readiness-evidence-grid')
                     .first()
@@ -1239,6 +1257,15 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByRole('link', { name: 'فتح المحفظة' }).first(),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تنزيل PDF' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تنزيل Word' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'تنزيل Excel' }),
         ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('readiness.');
         await expectNoHorizontalOverflow(page);

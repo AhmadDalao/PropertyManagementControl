@@ -47,6 +47,7 @@ use App\Http\Controllers\ReportPresetController;
 use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
 use App\Http\Controllers\SystemReadinessController;
+use App\Http\Controllers\SystemReadinessReportController;
 use App\Http\Controllers\TenantAccountStatementController;
 use App\Http\Controllers\TenantController;
 use App\Http\Controllers\UserController;
@@ -276,6 +277,9 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::post('/system/showcase-data/{showcaseDataset}/retry', [ShowcaseDataController::class, 'retry'])->name('showcase-data.retry');
     Route::delete('/system/showcase-data/{showcaseDataset}', [ShowcaseDataController::class, 'destroy'])->name('showcase-data.destroy');
     Route::get('/system/readiness', [SystemReadinessController::class, 'index'])->name('system-readiness.index');
+    Route::get('/system/readiness/report.pdf', [SystemReadinessReportController::class, 'pdf'])->name('system-readiness.report.pdf');
+    Route::get('/system/readiness/report.docx', [SystemReadinessReportController::class, 'word'])->name('system-readiness.report.word');
+    Route::get('/system/readiness/report.xlsx', [SystemReadinessReportController::class, 'workbook'])->name('system-readiness.report.workbook');
     Route::put('/system/readiness/checks', [SystemReadinessController::class, 'update'])->name('system-readiness.update');
     Route::post('/system/readiness/test-email', [SystemReadinessController::class, 'testEmail'])
         ->middleware('throttle:3,10')
