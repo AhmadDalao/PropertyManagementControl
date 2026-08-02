@@ -46,6 +46,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'Queries/TenantDashboardQuery.php',
             'Requests/DashboardIndexRequest.php',
             'Support/DashboardPropertyContext.php',
+            'Support/DashboardPayloadCache.php',
         ] as $file) {
             $path = "app/Modules/Dashboard/{$file}";
             $source = $this->source($path);

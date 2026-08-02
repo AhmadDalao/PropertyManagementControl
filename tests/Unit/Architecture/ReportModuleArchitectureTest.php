@@ -185,6 +185,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/ReportAccess.php',
             'app/Modules/Reports/Support/ReportFilterSet.php',
             'app/Modules/Reports/Support/ReportPeriod.php',
+            'app/Modules/Reports/Support/ReportPagePayloadCache.php',
             'app/Modules/Reports/Support/ReportComparisonPeriod.php',
             'app/Modules/Reports/Support/ReportPropertyScope.php',
             'app/Modules/Reports/Support/PropertyOperatingReportFilename.php',
