@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\LeaseInstallment;
+use App\Modules\Reports\Actions\RentRollPdfExport;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
@@ -129,7 +131,7 @@ class RentRollReportTest extends TestCase
                     )
                     ->where(
                         'scope',
-                        fn ($scope): bool => collect($scope)
+                        fn (Collection $scope): bool => $scope
                             ->keyBy('label')
                             ->get('Portfolio scope')['value'] === 'North Portfolio',
                     ));
@@ -234,6 +236,8 @@ class RentRollReportTest extends TestCase
 
     public function test_rent_roll_exports_are_real_scoped_pdf_docx_and_xlsx_files(): void
     {
+        $this->assertSame(100, RentRollPdfExport::MAX_DETAIL_ROWS);
+
         $portfolio = $this->createPortfolio();
         $owner = $this->createUserWithRole('owner', $portfolio);
         $asset = $this->createAsset($portfolio, [

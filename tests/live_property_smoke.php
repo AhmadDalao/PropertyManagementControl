@@ -453,7 +453,6 @@ foreach ($reportLibrary as $card) {
         && $scope['نطاق المحفظة'] !== ''
         && $scope['نطاق العقار'] !== '') {
         $hasArabicScope = true;
-        break;
     }
 }
 

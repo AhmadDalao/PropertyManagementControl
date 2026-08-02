@@ -13,6 +13,14 @@
         .rent-roll-muted { color: #6d6559; font-size: 6.7px; }
         .rent-roll-state { font-weight: 700; }
         .rent-roll-summary td { width: 25%; }
+        .rent-roll-limit {
+            margin: 0 0 10px;
+            padding: 8px 10px;
+            border: 1px solid #e3c986;
+            background: #fff8e6;
+            color: #5f4b18;
+            font-size: 8px;
+        }
     </style>
 </head>
 <body>
@@ -33,7 +41,7 @@
             </td>
             <td class="document-meta">
                 <div><span>Snapshot / الحالة الحالية</span><strong>{{ today()->toDateString() }}</strong></div>
-                <div><span>Records / السجلات</span><strong>{{ count($data['records']) }}</strong></div>
+                <div><span>Records / السجلات</span><strong>{{ $data['recordTotal'] ?? count($data['records']) }}</strong></div>
                 <div><span>Generated / تاريخ الإصدار</span><strong>{{ now()->format('Y-m-d H:i') }}</strong></div>
             </td>
         </tr>
@@ -91,6 +99,12 @@
 
     <section class="section allow-break">
         <h2 class="section-title clearfix">Rentable records <span>السجلات القابلة للتأجير</span></h2>
+        @if(($data['recordTotal'] ?? count($data['records'])) > ($data['recordLimit'] ?? count($data['records'])))
+            <div class="rent-roll-limit">
+                PDF detail shows the first {{ $data['recordLimit'] }} of {{ $data['recordTotal'] }} records. Download XLSX or DOCX for the complete schedule.
+                <span class="rtl">يعرض ملف PDF أول {{ $data['recordLimit'] }} سجلاً من أصل {{ $data['recordTotal'] }}. نزّل XLSX أو DOCX للحصول على الجدول الكامل.</span>
+            </div>
+        @endif
         <table class="data rent-roll-table">
             <thead>
                 <tr>
