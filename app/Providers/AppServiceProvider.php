@@ -8,6 +8,7 @@ use App\Models\CmsPage;
 use App\Models\CmsPageSection;
 use App\Models\CmsSection;
 use App\Models\CollectionFollowUp;
+use App\Models\DailyOperationsReportRun;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\LabelOverride;
@@ -114,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
             'report_preset' => ReportPreset::class,
             'operational_readiness_check' => OperationalReadinessCheck::class,
             'system_backup_run' => SystemBackupRun::class,
+            'daily_operations_report_run' => DailyOperationsReportRun::class,
         ]);
 
         Date::use(CarbonImmutable::class);

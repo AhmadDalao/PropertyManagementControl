@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Modules\DailyOperationsReports\Actions\QueueScheduledDailyOperationsReports;
 use App\Modules\Leases\LeaseLifecycle;
 use App\Modules\PublicSite\Actions\SeedLandingContent;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseCollectionFollowUps;
@@ -224,6 +225,19 @@ Artisan::command('property:backup-create {--queue : Queue the backup for the sch
     return 0;
 })->purpose('Create a private database and document backup package.');
 
+Artisan::command('property:archive-daily-operations', function (
+    QueueScheduledDailyOperationsReports $reports,
+) {
+    $result = $reports->handle();
+    $this->info("Queued {$result['queued']} daily operations reports.");
+
+    if ($result['skipped'] > 0) {
+        $this->warn("Skipped {$result['skipped']} scopes without an active report owner.");
+    }
+
+    return 0;
+})->purpose('Queue immutable daily operations reports for global and owner scopes.');
+
 Schedule::command('property:record-scheduler-heartbeat')
     ->everyMinute()
     ->withoutOverlapping(5);
@@ -234,6 +248,10 @@ Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --time
 
 Schedule::command('property:sync-operational-statuses')
     ->dailyAt('00:05')
+    ->withoutOverlapping(120);
+
+Schedule::command('property:archive-daily-operations')
+    ->dailyAt((string) config('operations.daily_report_schedule', '06:00'))
     ->withoutOverlapping(120);
 
 Schedule::command('property:backup-create --queue')

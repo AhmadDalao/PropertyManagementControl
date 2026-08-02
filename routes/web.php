@@ -14,6 +14,7 @@ use App\Http\Controllers\CmsPageController;
 use App\Http\Controllers\CmsPageSectionController;
 use App\Http\Controllers\CmsSectionController;
 use App\Http\Controllers\CompanyControlController;
+use App\Http\Controllers\DailyOperationsReportController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\DocumentController;
@@ -274,6 +275,22 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
 
     Route::resource('expenses', ExpenseEntryController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:expenses')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/reports', [ReportController::class, 'index'])->name('reports.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/daily-operations', [DailyOperationsReportController::class, 'index'])
+        ->name('reports.daily-operations.index')
+        ->middleware('portfolio.module:reports');
+    Route::post('/reports/daily-operations', [DailyOperationsReportController::class, 'store'])
+        ->middleware(['portfolio.module:reports', 'throttle:3,10'])
+        ->name('reports.daily-operations.store');
+    Route::get('/reports/daily-operations/{dailyOperationsReportRun}', [DailyOperationsReportController::class, 'show'])
+        ->name('reports.daily-operations.show')
+        ->middleware('portfolio.module:reports');
+    Route::get('/reports/daily-operations/{dailyOperationsReportRun}/{format}', [DailyOperationsReportController::class, 'download'])
+        ->whereIn('format', ['pdf', 'docx', 'xlsx'])
+        ->name('reports.daily-operations.download')
+        ->middleware('portfolio.module:reports');
+    Route::delete('/reports/daily-operations/{dailyOperationsReportRun}', [DailyOperationsReportController::class, 'destroy'])
+        ->name('reports.daily-operations.destroy')
+        ->middleware('portfolio.module:reports');
     Route::get('/reports/saved', [ReportPresetController::class, 'index'])->name('reports.saved.index')->middleware('portfolio.module:reports');
     Route::get('/reports/saved/create', [ReportPresetController::class, 'create'])->name('reports.saved.create')->middleware('portfolio.module:reports');
     Route::post('/reports/saved', [ReportPresetController::class, 'store'])->name('reports.saved.store')->middleware('portfolio.module:reports');

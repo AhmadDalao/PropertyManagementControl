@@ -1,0 +1,5 @@
+@import './daily-operations-reports/base.css';
+@import './daily-operations-reports/filters.css';
+@import './daily-operations-reports/cards.css';
+@import './daily-operations-reports/detail.css';
+@import './daily-operations-reports/responsive.css';

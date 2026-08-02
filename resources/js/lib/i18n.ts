@@ -13,6 +13,7 @@ export type UiTranslationKey =
     | `company_control.${string}`
     | `common.${string}`
     | `dashboard.${string}`
+    | `daily_reports.${string}`
     | `documents.${string}`
     | `docs.${string}`
     | `email_delivery.${string}`

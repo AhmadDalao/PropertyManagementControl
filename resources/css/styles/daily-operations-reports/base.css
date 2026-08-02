@@ -1,0 +1,101 @@
+.pmc-daily-report-command,
+.pmc-daily-report-history,
+.pmc-daily-report-panel,
+.pmc-daily-report-detail-status {
+    min-width: 0;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-daily-report-command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.38fr);
+    gap: clamp(1rem, 3vw, 2rem);
+    align-items: center;
+    padding: clamp(1rem, 2.5vw, 1.65rem);
+    margin-block: 1rem;
+    background:
+        radial-gradient(
+            circle at top right,
+            rgb(255 193 7 / 18%),
+            transparent 38%
+        ),
+        #fff;
+}
+
+.pmc-daily-report-command > div > span,
+.pmc-daily-report-history > header span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #775800;
+    font-size: 0.7rem;
+    font-weight: 850;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-daily-report-command h2,
+.pmc-daily-report-history h2,
+.pmc-daily-report-panel h2 {
+    margin: 0;
+    color: var(--pmc-ink);
+    font-size: clamp(1rem, 2vw, 1.3rem);
+}
+
+.pmc-daily-report-command p,
+.pmc-daily-report-history header p,
+.pmc-daily-report-panel > p {
+    max-width: 54rem;
+    margin: 0.45rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.pmc-daily-report-generate {
+    display: grid;
+    gap: 0.65rem;
+    padding: 1rem;
+    border: 1px solid rgb(155 115 0 / 22%);
+    border-radius: var(--pmc-radius);
+    background: rgb(255 248 221 / 72%);
+}
+
+.pmc-daily-report-generate label span,
+.pmc-daily-report-filters label span {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.pmc-daily-report-generate select,
+.pmc-daily-report-filters select,
+.pmc-daily-report-filters input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--pmc-line-strong);
+    border-radius: 0.65rem;
+    color: var(--pmc-ink);
+    background-color: #fff;
+}
+
+.pmc-daily-report-generate .btn {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-weight: 850;
+}
+
+.pmc-daily-report-generate small {
+    color: #635b49;
+    font-size: 0.7rem;
+    line-height: 1.5;
+}

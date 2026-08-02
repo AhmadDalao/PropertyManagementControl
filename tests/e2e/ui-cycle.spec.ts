@@ -57,6 +57,7 @@ const primaryAdminRoutes = [
     '/system/email-delivery',
     '/system/backups',
     '/reports',
+    '/reports/daily-operations',
     '/reports/saved',
     '/reports/saved/create',
     '/reports/statement',
@@ -997,10 +998,9 @@ test.describe('authenticated administration', () => {
             'natural_expiry',
         );
         await expect(
-            page.locator('.pmc-action-type-chips').getByText(
-                'Document expiry',
-                { exact: true },
-            ),
+            page
+                .locator('.pmc-action-type-chips')
+                .getByText('Document expiry', { exact: true }),
         ).toBeVisible();
         const dailyBriefMenu = page.locator('.pmc-workspace-action-menu');
         await expect(dailyBriefMenu).toBeVisible();
@@ -1010,14 +1010,10 @@ test.describe('authenticated administration', () => {
         await dailyBriefMenu.locator('summary').click();
         await expect(dailyBriefMenu.locator('a')).toHaveCount(3);
         await expect(
-            dailyBriefMenu.locator(
-                'a[href="/action-center/report.pdf"]',
-            ),
+            dailyBriefMenu.locator('a[href="/action-center/report.pdf"]'),
         ).toBeVisible();
         await expect(
-            dailyBriefMenu.locator(
-                'a[href="/action-center/report.docx"]',
-            ),
+            dailyBriefMenu.locator('a[href="/action-center/report.docx"]'),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
@@ -1055,10 +1051,9 @@ test.describe('authenticated administration', () => {
             page.getByText('قائمة الأولويات', { exact: true }),
         ).toBeVisible();
         await expect(
-            page.locator('.pmc-action-type-chips').getByText(
-                'انتهاء المستندات',
-                { exact: true },
-            ),
+            page
+                .locator('.pmc-action-type-chips')
+                .getByText('انتهاء المستندات', { exact: true }),
         ).toBeVisible();
         await expect(
             page.locator('.pmc-workspace-action-menu summary'),
@@ -1079,9 +1074,9 @@ test.describe('authenticated administration', () => {
             page.locator('.pmc-operations-table > .pmc-table-scroll'),
         ).toBeVisible();
         await expect(page.locator('.pmc-mobile-record-list')).toBeHidden();
-        await expect(
-            page.locator('.pmc-table-export-desktop a'),
-        ).toHaveCount(3);
+        await expect(page.locator('.pmc-table-export-desktop a')).toHaveCount(
+            3,
+        );
         await expect(
             page.locator(
                 '.pmc-table-export-desktop a[href="/lease-renewals/report.pdf"]',
@@ -1110,9 +1105,7 @@ test.describe('authenticated administration', () => {
             page.locator('.pmc-mobile-record-card').first(),
         ).toBeVisible();
         await expect(page.locator('.pmc-table-export-desktop')).toBeHidden();
-        const renewalDownloadMenu = page.locator(
-            '.pmc-table-export-menu',
-        );
+        const renewalDownloadMenu = page.locator('.pmc-table-export-menu');
         await expect(renewalDownloadMenu).toBeVisible();
         await renewalDownloadMenu.locator('summary').click();
         await expect(renewalDownloadMenu.locator('a')).toHaveCount(3);
@@ -3484,6 +3477,50 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('daily operations archive is card based, bilingual, and mobile safe', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/reports/daily-operations?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'أرشيف العمليات اليومية',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-daily-report-command')).toBeVisible();
+        await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+        await expect(page.locator('.pmc-daily-report-history')).toBeVisible();
+        await expectMinimumTouchHeight(
+            page,
+            [
+                '.pmc-daily-report-command .btn',
+                '.pmc-daily-report-command select',
+                '.pmc-daily-report-filters input',
+                '.pmc-daily-report-filters select',
+                '.pmc-daily-report-filters .btn',
+            ].join(', '),
+        );
+        await expectNoHorizontalOverflow(page);
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/reports/daily-operations?locale=en');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'Daily Operations Archive',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('wording workspace keeps editing focused, responsive, and Arabic', async ({
         page,
     }) => {
@@ -3542,6 +3579,7 @@ test.describe('authenticated administration', () => {
                 '/rent-collection',
                 '/lease-renewals',
                 '/reports',
+                '/reports/daily-operations',
                 '/audit-logs',
                 '/media-files',
                 '/media-files/create',

@@ -560,5 +560,16 @@ return [
             'rules' => ['Never store downloaded backups in a public folder', 'A same-server copy is not offsite protection', 'Do not mark restore readiness complete until a real restore succeeds'],
             'icon' => 'bi-database-check',
         ],
+        [
+            'title' => 'Daily Operations Archive',
+            'audience' => 'Superadmin / Owner',
+            'roles' => ['superadmin', 'owner'],
+            'route' => '/reports/daily-operations',
+            'summary' => 'Freeze the Action Center as a private daily operating record instead of relying on a changing live queue.',
+            'features' => ['Global or portfolio scope', 'Bilingual PDF and Word files', 'Three-sheet Excel workbook', 'Private retention and audit history'],
+            'steps' => ['Choose the authorized scope', 'Generate or wait for the daily schedule', 'Open the archived summary', 'Download the protected files for review'],
+            'rules' => ['Managers keep using live scoped exports', 'Do not email files until SMTP delivery is proven', 'Pruning removes files but keeps the audit row'],
+            'icon' => 'bi-archive',
+        ],
     ],
 ];

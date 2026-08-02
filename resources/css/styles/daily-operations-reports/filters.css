@@ -1,0 +1,71 @@
+.pmc-daily-report-history {
+    padding: clamp(1rem, 2.5vw, 1.5rem);
+    margin-block: 1rem;
+}
+
+.pmc-daily-report-history > header {
+    margin-bottom: 1rem;
+}
+
+.pmc-daily-report-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+    gap: 0.75rem;
+    align-items: end;
+    padding: 0.85rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-daily-report-generate label,
+.pmc-daily-report-filters label {
+    min-width: 0;
+}
+
+.pmc-daily-report-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+}
+
+.pmc-daily-report-filter-actions .btn {
+    min-height: 44px;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pmc-daily-report-empty {
+    display: grid;
+    min-height: 15rem;
+    place-items: center;
+    align-content: center;
+    padding: 2rem;
+    text-align: center;
+    border: 1px dashed var(--pmc-line-strong);
+    border-radius: var(--pmc-radius);
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-daily-report-empty i {
+    color: var(--pmc-amber-strong);
+    font-size: 1.8rem;
+}
+
+.pmc-daily-report-empty h3 {
+    margin: 0.6rem 0 0.2rem;
+    font-size: 1rem;
+}
+
+.pmc-daily-report-empty p,
+.pmc-daily-report-retention {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.78rem;
+}
+
+.pmc-daily-report-retention {
+    margin-top: 1rem;
+    text-align: center;
+}

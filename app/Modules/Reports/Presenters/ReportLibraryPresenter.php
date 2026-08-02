@@ -184,6 +184,18 @@ final class ReportLibraryPresenter
                     ],
                     scope: $scope['current'],
                 ),
+                $actor->hasAnyRole(['superadmin', 'owner'])
+                    ? $this->card(
+                        'daily-operations-archive',
+                        'bi-archive',
+                        'daily_operations_archive',
+                        'daily_operations_archive_description',
+                        $this->url('reports.daily-operations.index', $currentQuery),
+                        [],
+                        'reports',
+                        $scope['current'],
+                    )
+                    : null,
                 $this->resourceCard(
                     'document-expiry',
                     'bi-file-earmark-text',

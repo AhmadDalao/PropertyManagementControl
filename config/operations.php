@@ -13,4 +13,6 @@ return [
         is_executable($systemTar) ? $systemTar : 'tar',
     ),
     'backup_retention_count' => (int) env('BACKUP_RETENTION_COUNT', 7),
+    'daily_report_retention_days' => (int) env('DAILY_REPORT_RETENTION_DAYS', 90),
+    'daily_report_schedule' => env('DAILY_REPORT_SCHEDULE', '06:00'),
 ];
