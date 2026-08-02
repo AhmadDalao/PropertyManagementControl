@@ -16,6 +16,7 @@
 /storage/pail
 /storage/logs/*.log
 /test-results
+/tmp
 /vendor
 .env
 .env.backup

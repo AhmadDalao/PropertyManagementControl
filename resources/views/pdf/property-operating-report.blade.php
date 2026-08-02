@@ -20,6 +20,9 @@
             ? 'Showing '.number_format($limits[$key]['shown']).' of '.number_format($limits[$key]['total'])
                 .' records. The XLSX and DOCX files contain the complete scoped period.'
             : null;
+        $sectionClass = static fn ($records) => count($records) > 10
+            ? 'section report-table-long'
+            : 'section';
     @endphp
 
     <table class="document-header">
@@ -91,7 +94,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="section">
         <h2 class="section-title clearfix">Financial position <span>المركز المالي</span></h2>
         <table class="data">
             <thead>
@@ -125,7 +128,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="{{ $sectionClass($data['arrearsLeases']) }}">
         <h2 class="section-title clearfix">Contracts in arrears <span>العقود المتأخرة</span></h2>
         @if($limitNote('arrearsLeases'))<div class="notice">{{ $limitNote('arrearsLeases') }}</div>@endif
         <table class="data">
@@ -140,7 +143,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="{{ $sectionClass($data['recentPayments']) }}">
         <h2 class="section-title clearfix">Posted payments <span>الدفعات المرحلة</span></h2>
         @if($limitNote('recentPayments'))<div class="notice">{{ $limitNote('recentPayments') }}</div>@endif
         <table class="data">
@@ -155,7 +158,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="{{ $sectionClass($data['recentExpenses']) }}">
         <h2 class="section-title clearfix">Posted expenses <span>المصاريف المرحلة</span></h2>
         @if($limitNote('recentExpenses'))<div class="notice">{{ $limitNote('recentExpenses') }}</div>@endif
         <table class="data">
@@ -170,7 +173,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="{{ $sectionClass($data['maintenanceBacklog']) }}">
         <h2 class="section-title clearfix">Maintenance backlog <span>طلبات الصيانة المتراكمة</span></h2>
         @if($limitNote('maintenanceBacklog'))<div class="notice">{{ $limitNote('maintenanceBacklog') }}</div>@endif
         <table class="data">
@@ -185,7 +188,7 @@
         </table>
     </section>
 
-    <section class="section allow-break">
+    <section class="{{ $sectionClass($data['operationalJournal']) }}">
         <h2 class="section-title clearfix">Operational activity <span>النشاط التشغيلي</span></h2>
         @if($limitNote('operationalJournal'))<div class="notice">{{ $limitNote('operationalJournal') }}</div>@endif
         <table class="data">

@@ -17,6 +17,7 @@
     .notice-ar { margin-top: 4px; direction: rtl; text-align: right; }
     .section { margin-bottom: 14px; page-break-inside: avoid; }
     .section.allow-break { page-break-inside: auto; }
+    .section.report-table-long { page-break-before: always; page-break-inside: auto; }
     .section-title { margin-bottom: 7px; padding-bottom: 5px; border-bottom: 2px solid #111; font-size: 11px; font-weight: bold; }
     .section-title span { float: right; color: #08786e; direction: rtl; }
     .two-column { width: 100%; border-collapse: separate; border-spacing: 7px 0; margin-left: -7px; }
@@ -33,6 +34,7 @@
     .money-highlight strong { display: block; margin-top: 3px; font-size: 23px; }
     table.data { width: 100%; border-collapse: collapse; }
     table.data thead { display: table-header-group; }
+    table.data tr { page-break-inside: avoid; }
     table.data th { padding: 7px 6px; border-bottom: 2px solid #111; background: #fbfaf7; color: #5e584f; font-size: 7px; letter-spacing: .3px; text-align: left; text-transform: uppercase; }
     table.data td { padding: 7px 6px; border-bottom: 1px solid #ece8e0; font-size: 8px; vertical-align: top; }
     table.data th.ar, table.data td.ar { direction: rtl; text-align: right; }
