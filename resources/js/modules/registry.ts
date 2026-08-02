@@ -157,6 +157,22 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 propertyScoped: true,
             },
             {
+                labelKey: 'nav.work_orders',
+                href: '/maintenance-work-orders',
+                icon: 'bi-clipboard2-check',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'maintenance',
+                propertyScoped: true,
+            },
+            {
+                labelKey: 'nav.maintenance_vendors',
+                href: '/maintenance-vendors',
+                icon: 'bi-building-check',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'maintenance',
+                propertyScoped: true,
+            },
+            {
                 labelKey: 'nav.documents',
                 href: '/documents',
                 icon: 'bi-folder2-open',

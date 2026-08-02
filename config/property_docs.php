@@ -189,7 +189,7 @@ return [
             'steps' => [
                 ['label' => 'Tenant submits request', 'route' => '/maintenance-requests', 'module' => 'maintenance'],
                 ['label' => 'Manager assigns priority', 'route' => '/maintenance-requests', 'module' => 'maintenance'],
-                ['label' => 'Share public update', 'route' => '/maintenance-requests', 'module' => 'maintenance'],
+                ['label' => 'Dispatch and track work order', 'route' => '/maintenance-work-orders', 'module' => 'maintenance'],
                 ['label' => 'Record the resolution and cost', 'route' => '/expenses', 'module' => 'expenses'],
                 ['label' => 'Tenant confirms or reopens', 'route' => '/maintenance-requests', 'module' => 'maintenance'],
             ],
@@ -328,6 +328,16 @@ return [
             'module' => 'maintenance',
         ],
         [
+            'label' => 'Work Orders',
+            'category' => 'Service',
+            'route' => '/maintenance-work-orders',
+            'description' => 'Control contractor jobs, scheduled visits, tenant access, internal ownership, and final costs.',
+            'action' => 'Open work orders',
+            'icon' => 'bi-clipboard2-check',
+            'roles' => ['superadmin', 'owner', 'property_manager'],
+            'module' => 'maintenance',
+        ],
+        [
             'label' => 'Reports',
             'category' => 'Control',
             'route' => '/reports',
@@ -430,7 +440,7 @@ return [
             'title' => 'Property owner',
             'summary' => 'Controls their portfolio lifecycle from assets to tenants, leases, payments, maintenance, and reports.',
             'responsibilities' => ['Manage portfolio assets', 'Create tenants and leases', 'Track payments', 'Review maintenance and reports'],
-            'routes' => ['/dashboard', '/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
+            'routes' => ['/dashboard', '/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests', '/maintenance-work-orders'],
             'icon' => 'bi-buildings',
         ],
         [
@@ -438,7 +448,7 @@ return [
             'title' => 'Property manager',
             'summary' => 'Runs day-to-day portfolio operations, tenant service, rent posting, and maintenance triage.',
             'responsibilities' => ['Run daily asset operations', 'Handle tenants', 'Post payments', 'Triage maintenance'],
-            'routes' => ['/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests'],
+            'routes' => ['/portfolio-control', '/assets', '/tenants', '/leases', '/payments', '/maintenance-requests', '/maintenance-work-orders'],
             'icon' => 'bi-person-workspace',
         ],
         [

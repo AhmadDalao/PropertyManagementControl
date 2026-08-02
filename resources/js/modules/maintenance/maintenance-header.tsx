@@ -25,6 +25,14 @@ export function MaintenanceHeader({
                 ...(mode === 'manager'
                     ? [
                           {
+                              label: t(
+                                  'maintenance.work_order_register_action',
+                              ),
+                              href: '/maintenance-work-orders',
+                              icon: 'bi-clipboard2-check',
+                              tone: 'quiet' as const,
+                          },
+                          {
                               label: t('maintenance.vendor_directory_action'),
                               href: '/maintenance-vendors',
                               icon: 'bi-building-check',

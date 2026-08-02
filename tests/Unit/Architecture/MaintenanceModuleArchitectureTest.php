@@ -80,6 +80,31 @@ class MaintenanceModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function work_order_register_is_composed_from_scoped_backend_and_typed_frontend_parts(): void
+    {
+        $controller = $this->source('app/Http/Controllers/MaintenanceWorkOrderController.php');
+        $index = $this->source('app/Modules/Maintenance/Queries/MaintenanceWorkOrderIndexQuery.php');
+        $directory = $this->source('app/Modules/Maintenance/Queries/MaintenanceWorkOrderDirectoryQuery.php');
+        $entry = $this->source('resources/js/modules/maintenance-work-orders/index-page.tsx');
+        $table = $this->source('resources/js/modules/maintenance-work-orders/work-order-table.tsx');
+        $config = $this->source('resources/js/modules/maintenance-work-orders/work-order-table-config.tsx');
+        $cells = $this->source('resources/js/modules/maintenance-work-orders/work-order-cells.tsx');
+
+        $this->assertLinesAtMost($controller, 110);
+        $this->assertLinesAtMost($index, 90);
+        $this->assertLinesAtMost($entry, 90);
+        $this->assertLinesAtMost($table, 50);
+        $this->assertLinesAtMost($config, 110);
+        $this->assertLinesAtMost($cells, 150);
+        $this->assertStringContainsString('MaintenanceWorkOrderDirectoryQuery', $index);
+        $this->assertStringContainsString('AssignedPropertyScope', $directory);
+        $this->assertStringContainsString("from './work-order-table-config'", $table);
+        $this->assertStringNotContainsString('::query()', $controller);
+        $this->assertStringNotContainsString('columns={[', $table);
+        $this->assertStringNotContainsString('text(', $entry.$table.$config.$cells);
+    }
+
+    #[Test]
     public function maintenance_module_owns_each_resource_responsibility(): void
     {
         foreach ([
@@ -93,6 +118,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Actions/UpdateMaintenance.php',
             'app/Modules/Maintenance/Actions/ManageMaintenanceVendors.php',
             'app/Modules/Maintenance/Actions/ManageMaintenanceWorkOrders.php',
+            'app/Modules/Maintenance/Actions/MaintenanceWorkOrderWorkbookExport.php',
             'app/Modules/Maintenance/Data/MaintenanceDetailData.php',
             'app/Modules/Maintenance/Data/StoredMaintenancePhoto.php',
             'app/Modules/Maintenance/Presenters/MaintenanceAttachmentFormPresenter.php',
@@ -112,6 +138,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Presenters/MaintenanceVendorFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderDetailPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderFormPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderRowPresenter.php',
             'app/Modules/Maintenance/Queries/MaintenanceDetailQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceDirectoryQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceFormOptionsQuery.php',
@@ -119,6 +146,9 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Queries/MaintenanceInsightsQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceOperationsSearch.php',
             'app/Modules/Maintenance/Queries/MaintenanceVendorIndexQuery.php',
+            'app/Modules/Maintenance/Queries/MaintenanceWorkOrderDirectoryQuery.php',
+            'app/Modules/Maintenance/Queries/MaintenanceWorkOrderIndexQuery.php',
+            'app/Modules/Maintenance/Queries/MaintenanceWorkOrderInsightsQuery.php',
             'app/Modules/Maintenance/Requests/RespondToMaintenanceResolutionRequest.php',
             'app/Modules/Maintenance/Support/MaintenanceReferenceGuard.php',
             'app/Modules/Maintenance/Support/MaintenanceAttachmentOptions.php',
@@ -132,6 +162,12 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'resources/js/modules/maintenance-vendors/index-page.tsx',
             'resources/js/modules/maintenance-vendors/types.ts',
             'resources/js/modules/maintenance-vendors/vendor-table.tsx',
+            'resources/js/modules/maintenance-work-orders/index-page.tsx',
+            'resources/js/modules/maintenance-work-orders/types.ts',
+            'resources/js/modules/maintenance-work-orders/work-order-cells.tsx',
+            'resources/js/modules/maintenance-work-orders/work-order-filters.ts',
+            'resources/js/modules/maintenance-work-orders/work-order-table-config.tsx',
+            'resources/js/modules/maintenance-work-orders/work-order-table.tsx',
             'resources/js/modules/maintenance/maintenance-filters.ts',
             'resources/js/modules/maintenance/maintenance-header.tsx',
             'resources/js/modules/maintenance/maintenance-metrics.tsx',

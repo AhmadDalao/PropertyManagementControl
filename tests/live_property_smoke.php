@@ -245,6 +245,8 @@ $authChecks = [
     '/payments/create?locale=ar' => 'admin/resource-form',
     '/maintenance-requests' => 'admin/maintenance/index',
     '/maintenance-requests?confirmation=pending&locale=ar' => 'admin/maintenance/index',
+    '/maintenance-work-orders?locale=en' => 'admin/maintenance-work-orders/index',
+    '/maintenance-work-orders?locale=ar' => 'admin/maintenance-work-orders/index',
     '/expenses?locale=en' => 'admin/expenses/index',
     '/expenses?locale=ar' => 'admin/expenses/index',
     '/expenses/create?locale=en' => 'admin/resource-form',
@@ -544,6 +546,25 @@ if (! $activeSignoffCount) {
 }
 
 smoke_note('/maintenance-requests tenant sign-off queue scoped');
+
+$workOrderWorkbook = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/exports/maintenance-work-orders?locale=ar&per_page=10',
+);
+$workOrderWorkbookHeaders = strtolower((string) $workOrderWorkbook['headers']);
+
+if ($workOrderWorkbook['status'] !== 200
+    || ! str_contains(
+        $workOrderWorkbookHeaders,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    || ! str_starts_with((string) $workOrderWorkbook['body'], 'PK')) {
+    smoke_fail('Maintenance work-order workbook was invalid.');
+}
+
+smoke_note('/maintenance-work-orders register and XLSX export valid');
 
 if (is_array($maintenanceRows) && isset($maintenanceRows[0]['id'])) {
     $maintenanceId = (int) $maintenanceRows[0]['id'];

@@ -41,8 +41,8 @@ final class MaintenanceWorkOrderDetailPresenter
                     $workOrder->vendor_name,
                     trans("app.status.{$workOrder->status}"),
                 ]),
-                'backHref' => route('maintenance-requests.show', [$request, 'tab' => 'related']),
-                'backLabel' => trans('app.work_orders.back_to_request'),
+                'backHref' => route('maintenance-work-orders.index'),
+                'backLabel' => trans('app.work_orders.back_to_register'),
                 'actions' => [[
                     'label' => trans('app.work_orders.edit', [
                         'reference' => $workOrder->reference_code,

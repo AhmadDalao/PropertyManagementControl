@@ -7,6 +7,7 @@ use App\Models\MaintenanceVendor;
 use App\Models\MaintenanceWorkOrder;
 use App\Models\Portfolio;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
@@ -140,6 +141,7 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/resource-show')
                 ->where('detailPage.header.title', $workOrder->reference_code)
+                ->where('detailPage.header.backHref', route('maintenance-work-orders.index'))
                 ->where('detailPage.header.actions.0.label', "Edit {$workOrder->reference_code}")
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains(fn ($item): bool => $item['label'] === 'Phone'
@@ -290,6 +292,170 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
                     ->firstWhere('label', 'Work orders')['value'] === 0));
     }
 
+    public function test_work_order_register_filters_paginates_localizes_and_exports_xlsx(): void
+    {
+        [$portfolio, $owner, $manager, , $request] = $this->fixture();
+        $vendor = $this->vendor($portfolio->id);
+        $this->travelTo('2026-08-02 10:00:00');
+
+        foreach (range(1, 11) as $number) {
+            $status = $number === 9
+                ? 'scheduled'
+                : ($number === 10 ? 'in_progress' : ($number === 11 ? 'completed' : 'draft'));
+            $this->workOrder(
+                $portfolio,
+                $request,
+                $owner,
+                $manager,
+                $vendor,
+                sprintf('WO-LIST-%03d', $number),
+                $status,
+                $number === 9 ? now()->subDay() : ($number === 10 ? now()->addDay() : null),
+                $number === 9,
+            );
+        }
+
+        $foreignPortfolio = $this->createPortfolio();
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $foreignManager = $this->createUserWithRole('property_manager', $foreignPortfolio);
+        $foreignTenant = $this->createTenantProfile(
+            $foreignPortfolio,
+            $this->createUserWithRole('tenant', $foreignPortfolio),
+        );
+        $foreignRequest = MaintenanceRequest::query()->create([
+            'portfolio_id' => $foreignPortfolio->id,
+            'asset_id' => $this->createAsset($foreignPortfolio)->id,
+            'tenant_profile_id' => $foreignTenant->id,
+            'submitted_by_user_id' => $foreignTenant->user_id,
+            'category' => 'electrical',
+            'priority' => 'urgent',
+            'status' => 'open',
+            'title' => 'Foreign request',
+            'description' => 'Must remain outside the owner scope.',
+            'requested_at' => now(),
+        ]);
+        $this->workOrder(
+            $foreignPortfolio,
+            $foreignRequest,
+            $foreignOwner,
+            $foreignManager,
+            $this->vendor($foreignPortfolio->id, 'Foreign Contractor'),
+            'WO-FOREIGN-001',
+        );
+
+        foreach ([10, 25, 50, 100] as $perPage) {
+            $this->actingAs($owner)
+                ->get(route('maintenance-work-orders.index', [
+                    'per_page' => $perPage,
+                    'sort' => 'reference_code',
+                    'direction' => 'asc',
+                ]))
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page
+                    ->component('admin/maintenance-work-orders/index')
+                    ->where('workOrders.total', 11)
+                    ->where('workOrders.per_page', $perPage)
+                    ->has('workOrders.data', min($perPage, 11))
+                    ->where('workOrders.data.0.reference_code', 'WO-LIST-001')
+                    ->where('workOrderInsights.overdue', 1)
+                    ->where('workOrderInsights.completed', 1));
+        }
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-work-orders.index', ['schedule' => 'overdue']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('workOrders.total', 1)
+                ->where('workOrders.data.0.reference_code', 'WO-LIST-009')
+                ->where('filters.schedule', 'overdue'));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-work-orders.index', ['status' => 'active']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('workOrders.total', 2)
+                ->where('filters.status', 'active'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-work-orders.index', ['search' => 'WO-LIST-011']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('app.locale', 'ar')
+                ->where('workOrders.total', 1)
+                ->where('workOrders.data.0.reference_code', 'WO-LIST-011')
+                ->where('counts.0.label', 'الكل'));
+
+        $export = $this->actingAs($owner)->get(route('exports.resource', [
+            'resource' => 'maintenance-work-orders',
+            'search' => 'WO-LIST-011',
+        ]));
+
+        $export
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            );
+        $worksheet = $this->xlsxWorksheetXml($export);
+        $this->assertStringContainsString('WO-LIST-011', $worksheet);
+        $this->assertStringNotContainsString('WO-LIST-010', $worksheet);
+        $this->assertStringNotContainsString('WO-FOREIGN-001', $worksheet);
+    }
+
+    public function test_work_order_register_enforces_manager_property_scope_and_denies_tenants(): void
+    {
+        [$portfolio, $owner, $manager, $tenantUser, $visibleRequest] = $this->fixture();
+        $vendor = $this->vendor($portfolio->id);
+        $visible = $this->workOrder(
+            $portfolio,
+            $visibleRequest,
+            $owner,
+            $manager,
+            $vendor,
+            'WO-VISIBLE-001',
+        );
+        $hiddenAsset = $this->createAsset($portfolio, ['title_en' => 'Hidden Building']);
+        $hiddenRequest = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $hiddenAsset->id,
+            'tenant_profile_id' => $visibleRequest->tenant_profile_id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'plumbing',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => 'Hidden property leak',
+            'description' => 'Outside the manager assignment.',
+            'requested_at' => now(),
+        ]);
+        $hidden = $this->workOrder(
+            $portfolio,
+            $hiddenRequest,
+            $owner,
+            $manager,
+            $vendor,
+            'WO-HIDDEN-001',
+        );
+
+        $this->actingAs($manager)
+            ->get(route('maintenance-work-orders.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('workOrders.total', 1)
+                ->where('workOrders.data.0.id', $visible->id)
+                ->where('workOrderInsights.total', 1)
+                ->where('vendorOptions.0.id', $vendor->id));
+
+        $this->actingAs($manager)
+            ->get(route('maintenance-work-orders.index', ['search' => $hidden->reference_code]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('workOrders.total', 0));
+
+        $this->actingAs($tenantUser)
+            ->get(route('maintenance-work-orders.index'))
+            ->assertForbidden();
+    }
+
     /** @return array{0:Portfolio,1:User,2:User,3:User,4:MaintenanceRequest} */
     private function fixture(): array
     {
@@ -344,5 +510,37 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             'completion_notes' => '',
             'tenant_access_required' => true,
         ];
+    }
+
+    private function workOrder(
+        Portfolio $portfolio,
+        MaintenanceRequest $request,
+        User $owner,
+        User $manager,
+        MaintenanceVendor $vendor,
+        string $reference,
+        string $status = 'draft',
+        ?CarbonInterface $scheduledAt = null,
+        bool $tenantAccess = false,
+    ): MaintenanceWorkOrder {
+        return MaintenanceWorkOrder::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'maintenance_request_id' => $request->id,
+            'vendor_id' => $vendor->id,
+            'created_by_user_id' => $owner->id,
+            'assigned_to_user_id' => $manager->id,
+            'reference_code' => $reference,
+            'vendor_name' => $vendor->name,
+            'vendor_phone' => $vendor->phone,
+            'status' => $status,
+            'scheduled_at' => $scheduledAt,
+            'completed_at' => $status === 'completed' ? now() : null,
+            'estimated_amount' => 500,
+            'final_amount' => $status === 'completed' ? 525 : null,
+            'currency' => 'SAR',
+            'scope' => "Complete {$reference}.",
+            'completion_notes' => $status === 'completed' ? 'Completed.' : null,
+            'tenant_access_required' => $tenantAccess,
+        ]);
     }
 }

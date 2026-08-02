@@ -84,6 +84,7 @@ class PortfolioModules
             'payments' => 'payments',
             'rent-collection' => 'payments',
             'maintenance-requests' => 'maintenance',
+            'maintenance-work-orders' => 'maintenance',
             'expenses' => 'expenses',
             'documents' => 'documents',
             'media-files' => 'media',

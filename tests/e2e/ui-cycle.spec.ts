@@ -43,6 +43,7 @@ const primaryAdminRoutes = [
     '/rent-collection',
     '/payments',
     '/maintenance-requests',
+    '/maintenance-work-orders',
     '/maintenance-vendors',
     '/expenses',
     '/documents',
@@ -483,6 +484,7 @@ test.describe('authenticated administration', () => {
             '/rent-collection',
             '/payments',
             '/maintenance-requests',
+            '/maintenance-work-orders',
             '/expenses',
             '/documents',
             '/media-files',
@@ -2071,6 +2073,48 @@ test.describe('authenticated administration', () => {
         await expect(page.getByLabel(/^اسم الشركة/)).toBeVisible();
         await expect(page.getByLabel(/^فئة الخدمة/)).toBeVisible();
         await expect(page.getByLabel(/^اسم جهة الاتصال/)).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
+    test('work order register is responsive, bilingual, and opens accountable job records', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/maintenance-work-orders?locale=ar&per_page=10');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', { level: 1, name: 'أوامر العمل' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'قائمة طلبات الصيانة' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'دليل المقاولين' }),
+        ).toBeVisible();
+        const cards = page.locator('.pmc-mobile-record-card');
+        const cardCount = await cards.count();
+        expect(cardCount).toBeGreaterThan(0);
+        expect(cardCount).toBeLessThanOrEqual(10);
+        await expect(page.locator('body')).not.toContainText('work_orders.');
+        await expectNoHorizontalOverflow(page);
+
+        const detailLink = cards
+            .locator('a[href^="/maintenance-work-orders/"]')
+            .first();
+        await expect(detailLink).toBeVisible();
+        const detailHref = await detailLink.getAttribute('href');
+        expect(detailHref).toBeTruthy();
+        await page.goto(`${detailHref}?locale=ar`);
+        await expect(page.getByText('أمر عمل صيانة')).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/maintenance-work-orders?locale=en&per_page=10');
+        await expect(page.locator('.pmc-table-scroll')).toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'Export Excel (.xlsx)' }),
+        ).toHaveAttribute('href', /exports\/maintenance-work-orders/);
         await expectNoHorizontalOverflow(page);
     });
 

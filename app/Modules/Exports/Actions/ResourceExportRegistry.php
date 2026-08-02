@@ -12,6 +12,7 @@ use App\Modules\LeaseMoveOuts\Actions\LeaseMoveOutWorkbookExport;
 use App\Modules\LeaseRenewals\Actions\LeaseRenewalWorkbookExport;
 use App\Modules\Leases\Actions\LeaseWorkbookExport;
 use App\Modules\Maintenance\Actions\MaintenanceWorkbookExport;
+use App\Modules\Maintenance\Actions\MaintenanceWorkOrderWorkbookExport;
 use App\Modules\Media\Actions\MediaFileWorkbookExport;
 use App\Modules\Payments\Actions\PaymentWorkbookExport;
 use App\Modules\Portfolios\Actions\PortfolioWorkbookExport;
@@ -35,6 +36,7 @@ class ResourceExportRegistry
         'payments' => PaymentWorkbookExport::class,
         'rent-collection' => RentCollectionWorkbookExport::class,
         'maintenance-requests' => MaintenanceWorkbookExport::class,
+        'maintenance-work-orders' => MaintenanceWorkOrderWorkbookExport::class,
         'expenses' => ExpenseWorkbookExport::class,
         'documents' => DocumentWorkbookExport::class,
         'users' => UserWorkbookExport::class,

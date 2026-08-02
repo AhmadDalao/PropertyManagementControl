@@ -235,6 +235,11 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     )->name('maintenance-requests.work-orders.store')
         ->middleware('portfolio.module:maintenance');
     Route::get(
+        '/maintenance-work-orders',
+        [MaintenanceWorkOrderController::class, 'index'],
+    )->name('maintenance-work-orders.index')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
         '/maintenance-work-orders/{maintenanceWorkOrder}',
         [MaintenanceWorkOrderController::class, 'show'],
     )->name('maintenance-work-orders.show')
