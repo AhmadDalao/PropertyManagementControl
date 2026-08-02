@@ -1,0 +1,63 @@
+@media (min-width: 768px) {
+    .pmc-opening-card {
+        padding: 1.25rem;
+    }
+
+    .pmc-opening-guidance {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-opening-counts {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .pmc-opening-preview > header {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        padding: 1.2rem;
+    }
+
+    .pmc-opening-preview > header > strong {
+        grid-column: auto;
+    }
+
+    .pmc-opening-sample-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-opening-commit {
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+    }
+
+    .pmc-opening-commit form {
+        max-width: 42rem;
+    }
+}
+
+@media (min-width: 1100px) {
+    .pmc-opening-layout {
+        grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+        align-items: stretch;
+    }
+
+    .pmc-opening-guidance {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-opening-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-opening-steps li {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .pmc-opening-target {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

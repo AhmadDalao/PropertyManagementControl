@@ -69,6 +69,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin', 'owner', 'property_manager'],
             },
             {
+                labelKey: 'nav.opening_data',
+                href: '/opening-data',
+                icon: 'bi-file-earmark-spreadsheet',
+                roles: ['superadmin', 'owner'],
+            },
+            {
                 labelKey: 'nav.property_explorer',
                 href: '/property-explorer',
                 icon: 'bi-diagram-3',

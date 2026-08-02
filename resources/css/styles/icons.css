@@ -107,6 +107,9 @@
 .bi-buildings::before {
     content: '\f87d';
 }
+.bi-card-list::before {
+    content: '\f227';
+}
 .bi-calendar-check::before {
     content: '\f1e2';
 }
@@ -170,6 +173,9 @@
 .bi-clock-history::before {
     content: '\f292';
 }
+.bi-cloud-arrow-up::before {
+    content: '\f297';
+}
 .bi-collection::before {
     content: '\f2cc';
 }
@@ -187,6 +193,9 @@
 }
 .bi-database-add::before {
     content: '\f8af';
+}
+.bi-database-check::before {
+    content: '\f8b0';
 }
 .bi-database-gear::before {
     content: '\f8bf';
@@ -232,6 +241,9 @@
 }
 .bi-file-earmark-pdf::before {
     content: '\f63e';
+}
+.bi-file-earmark-spreadsheet::before {
+    content: '\f389';
 }
 .bi-file-earmark-word::before {
     content: '\f38d';
@@ -409,6 +421,9 @@
 }
 .bi-stars::before {
     content: '\f589';
+}
+.bi-table::before {
+    content: '\f5aa';
 }
 .bi-telephone-forward::before {
     content: '\f5b6';

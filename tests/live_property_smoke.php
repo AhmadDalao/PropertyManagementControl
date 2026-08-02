@@ -221,6 +221,8 @@ $authChecks = [
     '/property-map' => 'admin/property-map/index',
     '/property-explorer' => 'admin/assets/explorer',
     '/portfolios' => 'admin/portfolios/index',
+    '/opening-data?locale=en' => 'admin/opening-data/index',
+    '/opening-data?locale=ar' => 'admin/opening-data/index',
     '/users' => 'admin/users/index',
     '/users/create' => 'admin/resource-form',
     '/assets' => 'admin/assets/index',
@@ -284,6 +286,20 @@ foreach ($authChecks as $path => $expectedComponent) {
 
     smoke_note("{$path} {$component}");
 }
+
+$openingTemplate = smoke_request($baseUrl, $cookieFile, 'GET', '/opening-data/template');
+$openingTemplateHeaders = strtolower((string) $openingTemplate['headers']);
+
+if ($openingTemplate['status'] !== 200
+    || ! str_contains(
+        $openingTemplateHeaders,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    )
+    || ! str_starts_with((string) $openingTemplate['body'], 'PK')) {
+    smoke_fail('The opening-data template is not a valid XLSX download.');
+}
+
+smoke_note('/opening-data/template valid XLSX');
 
 $dashboard = smoke_request($baseUrl, $cookieFile, 'GET', '/dashboard?locale=en');
 $dashboardPayload = smoke_page_payload($dashboard['body']);

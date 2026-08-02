@@ -1,0 +1,42 @@
+.pmc-opening-guidance {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.pmc-opening-guidance article {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius-lg);
+    background: var(--pmc-sand);
+}
+
+.pmc-opening-guidance article > i {
+    color: var(--pmc-primary-strong);
+    font-size: 1.1rem;
+}
+
+.pmc-opening-guidance strong {
+    color: var(--pmc-ink);
+    font-size: 0.82rem;
+}
+
+.pmc-opening-guidance ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin: 0.65rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-opening-guidance li {
+    padding: 0.28rem 0.5rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+}

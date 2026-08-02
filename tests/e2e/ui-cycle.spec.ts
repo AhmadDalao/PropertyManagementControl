@@ -31,6 +31,7 @@ const primaryAdminRoutes = [
     '/property-map',
     '/property-explorer',
     '/portfolios',
+    '/opening-data',
     '/users',
     '/assets',
     '/assets/building-setup',
@@ -1026,6 +1027,57 @@ test.describe('authenticated administration', () => {
                 await expectNoHorizontalOverflow(page);
             }
         }
+    });
+
+    test('opening data stays bilingual, responsive, and serves a real XLSX template', async ({
+        page,
+    }) => {
+        for (const viewport of [
+            viewports.mobile,
+            viewports.tablet,
+            viewports.desktop,
+        ]) {
+            await page.setViewportSize(viewport);
+            await page.goto('/opening-data?locale=en');
+
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'Import opening data',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-opening-steps li')).toHaveCount(3);
+            await expect(page.getByLabel('Target portfolio')).toBeVisible();
+            await expect(
+                page.getByText('Choose XLSX file', { exact: true }),
+            ).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/opening-data?locale=ar');
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'استيراد البيانات الافتتاحية',
+            }),
+        ).toBeVisible();
+        await expect(page.getByLabel('المحفظة المستهدفة')).toBeVisible();
+        await expect(
+            page.getByText('اختر ملف XLSX', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('لم يتم اختيار ملف', { exact: true }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const template = await page.request.get('/opening-data/template');
+        expect(template.status()).toBe(200);
+        expect(template.headers()['content-type']).toContain(
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        );
+        expect((await template.body()).subarray(0, 2).toString()).toBe('PK');
     });
 
     test('Data Lab stays compact, accessible, and bilingual', async ({
@@ -2766,9 +2818,9 @@ test.describe('authenticated administration', () => {
         await expect(page.getByLabel('حالة التأجير')).toBeVisible();
         await page.getByLabel('حالة التأجير').selectOption('vacant');
         await expect(page).toHaveURL(/state=vacant/);
-        await expect(
-            page.locator('.pmc-filter-chip.active'),
-        ).toContainText('شاغرة');
+        await expect(page.locator('.pmc-filter-chip.active')).toContainText(
+            'شاغرة',
+        );
         await expectNoHorizontalOverflow(page);
 
         for (const [path, contentType, signature] of [

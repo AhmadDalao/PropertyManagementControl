@@ -31,6 +31,7 @@ use App\Http\Controllers\ManagerPropertyAssignmentController;
 use App\Http\Controllers\MediaFileController;
 use App\Http\Controllers\NavigationItemController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OpeningDataController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PortfolioControlController;
 use App\Http\Controllers\PortfolioController;
@@ -96,6 +97,11 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/exports/{resource}', AdminExportController::class)->name('exports.resource');
     Route::get('/property-map', PropertyMapController::class)->name('property-map.index')->middleware('portfolio.module:assets');
     Route::get('/property-explorer', PropertyExplorerController::class)->name('property-explorer.index')->middleware('portfolio.module:assets');
+    Route::get('/opening-data', [OpeningDataController::class, 'index'])->name('opening-data.index');
+    Route::get('/opening-data/template', [OpeningDataController::class, 'template'])->name('opening-data.template');
+    Route::post('/opening-data/preview', [OpeningDataController::class, 'preview'])->name('opening-data.preview');
+    Route::post('/opening-data/import', [OpeningDataController::class, 'store'])->name('opening-data.store');
+    Route::delete('/opening-data/preview', [OpeningDataController::class, 'destroyPreview'])->name('opening-data.preview.destroy');
 
     Route::resource('portfolios', PortfolioController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy']);
     Route::resource('users', UserController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:users')->middlewareFor(['create', 'store'], 'property.assigned');

@@ -1,0 +1,110 @@
+.pmc-opening-page {
+    --pmc-border: var(--pmc-line);
+    --pmc-primary: var(--pmc-amber-strong);
+    --pmc-primary-strong: var(--pmc-teal);
+    --pmc-primary-soft: #eaf6f3;
+    --pmc-radius-md: var(--pmc-radius);
+    --pmc-radius-xl: var(--pmc-radius-lg);
+    --pmc-shadow-sm: var(--pmc-shadow);
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.pmc-opening-steps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-opening-steps li {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    min-width: 0;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius-lg);
+    background: var(--pmc-surface);
+}
+
+.pmc-opening-steps li > span {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pmc-opening-steps i {
+    color: var(--pmc-primary);
+    font-size: 1.1rem;
+}
+
+.pmc-opening-steps strong {
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-opening-layout {
+    display: grid;
+    gap: 1rem;
+    min-width: 0;
+}
+
+.pmc-opening-card,
+.pmc-opening-preview {
+    min-width: 0;
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius-xl);
+    background: var(--pmc-surface);
+    box-shadow: var(--pmc-shadow-sm);
+}
+
+.pmc-opening-card {
+    padding: 1rem;
+}
+
+.pmc-opening-card > header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.pmc-opening-card h2,
+.pmc-opening-preview h2 {
+    margin: 0;
+    color: var(--pmc-ink);
+    font-size: clamp(1.05rem, 3vw, 1.35rem);
+}
+
+.pmc-opening-card p,
+.pmc-opening-preview p,
+.pmc-opening-guidance p {
+    margin: 0.2rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.84rem;
+    line-height: 1.6;
+}
+
+.pmc-opening-icon {
+    display: grid;
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 0.8rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+}

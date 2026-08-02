@@ -23,7 +23,7 @@ final class CreatePayment
     ) {}
 
     /** @param array<string, mixed> $data */
-    public function handle(User $actor, array $data): Payment
+    public function handle(User $actor, array $data, bool $notify = true): Payment
     {
         $this->access->ensureManager($actor);
         $this->input->validateCreate($data);
@@ -39,7 +39,7 @@ final class CreatePayment
             return $payment->fresh(['allocations']);
         }, attempts: 3);
 
-        if ($payment->status === 'posted') {
+        if ($notify && $payment->status === 'posted') {
             $this->notifications->payment($actor, $payment, 'payment_posted');
         }
 

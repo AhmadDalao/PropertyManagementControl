@@ -1,0 +1,36 @@
+.pmc-opening-commit {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1rem;
+    border-top: 1px solid var(--pmc-border);
+    background: var(--pmc-sand);
+}
+
+.pmc-opening-commit form {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.pmc-opening-confirm {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    color: var(--pmc-ink);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.pmc-opening-confirm input {
+    flex: 0 0 auto;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.08rem;
+}
+
+.pmc-opening-commit form > p {
+    display: flex;
+    gap: 0.45rem;
+    color: #8a3c1d;
+    font-size: 0.73rem;
+}

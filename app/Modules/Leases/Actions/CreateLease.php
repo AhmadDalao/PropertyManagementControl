@@ -28,7 +28,7 @@ final class CreateLease
     ) {}
 
     /** @param array<string, mixed> $data */
-    public function handle(User $actor, array $data): Lease
+    public function handle(User $actor, array $data, bool $notify = true): Lease
     {
         $this->access->ensureManager($actor);
         $this->input->validateCreate($data);
@@ -55,7 +55,9 @@ final class CreateLease
             $lease->status === 'active' => 'lease_activated',
             default => 'lease_created',
         };
-        $this->notifications->lease($actor, $lease, $event);
+        if ($notify) {
+            $this->notifications->lease($actor, $lease, $event);
+        }
 
         return $lease;
     }

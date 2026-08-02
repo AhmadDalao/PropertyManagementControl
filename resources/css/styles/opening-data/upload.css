@@ -1,0 +1,87 @@
+.pmc-opening-upload form {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.pmc-opening-field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.pmc-opening-field label {
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pmc-opening-field small {
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-opening-file-picker {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    min-height: 2.9rem;
+    overflow: hidden;
+    border: 1px solid var(--pmc-border);
+    border-radius: var(--pmc-radius-md);
+    background: var(--pmc-sand);
+    cursor: pointer;
+}
+
+.pmc-opening-file-picker > span {
+    display: inline-flex;
+    align-items: center;
+    align-self: stretch;
+    gap: 0.4rem;
+    padding: 0.65rem 0.8rem;
+    border-inline-end: 1px solid var(--pmc-border);
+    background: var(--pmc-surface);
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pmc-opening-file-picker > strong {
+    min-width: 0;
+    overflow: hidden;
+    padding-inline: 0.75rem;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-opening-field input:focus-visible + .pmc-opening-file-picker {
+    outline: 3px solid rgb(214 164 51 / 20%);
+    outline-offset: 2px;
+}
+
+.pmc-opening-upload .btn,
+.pmc-opening-commit .btn {
+    min-height: 2.75rem;
+}
+
+.pmc-opening-upload .btn {
+    justify-content: center;
+    width: 100%;
+}
+
+.pmc-opening-errors {
+    display: flex;
+    gap: 0.65rem;
+    margin-bottom: 0.8rem;
+    padding: 0.75rem;
+    border: 1px solid #f3b6aa;
+    border-radius: var(--pmc-radius-md);
+    background: #fff4f1;
+    color: #9b2c1b;
+    font-size: 0.78rem;
+}
+
+.pmc-opening-errors ul {
+    margin: 0;
+    padding-inline-start: 1rem;
+}

@@ -28,7 +28,7 @@ final class LeaseAttributes
             'managed_by_user_id' => $actor->id,
             'leaseable_type' => $asset->getMorphClass(),
             'leaseable_id' => $asset->id,
-            'code' => $this->nextCode(),
+            'code' => $this->code($data['code'] ?? null),
             'status' => $data['status'],
             'payment_frequency' => $data['payment_frequency'],
             'started_at' => $data['started_at'],
@@ -85,6 +85,13 @@ final class LeaseAttributes
         } while (Lease::query()->where('code', $code)->exists());
 
         return $code;
+    }
+
+    private function code(mixed $value): string
+    {
+        $requested = is_string($value) ? trim($value) : '';
+
+        return $requested !== '' ? mb_strtoupper($requested) : $this->nextCode();
     }
 
     private function optional(mixed $value): ?string
