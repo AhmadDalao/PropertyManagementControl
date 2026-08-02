@@ -427,6 +427,26 @@ if (is_array($leaseRows) && isset($leaseRows[0]['id'])) {
 
         smoke_note("/leases/{$leaseId}/{$document} PDF");
     }
+
+    $contractWord = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/leases/{$leaseId}/contract.docx",
+    );
+    $contractWordHeaders = strtolower((string) $contractWord['headers']);
+
+    if ($contractWord['status'] !== 200
+        || ! str_contains(
+            $contractWordHeaders,
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        )
+        || ! str_contains($contractWordHeaders, '.docx')
+        || ! str_starts_with((string) $contractWord['body'], 'PK')) {
+        smoke_fail('Lease contract Word download was invalid.');
+    }
+
+    smoke_note("/leases/{$leaseId}/contract.docx Word .docx");
 } else {
     smoke_note('No lease record available for non-destructive detail and PDF checks.');
 }

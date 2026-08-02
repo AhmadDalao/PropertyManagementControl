@@ -327,6 +327,7 @@ final class LeaseModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
                     'Contract PDF',
+                    'Contract Word',
                 ])
                 ->where('detailPage.progress.steps.4.actionLabel', 'Review and activate'));
 
@@ -453,8 +454,11 @@ final class LeaseModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.label', 'Contract PDF')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.0.external', true)
-                ->where('detailPage.header.actions.1.label', 'Edit lease')
+                ->where('detailPage.header.actions.1.label', 'Contract Word')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.1.external', true)
+                ->where('detailPage.header.actions.2.label', 'Edit lease')
+                ->where('detailPage.header.actions.2.variant', 'secondary')
                 ->where('detailPage.workflow.actions', function ($actions): bool {
                     $labels = collect($actions)->pluck('label');
 
@@ -539,8 +543,10 @@ final class LeaseModuleSecurityTest extends TestCase
                 ->where('detailPage.header.eyebrow', 'سجل العقد')
                 ->where('detailPage.header.actions.0.label', 'العقد PDF')
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'تعديل العقد')
+                ->where('detailPage.header.actions.1.label', 'العقد Word')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'تعديل العقد')
+                ->where('detailPage.header.actions.2.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'العقد')
                 ->where('detailPage.sections.1.title', 'المبالغ')
                 ->where('detailPage.sections.1.tab', 'financial'));

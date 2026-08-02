@@ -1115,6 +1115,7 @@ return [
         'detail_description' => ':tenant · :asset · :status',
         'edit_action' => 'تعديل العقد',
         'contract_pdf' => 'العقد PDF',
+        'contract_word' => 'العقد Word',
         'upload_signed_pdf' => 'رفع العقد الموقع',
         'tenant_statement' => 'كشف حساب المستأجر',
         'record_payment' => 'تسجيل دفعة',

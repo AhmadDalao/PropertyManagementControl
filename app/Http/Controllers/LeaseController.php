@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lease;
+use App\Modules\Leases\Actions\LeaseContractWordExport;
 use App\Modules\Leases\Actions\LeaseDocuments;
 use App\Modules\Leases\Actions\ManageLeases;
 use App\Modules\Leases\Presenters\LeaseDetailPresenter;
@@ -26,6 +27,7 @@ class LeaseController extends Controller
         private readonly LeaseDetailPresenter $detailPresenter,
         private readonly ManageLeases $leases,
         private readonly LeaseDocuments $documents,
+        private readonly LeaseContractWordExport $contractWord,
     ) {}
 
     public function index(Request $request): Response
@@ -112,6 +114,11 @@ class LeaseController extends Controller
     public function contract(Request $request, Lease $lease): StreamedResponse
     {
         return $this->documents->contract($this->actor($request), $lease);
+    }
+
+    public function contractWord(Request $request, Lease $lease): StreamedResponse
+    {
+        return $this->contractWord->download($this->actor($request), $lease);
     }
 
     public function statement(Request $request, Lease $lease): StreamedResponse

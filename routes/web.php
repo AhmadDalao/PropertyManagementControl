@@ -132,6 +132,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/leases/{lease}/renew', [LeaseController::class, 'renew'])->name('leases.renew')->middleware('portfolio.module:leases');
     Route::post('/leases/{lease}/signed-contract', [LeaseController::class, 'uploadSignedContract'])->name('leases.signed-contract')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/contract', [LeaseController::class, 'contract'])->name('leases.contract')->middleware('portfolio.module:leases');
+    Route::get('/leases/{lease}/contract.docx', [LeaseController::class, 'contractWord'])->name('leases.contract.word')->middleware('portfolio.module:leases');
     Route::get('/leases/{lease}/statement', [LeaseController::class, 'statement'])->name('leases.statement')->middleware('portfolio.module:leases');
     Route::get('/lease-move-outs', [LeaseMoveOutController::class, 'index'])
         ->name('lease-move-outs.index')

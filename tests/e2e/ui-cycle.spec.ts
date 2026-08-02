@@ -1501,6 +1501,16 @@ test.describe('authenticated administration', () => {
         expect(
             (await contractAction.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
+        const contractWordAction = page.getByRole('link', {
+            name: 'العقد Word',
+        });
+        await expect(contractWordAction).toHaveAttribute(
+            'href',
+            /\/leases\/\d+\/contract\.docx$/,
+        );
+        expect(
+            (await contractWordAction.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
         await expect(
             page.getByText('إجمالي المستحق', { exact: true }),
         ).toBeVisible();

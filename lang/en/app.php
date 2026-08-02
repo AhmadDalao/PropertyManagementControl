@@ -1115,6 +1115,7 @@ return [
         'detail_description' => ':tenant · :asset · :status',
         'edit_action' => 'Edit lease',
         'contract_pdf' => 'Contract PDF',
+        'contract_word' => 'Contract Word',
         'upload_signed_pdf' => 'Upload signed PDF',
         'tenant_statement' => 'Tenant statement',
         'record_payment' => 'Record payment',

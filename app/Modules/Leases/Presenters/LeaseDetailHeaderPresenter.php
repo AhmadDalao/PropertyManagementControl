@@ -25,6 +25,15 @@ final class LeaseDetailHeaderPresenter
             'external' => true,
         ]];
 
+        if ($data->adminMode) {
+            $actions[] = [
+                'label' => trans('app.leases.contract_word'),
+                'href' => route('leases.contract.word', $lease),
+                'variant' => 'secondary',
+                'external' => true,
+            ];
+        }
+
         if ($data->adminMode && $lease->status !== 'draft') {
             $actions[] = [
                 'label' => trans('app.leases.edit_action'),

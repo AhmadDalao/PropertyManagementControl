@@ -18,6 +18,7 @@ class LeaseModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('LeaseDetailPresenter', $source);
         $this->assertStringContainsString('ManageLeases', $source);
         $this->assertStringContainsString('LeaseDocuments', $source);
+        $this->assertStringContainsString('LeaseContractWordExport', $source);
         $this->assertStringNotContainsString('Lease::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('Storage::', $source);
@@ -44,9 +45,11 @@ class LeaseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Leases/Actions/TerminateLease.php'),
             $this->path('app/Modules/Leases/Actions/UpdateLease.php'),
             $this->path('app/Modules/Leases/Actions/LeaseDocuments.php'),
+            $this->path('app/Modules/Leases/Actions/LeaseContractWordExport.php'),
             $this->path('app/Modules/Leases/Data/LeaseDetailData.php'),
             $this->path('app/Modules/Leases/Data/LeaseFormData.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseDetailPresenter.php'),
+            $this->path('app/Modules/Leases/Presenters/LeaseContractWordPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseFormPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseInstallmentLabelPresenter.php'),
             $this->path('app/Modules/Leases/Presenters/LeaseMoveInProgressPresenter.php'),
@@ -78,6 +81,8 @@ class LeaseModuleArchitectureTest extends TestCase
     {
         foreach ([
             'app/Modules/Leases/Actions/ManageLeases.php' => 60,
+            'app/Modules/Leases/Actions/LeaseContractWordExport.php' => 55,
+            'app/Modules/Leases/Presenters/LeaseContractWordPresenter.php' => 230,
             'app/Modules/Leases/Presenters/LeaseDetailPresenter.php' => 70,
             'app/Modules/Leases/Presenters/LeaseFormPresenter.php' => 55,
             'app/Modules/Leases/Queries/LeaseIndexQuery.php' => 90,

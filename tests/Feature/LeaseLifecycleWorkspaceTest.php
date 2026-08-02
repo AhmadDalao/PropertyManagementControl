@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
+use ZipArchive;
 
 class LeaseLifecycleWorkspaceTest extends TestCase
 {
@@ -545,6 +546,10 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->assertForbidden();
 
         $this->actingAs($tenantUser)
+            ->get(route('leases.contract.word', $otherLease))
+            ->assertForbidden();
+
+        $this->actingAs($tenantUser)
             ->get(route('leases.statement', $otherLease))
             ->assertForbidden();
 
@@ -555,6 +560,85 @@ class LeaseLifecycleWorkspaceTest extends TestCase
         $this->actingAs($owner)
             ->get(route('leases.contract', $ownLease))
             ->assertOk();
+
+        $this->actingAs($tenantUser)
+            ->get(route('leases.contract.word', $ownLease))
+            ->assertForbidden();
+    }
+
+    public function test_lease_contract_word_download_is_bilingual_and_editable(): void
+    {
+        $portfolio = $this->createPortfolio([
+            'name_en' => 'Word Contract Portfolio',
+            'name_ar' => 'محفظة عقد وورد',
+            'contact_email' => 'contracts@example.test',
+        ]);
+        $owner = $this->createUserWithRole('owner', $portfolio, [
+            'name' => 'Word Contract Owner',
+        ]);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio, [
+            'name' => 'Word Contract Tenant',
+            'phone' => '+966500000001',
+        ]);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser, [
+            'national_id' => '1000000001',
+        ]);
+        $asset = $this->createAsset($portfolio, [
+            'code' => 'WORD-UNIT-12',
+            'title_en' => 'Word Apartment 12',
+            'title_ar' => 'شقة وورد 12',
+            'address' => 'Riyadh',
+            'address_ar' => 'الرياض',
+        ]);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner, [
+            'code' => 'LEASE-WORD-12',
+            'terms_json' => [
+                'en' => 'Use the approved access procedure.',
+                'ar' => 'استخدم إجراءات الدخول المعتمدة.',
+            ],
+        ]);
+
+        $response = $this->actingAs($owner)
+            ->get(route('leases.contract.word', $lease))
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            )
+            ->assertDownload("lease-contract-{$lease->code}.docx");
+        $content = $response->streamedContent();
+
+        $this->assertSame('PK', substr($content, 0, 2));
+        $path = tempnam(sys_get_temp_dir(), 'lease-contract-word-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $content);
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $documentXml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        foreach ([
+            'Lease Contract',
+            'عقد إيجار',
+            'Word Contract Tenant',
+            'WORD-UNIT-12',
+            'Word Apartment 12',
+            'شقة وورد 12',
+            'Use the approved access procedure.',
+            'استخدم إجراءات الدخول المعتمدة.',
+            'Signatures',
+            'التوقيعات',
+        ] as $expected) {
+            $this->assertStringContainsString($expected, $documentXml);
+        }
+
+        $this->assertDatabaseMissing('documents', [
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'lease_contract_word',
+        ]);
     }
 
     public function test_generated_contract_statement_and_receipt_are_private_pdf_documents(): void
