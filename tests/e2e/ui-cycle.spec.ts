@@ -55,6 +55,7 @@ const primaryAdminRoutes = [
     '/reports/saved',
     '/reports/saved/create',
     '/reports/statement',
+    '/reports/rent-roll',
     '/documentation',
 ] as const;
 
@@ -2480,7 +2481,7 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-report-library-tabs [role="tab"]'),
         ).toHaveCount(4);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(2);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
         await expect(
             page
                 .locator('.pmc-report-card-scope')
@@ -2490,12 +2491,17 @@ test.describe('authenticated administration', () => {
             page
                 .locator('.pmc-report-card-scope')
                 .getByText('نطاق المحفظة', { exact: true }),
-        ).toHaveCount(2);
+        ).toHaveCount(3);
         await expect(
             page
                 .locator('.pmc-report-card-scope')
                 .getByText('نطاق العقار', { exact: true }),
-        ).toHaveCount(2);
+        ).toHaveCount(3);
+        await expect(
+            page
+                .locator('.pmc-report-library-card')
+                .filter({ hasText: 'سجل الإيجارات' }),
+        ).toHaveCount(1);
         await expect(
             page.locator('a[href^="/reports/statement.pdf"]'),
         ).toBeVisible();
@@ -2533,7 +2539,7 @@ test.describe('authenticated administration', () => {
         await expect(page).toHaveURL(/period=this_month/);
         await expect(page).toHaveURL(/library_group=finance/);
         await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
-        await page.getByRole('tab', { name: 'حزم المالك 2' }).click();
+        await page.getByRole('tab', { name: 'حزم المالك 3' }).click();
         const propertyReportCard = page
             .locator('.pmc-report-library-card')
             .filter({ hasText: 'تقرير تشغيل العقار' });
@@ -2715,6 +2721,78 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', { name: 'Operational journal' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
+    });
+
+    test('rent roll keeps vacancies, contract positions, and exports usable at every width', async ({
+        page,
+    }) => {
+        test.setTimeout(60_000);
+
+        for (const viewport of breakpoints) {
+            await page.setViewportSize(viewport);
+            await page.goto('/reports/rent-roll?locale=ar');
+
+            await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+            await expect(
+                page.getByRole('heading', {
+                    level: 1,
+                    name: 'سجل الإيجارات',
+                }),
+            ).toBeVisible();
+            await expect(page.locator('.pmc-rent-roll-scope')).toBeVisible();
+            await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+            await expect(
+                page.locator('.pmc-rent-roll-financials'),
+            ).toBeVisible();
+            await expect(
+                page.locator('.pmc-table-search input[type="search"]'),
+            ).toBeVisible();
+
+            if (viewport.width < 992) {
+                await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+                await expect(
+                    page.locator('.pmc-mobile-record-card').first(),
+                ).toBeVisible();
+            } else {
+                await expect(page.locator('.pmc-table-scroll')).toBeVisible();
+            }
+
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/reports/rent-roll?locale=ar');
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        await expect(page.getByLabel('حالة التأجير')).toBeVisible();
+        await page.getByLabel('حالة التأجير').selectOption('vacant');
+        await expect(page).toHaveURL(/state=vacant/);
+        await expect(
+            page.locator('.pmc-filter-chip.active'),
+        ).toContainText('شاغرة');
+        await expectNoHorizontalOverflow(page);
+
+        for (const [path, contentType, signature] of [
+            ['/reports/rent-roll.pdf', 'application/pdf', '%PDF-'],
+            [
+                '/reports/rent-roll.docx',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'PK',
+            ],
+            [
+                '/reports/rent-roll.xlsx',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'PK',
+            ],
+        ] as const) {
+            const response = await page.request.get(path);
+            expect(response.ok()).toBeTruthy();
+            expect(response.headers()['content-type']).toContain(contentType);
+            expect(
+                (await response.body())
+                    .subarray(0, signature.length)
+                    .toString(),
+            ).toBe(signature);
+        }
     });
 
     test('property operating report keeps one building scope across mobile drill-downs and downloads', async ({

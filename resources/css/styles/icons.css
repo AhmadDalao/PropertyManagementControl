@@ -83,6 +83,9 @@
 .bi-bookmark::before {
     content: '\f1a2';
 }
+.bi-bounding-box::before {
+    content: '\f1b6';
+}
 .bi-box-arrow-in-right::before {
     content: '\f1be';
 }
@@ -115,6 +118,9 @@
 }
 .bi-calendar2-check::before {
     content: '\f1f8';
+}
+.bi-calendar2-week::before {
+    content: '\f209';
 }
 .bi-calendar3::before {
     content: '\f214';
@@ -256,6 +262,9 @@
 }
 .bi-grid::before {
     content: '\f3fc';
+}
+.bi-grid-3x3-gap::before {
+    content: '\f3f9';
 }
 .bi-grid-1x2::before {
     content: '\f3f4';

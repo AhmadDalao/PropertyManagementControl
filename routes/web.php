@@ -40,6 +40,7 @@ use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\PropertyReportController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
+use App\Http\Controllers\RentRollController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportPresetController;
 use App\Http\Controllers\ReportStatementController;
@@ -247,6 +248,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::post('/reports/saved/{reportPreset}/duplicate', [ReportPresetController::class, 'duplicate'])->name('reports.saved.duplicate')->middleware('portfolio.module:reports');
     Route::delete('/reports/saved/{reportPreset}', [ReportPresetController::class, 'destroy'])->name('reports.saved.destroy')->middleware('portfolio.module:reports');
     Route::get('/reports/properties/{asset}', PropertyReportController::class)->name('reports.properties.show')->middleware('portfolio.module:reports');
+    Route::get('/reports/rent-roll', [RentRollController::class, 'index'])->name('reports.rent-roll.index')->middleware('portfolio.module:reports');
+    Route::get('/reports/rent-roll.pdf', [RentRollController::class, 'pdf'])->name('reports.rent-roll.pdf')->middleware('portfolio.module:reports');
+    Route::get('/reports/rent-roll.docx', [RentRollController::class, 'word'])->name('reports.rent-roll.word')->middleware('portfolio.module:reports');
+    Route::get('/reports/rent-roll.xlsx', [RentRollController::class, 'workbook'])->name('reports.rent-roll.workbook')->middleware('portfolio.module:reports');
     Route::get('/reports/export', [ReportController::class, 'export'])->name('reports.export')->middleware('portfolio.module:reports');
     Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');

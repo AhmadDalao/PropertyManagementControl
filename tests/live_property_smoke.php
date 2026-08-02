@@ -266,6 +266,7 @@ $authChecks = [
     '/reports/saved' => 'admin/reports/saved',
     '/reports/saved/create' => 'admin/reports/saved-form',
     '/reports/statement' => 'admin/reports/statement',
+    '/reports/rent-roll?locale=ar' => 'admin/reports/rent-roll',
 ];
 
 foreach ($authChecks as $path => $expectedComponent) {
@@ -428,8 +429,13 @@ foreach ($reportsPayload['props']['reportLibrary'] ?? [] as $group) {
 }
 
 $hasArabicScope = false;
+$rentRollCard = null;
 
 foreach ($reportLibrary as $card) {
+    if (($card['key'] ?? null) === 'rent-roll') {
+        $rentRollCard = $card;
+    }
+
     $scope = [];
 
     foreach ($card['scope'] ?? [] as $item) {
@@ -456,6 +462,42 @@ if (! $hasArabicScope) {
 }
 
 smoke_note('/reports Arabic report scope');
+
+if (! is_array($rentRollCard)
+    || count($rentRollCard['downloads'] ?? []) !== 3
+    || ! str_contains((string) ($rentRollCard['openHref'] ?? ''), '/reports/rent-roll')) {
+    smoke_fail('The report library did not expose the rent roll and its three downloads.');
+}
+
+$rentRollResponse = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/reports/rent-roll?locale=ar&per_page=10',
+);
+$rentRollPayload = smoke_page_payload($rentRollResponse['body']);
+$rentRollRecords = $rentRollPayload['props']['records']['data'] ?? null;
+$rentRollScope = [];
+
+foreach ($rentRollPayload['props']['scope'] ?? [] as $item) {
+    if (is_array($item) && isset($item['label'], $item['value'])) {
+        $rentRollScope[$item['label']] = $item['value'];
+    }
+}
+
+if ($rentRollResponse['status'] !== 200
+    || smoke_component($rentRollResponse['body']) !== 'admin/reports/rent-roll'
+    || ! is_array($rentRollRecords)
+    || count($rentRollRecords) > 10
+    || ! isset(
+        $rentRollScope['الحالة الحالية'],
+        $rentRollScope['نطاق المحفظة'],
+        $rentRollScope['نطاق العقار'],
+    )) {
+    smoke_fail('The Arabic rent roll did not expose a bounded schedule and exact scope.');
+}
+
+smoke_note('/reports/rent-roll Arabic schedule and scope');
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     $propertyId = (int) $propertyOptions[0]['id'];
@@ -855,6 +897,28 @@ if (! str_contains($reportHeaders, '.xlsx') || ! str_starts_with((string) $repor
 }
 
 smoke_note('/reports/export Excel .xlsx');
+
+foreach ([
+    'pdf' => ['application/pdf', '%PDF-'],
+    'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'PK'],
+    'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'PK'],
+] as $extension => [$contentType, $signature]) {
+    $rentRollExport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/reports/rent-roll.{$extension}",
+    );
+    $rentRollHeaders = strtolower((string) $rentRollExport['headers']);
+
+    if ($rentRollExport['status'] !== 200
+        || ! str_contains($rentRollHeaders, $contentType)
+        || ! str_starts_with((string) $rentRollExport['body'], $signature)) {
+        smoke_fail("Rent roll {$extension} download was invalid.");
+    }
+
+    smoke_note("/reports/rent-roll.{$extension} valid");
+}
 
 $ownerStatementPdf = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/statement.pdf');
 $ownerStatementPdfHeaders = strtolower((string) $ownerStatementPdf['headers']);

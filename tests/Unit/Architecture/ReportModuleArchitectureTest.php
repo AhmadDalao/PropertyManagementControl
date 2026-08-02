@@ -95,7 +95,7 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
         $this->assertStringContainsString("css/styles/reports.css';", $property);
 
-        foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'responsive'] as $layer) {
+        foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'rent-roll', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
             $this->assertFileExists($this->path("resources/css/styles/reports/{$layer}.css"));
         }
@@ -108,6 +108,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Actions/ManageReportPresets.php',
             'app/Modules/Reports/Actions/OwnerStatementPdfExport.php',
             'app/Modules/Reports/Actions/OwnerStatementWordExport.php',
+            'app/Modules/Reports/Actions/RentRollPdfExport.php',
+            'app/Modules/Reports/Actions/RentRollWordExport.php',
+            'app/Modules/Reports/Actions/RentRollWorkbookExport.php',
             'app/Modules/Reports/Actions/ReportWorkbookExport.php',
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
@@ -121,6 +124,8 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Presenters/ReportLeaseRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportLibraryPresenter.php',
             'app/Modules/Reports/Presenters/ReportLibraryScopePresenter.php',
+            'app/Modules/Reports/Presenters/RentRollFinancialPresenter.php',
+            'app/Modules/Reports/Presenters/RentRollRowPresenter.php',
             'app/Modules/Reports/Presenters/ReportJournalPresenter.php',
             'app/Modules/Reports/Presenters/ReportMaintenanceRowsPresenter.php',
             'app/Modules/Reports/Presenters/ReportPaymentRowsPresenter.php',
@@ -131,7 +136,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Queries/PropertyReportContextQuery.php',
             'app/Modules/Reports/Queries/ReportComparisonQuery.php',
             'app/Modules/Reports/Queries/ReportPresetQuery.php',
+            'app/Modules/Reports/Queries/RentRollQuery.php',
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
+            'app/Modules/Reports/Requests/RentRollRequest.php',
             'app/Modules/Reports/Requests/PropertyReportRequest.php',
             'app/Modules/Reports/Requests/StoreReportPresetRequest.php',
             'app/Modules/Reports/Requests/UpdateReportPresetRequest.php',
@@ -142,6 +149,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/ReportPropertyScope.php',
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
+            'app/Modules/Reports/Support/RentRollOptions.php',
             'resources/js/modules/reports/report-collections.tsx',
             'resources/js/modules/reports/report-card-scope.tsx',
             'resources/js/modules/reports/report-comparison.tsx',
@@ -167,6 +175,12 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/saved-reports-page.tsx',
             'resources/js/modules/reports/report-tabs.tsx',
             'resources/js/modules/reports/report-visuals.tsx',
+            'resources/js/modules/reports/rent-roll-financials.tsx',
+            'resources/js/modules/reports/rent-roll-page.tsx',
+            'resources/js/modules/reports/rent-roll-records.tsx',
+            'resources/js/modules/reports/rent-roll-scope.tsx',
+            'resources/js/modules/reports/rent-roll-state.tsx',
+            'resources/js/modules/reports/rent-roll-types.ts',
             'resources/js/modules/reports/property-report-context.tsx',
             'resources/js/modules/reports/property-report-page.tsx',
             'resources/js/modules/reports/property-report-period.tsx',

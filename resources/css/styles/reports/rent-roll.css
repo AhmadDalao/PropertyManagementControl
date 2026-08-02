@@ -1,0 +1,360 @@
+.pmc-rent-roll-scope,
+.pmc-rent-roll-financials {
+    min-width: 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: var(--pmc-surface);
+}
+
+.pmc-rent-roll-scope {
+    display: grid;
+    grid-template-columns: minmax(13rem, 0.65fr) minmax(0, 1.35fr);
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.pmc-rent-roll-scope > header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background:
+        radial-gradient(
+            circle at 100% 0,
+            rgb(255 196 0 / 18%),
+            transparent 45%
+        ),
+        var(--pmc-surface-soft);
+}
+
+.pmc-rent-roll-scope > header > div {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pmc-rent-roll-scope > header i {
+    display: grid;
+    width: 2.7rem;
+    height: 2.7rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: var(--pmc-ink);
+    color: var(--pmc-surface);
+}
+
+.pmc-rent-roll-scope > header span {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-rent-roll-scope > header strong {
+    color: var(--pmc-ink);
+    font-size: 0.82rem;
+    font-weight: 950;
+}
+
+.pmc-rent-roll-scope > header small {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.4;
+}
+
+.pmc-rent-roll-scope dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    padding: 0.75rem;
+    gap: 0.55rem;
+}
+
+.pmc-rent-roll-scope dl > div {
+    display: grid;
+    min-width: 0;
+    align-content: center;
+    gap: 0.2rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid #ece8df;
+    border-radius: 0.7rem;
+    background: #fff;
+}
+
+.pmc-rent-roll-scope dt,
+.pmc-rent-roll-currency-grid dt {
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    font-weight: 800;
+}
+
+.pmc-rent-roll-scope dd {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.75rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-rent-roll-financials {
+    padding: 1rem;
+}
+
+.pmc-rent-roll-financials > header {
+    margin-bottom: 0.85rem;
+}
+
+.pmc-rent-roll-financials > header span {
+    color: #8a6b00;
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-rent-roll-financials h2 {
+    margin: 0.25rem 0 0;
+    color: var(--pmc-ink);
+    font-size: 1.05rem;
+    font-weight: 950;
+}
+
+.pmc-rent-roll-financials p {
+    max-width: 50rem;
+    margin: 0.3rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-rent-roll-currency-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-rent-roll-currency-grid > article {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid #e6e1d7;
+    border-radius: 0.85rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-rent-roll-currency-grid > article > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid #e6e1d7;
+    background: #fff;
+}
+
+.pmc-rent-roll-currency-grid > article > header span {
+    display: inline-flex;
+    min-width: 2.75rem;
+    min-height: 1.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.66rem;
+    font-weight: 950;
+}
+
+.pmc-rent-roll-currency-grid > article > header strong {
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+    font-weight: 850;
+}
+
+.pmc-rent-roll-currency-grid dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0.7rem;
+    gap: 0.5rem;
+}
+
+.pmc-rent-roll-currency-grid dl > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+    padding: 0.55rem;
+    border-radius: 0.65rem;
+    background: #fff;
+}
+
+.pmc-rent-roll-currency-grid dl > div:first-child {
+    grid-column: 1 / -1;
+}
+
+.pmc-rent-roll-currency-grid dd {
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.78rem;
+    font-weight: 950;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-rent-roll-currency-grid .is-good dd {
+    color: var(--pmc-teal);
+}
+
+.pmc-rent-roll-currency-grid .is-risk dd {
+    color: var(--pmc-red);
+}
+
+.pmc-rent-roll-financial-empty {
+    display: flex;
+    min-height: 6rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    border: 1px dashed var(--pmc-line-strong);
+    border-radius: 0.8rem;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+    font-weight: 800;
+}
+
+.pmc-rent-roll-space,
+.pmc-rent-roll-tenant,
+.pmc-rent-roll-money,
+.pmc-rent-roll-end {
+    display: grid;
+    min-width: 0;
+    gap: 0.18rem;
+}
+
+.pmc-rent-roll-space strong,
+.pmc-rent-roll-tenant strong,
+.pmc-rent-roll-money strong,
+.pmc-rent-roll-end strong {
+    max-width: 18rem;
+    overflow: hidden;
+    color: var(--pmc-ink);
+    font-size: 0.76rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-rent-roll-space small,
+.pmc-rent-roll-tenant small,
+.pmc-rent-roll-money small,
+.pmc-rent-roll-end small {
+    max-width: 18rem;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-rent-roll-tenant.is-vacant strong {
+    color: #856a00;
+}
+
+.pmc-rent-roll-money.is-risk strong,
+.pmc-rent-roll-money.is-risk small {
+    color: var(--pmc-red);
+}
+
+.pmc-rent-roll-empty-value {
+    color: #aaa49a;
+    font-weight: 800;
+}
+
+.pmc-rent-roll-state {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 1.8rem;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.pmc-rent-roll-state.is-occupied {
+    background: #ddf8e9;
+    color: var(--pmc-green);
+}
+
+.pmc-rent-roll-state.is-vacant {
+    background: #fff1c2;
+    color: #765b00;
+}
+
+.pmc-rent-roll-state.is-arrears {
+    background: #ffe4df;
+    color: var(--pmc-red);
+}
+
+.pmc-rent-roll-state.is-expiring {
+    background: #e3ebff;
+    color: var(--pmc-blue);
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-rent-roll-scope {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-rent-roll-scope dl {
+        border-top: 1px solid var(--pmc-line);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-rent-roll-scope dl {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-rent-roll-scope dd {
+        white-space: normal;
+    }
+
+    .pmc-rent-roll-financials {
+        padding: 0.85rem;
+    }
+
+    .pmc-rent-roll-currency-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-rent-roll-space strong,
+    .pmc-rent-roll-space small,
+    .pmc-rent-roll-tenant strong,
+    .pmc-rent-roll-tenant small,
+    .pmc-rent-roll-money strong,
+    .pmc-rent-roll-money small,
+    .pmc-rent-roll-end strong,
+    .pmc-rent-roll-end small {
+        max-width: 100%;
+        white-space: normal;
+    }
+
+    .pmc-mobile-record-card .pmc-record-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-mobile-record-card .pmc-record-actions > * {
+        justify-content: center;
+    }
+}

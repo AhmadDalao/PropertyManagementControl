@@ -30,6 +30,10 @@ final class ReportLibraryPresenter
             $portfolioOptions,
             $propertyOptions,
         );
+        $currentQuery = array_filter([
+            'portfolio_id' => $filters['portfolio_id'],
+            'property_id' => $filters['property_id'],
+        ], static fn (mixed $value): bool => $value !== null);
 
         return array_values(array_filter([
             $this->group('owner', [
@@ -76,6 +80,20 @@ final class ReportLibraryPresenter
                         'reports',
                         $scope['period'],
                     ),
+                $this->card(
+                    'rent-roll',
+                    'bi-table',
+                    'rent_roll',
+                    'rent_roll_description',
+                    $this->url('reports.rent-roll.index', $currentQuery),
+                    [
+                        $this->download('PDF', $this->url('reports.rent-roll.pdf', $currentQuery)),
+                        $this->download('DOCX', $this->url('reports.rent-roll.word', $currentQuery)),
+                        $this->download('XLSX', $this->url('reports.rent-roll.workbook', $currentQuery)),
+                    ],
+                    'reports',
+                    $scope['current'],
+                ),
             ], $actor),
             $this->group('finance', [
                 $this->resourceCard(
