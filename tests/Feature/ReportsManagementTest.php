@@ -728,6 +728,10 @@ class ReportsManagementTest extends TestCase
                 ->where('statement.portfolio.en', 'Own Portfolio')
                 ->where('statement.portfolio.ar', 'محفظتي')
                 ->where('statement.prepared_for', 'Statement Owner')
+                ->has('portfolioOptions', 1)
+                ->where('portfolioOptions.0.id', $portfolio->id)
+                ->has('propertyOptions', 1)
+                ->where('propertyOptions.0.id', $lease->leaseable_id)
                 ->where('summary.revenue', fn (int|float $value) => (float) $value === 1250.0)
                 ->has('recentPayments', 1)
                 ->where('recentPayments.0.reference', 'OWN-STMT'));

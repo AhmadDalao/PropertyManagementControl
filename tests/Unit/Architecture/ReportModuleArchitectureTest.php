@@ -90,12 +90,14 @@ class ReportModuleArchitectureTest extends TestCase
         $global = $this->source($this->path('resources/css/app.css'));
         $index = $this->source($this->path('resources/js/modules/reports/index-page.tsx'));
         $statement = $this->source($this->path('resources/js/modules/reports/owner-statement-page.tsx'));
+        $statementFilters = $this->source($this->path('resources/js/modules/reports/owner-statement-filters.tsx'));
         $property = $this->source($this->path('resources/js/modules/reports/property-report-page.tsx'));
 
         $this->assertLessThanOrEqual(12, substr_count($facade, "\n") + 1);
         $this->assertStringNotContainsString("styles/reports.css';", $global);
         $this->assertStringContainsString("css/styles/reports.css';", $index);
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
+        $this->assertStringContainsString("from './report-filters'", $statementFilters);
         $this->assertStringContainsString("css/styles/reports.css';", $property);
 
         foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'rent-roll', 'responsive'] as $layer) {

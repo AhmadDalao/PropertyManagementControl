@@ -264,6 +264,8 @@ export type SavedReportFormPageProps = SharedProps & {
 };
 
 export type OwnerStatementPageProps = ReportDataProps & {
+    portfolioOptions: ReportsPageProps['portfolioOptions'];
+    propertyOptions: ReportsPageProps['propertyOptions'];
     statement: {
         portfolio: { en: string; ar: string };
         property: { en: string; ar: string };

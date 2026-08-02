@@ -7,6 +7,7 @@ import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 
+import { OwnerStatementFilters } from './owner-statement-filters';
 import { OwnerStatementRecords } from './owner-statement-records';
 import {
     OwnerStatementComparison,
@@ -92,6 +93,8 @@ export default function OwnerStatementPage() {
                     },
                 ]}
             />
+
+            <OwnerStatementFilters props={props} activeTab={activeTab} />
 
             <section className="pmc-statement-context">
                 <div>

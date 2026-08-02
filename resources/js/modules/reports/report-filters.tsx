@@ -14,6 +14,7 @@ type Props = {
     portfolioOptions: Array<{ id: number; name: string }>;
     propertyOptions: Array<{ id: number; portfolio_id: number; name: string }>;
     propertyContext: PropertyContext | null;
+    resetHref?: string;
     onChange: (filters: ReportFilterValues) => void;
     onSubmit: (event: FormEvent<HTMLFormElement>) => void;
     onToggle: () => void;
@@ -26,6 +27,7 @@ export function ReportFilters({
     portfolioOptions,
     propertyOptions,
     propertyContext,
+    resetHref = '/reports',
     onChange,
     onSubmit,
     onToggle,
@@ -214,7 +216,10 @@ export function ReportFilters({
                         <i className="bi bi-funnel me-2" aria-hidden="true" />
                         {t('reports.apply')}
                     </button>
-                    <Link href="/reports" className="btn btn-outline-secondary">
+                    <Link
+                        href={resetHref}
+                        className="btn btn-outline-secondary"
+                    >
                         {t('actions.reset')}
                     </Link>
                 </div>

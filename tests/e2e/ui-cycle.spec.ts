@@ -801,6 +801,18 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.locator('a[href^="/reports/statement.xlsx"]'),
             ).toBeVisible();
+            const filterTrigger = page.getByRole('button', {
+                name: 'Show filters',
+            });
+
+            if (viewport.width < 768) {
+                await expect(filterTrigger).toBeVisible();
+                await filterTrigger.click();
+            }
+
+            await expect(page.getByLabel('Period')).toBeVisible();
+            await expect(page.getByLabel('Portfolio')).toBeVisible();
+            await expect(page.getByLabel(/^Property:/)).toBeVisible();
 
             await page.getByRole('tab', { name: 'What changed' }).click();
             await expect(page).toHaveURL(/tab=comparison/);
@@ -832,12 +844,22 @@ test.describe('authenticated administration', () => {
             await expectNoHorizontalOverflow(page);
         }
 
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/reports/statement?locale=en');
+        await page.getByLabel('Period').selectOption('last_month');
+        await page.getByRole('button', { name: 'Apply', exact: true }).click();
+        await expect(page).toHaveURL(/period=last_month/);
+        await expect(
+            page.locator('a[href^="/reports/statement.xlsx"]'),
+        ).toHaveAttribute('href', /period=last_month/);
+
         await page.goto('/reports/statement?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', { level: 1, name: 'كشف المالك' }),
         ).toBeVisible();
         await expect(page.getByRole('link', { name: 'رجوع' })).toBeVisible();
+        await expect(page.getByLabel('فترة التقرير')).toBeVisible();
         await page.getByRole('tab', { name: 'ما الذي تغير' }).click();
         await expect(page).toHaveURL(/tab=comparison/);
         await expect(

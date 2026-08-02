@@ -21,6 +21,7 @@ final class PropertyContextRoutes
         'expenses.index',
         'reports.index',
         'reports.export',
+        'reports.statement',
         'documents.index',
         'exports.resource',
     ];
