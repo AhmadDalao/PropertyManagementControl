@@ -1,7 +1,7 @@
 import type { PaginatedData, PropertyOption, SharedProps } from '@/types';
 
 export type ActionCenterType =
-    'collection' | 'maintenance' | 'renewal' | 'move_out';
+    'collection' | 'maintenance' | 'renewal' | 'move_out' | 'document_expiry';
 
 export type ActionCenterPriority = 'critical' | 'high' | 'normal';
 

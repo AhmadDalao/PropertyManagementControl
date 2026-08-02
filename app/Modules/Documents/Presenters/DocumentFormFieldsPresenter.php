@@ -30,6 +30,7 @@ final class DocumentFormFieldsPresenter
         ], [
             trans('app.documents.attachment') => ['description' => trans('app.documents.attachment_help'), 'fields' => ['documentable_type', 'documentable_id']],
             trans('app.documents.document_identity') => ['description' => trans('app.documents.identity_help'), 'fields' => ['type', 'title_en', 'title_ar', 'is_public']],
+            trans('app.documents.validity') => ['description' => trans('app.documents.validity_help'), 'fields' => ['issued_on', 'expires_on']],
             trans('app.documents.pdf_file') => ['description' => trans('app.documents.pdf_private_help'), 'fields' => ['file']],
         ]);
     }
@@ -42,6 +43,10 @@ final class DocumentFormFieldsPresenter
                 'description' => trans('app.documents.edit_identity_help'),
                 'fields' => ['type', 'title_en', 'title_ar', 'is_public'],
             ],
+            trans('app.documents.validity') => [
+                'description' => trans('app.documents.validity_help'),
+                'fields' => ['issued_on', 'expires_on'],
+            ],
         ]);
     }
 
@@ -52,6 +57,8 @@ final class DocumentFormFieldsPresenter
             ['name' => 'type', 'label' => trans('app.documents.document_type'), 'type' => 'select', 'required' => true, 'options' => $this->options(DocumentOptions::TYPES)],
             ['name' => 'title_en', 'label' => trans('app.documents.english_title'), 'required' => true, 'max' => 255],
             ['name' => 'title_ar', 'label' => trans('app.documents.arabic_title'), 'required' => true, 'max' => 255],
+            ['name' => 'issued_on', 'label' => trans('app.documents.issued_on'), 'type' => 'date'],
+            ['name' => 'expires_on', 'label' => trans('app.documents.expires_on'), 'type' => 'date', 'help' => trans('app.documents.expires_on_help')],
             ['name' => 'is_public', 'label' => trans('app.documents.portal_checkbox'), 'type' => 'checkbox', 'help' => trans('app.documents.portal_internal_help')],
         ];
     }

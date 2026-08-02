@@ -185,6 +185,23 @@ final class ReportLibraryPresenter
                     scope: $scope['current'],
                 ),
                 $this->resourceCard(
+                    'document-expiry',
+                    'bi-file-earmark-text',
+                    'document_expiry',
+                    'document_expiry_description',
+                    $this->url('documents.index', [
+                        ...$currentQuery,
+                        'expiry' => 'attention',
+                    ]),
+                    $this->url('exports.resource', [
+                        'resource' => 'documents',
+                        ...$currentQuery,
+                        'expiry' => 'attention',
+                    ]),
+                    'documents',
+                    $scope['current'],
+                ),
+                $this->resourceCard(
                     'lease-move-outs',
                     'bi-box-arrow-right',
                     'move_outs',

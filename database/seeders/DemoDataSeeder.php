@@ -615,6 +615,8 @@ class DemoDataSeeder extends Seeder
             'type' => $type,
             'title_en' => $titleEn,
             'title_ar' => $titleAr,
+            'issued_on' => $lease->started_at,
+            'expires_on' => $lease->ends_at,
             'disk' => 'local',
             'file_path' => $path,
             'original_name' => basename($path),

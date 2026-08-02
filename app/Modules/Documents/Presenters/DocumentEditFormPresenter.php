@@ -29,6 +29,8 @@ final class DocumentEditFormPresenter
                 'type' => $document->type,
                 'title_en' => $document->title_en,
                 'title_ar' => $document->title_ar ?? '',
+                'issued_on' => $document->issued_on?->toDateString() ?? '',
+                'expires_on' => $document->expires_on?->toDateString() ?? '',
                 'is_public' => $document->is_public,
             ],
         ];

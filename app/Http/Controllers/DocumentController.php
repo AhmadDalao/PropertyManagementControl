@@ -45,6 +45,8 @@ class DocumentController extends Controller
                     'type',
                     'title_en',
                     'title_ar',
+                    'issued_on',
+                    'expires_on',
                 ]),
             ),
         ]);

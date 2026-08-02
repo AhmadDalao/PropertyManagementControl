@@ -10,7 +10,7 @@
         .brief-muted { color: #6d6559; font-size: 6.7px; }
         .brief-risk { color: #9d2a20; font-weight: 700; }
         .brief-summary td { width: 20%; }
-        .brief-type td { width: 25%; }
+        .brief-type td { width: 20%; }
         .brief-page-start { page-break-before: always; }
         .brief-limit { margin: 0 0 10px; padding: 8px 10px; border: 1px solid #e3c986; background: #fff8e6; color: #5f4b18; font-size: 8px; }
     </style>

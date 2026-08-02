@@ -3,6 +3,7 @@
 namespace App\Modules\Documents\Queries;
 
 use App\Models\Document;
+use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Documents\Data\DocumentFormData;
 use App\Modules\Documents\Support\DocumentAccess;
@@ -50,9 +51,14 @@ final class DocumentFormDataQuery
         $attachment = null;
 
         if ($attachmentId) {
-            $attachment = $this->attachments->present(
-                $this->resolver->resolve($actor, $alias, $attachmentId),
-            );
+            $record = $this->resolver->resolve($actor, $alias, $attachmentId);
+            $attachment = $this->attachments->present($record);
+
+            if ($record instanceof Lease
+                && in_array($type, ['lease_contract', 'signed_contract'], true)) {
+                $defaults['issued_on'] ??= $record->started_at?->toDateString();
+                $defaults['expires_on'] ??= $record->ends_at?->toDateString();
+            }
         }
 
         return new DocumentFormData(

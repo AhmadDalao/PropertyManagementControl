@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Documents\Presenters\DocumentTableRowPresenter;
+use App\Modules\Documents\Support\DocumentExpiryState;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Shared\PortfolioScope;
 use Illuminate\Database\Eloquent\Builder;
@@ -44,6 +45,7 @@ final class DocumentIndexQuery
             'typeOptions' => DocumentOptions::TYPES,
             'attachmentOptions' => DocumentOptions::ATTACHMENTS,
             'visibilityOptions' => DocumentOptions::VISIBILITIES,
+            'expiryOptions' => DocumentExpiryState::FILTERS,
         ];
     }
 

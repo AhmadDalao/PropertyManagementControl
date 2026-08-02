@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Asset;
+use App\Models\Document;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\LeaseMoveOut;
@@ -368,6 +369,59 @@ final class ActionCenterWorkspaceTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_expiring_documents_enter_the_scoped_daily_queue(): void
+    {
+        $portfolio = $this->createPortfolio(['name_en' => 'Compliance Portfolio']);
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $asset = $this->createAsset($portfolio, [
+            'title_en' => 'Compliance Building',
+            'title_ar' => 'مبنى الامتثال',
+        ]);
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+        $expired = $this->expiringDocument(
+            $portfolio,
+            $asset,
+            $owner,
+            'Expired building insurance',
+            today()->subDay(),
+        );
+        $this->expiringDocument(
+            $portfolio,
+            $asset,
+            $owner,
+            'Current building permit',
+            today()->addDays(120),
+        );
+        $this->expiringDocument(
+            $foreignPortfolio,
+            $foreignAsset,
+            $foreignOwner,
+            'Foreign expired insurance',
+            today()->subDay(),
+        );
+
+        $this->actingAs($owner)
+            ->get(route('action-center.index', [
+                'type' => 'document_expiry',
+                'priority' => 'critical',
+                'assignee' => 'me',
+                'property_id' => $asset->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('actionItems.total', 1)
+                ->where('actionItems.data.0.record_id', $expired->id)
+                ->where('actionItems.data.0.type', 'document_expiry')
+                ->where('actionItems.data.0.status', 'expired')
+                ->where('actionItems.data.0.assigned_to.id', $owner->id)
+                ->where('actionItems.data.0.asset.id', $asset->id)
+                ->where('actionItems.data.0.href', route('documents.show', $expired, false))
+                ->where('counts', fn ($counts): bool => collect($counts)
+                    ->firstWhere('type', 'document_expiry')['value'] === 1));
+    }
+
     /**
      * @return array{Lease,Asset,Asset,TenantProfile}
      */
@@ -427,6 +481,31 @@ final class ActionCenterWorkspaceTest extends TestCase
             'amount_due' => 2000,
             'amount_paid' => 0,
             'status' => 'overdue',
+        ]);
+    }
+
+    private function expiringDocument(
+        Portfolio $portfolio,
+        Asset $asset,
+        User $uploader,
+        string $title,
+        \DateTimeInterface $expiresOn,
+    ): Document {
+        return Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $uploader->id,
+            'documentable_type' => $asset->getMorphClass(),
+            'documentable_id' => $asset->id,
+            'type' => 'other',
+            'title_en' => $title,
+            'title_ar' => 'مستند عقاري',
+            'issued_on' => today()->subYear(),
+            'expires_on' => $expiresOn,
+            'disk' => 'local',
+            'file_path' => 'documents/'.str($title)->slug().'.pdf',
+            'original_name' => str($title)->slug().'.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 100,
         ]);
     }
 

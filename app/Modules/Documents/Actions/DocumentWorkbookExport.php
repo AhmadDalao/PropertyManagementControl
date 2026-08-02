@@ -6,6 +6,7 @@ use App\Models\Document;
 use App\Models\User;
 use App\Modules\Documents\Queries\DocumentIndexQuery;
 use App\Modules\Documents\Support\DocumentAttachments;
+use App\Modules\Documents\Support\DocumentExpiryState;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Exports\Contracts\ResourceExporter;
 use App\Modules\Exports\Support\ResourceWorkbook;
@@ -17,6 +18,7 @@ class DocumentWorkbookExport implements ResourceExporter
     public function __construct(
         private readonly DocumentIndexQuery $documents,
         private readonly DocumentAttachments $attachments,
+        private readonly DocumentExpiryState $expiry,
         private readonly ResourceWorkbook $workbook,
     ) {}
 
@@ -26,6 +28,10 @@ class DocumentWorkbookExport implements ResourceExporter
             trans('app.documents.export_headers.title'),
             trans('app.documents.export_headers.arabic_title'),
             trans('app.documents.export_headers.type'),
+            trans('app.documents.export_headers.issued_on'),
+            trans('app.documents.export_headers.expires_on'),
+            trans('app.documents.export_headers.expiry_status'),
+            trans('app.documents.export_headers.days_remaining'),
             trans('app.documents.export_headers.attachment'),
             trans('app.documents.export_headers.original_file'),
             trans('app.documents.export_headers.mime_type'),
@@ -38,6 +44,10 @@ class DocumentWorkbookExport implements ResourceExporter
             $document->title_en,
             $document->title_ar,
             DocumentOptions::label($document->type),
+            $this->workbook->date($document->issued_on),
+            $this->workbook->date($document->expires_on),
+            $this->expiry->label($document->expires_on),
+            $this->expiry->daysRemaining($document->expires_on),
             $this->attachmentLabel($document),
             $document->original_name,
             $document->mime_type,

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property-read Portfolio|null $portfolio
  * @property-read User|null $uploadedBy
  * @property-read Model|null $documentable
+ * @property CarbonInterface|null $issued_on
+ * @property CarbonInterface|null $expires_on
  */
 class Document extends Model
 {
@@ -30,6 +33,8 @@ class Document extends Model
         return [
             'is_public' => 'boolean',
             'meta_json' => 'array',
+            'issued_on' => 'date',
+            'expires_on' => 'date',
         ];
     }
 

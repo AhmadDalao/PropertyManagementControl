@@ -36,6 +36,8 @@ final class DocumentDirectoryQuery
                 'documentable_type',
                 'documentable_id',
                 'type',
+                'issued_on',
+                'expires_on',
                 'title_en',
                 'title_ar',
                 'original_name',
@@ -60,6 +62,8 @@ final class DocumentDirectoryQuery
             'type',
             'original_name',
             'file_size',
+            'issued_on',
+            'expires_on',
         ]);
     }
 }

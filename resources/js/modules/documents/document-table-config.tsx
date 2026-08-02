@@ -11,6 +11,7 @@ import { useTranslator } from '@/lib/i18n';
 import type { UiTranslationKey } from '@/lib/i18n';
 import { humanDate } from '@/lib/utils';
 
+import { DocumentValidity } from './document-validity';
 import type { DocumentRecord } from './types';
 
 export function useDocumentTableConfig(locale: string): {
@@ -27,7 +28,9 @@ export function useDocumentTableConfig(locale: string): {
                     ? document.title_ar || document.title_en
                     : document.title_en || document.title_ar}
             </strong>
-            <span>{document.original_name}</span>
+            <span>
+                {document.original_name} · {formatBytes(document.file_size)}
+            </span>
         </div>
     );
     const desktopTitle = (document: DocumentRecord) => (
@@ -37,7 +40,9 @@ export function useDocumentTableConfig(locale: string): {
                     ? document.title_ar || document.title_en
                     : document.title_en || document.title_ar}
             </strong>
-            <span>{document.original_name}</span>
+            <span>
+                {document.original_name} · {formatBytes(document.file_size)}
+            </span>
             <StatusBadge
                 value={document.type}
                 label={option(document.type)}
@@ -68,6 +73,9 @@ export function useDocumentTableConfig(locale: string): {
             <strong>{formatBytes(document.file_size)}</strong>
             <span>{t('documents.pdf')}</span>
         </div>
+    );
+    const validity = (document: DocumentRecord) => (
+        <DocumentValidity document={document} />
     );
     const access = (document: DocumentRecord) => (
         <StatusBadge
@@ -128,7 +136,11 @@ export function useDocumentTableConfig(locale: string): {
                 label: t('documents.attached_to'),
                 render: attachment,
             },
-            { key: 'file', label: t('documents.file'), render: file },
+            {
+                key: 'validity',
+                label: t('documents.validity'),
+                render: validity,
+            },
             {
                 key: 'access',
                 label: t('documents.access'),
@@ -153,12 +165,8 @@ export function useDocumentTableConfig(locale: string): {
             status: access,
             meta: [
                 { label: t('documents.attached_to'), value: attachment },
+                { label: t('documents.validity'), value: validity },
                 { label: t('documents.file'), value: file },
-                {
-                    label: t('documents.uploader'),
-                    value: (document) =>
-                        document.uploaded_by.name ?? t('resource.system'),
-                },
             ],
             actions,
         },

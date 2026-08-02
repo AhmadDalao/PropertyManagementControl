@@ -45,6 +45,8 @@ class DocumentModuleArchitectureTest extends TestCase
             'app/Modules/Documents/Presenters/DocumentFormPresenter.php' => 45,
             'app/Modules/Documents/Presenters/DocumentDetailPresenter.php' => 50,
             'resources/js/modules/documents/document-table.tsx' => 70,
+            'resources/js/modules/documents/document-table-config.tsx' => 200,
+            'resources/js/modules/documents/document-validity.tsx' => 70,
         ] as $path => $maximumLines) {
             $source = $this->source($this->path($path));
 
@@ -121,6 +123,7 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Documents/Support/DocumentAttachments.php'),
             $this->path('app/Modules/Documents/Support/DocumentAttributes.php'),
             $this->path('app/Modules/Documents/Support/DocumentFileStorage.php'),
+            $this->path('app/Modules/Documents/Support/DocumentExpiryState.php'),
             $this->path('app/Modules/Documents/Support/DocumentInputGuard.php'),
             $this->path('app/Modules/Documents/Support/DocumentOptions.php'),
             $this->path('app/Modules/Documents/Support/DocumentRules.php'),
@@ -128,6 +131,7 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/documents/document-metrics.tsx'),
             $this->path('resources/js/modules/documents/document-table-config.tsx'),
             $this->path('resources/js/modules/documents/document-table.tsx'),
+            $this->path('resources/js/modules/documents/document-validity.tsx'),
             $this->path('resources/js/modules/documents/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);

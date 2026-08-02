@@ -175,6 +175,7 @@ function typeIcon(type: ActionCenterItem['type']): string {
         maintenance: 'bi-tools',
         renewal: 'bi-calendar-event',
         move_out: 'bi-box-arrow-right',
+        document_expiry: 'bi-file-earmark-text',
     }[type];
 }
 

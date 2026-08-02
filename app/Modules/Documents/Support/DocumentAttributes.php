@@ -29,6 +29,8 @@ final class DocumentAttributes
             'type' => $data['type'],
             'title_en' => $data['title_en'],
             'title_ar' => $data['title_ar'],
+            'issued_on' => $data['issued_on'] ?? null,
+            'expires_on' => $data['expires_on'] ?? null,
             'disk' => $file->disk,
             'file_path' => $file->path,
             'original_name' => $file->originalName,
@@ -48,6 +50,8 @@ final class DocumentAttributes
             'type' => $data['type'],
             'title_en' => $data['title_en'],
             'title_ar' => $data['title_ar'],
+            'issued_on' => $data['issued_on'] ?? null,
+            'expires_on' => $data['expires_on'] ?? null,
             'is_public' => $this->portalVisible($attachmentAlias, $data),
         ];
     }

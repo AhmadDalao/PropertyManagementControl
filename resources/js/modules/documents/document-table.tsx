@@ -15,6 +15,7 @@ type DocumentTableProps = Pick<
     | 'typeOptions'
     | 'attachmentOptions'
     | 'visibilityOptions'
+    | 'expiryOptions'
     | 'auth'
 >;
 
@@ -24,6 +25,7 @@ export function DocumentTable(props: DocumentTableProps) {
         types: props.typeOptions,
         attachments: props.attachmentOptions,
         visibilities: props.visibilityOptions,
+        expiries: props.expiryOptions,
         portfolios: props.portfolioOptions,
         properties: props.propertyOptions,
         includePortfolio:

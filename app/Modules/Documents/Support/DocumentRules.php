@@ -41,6 +41,8 @@ final class DocumentRules
             'type' => trans('app.documents.document_type'),
             'title_en' => trans('app.documents.english_title'),
             'title_ar' => trans('app.documents.arabic_title'),
+            'issued_on' => trans('app.documents.issued_on'),
+            'expires_on' => trans('app.documents.expires_on'),
             'is_public' => trans('app.documents.tenant_portal'),
             'file' => trans('app.documents.pdf_file'),
         ];
@@ -58,6 +60,10 @@ final class DocumentRules
             }
         }
 
+        foreach (['issued_on', 'expires_on'] as $field) {
+            $data[$field] = trim((string) ($data[$field] ?? '')) ?: null;
+        }
+
         return $data;
     }
 
@@ -68,6 +74,8 @@ final class DocumentRules
             'type' => ['required', 'string', Rule::in(DocumentOptions::TYPES)],
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['required', 'string', 'max:255'],
+            'issued_on' => ['nullable', 'date_format:Y-m-d'],
+            'expires_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:issued_on'],
             'is_public' => ['nullable', 'boolean'],
         ];
     }

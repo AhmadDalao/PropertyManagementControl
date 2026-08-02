@@ -8,6 +8,7 @@ type DocumentFilterOptions = {
     types: string[];
     attachments: string[];
     visibilities: string[];
+    expiries: string[];
     portfolios: Array<{ id: number; name: string }>;
     properties: PropertyOption[];
     includePortfolio: boolean;
@@ -17,6 +18,7 @@ export function useDocumentFilterFields({
     types,
     attachments,
     visibilities,
+    expiries,
     portfolios,
     properties,
     includePortfolio,
@@ -51,6 +53,13 @@ export function useDocumentFilterFields({
                 })),
             ],
         },
+        selectField(
+            'expiry',
+            t('documents.expiry_status'),
+            expiries,
+            t('documents.all'),
+            t,
+        ),
         { name: 'date_from', label: t('documents.from'), type: 'date' },
         { name: 'date_to', label: t('documents.to'), type: 'date' },
     ];

@@ -42,6 +42,8 @@ class ShowcaseDocumentBuilder
                         'uploaded_by_user_id' => $manager->id,
                         'title_en' => ucfirst(str_replace('_', ' ', $type))." {$record['lease']->code}",
                         'title_ar' => ($type === 'signed_contract' ? 'العقد الموقع ' : 'عقد الإيجار ').$record['lease']->code,
+                        'issued_on' => $record['lease']->started_at,
+                        'expires_on' => $record['lease']->ends_at,
                         'disk' => 'local',
                         'file_path' => $path,
                         'original_name' => basename($path),

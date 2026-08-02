@@ -239,6 +239,9 @@
 .bi-exclamation-circle::before {
     content: '\f333';
 }
+.bi-exclamation-octagon::before {
+    content: '\f337';
+}
 .bi-exclamation-triangle::before {
     content: '\f33b';
 }

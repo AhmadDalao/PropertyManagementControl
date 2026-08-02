@@ -19,6 +19,7 @@ final readonly class ActionCenterIndexQuery
         private MaintenanceActionSource $maintenance,
         private RenewalActionSource $renewals,
         private MoveOutActionSource $moveOuts,
+        private DocumentExpiryActionSource $documentExpiries,
         private ActionCenterAssigneeQuery $assignees,
         private ActionCenterItemState $itemState,
         private PortfolioScope $portfolios,
@@ -218,6 +219,7 @@ final readonly class ActionCenterIndexQuery
             $this->maintenance,
             $this->renewals,
             $this->moveOuts,
+            $this->documentExpiries,
         ];
     }
 }

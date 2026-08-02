@@ -37,6 +37,7 @@ final class ActionCenterModuleArchitectureTest extends TestCase
             'app/Modules/ActionCenter/Queries/MaintenanceActionSource.php' => 210,
             'app/Modules/ActionCenter/Queries/RenewalActionSource.php' => 190,
             'app/Modules/ActionCenter/Queries/MoveOutActionSource.php' => 200,
+            'app/Modules/ActionCenter/Queries/DocumentExpiryActionSource.php' => 240,
             'app/Modules/ActionCenter/Actions/ActionCenterWorkbookExport.php' => 100,
             'app/Modules/ActionCenter/Actions/ActionCenterPdfExport.php' => 60,
             'app/Modules/ActionCenter/Actions/ActionCenterWordExport.php' => 90,

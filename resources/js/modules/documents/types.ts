@@ -14,6 +14,10 @@ export type DocumentRecord = {
     original_name: string;
     file_size: number;
     is_public: boolean;
+    issued_on?: string | null;
+    expires_on?: string | null;
+    expiry_status: 'expired' | 'due_30' | 'due_90' | 'current' | 'no_expiry';
+    expiry_days?: number | null;
     created_at?: string | null;
     download_url: string;
     attachment: {
@@ -31,6 +35,9 @@ export type DocumentInsights = {
     signed: number;
     receipts: number;
     portal_visible: number;
+    expired: number;
+    expiring_90: number;
+    no_expiry: number;
 };
 
 export type DocumentIndexPageProps = SharedProps & {
@@ -43,4 +50,5 @@ export type DocumentIndexPageProps = SharedProps & {
     typeOptions: string[];
     attachmentOptions: string[];
     visibilityOptions: string[];
+    expiryOptions: string[];
 };

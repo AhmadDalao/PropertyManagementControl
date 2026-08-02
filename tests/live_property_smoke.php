@@ -660,6 +660,7 @@ $rentRollCard = null;
 $arrearsAgingCard = null;
 $leaseRenewalCard = null;
 $dailyOperationsCard = null;
+$documentExpiryCard = null;
 
 foreach ($reportLibrary as $card) {
     if (($card['key'] ?? null) === 'rent-roll') {
@@ -676,6 +677,10 @@ foreach ($reportLibrary as $card) {
 
     if (($card['key'] ?? null) === 'daily-operations') {
         $dailyOperationsCard = $card;
+    }
+
+    if (($card['key'] ?? null) === 'document-expiry') {
+        $documentExpiryCard = $card;
     }
 
     $scope = [];
@@ -794,6 +799,12 @@ if (! is_array($dailyOperationsCard)
     || count($dailyOperationsCard['downloads'] ?? []) !== 3
     || ! str_contains((string) ($dailyOperationsCard['openHref'] ?? ''), '/action-center')) {
     smoke_fail('The report library did not expose the daily operations brief and its three downloads.');
+}
+
+if (! is_array($documentExpiryCard)
+    || count($documentExpiryCard['downloads'] ?? []) !== 1
+    || ! str_contains((string) ($documentExpiryCard['openHref'] ?? ''), 'expiry=attention')) {
+    smoke_fail('The report library did not expose scoped document expiry control.');
 }
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
@@ -1171,6 +1182,11 @@ $documentPayload = smoke_page_payload($documentIndex['body']);
 $documentRows = $documentPayload['props']['documents']['data'] ?? [];
 
 if (is_array($documentRows) && isset($documentRows[0]['id'])) {
+    if (! array_key_exists('expiry_status', $documentRows[0])
+        || ! array_key_exists('expires_on', $documentRows[0])) {
+        smoke_fail('The document directory did not expose validity state.');
+    }
+
     $documentId = (int) $documentRows[0]['id'];
     $documentDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/documents/'.$documentId.'?locale=en');
 
@@ -1196,7 +1212,23 @@ if (is_array($documentRows) && isset($documentRows[0]['id'])) {
     smoke_note('No document available for non-destructive detail and PDF checks.');
 }
 
-$documentExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/documents?locale=ar');
+$documentExpiryIndex = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/documents?expiry=attention&per_page=10&locale=ar',
+);
+$documentExpiryPayload = smoke_page_payload($documentExpiryIndex['body']);
+
+if ($documentExpiryIndex['status'] !== 200
+    || smoke_component($documentExpiryIndex['body']) !== 'admin/documents/index'
+    || ($documentExpiryPayload['props']['filters']['expiry'] ?? null) !== 'attention') {
+    smoke_fail('The document expiry queue did not preserve its scoped filter.');
+}
+
+smoke_note('/documents expiry attention queue');
+
+$documentExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/documents?expiry=attention&locale=ar');
 $documentExportHeaders = strtolower((string) $documentExport['headers']);
 
 if ($documentExport['status'] !== 200) {

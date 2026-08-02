@@ -49,6 +49,11 @@
     color: #684695;
 }
 
+.pmc-action-type.is-document_expiry {
+    background: #fff5d8;
+    color: #77500a;
+}
+
 .pmc-action-priority.is-critical {
     background: #ffe5df;
     color: #a33625;

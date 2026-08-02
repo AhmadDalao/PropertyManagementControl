@@ -996,6 +996,12 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-action-card-grid')).not.toContainText(
             'natural_expiry',
         );
+        await expect(
+            page.locator('.pmc-action-type-chips').getByText(
+                'Document expiry',
+                { exact: true },
+            ),
+        ).toBeVisible();
         const dailyBriefMenu = page.locator('.pmc-workspace-action-menu');
         await expect(dailyBriefMenu).toBeVisible();
         await expect(dailyBriefMenu.locator('summary')).toContainText(
@@ -1047,6 +1053,12 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByText('قائمة الأولويات', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-action-type-chips').getByText(
+                'انتهاء المستندات',
+                { exact: true },
+            ),
         ).toBeVisible();
         await expect(
             page.locator('.pmc-workspace-action-menu summary'),
@@ -2014,6 +2026,7 @@ test.describe('authenticated administration', () => {
         expect(cardCount).toBeGreaterThan(0);
         expect(cardCount).toBeLessThanOrEqual(10);
         await expect(page.locator('.pmc-table-scroll')).toBeHidden();
+        await expect(cards.first().getByText('الصلاحية')).toBeVisible();
         await expect(page.locator('body')).not.toContainText(
             'documents.options.',
         );
@@ -2025,6 +2038,12 @@ test.describe('authenticated administration', () => {
                 exact: true,
             }),
         ).toBeVisible();
+        await expect(
+            documentFilters.getByRole('combobox', {
+                name: 'حالة الصلاحية',
+                exact: true,
+            }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await cards.locator('.pmc-mobile-record-title-link').first().click();
@@ -2033,6 +2052,9 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByText('سجل الملف', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('تاريخ الانتهاء', { exact: true }).first(),
         ).toBeVisible();
         const downloadAction = page.getByRole('link', {
             name: 'تنزيل PDF',
@@ -2053,6 +2075,8 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(page.getByLabel(/^إرفاق بـ/)).toBeVisible();
         await expect(page.getByLabel(/^نوع المستند/)).toBeVisible();
+        await expect(page.getByLabel(/^تاريخ الإصدار/)).toBeVisible();
+        await expect(page.getByLabel(/^تاريخ الانتهاء/)).toBeVisible();
         await expect(page.getByLabel(/^ملف PDF/)).toHaveAttribute(
             'accept',
             '.pdf,application/pdf',

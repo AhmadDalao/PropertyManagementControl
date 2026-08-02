@@ -42,6 +42,8 @@ class DocumentLibraryManagementTest extends TestCase
                 'type' => 'signed_contract',
                 'title_en' => 'Signed contract',
                 'title_ar' => 'العقد الموقع',
+                'issued_on' => '2026-01-01',
+                'expires_on' => '2026-12-31',
                 'is_public' => true,
                 'file' => $this->fakePdf('signed-contract.pdf'),
             ]);
@@ -54,6 +56,8 @@ class DocumentLibraryManagementTest extends TestCase
         $this->assertSame('lease', $document->documentable_type);
         $this->assertSame($lease->id, $document->documentable_id);
         $this->assertTrue($document->is_public);
+        $this->assertSame('2026-01-01', $document->issued_on?->toDateString());
+        $this->assertSame('2026-12-31', $document->expires_on?->toDateString());
         Storage::disk('local')->assertExists($document->file_path);
 
         $this->actingAs($owner)
@@ -63,6 +67,8 @@ class DocumentLibraryManagementTest extends TestCase
                 'type' => 'tenant_statement',
                 'title_en' => 'Tenant statement',
                 'title_ar' => 'كشف المستأجر',
+                'issued_on' => '2026-02-01',
+                'expires_on' => '2027-01-31',
                 'is_public' => false,
             ])
             ->assertRedirect(route('documents.show', $document));
@@ -73,6 +79,7 @@ class DocumentLibraryManagementTest extends TestCase
         $this->assertSame('tenant_statement', $document->type);
         $this->assertFalse($document->is_public);
         $this->assertSame($lease->id, $document->documentable_id);
+        $this->assertSame('2027-01-31', $document->expires_on?->toDateString());
 
         $this->actingAs($owner)
             ->get(route('documents.download', $document))
@@ -382,6 +389,121 @@ class DocumentLibraryManagementTest extends TestCase
         $this->assertStringNotContainsString('Scale document 001', $worksheet);
     }
 
+    public function test_document_validity_filters_metrics_details_and_export_share_one_scope(): void
+    {
+        $this->travelTo('2026-08-02 10:00:00');
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $asset = $this->createAsset($portfolio, ['title_en' => 'Compliance Tower']);
+        $foreignAsset = $this->createAsset($foreignPortfolio);
+        $documents = [
+            ['Expired insurance', today()->subDay()],
+            ['Permit due in 30 days', today()->addDays(15)],
+            ['Certificate due in 90 days', today()->addDays(60)],
+            ['Current license', today()->addDays(120)],
+            ['Permanent title deed', null],
+        ];
+
+        foreach ($documents as [$title, $expiresOn]) {
+            Document::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'uploaded_by_user_id' => $owner->id,
+                'documentable_type' => $asset->getMorphClass(),
+                'documentable_id' => $asset->id,
+                'type' => 'other',
+                'title_en' => $title,
+                'title_ar' => 'مستند صلاحية',
+                'issued_on' => today()->subYear(),
+                'expires_on' => $expiresOn,
+                'disk' => 'local',
+                'file_path' => 'documents/'.str($title)->slug().'.pdf',
+                'original_name' => str($title)->slug().'.pdf',
+                'mime_type' => 'application/pdf',
+                'file_size' => 100,
+            ]);
+        }
+
+        Document::query()->create([
+            'portfolio_id' => $foreignPortfolio->id,
+            'uploaded_by_user_id' => $foreignOwner->id,
+            'documentable_type' => $foreignAsset->getMorphClass(),
+            'documentable_id' => $foreignAsset->id,
+            'type' => 'other',
+            'title_en' => 'Foreign expired permit',
+            'title_ar' => 'تصريح خارجي منتهي',
+            'issued_on' => today()->subYear(),
+            'expires_on' => today()->subDay(),
+            'disk' => 'local',
+            'file_path' => 'documents/foreign-expired.pdf',
+            'original_name' => 'foreign-expired.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 100,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('documents.index', [
+                'expiry' => 'attention',
+                'property_id' => $asset->id,
+                'sort' => 'expires_on',
+                'direction' => 'asc',
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.expiry', 'attention')
+                ->where('documents.total', 3)
+                ->where('documents.data.0.title_en', 'Expired insurance')
+                ->where('documents.data.0.expiry_status', 'expired')
+                ->where('documents.data.0.expiry_days', -1)
+                ->where('documentInsights.total', 5)
+                ->where('documentInsights.expired', 1)
+                ->where('documentInsights.expiring_90', 2)
+                ->where('documentInsights.no_expiry', 1)
+                ->where('counts.1.value', 3)
+                ->where('counts.2.value', 1)
+                ->where('counts.3.value', 1)
+                ->where('counts.4.value', 1));
+
+        $export = $this->actingAs($owner)
+            ->get(route('exports.resource', [
+                'resource' => 'documents',
+                'expiry' => 'attention',
+                'property_id' => $asset->id,
+            ]))
+            ->assertOk();
+        $worksheet = $this->xlsxWorksheetXml($export);
+
+        $this->assertStringContainsString('Validity status', $worksheet);
+        $this->assertStringContainsString('Expired insurance', $worksheet);
+        $this->assertStringContainsString('Permit due in 30 days', $worksheet);
+        $this->assertStringContainsString('Certificate due in 90 days', $worksheet);
+        $this->assertStringNotContainsString('Current license', $worksheet);
+        $this->assertStringNotContainsString('Permanent title deed', $worksheet);
+        $this->assertStringNotContainsString('Foreign expired permit', $worksheet);
+
+        $expired = Document::query()->where('title_en', 'Expired insurance')->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('documents.show', $expired))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.stats.1.value', 'Expired')
+                ->where('detailPage.stats.2.value', '2026-08-01')
+                ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
+                    ->contains(fn (array $item): bool => $item['label'] === 'Issued on'
+                        && $item['value'] === '2025-08-02')));
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['property_id' => $asset->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reportLibrary.2.cards', fn ($cards): bool => collect($cards)
+                    ->contains(fn (array $card): bool => $card['key'] === 'document-expiry'
+                        && str_contains($card['openHref'], 'expiry=attention')
+                        && str_contains($card['downloads'][0]['href'], 'expiry=attention'))));
+    }
+
     public function test_property_filter_scopes_asset_lease_and_payment_documents_to_one_hierarchy(): void
     {
         $portfolio = $this->createPortfolio();
@@ -549,12 +671,16 @@ class DocumentLibraryManagementTest extends TestCase
                 ->where('formPage.initialValues.documentable_type', 'lease')
                 ->where('formPage.initialValues.documentable_id', (string) $lease->id)
                 ->where('formPage.initialValues.is_public', true)
+                ->where('formPage.initialValues.issued_on', $lease->started_at?->toDateString())
+                ->where('formPage.initialValues.expires_on', $lease->ends_at?->toDateString())
                 ->where('formPage.description', fn (string $description): bool => str_contains($description, 'DOC-FORM-1'))
                 ->where('formPage.fields', function ($fields): bool {
                     $fields = collect($fields)->keyBy('name');
 
                     return data_get($fields, 'documentable_type.type') === 'hidden'
                         && data_get($fields, 'documentable_id.type') === 'hidden'
+                        && data_get($fields, 'issued_on.type') === 'date'
+                        && data_get($fields, 'expires_on.type') === 'date'
                         && data_get($fields, 'file.accept') === '.pdf,application/pdf';
                 }));
 
@@ -566,6 +692,18 @@ class DocumentLibraryManagementTest extends TestCase
                     ->pluck('name')
                     ->intersect(['documentable_type', 'documentable_id', 'file'])
                     ->isEmpty()));
+
+        $this->actingAs($owner)
+            ->put(route('documents.update', $document), [
+                'type' => 'signed_contract',
+                'title_en' => 'Invalid validity',
+                'title_ar' => 'صلاحية غير صحيحة',
+                'issued_on' => '2026-12-31',
+                'expires_on' => '2026-01-01',
+            ])
+            ->assertSessionHasErrors('expires_on');
+
+        $this->assertSame('Locked contract', $document->fresh()->title_en);
     }
 
     public function test_document_workspace_and_form_are_fully_localized_in_arabic(): void
@@ -594,6 +732,8 @@ class DocumentLibraryManagementTest extends TestCase
                     $fields = collect($fields)->keyBy('name');
 
                     return data_get($fields, 'file.label') === 'ملف PDF'
+                        && data_get($fields, 'issued_on.label') === 'تاريخ الإصدار'
+                        && data_get($fields, 'expires_on.label') === 'تاريخ الانتهاء'
                         && collect(data_get($fields, 'type.options', []))
                             ->contains(fn (array $option): bool => ($option['value'] ?? null) === 'signed_contract'
                                 && ($option['label'] ?? null) === 'العقد الموقع');

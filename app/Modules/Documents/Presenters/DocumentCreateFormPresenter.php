@@ -29,6 +29,8 @@ final class DocumentCreateFormPresenter
                 'type' => $data->type,
                 'title_en' => (string) ($data->defaults['title_en'] ?? ''),
                 'title_ar' => (string) ($data->defaults['title_ar'] ?? ''),
+                'issued_on' => (string) ($data->defaults['issued_on'] ?? ''),
+                'expires_on' => (string) ($data->defaults['expires_on'] ?? ''),
                 'is_public' => DocumentOptions::canShowInPortal($data->attachmentAlias, $data->type),
                 'file' => null,
             ],

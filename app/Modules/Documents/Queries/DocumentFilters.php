@@ -8,6 +8,7 @@ use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentAttachments;
+use App\Modules\Documents\Support\DocumentExpiryState;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Shared\TableQuery;
 use DateTimeImmutable;
@@ -18,6 +19,7 @@ final class DocumentFilters
 {
     public function __construct(
         private readonly DocumentAttachments $attachments,
+        private readonly DocumentExpiryState $expiry,
         private readonly DocumentPropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
@@ -29,6 +31,7 @@ final class DocumentFilters
             'type' => 'all',
             'attachment' => 'all',
             'visibility' => 'all',
+            'expiry' => 'all',
             'date_from' => '',
             'date_to' => '',
             'property_id' => 'all',
@@ -38,6 +41,7 @@ final class DocumentFilters
             'type' => DocumentOptions::TYPES,
             'attachment' => DocumentOptions::ATTACHMENTS,
             'visibility' => DocumentOptions::VISIBILITIES,
+            'expiry' => DocumentExpiryState::FILTERS,
         ] as $field => $allowed) {
             if (! in_array($filters[$field], ['all', ...$allowed], true)) {
                 $filters[$field] = 'all';
@@ -74,6 +78,8 @@ final class DocumentFilters
         if ($filters['visibility'] !== 'all') {
             $documents->where('is_public', $filters['visibility'] === 'public');
         }
+
+        $this->expiry->apply($documents, (string) $filters['expiry']);
 
         $this->tables->search($documents, (string) $filters['search'], [
             'title_en',
