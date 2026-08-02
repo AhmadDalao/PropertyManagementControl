@@ -333,6 +333,7 @@ foreach ([
 $dashboard = smoke_request($baseUrl, $cookieFile, 'GET', '/dashboard?locale=en');
 $dashboardPayload = smoke_page_payload($dashboard['body']);
 $composition = $dashboardPayload['props']['platformComposition'] ?? null;
+$platformActivity = $dashboardPayload['props']['platformActivity'] ?? null;
 
 if (! is_array($composition)
     || ! is_array($composition['portfolios'] ?? null)
@@ -342,6 +343,34 @@ if (! is_array($composition)
 }
 
 smoke_note('/dashboard global company composition present');
+
+if (! is_array($platformActivity) || count($platformActivity) > 8) {
+    smoke_fail('Superadmin dashboard platform activity is missing or unbounded.');
+}
+
+$activityKeys = [];
+
+foreach ($platformActivity as $activity) {
+    if (! is_array($activity)
+        || ! is_string($activity['subject_url'] ?? null)
+        || ! str_starts_with($activity['subject_url'], $baseUrl.'/')) {
+        smoke_fail('Dashboard platform activity does not open a live record.');
+    }
+
+    $key = implode(':', [
+        (string) ($activity['subject_type'] ?? ''),
+        (string) ($activity['subject_id'] ?? ''),
+        (string) ($activity['event'] ?? ''),
+    ]);
+
+    if (isset($activityKeys[$key])) {
+        smoke_fail('Dashboard platform activity contains duplicate subject events.');
+    }
+
+    $activityKeys[$key] = true;
+}
+
+smoke_note('/dashboard bounded platform activity present');
 
 $companyControl = smoke_request(
     $baseUrl,

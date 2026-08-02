@@ -16,6 +16,7 @@ use App\Models\TenantProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Activitylog\Models\Activity;
 use Tests\TestCase;
 
 class DashboardModuleTest extends TestCase
@@ -57,6 +58,7 @@ class DashboardModuleTest extends TestCase
                 ->where('stats.totalAssets', 1)
                 ->where('stats.monthlyRevenue', 700)
                 ->where('platformComposition', null)
+                ->where('platformActivity', [])
                 ->where('cmsStatus', null)
                 ->where('readinessStatus', null)
                 ->has('recentPayments', 1)
@@ -70,7 +72,7 @@ class DashboardModuleTest extends TestCase
     public function test_superadmin_dashboard_exposes_platform_only_cms_status(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');
-        $this->createPortfolio();
+        $livePortfolio = $this->createPortfolio();
         $dataset = ShowcaseDataset::query()->create([
             'key' => 'DASHBOARD-CONTEXT',
             'name' => 'Dashboard context',
@@ -98,6 +100,42 @@ class DashboardModuleTest extends TestCase
             'title_ar' => 'صفحة مسودة',
             'status' => 'draft',
         ]);
+        $olderLiveActivity = Activity::query()->create([
+            'log_name' => 'portfolio',
+            'description' => 'updated',
+            'subject_type' => 'portfolio',
+            'subject_id' => $livePortfolio->id,
+            'causer_type' => 'user',
+            'causer_id' => $superadmin->id,
+            'event' => 'updated',
+            'properties' => [],
+            'created_at' => now()->addMinute(),
+            'updated_at' => now()->addMinute(),
+        ]);
+        Activity::query()->create([
+            'log_name' => 'portfolio',
+            'description' => 'updated',
+            'subject_type' => 'portfolio',
+            'subject_id' => $showcasePortfolio->id,
+            'causer_type' => 'user',
+            'causer_id' => $superadmin->id,
+            'event' => 'updated',
+            'properties' => [],
+            'created_at' => now()->addMinutes(2),
+            'updated_at' => now()->addMinutes(2),
+        ]);
+        $latestLiveActivity = Activity::query()->create([
+            'log_name' => 'portfolio',
+            'description' => 'updated',
+            'subject_type' => 'portfolio',
+            'subject_id' => $livePortfolio->id,
+            'causer_type' => 'user',
+            'causer_id' => $superadmin->id,
+            'event' => 'updated',
+            'properties' => [],
+            'created_at' => now()->addMinutes(3),
+            'updated_at' => now()->addMinutes(3),
+        ]);
 
         $this->actingAs($superadmin)
             ->get(route('dashboard'))
@@ -118,7 +156,18 @@ class DashboardModuleTest extends TestCase
                 ->where('platformComposition.portfolios.live_active', 1)
                 ->where('platformComposition.portfolios.showcase', 1)
                 ->where('platformComposition.properties.live', 0)
-                ->where('platformComposition.properties.showcase', 1));
+                ->where('platformComposition.properties.showcase', 1)
+                ->where('platformActivity.0.id', $latestLiveActivity->id)
+                ->where('platformActivity.0.portfolio.id', $livePortfolio->id)
+                ->where(
+                    'platformActivity.0.subject_url',
+                    route('portfolios.show', $livePortfolio),
+                )
+                ->where(
+                    'platformActivity',
+                    fn (mixed $rows): bool => collect($rows)
+                        ->doesntContain('id', $olderLiveActivity->id),
+                ));
     }
 
     public function test_superadmin_company_composition_is_global_and_separates_live_showcase_and_archived_records(): void

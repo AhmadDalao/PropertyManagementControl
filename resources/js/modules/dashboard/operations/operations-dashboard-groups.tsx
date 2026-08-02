@@ -5,6 +5,7 @@ import type { OperationsDashboardProps } from '../types';
 import { LaunchReadinessPanel } from './launch-readiness-panel';
 import { OperationsInsightPanels } from './operations-insight-panels';
 import { OperationsTodayWorkspace } from './operations-today-workspace';
+import { PlatformActivityPanel } from './platform-activity-panel';
 import { PlatformCompositionPanel } from './platform-composition-panel';
 import { PlatformStatusPanel } from './platform-status-panel';
 import { PropertyPerformanceGrid } from './property-performance-grid';
@@ -45,6 +46,9 @@ export function OperationsDashboardGroups({
                     description={t('dashboard.mobile_system_description')}
                     icon="bi-sliders2"
                 >
+                    <PlatformActivityPanel
+                        activities={props.platformActivity}
+                    />
                     {props.platformComposition ? (
                         <PlatformCompositionPanel
                             composition={props.platformComposition}

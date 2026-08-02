@@ -1,0 +1,124 @@
+.pmc-platform-activity {
+    margin-bottom: 1rem;
+}
+
+.pmc-platform-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.pmc-platform-activity-grid > a {
+    display: grid;
+    min-width: 0;
+    min-height: 5.4rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.8rem;
+    background: #fff;
+    color: #111;
+    text-decoration: none;
+    transition:
+        border-color 150ms ease,
+        box-shadow 150ms ease,
+        transform 150ms ease;
+}
+
+.pmc-platform-activity-grid > a:hover {
+    border-color: #d5b64f;
+    box-shadow: 0 0.65rem 1.4rem rgb(72 58 16 / 8%);
+    transform: translateY(-1px);
+}
+
+.pmc-platform-activity-grid > a:focus-visible {
+    outline: 3px solid rgb(255 193 7 / 28%);
+    outline-offset: 2px;
+}
+
+.pmc-platform-activity-icon {
+    display: grid;
+    width: 2.5rem;
+    height: 2.5rem;
+    place-items: center;
+    border-radius: 0.72rem;
+    background: var(--pmc-amber-soft);
+    color: #745800;
+    font-size: 0.95rem;
+}
+
+.pmc-platform-activity-copy {
+    display: grid;
+    min-width: 0;
+    gap: 0.3rem;
+}
+
+.pmc-platform-activity-copy > span {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pmc-platform-activity-copy strong,
+.pmc-platform-activity-copy small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-platform-activity-copy strong {
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.pmc-platform-activity-copy em {
+    flex: 0 0 auto;
+    color: #7a6000;
+    font-size: 0.64rem;
+    font-style: normal;
+    font-weight: 900;
+}
+
+.pmc-platform-activity-copy small {
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+}
+
+.pmc-platform-activity-type {
+    max-width: 7.5rem;
+    overflow: hidden;
+    padding: 0.28rem 0.48rem;
+    border-radius: 999px;
+    background: #f1f8f6;
+    color: #096f64;
+    font-size: 0.62rem;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-platform-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-platform-activity-grid > a {
+        min-height: 4.8rem;
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-platform-activity-type {
+        display: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-platform-activity-grid > a {
+        transition: none;
+    }
+}

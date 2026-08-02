@@ -3379,6 +3379,20 @@ test.describe('local role dashboards', () => {
         await expect(
             page.locator('[data-property-scope-clear] strong'),
         ).toHaveText('جميع العقارات');
+        await page.keyboard.press('Escape');
+        await expect(
+            page.locator('[data-property-scope-dialog]'),
+        ).not.toBeVisible();
+        await page.keyboard.press('Escape');
+        await expect(page.locator('.pmc-console-sidebar')).toHaveAttribute(
+            'aria-hidden',
+            'true',
+        );
+        const systemGroup = page.locator('[data-dashboard-group="system"]');
+        await systemGroup.locator(':scope > button').click();
+        await expect(
+            systemGroup.getByText('آخر التغييرات عبر العملاء'),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 
@@ -3450,9 +3464,15 @@ test.describe('local role dashboards', () => {
                 await expect(
                     page.locator('.pmc-platform-composition'),
                 ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-platform-activity'),
+                ).toBeVisible();
+                expect(
+                    await page.locator('[data-platform-activity]').count(),
+                ).toBeGreaterThan(0);
                 await expectMinimumTouchHeight(
                     page,
-                    '.pmc-platform-composition-grid nav a',
+                    '.pmc-platform-composition-grid nav a, [data-platform-activity]',
                 );
             } else {
                 await expect(
@@ -3460,6 +3480,9 @@ test.describe('local role dashboards', () => {
                 ).toHaveCount(0);
                 await expect(
                     page.locator('.pmc-platform-composition'),
+                ).toHaveCount(0);
+                await expect(
+                    page.locator('.pmc-platform-activity'),
                 ).toHaveCount(0);
             }
 
@@ -3519,6 +3542,9 @@ test.describe('local role dashboards', () => {
                 ).toBeVisible();
                 await expect(
                     page.locator('.pmc-platform-composition'),
+                ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-platform-activity'),
                 ).toBeVisible();
                 await expect(
                     page.locator('.pmc-property-performance'),

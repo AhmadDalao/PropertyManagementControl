@@ -27,6 +27,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'Presenters/DashboardActionPresenter.php',
             'Presenters/ManagerSetupChecklistPresenter.php',
             'Presenters/OperationsDashboardPresenter.php',
+            'Presenters/PlatformActivityPresenter.php',
             'Presenters/SetupChecklistPresenter.php',
             'Presenters/TenantDashboardPresenter.php',
             'Queries/DashboardPropertyMapQuery.php',
@@ -39,6 +40,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'Queries/OperationsLeaseQuery.php',
             'Queries/OperationsOccupancyQuery.php',
             'Queries/OperationsStatsQuery.php',
+            'Queries/PlatformActivityQuery.php',
             'Queries/PlatformCompositionQuery.php',
             'Queries/PlatformStatusQuery.php',
             'Queries/TenantDashboardQuery.php',
@@ -100,6 +102,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/operations-metrics.tsx',
             'operations/operations-priority-panels.tsx',
             'operations/operations-today-workspace.tsx',
+            'operations/platform-activity-panel.tsx',
             'operations/work-panel.ts',
             'operations/platform-status-panel.tsx',
             'operations/platform-composition-panel.tsx',
@@ -141,7 +144,10 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/groups.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/today-workspace.css', $stylesheet);
-        $this->assertStringContainsString('./dashboard/platform-composition.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/platform.css', $stylesheet);
+        $platformStyles = $this->source('resources/css/styles/dashboard/platform.css');
+        $this->assertStringContainsString('./platform-composition.css', $platformStyles);
+        $this->assertStringContainsString('./platform-activity.css', $platformStyles);
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');

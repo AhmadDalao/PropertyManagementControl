@@ -8,6 +8,7 @@ import type {
     CollectionQueueItem,
     LaunchReadinessStatus,
     OperationsFinancial,
+    PlatformActivity,
     PlatformComposition,
     PropertyFocusOption,
     PropertyPerformance,
@@ -19,6 +20,7 @@ export type {
     CollectionQueueItem,
     LaunchReadinessStatus,
     OperationsFinancial,
+    PlatformActivity,
     PlatformComposition,
     PropertyFocusOption,
     PropertyPerformance,
@@ -119,6 +121,7 @@ export type OperationsDashboardProps = SharedProps & {
         homepage?: string | null;
     } | null;
     readinessStatus: LaunchReadinessStatus | null;
+    platformActivity: PlatformActivity[];
     platformComposition: PlatformComposition | null;
     propertyMap: {
         assets: PropertyMapAsset[];

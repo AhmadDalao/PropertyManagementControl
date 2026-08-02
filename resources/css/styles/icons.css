@@ -98,6 +98,9 @@
 .bi-braces::before {
     content: '\f1c9';
 }
+.bi-briefcase::before {
+    content: '\f1cc';
+}
 .bi-building::before {
     content: '\f1dd';
 }
@@ -127,6 +130,9 @@
 }
 .bi-calendar3::before {
     content: '\f214';
+}
+.bi-clipboard-check::before {
+    content: '\f28b';
 }
 .bi-clipboard2-check::before {
     content: '\f725';

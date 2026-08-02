@@ -60,6 +60,24 @@ export type PlatformComposition = {
     };
 };
 
+export type PlatformActivity = {
+    id: number;
+    event: string;
+    event_label: string;
+    subject_type: string | null;
+    subject_type_label: string;
+    subject_label: string;
+    subject_url: string;
+    causer_label: string;
+    changed_count: number;
+    created_at: string | null;
+    portfolio: {
+        id: number;
+        name: string;
+        url: string;
+    } | null;
+};
+
 export type PropertyFocusOption = {
     id: number;
     code: string;
