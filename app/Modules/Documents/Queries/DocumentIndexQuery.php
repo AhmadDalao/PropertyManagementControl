@@ -4,6 +4,7 @@ namespace App\Modules\Documents\Queries;
 
 use App\Models\Document;
 use App\Models\User;
+use App\Modules\Assets\Support\PropertyScope;
 use App\Modules\Documents\Presenters\DocumentTableRowPresenter;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -18,6 +19,7 @@ final class DocumentIndexQuery
         private readonly DocumentInsightsQuery $insights,
         private readonly DocumentTableRowPresenter $rows,
         private readonly PortfolioScope $portfolios,
+        private readonly PropertyScope $properties,
     ) {}
 
     /** @return array<string, mixed> */
@@ -26,9 +28,9 @@ final class DocumentIndexQuery
         $filters = $this->filters->fromRequest($request);
         $baseQuery = $this->directory->base($actor);
         $documents = $this->directory->listing(clone $baseQuery);
-        $this->filters->apply($documents, $filters);
+        $this->filters->apply($documents, $filters, $actor);
         $metricScope = clone $baseQuery;
-        $this->filters->applyPortfolio($metricScope, $filters);
+        $this->filters->applyScope($metricScope, $filters, $actor);
 
         return [
             'documents' => $this->directory
@@ -38,6 +40,7 @@ final class DocumentIndexQuery
             'filters' => $filters,
             'counts' => $this->insights->counts($metricScope, $filters),
             'portfolioOptions' => $this->portfolios->options($actor),
+            'propertyOptions' => $this->properties->options($actor),
             'typeOptions' => DocumentOptions::TYPES,
             'attachmentOptions' => DocumentOptions::ATTACHMENTS,
             'visibilityOptions' => DocumentOptions::VISIBILITIES,
@@ -49,7 +52,7 @@ final class DocumentIndexQuery
     {
         $filters = $this->filters->fromRequest($request);
         $documents = $this->directory->listing($this->directory->base($actor));
-        $this->filters->apply($documents, $filters);
+        $this->filters->apply($documents, $filters, $actor);
 
         return $documents;
     }

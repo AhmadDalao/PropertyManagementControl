@@ -421,6 +421,30 @@ if (is_array($tenantRows) && isset($tenantRows[0]['id'])) {
 $reportsIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/reports?locale=ar');
 $reportsPayload = smoke_page_payload($reportsIndex['body']);
 $propertyOptions = $reportsPayload['props']['propertyOptions'] ?? [];
+$reportLibrary = [];
+
+foreach ($reportsPayload['props']['reportLibrary'] ?? [] as $group) {
+    array_push($reportLibrary, ...($group['cards'] ?? []));
+}
+
+$hasArabicScope = false;
+
+foreach ($reportLibrary as $card) {
+    if (($card['scopeLabels'] ?? []) === [
+        'الفترة المحددة',
+        'نطاق المحفظة',
+        'نطاق العقار',
+    ]) {
+        $hasArabicScope = true;
+        break;
+    }
+}
+
+if (! $hasArabicScope) {
+    smoke_fail('The Arabic report library did not expose its applied scope.');
+}
+
+smoke_note('/reports Arabic report scope');
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     $propertyId = (int) $propertyOptions[0]['id'];
@@ -437,6 +461,59 @@ if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     }
 
     smoke_note("/reports/properties/{$propertyId} admin/reports/property");
+
+    $scopedReports = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/reports?locale=ar&property_id={$propertyId}",
+    );
+    $scopedReportCards = [];
+    $propertyReportCard = null;
+
+    foreach (smoke_page_payload($scopedReports['body'])['props']['reportLibrary'] ?? [] as $group) {
+        array_push($scopedReportCards, ...($group['cards'] ?? []));
+    }
+
+    foreach ($scopedReportCards as $card) {
+        if (($card['key'] ?? null) === 'property-operating-report') {
+            $propertyReportCard = $card;
+            break;
+        }
+    }
+
+    if (! is_array($propertyReportCard)
+        || count($propertyReportCard['downloads'] ?? []) !== 3) {
+        smoke_fail('The property operating report did not expose PDF, Word, and Excel downloads.');
+    }
+
+    $scopedDocuments = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/documents?locale=ar&property_id={$propertyId}",
+    );
+    $scopedDocumentPayload = smoke_page_payload($scopedDocuments['body']);
+
+    if ($scopedDocuments['status'] !== 200
+        || smoke_component($scopedDocuments['body']) !== 'admin/documents/index'
+        || (string) ($scopedDocumentPayload['props']['filters']['property_id'] ?? '') !== (string) $propertyId) {
+        smoke_fail("Property-scoped document register {$propertyId} did not load.");
+    }
+
+    $scopedDocumentExport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/exports/documents?locale=ar&property_id={$propertyId}",
+    );
+
+    if ($scopedDocumentExport['status'] !== 200
+        || ! str_starts_with((string) $scopedDocumentExport['body'], 'PK')) {
+        smoke_fail("Property-scoped document export {$propertyId} was invalid.");
+    }
+
+    smoke_note("/documents property {$propertyId} scoped index and XLSX");
 } else {
     smoke_note('No property available for the dedicated operating report check.');
 }

@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 
+import { ReportCardScope } from './report-card-scope';
 import {
     ReportLibraryTabs,
     resolveReportLibraryGroup,
@@ -83,6 +84,8 @@ export function ReportLibrary({ groups }: { groups: ReportLibraryGroup[] }) {
                                         <p>{card.description}</p>
                                     </div>
                                 </div>
+
+                                <ReportCardScope labels={card.scopeLabels} />
 
                                 <div className="pmc-report-library-card-actions">
                                     <Link

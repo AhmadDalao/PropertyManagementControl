@@ -20,14 +20,14 @@ class TenantWorkbookExport implements ResourceExporter
     public function download(Request $request, User $actor): BinaryFileResponse
     {
         return $this->workbook->download('tenants', [
-            'Name',
-            'Email',
-            'Phone',
-            'Profile',
-            'National ID',
-            'Company',
-            'Status',
-            'Portfolio',
+            trans('app.tenants.name'),
+            trans('app.tenants.email'),
+            trans('app.tenants.phone'),
+            trans('app.tenants.profile_type'),
+            trans('app.tenants.national_id'),
+            trans('app.tenants.company_name'),
+            trans('app.tenants.status'),
+            trans('app.tenants.portfolio'),
         ], $this->tenants->forExport($request, $actor), fn (TenantProfile $tenant): array => [
             $tenant->user?->name,
             $tenant->user?->email,

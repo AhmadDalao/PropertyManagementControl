@@ -3,6 +3,7 @@ import type {
     SharedProps,
     TableCount,
     TableFilters,
+    PropertyOption,
 } from '@/types';
 
 export type DocumentRecord = {
@@ -38,6 +39,7 @@ export type DocumentIndexPageProps = SharedProps & {
     filters: TableFilters;
     counts: TableCount[];
     portfolioOptions: Array<{ id: number; name: string }>;
+    propertyOptions: PropertyOption[];
     typeOptions: string[];
     attachmentOptions: string[];
     visibilityOptions: string[];

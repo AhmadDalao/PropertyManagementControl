@@ -142,6 +142,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'resources/js/modules/reports/report-collections.tsx',
+            'resources/js/modules/reports/report-card-scope.tsx',
             'resources/js/modules/reports/report-comparison.tsx',
             'resources/js/modules/reports/report-comparison-links.ts',
             'resources/js/modules/reports/owner-statement-page.tsx',

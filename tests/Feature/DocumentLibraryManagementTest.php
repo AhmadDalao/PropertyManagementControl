@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Document;
 use App\Models\Lease;
+use App\Models\Payment;
 use App\Modules\Documents\Actions\ManageDocuments;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -379,6 +380,131 @@ class DocumentLibraryManagementTest extends TestCase
 
         $this->assertStringContainsString('Scale document 002', $worksheet);
         $this->assertStringNotContainsString('Scale document 001', $worksheet);
+    }
+
+    public function test_property_filter_scopes_asset_lease_and_payment_documents_to_one_hierarchy(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $building = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'title_en' => 'Scoped Tower',
+        ]);
+        $unit = $this->createAsset($portfolio, [
+            'parent_id' => $building->id,
+            'title_en' => 'Scoped Unit',
+        ]);
+        $otherBuilding = $this->createAsset($portfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+            'title_en' => 'Other Tower',
+        ]);
+        $otherUnit = $this->createAsset($portfolio, [
+            'parent_id' => $otherBuilding->id,
+            'title_en' => 'Other Unit',
+        ]);
+        $foreignBuilding = $this->createAsset($foreignPortfolio, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease($portfolio, $tenant, $unit, $owner);
+        $otherLease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $otherUnit,
+            $owner,
+            ['status' => 'expired'],
+        );
+        $payment = Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'SCOPED-DOC-PAYMENT',
+            'type' => 'rent',
+            'method' => 'cash',
+            'status' => 'posted',
+            'received_on' => now()->toDateString(),
+            'amount' => 500,
+            'currency' => 'SAR',
+        ]);
+
+        foreach ([
+            [$building, 'Scoped building PDF', 'owner_report'],
+            [$unit, 'Scoped unit PDF', 'owner_report'],
+            [$lease, 'Scoped lease PDF', 'signed_contract'],
+            [$payment, 'Scoped payment PDF', 'receipt'],
+            [$otherBuilding, 'Other building PDF', 'owner_report'],
+            [$otherLease, 'Other lease PDF', 'signed_contract'],
+        ] as [$record, $title, $type]) {
+            Document::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'uploaded_by_user_id' => $owner->id,
+                'documentable_type' => $record->getMorphClass(),
+                'documentable_id' => $record->id,
+                'type' => $type,
+                'title_en' => $title,
+                'title_ar' => 'مستند تجريبي',
+                'disk' => 'local',
+                'file_path' => 'documents/'.str($title)->slug().'.pdf',
+                'original_name' => str($title)->slug().'.pdf',
+                'mime_type' => 'application/pdf',
+                'file_size' => 100,
+                'is_public' => true,
+            ]);
+        }
+
+        $filters = ['property_id' => $building->id];
+
+        $this->actingAs($owner)
+            ->get(route('documents.index', $filters))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.property_id', (string) $building->id)
+                ->where('documents.total', 4)
+                ->where('documentInsights.total', 4)
+                ->where('counts.0.value', 4)
+                ->where(
+                    'documents.data',
+                    fn ($documents): bool => collect($documents)
+                        ->pluck('title_en')
+                        ->sort()
+                        ->values()
+                        ->all() === [
+                            'Scoped building PDF',
+                            'Scoped lease PDF',
+                            'Scoped payment PDF',
+                            'Scoped unit PDF',
+                        ],
+                )
+                ->where(
+                    'propertyOptions',
+                    fn ($options): bool => collect($options)->contains(
+                        fn (array $option): bool => $option['id'] === $building->id,
+                    ),
+                ));
+
+        $worksheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)->get(route('exports.resource', [
+                'resource' => 'documents',
+                ...$filters,
+            ])),
+        );
+
+        $this->assertStringContainsString('Scoped lease PDF', $worksheet);
+        $this->assertStringContainsString('Scoped payment PDF', $worksheet);
+        $this->assertStringNotContainsString('Other building PDF', $worksheet);
+        $this->assertStringNotContainsString('Other lease PDF', $worksheet);
+
+        $this->actingAs($owner)
+            ->get(route('documents.index', ['property_id' => $foreignBuilding->id]))
+            ->assertForbidden();
     }
 
     public function test_prefilled_upload_locks_the_attachment_and_edit_cannot_replace_the_pdf(): void

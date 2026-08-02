@@ -1772,6 +1772,14 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('body')).not.toContainText(
             'documents.options.',
         );
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        const documentFilters = page.locator('.pmc-table-filter-panel');
+        await expect(
+            documentFilters.getByRole('combobox', {
+                name: 'العقار',
+                exact: true,
+            }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await cards.locator('.pmc-mobile-record-title-link').first().click();
@@ -2474,6 +2482,21 @@ test.describe('authenticated administration', () => {
         ).toHaveCount(4);
         await expect(page.locator('.pmc-report-library-card')).toHaveCount(2);
         await expect(
+            page
+                .locator('.pmc-report-card-scope')
+                .getByText('الفترة المحددة', { exact: true }),
+        ).toHaveCount(2);
+        await expect(
+            page
+                .locator('.pmc-report-card-scope')
+                .getByText('نطاق المحفظة', { exact: true }),
+        ).toHaveCount(2);
+        await expect(
+            page
+                .locator('.pmc-report-card-scope')
+                .getByText('نطاق العقار', { exact: true }),
+        ).toHaveCount(2);
+        await expect(
             page.locator('a[href^="/reports/statement.pdf"]'),
         ).toBeVisible();
         await expect(
@@ -2510,6 +2533,21 @@ test.describe('authenticated administration', () => {
         await expect(page).toHaveURL(/period=this_month/);
         await expect(page).toHaveURL(/library_group=finance/);
         await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
+        await page.getByRole('tab', { name: 'حزم المالك 2' }).click();
+        const propertyReportCard = page
+            .locator('.pmc-report-library-card')
+            .filter({ hasText: 'تقرير تشغيل العقار' });
+        await expect(propertyReportCard).toHaveCount(1);
+        await expect(
+            propertyReportCard.getByRole('link', { name: 'تنزيل PDF' }),
+        ).toBeVisible();
+        await expect(
+            propertyReportCard.getByRole('link', { name: 'تنزيل DOCX' }),
+        ).toBeVisible();
+        await expect(
+            propertyReportCard.getByRole('link', { name: 'تنزيل XLSX' }),
+        ).toBeVisible();
+        await expect(propertyReportCard).toContainText('نطاق العقار');
 
         await page.getByRole('link', { name: 'حفظ التقرير الحالي' }).click();
         await expect(page).toHaveURL(/\/reports\/saved\/create/);

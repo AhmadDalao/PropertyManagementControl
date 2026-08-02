@@ -76,6 +76,11 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.0.downloads.0.label', 'Download PDF')
                 ->where('reportLibrary.0.cards.0.downloads.1.label', 'Download DOCX')
                 ->where('reportLibrary.0.cards.0.downloads.2.label', 'Download XLSX')
+                ->where('reportLibrary.0.cards.0.scopeLabels', [
+                    'Selected period',
+                    'Portfolio scope',
+                    'Property scope',
+                ])
                 ->where('reportLibrary.1.key', 'finance')
                 ->where('reportLibrary.2.key', 'operations')
                 ->where('reportLibrary.3.key', 'control'));
@@ -410,6 +415,10 @@ class ReportsManagementTest extends TestCase
                 ->has('reportLibrary', 4)
                 ->has('reportLibrary.1.cards', 2)
                 ->where('reportLibrary.0.cards.1.key', 'property-operating-report')
+                ->has('reportLibrary.0.cards.1.downloads', 3)
+                ->where('reportLibrary.0.cards.1.downloads.0.label', 'Download PDF')
+                ->where('reportLibrary.0.cards.1.downloads.1.label', 'Download DOCX')
+                ->where('reportLibrary.0.cards.1.downloads.2.label', 'Download XLSX')
                 ->where(
                     'reportLibrary.0.cards.1.openHref',
                     fn (string $href): bool => str_contains(
@@ -430,6 +439,15 @@ class ReportsManagementTest extends TestCase
                     fn ($cards): bool => collect($cards)->doesntContain(
                         fn (array $card): bool => $card['key'] === 'expenses',
                     ),
+                )
+                ->where(
+                    'reportLibrary.2.cards',
+                    fn ($cards): bool => collect($cards)
+                        ->firstWhere('key', 'occupancy')['scopeLabels'] === [
+                            'Current snapshot',
+                            'Portfolio scope',
+                            'Property scope',
+                        ],
                 )
                 ->where(
                     'reportLibrary.3.cards',

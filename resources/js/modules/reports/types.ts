@@ -61,6 +61,7 @@ export type ReportLibraryCard = {
     description: string;
     openLabel: string;
     openHref: string;
+    scopeLabels: string[];
     downloads: Array<{ label: string; href: string }>;
 };
 

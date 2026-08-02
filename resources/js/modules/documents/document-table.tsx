@@ -11,6 +11,7 @@ type DocumentTableProps = Pick<
     | 'filters'
     | 'counts'
     | 'portfolioOptions'
+    | 'propertyOptions'
     | 'typeOptions'
     | 'attachmentOptions'
     | 'visibilityOptions'
@@ -24,6 +25,7 @@ export function DocumentTable(props: DocumentTableProps) {
         attachments: props.attachmentOptions,
         visibilities: props.visibilityOptions,
         portfolios: props.portfolioOptions,
+        properties: props.propertyOptions,
         includePortfolio:
             props.auth.user?.roles.includes('superadmin') ?? false,
     });

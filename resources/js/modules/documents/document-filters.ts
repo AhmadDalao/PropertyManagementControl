@@ -1,12 +1,15 @@
+import { propertyFilterField } from '@/components/data-table';
 import type { TableFilterField } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
 import type { UiTranslationKey } from '@/lib/i18n';
+import type { PropertyOption } from '@/types';
 
 type DocumentFilterOptions = {
     types: string[];
     attachments: string[];
     visibilities: string[];
     portfolios: Array<{ id: number; name: string }>;
+    properties: PropertyOption[];
     includePortfolio: boolean;
 };
 
@@ -15,6 +18,7 @@ export function useDocumentFilterFields({
     attachments,
     visibilities,
     portfolios,
+    properties,
     includePortfolio,
 }: DocumentFilterOptions): TableFilterField[] {
     const { t } = useTranslator();
@@ -55,6 +59,7 @@ export function useDocumentFilterFields({
         fields.push({
             name: 'portfolio_id',
             label: t('documents.portfolio'),
+            clears: ['property_id'],
             options: [
                 { label: t('documents.all'), value: 'all' },
                 ...portfolios.map((portfolio) => ({
@@ -64,6 +69,8 @@ export function useDocumentFilterFields({
             ],
         });
     }
+
+    fields.push(propertyFilterField(properties, t));
 
     return fields;
 }

@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\Document;
 use App\Models\Lease;
 use App\Models\Payment;
+use App\Models\User;
 use App\Modules\Documents\Support\DocumentAttachments;
 use App\Modules\Documents\Support\DocumentOptions;
 use App\Modules\Shared\TableQuery;
@@ -17,6 +18,7 @@ final class DocumentFilters
 {
     public function __construct(
         private readonly DocumentAttachments $attachments,
+        private readonly DocumentPropertyScope $properties,
         private readonly TableQuery $tables,
     ) {}
 
@@ -29,6 +31,7 @@ final class DocumentFilters
             'visibility' => 'all',
             'date_from' => '',
             'date_to' => '',
+            'property_id' => 'all',
         ]);
 
         foreach ([
@@ -54,9 +57,10 @@ final class DocumentFilters
      * @param  Builder<Document>  $documents
      * @param  array<string, mixed>  $filters
      */
-    public function apply(Builder $documents, array $filters): void
+    public function apply(Builder $documents, array $filters, User $actor): void
     {
         $this->tables->exact($documents, $filters, 'portfolio_id');
+        $this->properties->apply($documents, $filters, $actor);
         $this->tables->exact($documents, $filters, 'type');
         $this->tables->dateRange($documents, $filters, 'created_at');
 
@@ -84,9 +88,10 @@ final class DocumentFilters
      * @param  Builder<Document>  $query
      * @param  array<string, mixed>  $filters
      */
-    public function applyPortfolio(Builder $query, array $filters): void
+    public function applyScope(Builder $query, array $filters, User $actor): void
     {
         $this->tables->exact($query, $filters, 'portfolio_id');
+        $this->properties->apply($query, $filters, $actor);
     }
 
     /**

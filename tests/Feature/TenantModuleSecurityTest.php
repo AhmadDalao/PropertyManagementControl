@@ -87,6 +87,18 @@ class TenantModuleSecurityTest extends TestCase
         $sheet = $this->xlsxWorksheetXml($export);
         $this->assertStringContainsString('Visible Tenant', $sheet);
         $this->assertStringNotContainsString('Hidden Tenant', $sheet);
+
+        $arabicSheet = $this->xlsxWorksheetXml(
+            $this->actingAs($owner)
+                ->withSession(['locale' => 'ar'])
+                ->get(route('exports.resource', [
+                    'resource' => 'tenants',
+                    'search' => 'Tenant',
+                ])),
+        );
+        $this->assertStringContainsString('اسم المستأجر', $arabicSheet);
+        $this->assertStringContainsString('رقم الهوية / السجل', $arabicSheet);
+        $this->assertStringNotContainsString('National ID', $arabicSheet);
     }
 
     public function test_tenant_detail_does_not_leak_disabled_operational_modules(): void

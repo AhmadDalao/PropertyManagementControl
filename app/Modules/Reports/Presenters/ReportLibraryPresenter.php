@@ -41,7 +41,11 @@ final class ReportLibraryPresenter
                             'date_from' => $filters['date_from'],
                             'date_to' => $filters['date_to'],
                         ]),
-                        [$this->download('XLSX', $this->url('reports.export', $query))],
+                        [
+                            $this->download('PDF', $this->url('reports.statement.pdf', $query)),
+                            $this->download('DOCX', $this->url('reports.statement.word', $query)),
+                            $this->download('XLSX', $this->url('reports.export', $query)),
+                        ],
                         'reports',
                     )
                     : $this->card(
@@ -121,6 +125,7 @@ final class ReportLibraryPresenter
                     ]),
                     $this->url('exports.resource', ['resource' => 'assets', ...$query]),
                     'assets',
+                    true,
                 ),
             ], $actor),
             $this->group('control', [
@@ -132,6 +137,7 @@ final class ReportLibraryPresenter
                     $this->url('tenants.index', $query),
                     $this->url('exports.resource', ['resource' => 'tenants', ...$query]),
                     'tenants',
+                    true,
                 ),
                 $this->resourceCard(
                     'documents',
@@ -150,6 +156,7 @@ final class ReportLibraryPresenter
                         'audit_trail_description',
                         $this->url('audit-logs.index', $query),
                         [$this->download('XLSX', $this->url('audit-logs.export', $query))],
+                        scopeLabels: $this->scope(['period', 'portfolio']),
                     )
                     : null,
             ], $actor),
@@ -176,6 +183,7 @@ final class ReportLibraryPresenter
 
     /**
      * @param  array<int, array{label:string,href:string}>  $downloads
+     * @param  array<int, string>|null  $scopeLabels
      * @return array<string, mixed>
      */
     private function card(
@@ -186,6 +194,7 @@ final class ReportLibraryPresenter
         string $openHref,
         array $downloads,
         ?string $module = null,
+        ?array $scopeLabels = null,
     ): array {
         return [
             'key' => $key,
@@ -194,6 +203,7 @@ final class ReportLibraryPresenter
             'description' => trans("app.reports.{$descriptionKey}"),
             'openLabel' => trans('app.reports.open_source'),
             'openHref' => $openHref,
+            'scopeLabels' => $scopeLabels ?? $this->scope(['period', 'portfolio', 'property']),
             'downloads' => $downloads,
             'module' => $module,
         ];
@@ -208,6 +218,7 @@ final class ReportLibraryPresenter
         string $openHref,
         string $downloadHref,
         string $module,
+        bool $currentSnapshot = false,
     ): array {
         return $this->card(
             $key,
@@ -217,6 +228,21 @@ final class ReportLibraryPresenter
             $openHref,
             [$this->download('XLSX', $downloadHref)],
             $module,
+            $currentSnapshot
+                ? $this->scope(['current', 'portfolio', 'property'])
+                : null,
+        );
+    }
+
+    /**
+     * @param  array<int, string>  $keys
+     * @return array<int, string>
+     */
+    private function scope(array $keys): array
+    {
+        return array_map(
+            fn (string $key): string => trans("app.reports.scope_{$key}"),
+            $keys,
         );
     }
 
