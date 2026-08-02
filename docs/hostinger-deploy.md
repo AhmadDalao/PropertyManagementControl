@@ -102,7 +102,10 @@ resolve the account-default PHP 7.4 binary even when the website and Artisan use
 PHP 8.4, causing Composer's platform check to reject the Laravel 13 lock file.
 Invoke the Composer PHAR through the verified PHP 8.4 binary as shown above.
 
-If dependencies are uploaded instead of installed on Hostinger, run `composer dump-autoload --no-dev --classmap-authoritative --no-interaction` after the upload. Run the permissions seeder and storage-link command only during initial setup or when their configuration changes.
+If dependencies are uploaded instead of installed on Hostinger, run
+`$HOSTINGER_PHP $HOSTINGER_COMPOSER dump-autoload --no-dev --classmap-authoritative --no-interaction`
+after the upload. Run the permissions seeder and storage-link command only
+during initial setup or when their configuration changes.
 
 The Composer lifecycle clears Laravel's generated package manifest before rebuilding the autoloader. This prevents development-only providers from a previous local build being loaded during a production `--no-dev` deployment. Do not bypass Composer scripts when preparing a release.
 
