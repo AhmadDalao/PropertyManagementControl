@@ -64,6 +64,7 @@ class ReportModuleArchitectureTest extends TestCase
     public function report_query_and_saved_view_shell_delegate_bounded_responsibilities(): void
     {
         $query = $this->source($this->path('app/Modules/Reports/Queries/PortfolioReportQuery.php'));
+        $rentRoll = $this->source($this->path('app/Modules/Reports/Queries/RentRollQuery.php'));
         $presets = $this->source($this->path('resources/js/modules/reports/saved-reports-page.tsx'));
 
         $this->assertLessThanOrEqual(70, substr_count($query, "\n") + 1);
@@ -73,6 +74,7 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('ReportJournalPresenter', $query);
         $this->assertStringNotContainsString('Payment::query()', $query);
         $this->assertStringNotContainsString('->groupBy(', $query);
+        $this->assertStringNotContainsString("'is_showcase',", $rentRoll);
 
         $this->assertLessThanOrEqual(85, substr_count($presets, "\n") + 1);
         $this->assertStringContainsString("from './report-preset-list'", $presets);

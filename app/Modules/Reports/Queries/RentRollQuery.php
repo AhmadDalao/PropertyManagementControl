@@ -202,7 +202,6 @@ final readonly class RentRollQuery
                 'title_ar',
                 'code',
                 'occupancy_status',
-                'is_showcase',
             ])
             ->with('portfolio:id,name_en,name_ar');
     }
