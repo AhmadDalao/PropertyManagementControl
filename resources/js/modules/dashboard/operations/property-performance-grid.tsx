@@ -1,9 +1,7 @@
 import { Link } from '@inertiajs/react';
-
 import { WorkspacePanel } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 import { currency, localizedNumber, percent } from '@/lib/utils';
-
 import type { OperationsDashboardProps } from '../types';
 
 export function PropertyPerformanceGrid({
@@ -43,7 +41,14 @@ export function PropertyPerformanceGrid({
                             <Link
                                 href={`/property-explorer?property_id=${property.id}`}
                             >
-                                <span>{property.code}</span>
+                                <span>
+                                    {property.code}
+                                    {property.is_showcase ? (
+                                        <small>
+                                            {t('dashboard.showcase_badge')}
+                                        </small>
+                                    ) : null}
+                                </span>
                                 <strong>
                                     {locale === 'ar'
                                         ? property.title_ar || property.title_en
@@ -55,7 +60,6 @@ export function PropertyPerformanceGrid({
                                 {t(`dashboard.attention_${property.attention}`)}
                             </em>
                         </header>
-
                         <dl>
                             <div>
                                 <dt>{t('dashboard.occupancy_rate')}</dt>
@@ -112,7 +116,6 @@ export function PropertyPerformanceGrid({
                                 </dd>
                             </div>
                         </dl>
-
                         <footer>
                             <span>
                                 <i className="bi bi-tools" aria-hidden="true" />

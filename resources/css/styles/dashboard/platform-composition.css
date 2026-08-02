@@ -1,0 +1,125 @@
+.pmc-platform-composition {
+    margin-bottom: 1rem;
+}
+
+.pmc-platform-composition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-platform-composition-grid > article {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid #e2dfd9;
+    border-radius: 0.85rem;
+    background: #fbfaf7;
+}
+
+.pmc-platform-composition-grid header {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pmc-platform-composition-grid header > i {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.72rem;
+    background: #111;
+    color: #ffc107;
+    font-size: 1rem;
+}
+
+.pmc-platform-composition-grid header > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-platform-composition-grid header span {
+    color: #6f6f76;
+    font-size: 0.7rem;
+    font-weight: 850;
+}
+
+.pmc-platform-composition-grid header strong {
+    font-size: 1.35rem;
+    font-weight: 950;
+    line-height: 1;
+}
+
+.pmc-platform-composition-grid nav {
+    display: grid;
+}
+
+.pmc-platform-composition-grid nav a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-top: 1px solid #e8e3da;
+    color: #111;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pmc-platform-composition-grid nav a:hover span {
+    color: #856a00;
+}
+
+.pmc-platform-role-counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.pmc-platform-role-counts a {
+    display: inline-flex;
+    min-height: 2.2rem;
+    align-items: center;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid #e1d7b6;
+    border-radius: 999px;
+    background: #fff9e9;
+    color: #5f4b00;
+    font-size: 0.65rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-platform-composition-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid #eadba4;
+    border-radius: 0.72rem;
+    background: #fff9e9;
+    color: #5f5b54;
+}
+
+.pmc-platform-composition-note i {
+    color: #856a00;
+}
+
+.pmc-platform-composition-note p {
+    margin: 0;
+    font-size: 0.72rem;
+}
+
+@media (max-width: 575.98px) {
+    .pmc-platform-composition-grid > article {
+        padding: 0.85rem;
+    }
+}

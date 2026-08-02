@@ -35,6 +35,31 @@ export type LaunchReadinessStatus = {
     showcase_users: number;
 };
 
+export type PlatformComposition = {
+    portfolios: {
+        live_active: number;
+        live_inactive: number;
+        live_archived: number;
+        showcase: number;
+    };
+    properties: {
+        live: number;
+        showcase: number;
+        asset_records: number;
+    };
+    accounts: {
+        live_active: number;
+        live_inactive: number;
+        showcase: number;
+        roles: {
+            superadmins: number;
+            owners: number;
+            managers: number;
+            tenants: number;
+        };
+    };
+};
+
 export type PropertyFocusOption = {
     id: number;
     code: string;
@@ -67,6 +92,7 @@ export type PropertyPerformance = {
     title_en: string;
     title_ar?: string | null;
     code: string;
+    is_showcase: boolean;
     currency: string | null;
     currency_count: number;
     currency_totals: Array<{

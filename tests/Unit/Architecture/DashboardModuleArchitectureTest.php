@@ -39,6 +39,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'Queries/OperationsLeaseQuery.php',
             'Queries/OperationsOccupancyQuery.php',
             'Queries/OperationsStatsQuery.php',
+            'Queries/PlatformCompositionQuery.php',
             'Queries/PlatformStatusQuery.php',
             'Queries/TenantDashboardQuery.php',
             'Requests/DashboardIndexRequest.php',
@@ -101,6 +102,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/operations-today-workspace.tsx',
             'operations/work-panel.ts',
             'operations/platform-status-panel.tsx',
+            'operations/platform-composition-panel.tsx',
             'operations/platform-metrics.ts',
             'operations/portfolio-setup-panel.tsx',
             'operations/portfolio-metrics.ts',
@@ -139,6 +141,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/groups.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/today-workspace.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/platform-composition.css', $stylesheet);
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');

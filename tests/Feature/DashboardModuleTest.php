@@ -56,6 +56,7 @@ class DashboardModuleTest extends TestCase
                 ->where('mode', 'portfolio')
                 ->where('stats.totalAssets', 1)
                 ->where('stats.monthlyRevenue', 700)
+                ->where('platformComposition', null)
                 ->where('cmsStatus', null)
                 ->where('readinessStatus', null)
                 ->has('recentPayments', 1)
@@ -113,7 +114,69 @@ class DashboardModuleTest extends TestCase
                 ->where('readinessStatus.operational_portfolios', 1)
                 ->where('readinessStatus.showcase_portfolios', 1)
                 ->where('readinessStatus.showcase_assets', 1)
-                ->where('readinessStatus.showcase_users', 1));
+                ->where('readinessStatus.showcase_users', 1)
+                ->where('platformComposition.portfolios.live_active', 1)
+                ->where('platformComposition.portfolios.showcase', 1)
+                ->where('platformComposition.properties.live', 0)
+                ->where('platformComposition.properties.showcase', 1));
+    }
+
+    public function test_superadmin_company_composition_is_global_and_separates_live_showcase_and_archived_records(): void
+    {
+        $superadmin = $this->createUserWithRole('superadmin');
+        $live = $this->createPortfolio();
+        $inactive = $this->createPortfolio(['status' => 'inactive']);
+        $archived = $this->createPortfolio(['status' => 'archived']);
+        $dataset = ShowcaseDataset::query()->create([
+            'key' => 'COMPANY-COMPOSITION',
+            'name' => 'Company composition',
+            'status' => 'completed',
+            'target_properties' => 1,
+            'generated_properties' => 1,
+        ]);
+        $showcase = $this->createPortfolio([
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+        $liveProperty = $this->createAsset($live, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $this->createAsset($live, ['parent_id' => $liveProperty->id]);
+        $this->createAsset($inactive, ['asset_type' => 'building']);
+        $this->createAsset($archived, ['asset_type' => 'building']);
+        $showcaseProperty = $this->createAsset($showcase, [
+            'asset_type' => 'building',
+            'rentable' => false,
+        ]);
+        $this->createAsset($showcase, ['parent_id' => $showcaseProperty->id]);
+
+        $this->createUserWithRole('owner', $live);
+        $this->createUserWithRole('property_manager', $live);
+        $this->createUserWithRole('tenant', $live);
+        $this->createUserWithRole('owner', $inactive, ['status' => 'inactive']);
+        $this->createUserWithRole('owner', $showcase, [
+            'showcase_dataset_id' => $dataset->id,
+        ]);
+
+        $this->actingAs($superadmin)
+            ->get(route('dashboard', ['property_id' => $liveProperty->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('propertyFocus.selected.id', $liveProperty->id)
+                ->where('platformComposition.portfolios.live_active', 1)
+                ->where('platformComposition.portfolios.live_inactive', 1)
+                ->where('platformComposition.portfolios.live_archived', 1)
+                ->where('platformComposition.portfolios.showcase', 1)
+                ->where('platformComposition.properties.live', 1)
+                ->where('platformComposition.properties.showcase', 1)
+                ->where('platformComposition.properties.asset_records', 4)
+                ->where('platformComposition.accounts.live_active', 4)
+                ->where('platformComposition.accounts.live_inactive', 1)
+                ->where('platformComposition.accounts.showcase', 1)
+                ->where('platformComposition.accounts.roles.superadmins', 1)
+                ->where('platformComposition.accounts.roles.owners', 1)
+                ->where('platformComposition.accounts.roles.managers', 1)
+                ->where('platformComposition.accounts.roles.tenants', 1));
     }
 
     public function test_owner_dashboard_returns_actionable_month_and_property_performance_data(): void

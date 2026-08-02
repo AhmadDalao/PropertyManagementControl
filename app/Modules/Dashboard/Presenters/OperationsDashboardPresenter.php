@@ -14,6 +14,7 @@ use App\Modules\Dashboard\Queries\OperationsMoveOutQuery;
 use App\Modules\Dashboard\Queries\OperationsOccupancyQuery;
 use App\Modules\Dashboard\Queries\OperationsPropertyPerformanceQuery;
 use App\Modules\Dashboard\Queries\OperationsStatsQuery;
+use App\Modules\Dashboard\Queries\PlatformCompositionQuery;
 use App\Modules\Dashboard\Queries\PlatformStatusQuery;
 
 class OperationsDashboardPresenter
@@ -29,6 +30,7 @@ class OperationsDashboardPresenter
         private readonly OperationsPropertyPerformanceQuery $properties,
         private readonly OperationsActivityQuery $activity,
         private readonly DashboardPropertyMapQuery $propertyMap,
+        private readonly PlatformCompositionQuery $platformComposition,
         private readonly PlatformStatusQuery $platformStatus,
         private readonly LaunchReadinessSummaryQuery $launchReadiness,
         private readonly SetupChecklistPresenter $checklist,
@@ -73,6 +75,7 @@ class OperationsDashboardPresenter
             'moveOutQueue' => $this->moveOuts->forUser($user, $context),
             ...$this->leases->forUser($user, $context),
             ...$this->activity->forUser($user, $context),
+            'platformComposition' => $this->platformComposition->forUser($user),
             'cmsStatus' => $this->platformStatus->forUser($user),
             'readinessStatus' => $this->launchReadiness->forUser($user),
         ];

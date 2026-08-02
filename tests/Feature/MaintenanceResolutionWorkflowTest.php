@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 class MaintenanceResolutionWorkflowTest extends TestCase
 {
@@ -117,6 +118,70 @@ class MaintenanceResolutionWorkflowTest extends TestCase
         $this->assertSame('%PDF-', substr($report->streamedContent(), 0, 5));
     }
 
+    public function test_management_can_download_an_editable_bilingual_closeout_report_but_tenants_cannot(): void
+    {
+        [$portfolio, $owner, $tenantUser, , $request] = $this->context([
+            'status' => 'resolved',
+            'resolution_summary' => 'Replaced the drain seal and completed a flow test.',
+            'resolved_at' => now(),
+            'tenant_confirmed_at' => now(),
+            'tenant_confirmation_note' => 'The repair is complete.',
+        ]);
+        $request->update(['resolved_by_user_id' => $owner->id]);
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.show', $request))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
+                    ->contains(fn (array $action): bool => $action['href']
+                        === route('maintenance-requests.service-report.word', $request))));
+
+        $response = $this->actingAs($owner)
+            ->get(route('maintenance-requests.service-report.word', $request))
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            )
+            ->assertDownload("maintenance-service-report-{$request->id}.docx");
+        $content = $response->streamedContent();
+        $this->assertSame('PK', substr($content, 0, 2));
+
+        $path = tempnam(sys_get_temp_dir(), 'maintenance-report-word-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $content);
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $documentXml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        foreach ([
+            'Maintenance Service Report',
+            'تقرير خدمة الصيانة',
+            'Closeout Unit',
+            'وحدة إغلاق الصيانة',
+            'Replaced the drain seal',
+            'The repair is complete.',
+            'Use the PDF service report as the authoritative system record.',
+        ] as $expected) {
+            $this->assertStringContainsString($expected, $documentXml);
+        }
+
+        $this->actingAs($tenantUser)
+            ->get(route('maintenance-requests.service-report.word', $request))
+            ->assertForbidden();
+
+        $foreignPortfolio = $this->createPortfolio();
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $this->actingAs($foreignOwner)
+            ->get(route('maintenance-requests.service-report.word', $request))
+            ->assertForbidden();
+
+        $this->assertSame($portfolio->id, $request->portfolio_id);
+    }
+
     public function test_tenant_can_reopen_an_unresolved_result_with_an_accountable_reason(): void
     {
         [, , $tenantUser, , $request] = $this->context([
@@ -187,6 +252,9 @@ class MaintenanceResolutionWorkflowTest extends TestCase
 
         $this->actingAs($owner)
             ->get(route('maintenance-requests.service-report', $request))
+            ->assertStatus(409);
+        $this->actingAs($owner)
+            ->get(route('maintenance-requests.service-report.word', $request))
             ->assertStatus(409);
     }
 

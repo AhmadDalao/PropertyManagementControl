@@ -51,6 +51,17 @@
     letter-spacing: 0.04em;
 }
 
+.pmc-property-performance-card > header span small {
+    display: inline-flex;
+    margin-inline-start: 0.4rem;
+    padding: 0.16rem 0.36rem;
+    border-radius: 999px;
+    background: #fff1c2;
+    color: #765b00;
+    font-size: 0.58rem;
+    letter-spacing: 0;
+}
+
 .pmc-property-performance-card > header strong {
     overflow: hidden;
     font-size: 0.95rem;

@@ -24,6 +24,7 @@ use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\MaintenanceResolutionController;
 use App\Http\Controllers\MaintenanceServiceReportController;
+use App\Http\Controllers\MaintenanceServiceReportWordController;
 use App\Http\Controllers\MaintenanceVendorController;
 use App\Http\Controllers\MaintenanceWorkOrderController;
 use App\Http\Controllers\ManagerPropertyAssignmentController;
@@ -200,6 +201,11 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         '/maintenance-requests/{maintenanceRequest}/service-report.pdf',
         MaintenanceServiceReportController::class,
     )->name('maintenance-requests.service-report')
+        ->middleware('portfolio.module:maintenance');
+    Route::get(
+        '/maintenance-requests/{maintenanceRequest}/service-report.docx',
+        MaintenanceServiceReportWordController::class,
+    )->name('maintenance-requests.service-report.word')
         ->middleware('portfolio.module:maintenance');
     Route::get(
         '/maintenance-requests/{maintenanceRequest}/work-orders/create',

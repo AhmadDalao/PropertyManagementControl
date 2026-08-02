@@ -90,6 +90,15 @@ class MaintenanceDetailOverviewPresenter
         ];
 
         if ($request->status === 'resolved') {
+            if (! $data->tenantMode) {
+                $actions[] = [
+                    'label' => trans('app.maintenance.download_service_report_word'),
+                    'href' => route('maintenance-requests.service-report.word', $request),
+                    'variant' => 'primary',
+                    'external' => true,
+                ];
+            }
+
             $actions[] = [
                 'label' => trans('app.maintenance.download_service_report'),
                 'href' => route('maintenance-requests.service-report', $request),

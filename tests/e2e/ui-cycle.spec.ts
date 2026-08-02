@@ -1285,6 +1285,11 @@ test.describe('authenticated administration', () => {
                 .locator('.pmc-dashboard-launch-readiness')
                 .getByRole('heading', { name: 'ضبط الإطلاق' }),
         ).toBeVisible();
+        await expect(
+            page
+                .locator('.pmc-platform-composition')
+                .getByRole('heading', { name: 'النطاق الفعلي للشركة' }),
+        ).toBeVisible();
         const showcaseContext = page.locator('.pmc-dashboard-data-context');
 
         if ((await showcaseContext.count()) > 0) {
@@ -1842,6 +1847,16 @@ test.describe('authenticated administration', () => {
         expect(
             (await addPhotos.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
+        const editableReport = page.getByRole('link', {
+            name: 'تنزيل التقرير القابل للتعديل DOCX',
+        });
+        await expect(editableReport).toBeVisible();
+        expect(
+            (await editableReport.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            page.getByRole('link', { name: 'تنزيل تقرير الخدمة PDF' }),
+        ).toBeVisible();
         const addPhotosHref = await addPhotos.getAttribute('href');
         expect(addPhotosHref).toBeTruthy();
         await page.goto(`${addPhotosHref}?locale=ar`);
@@ -3012,9 +3027,19 @@ test.describe('local role dashboards', () => {
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
                 ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-platform-composition'),
+                ).toBeVisible();
+                await expectMinimumTouchHeight(
+                    page,
+                    '.pmc-platform-composition-grid nav a',
+                );
             } else {
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
+                ).toHaveCount(0);
+                await expect(
+                    page.locator('.pmc-platform-composition'),
                 ).toHaveCount(0);
             }
 
@@ -3071,6 +3096,9 @@ test.describe('local role dashboards', () => {
                 await expect(desktopGroupToggles.first()).toBeHidden();
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
+                ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-platform-composition'),
                 ).toBeVisible();
                 await expect(
                     page.locator('.pmc-property-performance'),

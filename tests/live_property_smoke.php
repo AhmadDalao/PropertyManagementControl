@@ -284,6 +284,19 @@ foreach ($authChecks as $path => $expectedComponent) {
     smoke_note("{$path} {$component}");
 }
 
+$dashboard = smoke_request($baseUrl, $cookieFile, 'GET', '/dashboard?locale=en');
+$dashboardPayload = smoke_page_payload($dashboard['body']);
+$composition = $dashboardPayload['props']['platformComposition'] ?? null;
+
+if (! is_array($composition)
+    || ! is_array($composition['portfolios'] ?? null)
+    || ! is_array($composition['properties'] ?? null)
+    || ! is_array($composition['accounts'] ?? null)) {
+    smoke_fail('Superadmin dashboard is missing the global company composition.');
+}
+
+smoke_note('/dashboard global company composition present');
+
 $maintenanceSignoffs = smoke_request(
     $baseUrl,
     $cookieFile,
@@ -325,6 +338,35 @@ if (! $activeSignoffCount) {
 }
 
 smoke_note('/maintenance-requests tenant sign-off queue scoped');
+
+if (is_array($maintenanceRows) && isset($maintenanceRows[0]['id'])) {
+    $maintenanceId = (int) $maintenanceRows[0]['id'];
+
+    foreach ([
+        'pdf' => 'application/pdf',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    ] as $extension => $contentType) {
+        $download = smoke_request(
+            $baseUrl,
+            $cookieFile,
+            'GET',
+            "/maintenance-requests/{$maintenanceId}/service-report.{$extension}",
+        );
+        $headers = strtolower((string) $download['headers']);
+
+        if ($download['status'] !== 200 || ! str_contains($headers, $contentType)) {
+            smoke_fail("Maintenance closeout {$extension} download failed.");
+        }
+
+        $signature = $extension === 'pdf' ? '%PDF-' : 'PK';
+
+        if (! str_starts_with((string) $download['body'], $signature)) {
+            smoke_fail("Maintenance closeout {$extension} signature is invalid.");
+        }
+
+        smoke_note("/maintenance-requests/{$maintenanceId}/service-report.{$extension} valid");
+    }
+}
 
 $tenantIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/tenants?per_page=10&locale=en');
 $tenantPayload = smoke_page_payload($tenantIndex['body']);
