@@ -86,12 +86,21 @@ release command fails.
 5. Run on every deployment:
 
 ```bash
-composer install --no-dev --classmap-authoritative --no-interaction
-php artisan migrate --force
-php artisan optimize:clear
-php artisan optimize
-php artisan property:sync-operational-statuses
+HOSTINGER_PHP=/opt/alt/php84/usr/bin/php
+HOSTINGER_COMPOSER=/usr/local/bin/composer2
+
+$HOSTINGER_PHP $HOSTINGER_COMPOSER install \
+    --no-dev --classmap-authoritative --no-interaction
+$HOSTINGER_PHP artisan migrate --force
+$HOSTINGER_PHP artisan optimize:clear
+$HOSTINGER_PHP artisan optimize
+$HOSTINGER_PHP artisan property:sync-operational-statuses
 ```
+
+Do not run `/usr/local/bin/composer2` directly on this account. Its launcher can
+resolve the account-default PHP 7.4 binary even when the website and Artisan use
+PHP 8.4, causing Composer's platform check to reject the Laravel 13 lock file.
+Invoke the Composer PHAR through the verified PHP 8.4 binary as shown above.
 
 If dependencies are uploaded instead of installed on Hostinger, run `composer dump-autoload --no-dev --classmap-authoritative --no-interaction` after the upload. Run the permissions seeder and storage-link command only during initial setup or when their configuration changes.
 
