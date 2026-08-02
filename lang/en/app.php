@@ -666,6 +666,11 @@ return [
         'setup_title' => 'Complete the operating foundation',
         'setup_description' => 'Follow this order once. Each action opens the exact scoped form or record needed for this portfolio.',
         'setup_summary' => ':completed of :total complete',
+        'setup_show_steps' => 'Show setup steps',
+        'setup_hide_steps' => 'Hide setup steps',
+        'review_properties' => 'Review properties',
+        'review_payments' => 'Review posted payments',
+        'open_operating_statement' => 'Open operating statement',
         'setup_steps' => [
             'portfolio' => [
                 'title' => 'Activate the portfolio',

@@ -1,0 +1,58 @@
+.pmc-resource-progress-actions {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pmc-resource-progress-actions > strong {
+    flex: 0 0 auto;
+    padding: 0.42rem 0.65rem;
+    border-radius: 999px;
+    background: var(--pmc-sand);
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.pmc-resource-progress-actions > button {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--pmc-line-strong);
+    border-radius: 0.65rem;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.7rem;
+    font-weight: 800;
+}
+
+.pmc-resource-progress-actions > button:hover,
+.pmc-resource-progress-actions > button:focus-visible {
+    border-color: var(--pmc-teal);
+    outline: none;
+}
+
+.pmc-resource-progress.is-collapsed {
+    padding-block: 0.85rem;
+}
+
+.pmc-resource-progress.is-collapsed > header p {
+    display: none;
+}
+
+.pmc-resource-progress.is-collapsed .pmc-resource-progress-track {
+    margin-bottom: 0;
+}
+
+.pmc-resource-progress-details[hidden] {
+    display: none;
+}
+
+@media (max-width: 575.98px) {
+    .pmc-resource-progress-actions {
+        justify-self: start;
+        flex-wrap: wrap;
+    }
+}

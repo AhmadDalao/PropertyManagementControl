@@ -386,11 +386,53 @@ if (($companyPayload['props']['filters']['data_source'] ?? null) !== 'live'
     smoke_fail('Company control did not expose a bounded live-client decision view.');
 }
 
+$livePortfolioId = null;
+
 foreach ($companyPayload['props']['portfolios']['data'] as $portfolio) {
     if (! is_array($portfolio) || ($portfolio['is_showcase'] ?? true) !== false) {
         smoke_fail('Company control live scope included showcase data.');
     }
+
+    $livePortfolioId ??= is_numeric($portfolio['id'] ?? null)
+        ? (int) $portfolio['id']
+        : null;
 }
+
+if ($livePortfolioId === null) {
+    smoke_fail('Company control did not return a live portfolio for detail verification.');
+}
+
+$portfolioDetail = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    "/portfolios/{$livePortfolioId}?locale=ar",
+);
+$portfolioPayload = smoke_page_payload($portfolioDetail['body']);
+$portfolioProps = $portfolioPayload['props']['detailPage'] ?? [];
+$portfolioProgress = $portfolioProps['progress'] ?? [];
+$portfolioCards = $portfolioProps['decisionCards'] ?? [];
+
+if ($portfolioDetail['status'] !== 200
+    || smoke_component($portfolioDetail['body']) !== 'admin/resource-show'
+    || ($portfolioProgress['collapseWhenComplete'] ?? null) !== true
+    || ($portfolioProgress['expandLabel'] ?? null) !== 'عرض خطوات الإعداد'
+    || ! str_contains(
+        (string) ($portfolioCards[1]['href'] ?? ''),
+        "/assets?portfolio_id={$livePortfolioId}",
+    )
+    || ! str_contains(
+        (string) ($portfolioCards[2]['href'] ?? ''),
+        "/payments?portfolio_id={$livePortfolioId}&status=posted",
+    )
+    || ! str_contains(
+        (string) ($portfolioCards[3]['href'] ?? ''),
+        "/reports/statement?portfolio_id={$livePortfolioId}",
+    )) {
+    smoke_fail('Portfolio detail did not expose the compact setup and scoped operating flow.');
+}
+
+smoke_note('/portfolios/{portfolio} compact setup and operating links valid');
 
 $companyWorkbook = smoke_request(
     $baseUrl,

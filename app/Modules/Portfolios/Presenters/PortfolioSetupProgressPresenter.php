@@ -36,6 +36,9 @@ final class PortfolioSetupProgressPresenter
             ]),
             'completed' => $completed,
             'total' => count($steps),
+            'collapseWhenComplete' => true,
+            'expandLabel' => trans('app.portfolios.setup_show_steps'),
+            'collapseLabel' => trans('app.portfolios.setup_hide_steps'),
             'steps' => array_map(function (array $step) use (&$currentAssigned): array {
                 if ($step['done']) {
                     $state = 'complete';

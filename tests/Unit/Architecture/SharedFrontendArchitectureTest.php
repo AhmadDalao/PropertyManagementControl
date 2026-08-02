@@ -139,6 +139,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'resource-detail.css',
             'resource-workflow.css',
             'resource-progress.css',
+            'resource-progress-compact.css',
             'resource-related.css',
             'records.css',
             'responsive.css',

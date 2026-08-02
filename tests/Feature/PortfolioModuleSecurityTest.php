@@ -353,6 +353,8 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'إنشاء مستخدم')
                 ->where('detailPage.progress.title', 'أكمل أساس التشغيل')
+                ->where('detailPage.progress.expandLabel', 'عرض خطوات الإعداد')
+                ->where('detailPage.progress.collapseLabel', 'إخفاء خطوات الإعداد')
                 ->where('detailPage.sections.0.title', 'ملف النشاط')
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains('label', 'الموقع'))
@@ -427,6 +429,8 @@ class PortfolioModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.progress.completed', 6)
                 ->where('detailPage.progress.summary', '6 of 6 complete')
+                ->where('detailPage.progress.collapseWhenComplete', true)
+                ->where('detailPage.progress.expandLabel', 'Show setup steps')
                 ->where('detailPage.progress.steps', fn ($steps): bool => collect($steps)
                     ->every(fn (array $step): bool => $step['state'] === 'complete')));
     }
@@ -451,6 +455,19 @@ class PortfolioModuleSecurityTest extends TestCase
                     'portfolio_id' => $portfolio->id,
                 ]))
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.decisionCards.1.href', route('assets.index', [
+                    'portfolio_id' => $portfolio->id,
+                ]))
+                ->where('detailPage.decisionCards.1.actionLabel', 'Review properties')
+                ->where('detailPage.decisionCards.2.href', route('payments.index', [
+                    'portfolio_id' => $portfolio->id,
+                    'status' => 'posted',
+                ]))
+                ->where('detailPage.decisionCards.2.actionLabel', 'Review posted payments')
+                ->where('detailPage.decisionCards.3.href', route('reports.statement', [
+                    'portfolio_id' => $portfolio->id,
+                ]))
+                ->where('detailPage.decisionCards.3.actionLabel', 'Open operating statement')
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains('label', 'Location')));
 
@@ -471,6 +488,7 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Edit portfolio')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.decisionCards', fn ($cards): bool => ! isset($cards[1]['href']))
                 ->where('detailPage.progress.steps.3.href', route('portfolios.edit', $portfolio))
                 ->where('detailPage.progress.steps.3.actionLabel', 'Configure portfolio')
                 ->has('detailPage.header.actions', 2));

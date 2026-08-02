@@ -666,6 +666,11 @@ return [
         'setup_title' => 'أكمل أساس التشغيل',
         'setup_description' => 'اتبع هذا الترتيب مرة واحدة. يفتح كل إجراء النموذج أو السجل المحدد لهذه المحفظة مباشرة.',
         'setup_summary' => 'اكتمل :completed من :total',
+        'setup_show_steps' => 'عرض خطوات الإعداد',
+        'setup_hide_steps' => 'إخفاء خطوات الإعداد',
+        'review_properties' => 'مراجعة العقارات',
+        'review_payments' => 'مراجعة الدفعات المرحلة',
+        'open_operating_statement' => 'فتح كشف التشغيل',
         'setup_steps' => [
             'portfolio' => [
                 'title' => 'تفعيل المحفظة',

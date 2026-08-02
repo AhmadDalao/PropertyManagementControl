@@ -42,15 +42,6 @@
     line-height: 1.55;
 }
 
-.pmc-resource-progress > header > strong {
-    flex: 0 0 auto;
-    padding: 0.42rem 0.65rem;
-    border-radius: 999px;
-    background: var(--pmc-sand);
-    font-size: 0.7rem;
-    font-weight: 800;
-}
-
 .pmc-resource-progress-track {
     height: 0.35rem;
     margin: 0.9rem 0;
@@ -159,10 +150,6 @@
 @media (max-width: 575.98px) {
     .pmc-resource-progress > header {
         display: grid;
-    }
-
-    .pmc-resource-progress > header > strong {
-        justify-self: start;
     }
 
     .pmc-resource-progress ol {

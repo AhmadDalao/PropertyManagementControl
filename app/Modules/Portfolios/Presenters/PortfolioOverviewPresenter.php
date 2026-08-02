@@ -29,6 +29,10 @@ class PortfolioOverviewPresenter
             ->pluck('label')
             ->join(', ');
         $net = $data->postedRevenue - $data->postedExpenses;
+        $platformAccess = $actor->hasRole('superadmin');
+        $assetsEnabled = $platformAccess || ($data->settings['assets'] ?? true);
+        $paymentsEnabled = $platformAccess || ($data->settings['payments'] ?? true);
+        $reportsEnabled = $platformAccess || ($data->settings['reports'] ?? true);
 
         return [
             'header' => [
@@ -56,6 +60,10 @@ class PortfolioOverviewPresenter
                     'detail' => trans('app.portfolios.vacant_units', ['count' => $data->vacantAssets]),
                     'tone' => 'primary',
                     'icon' => 'bi-buildings',
+                    ...($assetsEnabled ? [
+                        'href' => route('assets.index', ['portfolio_id' => $portfolio->id]),
+                        'actionLabel' => trans('app.portfolios.review_properties'),
+                    ] : []),
                 ],
                 [
                     'title' => trans('app.portfolios.posted_revenue'),
@@ -63,6 +71,13 @@ class PortfolioOverviewPresenter
                     'detail' => trans('app.portfolios.active_lease_count', ['count' => $data->activeLeases]),
                     'tone' => 'teal',
                     'icon' => 'bi-cash-stack',
+                    ...($paymentsEnabled ? [
+                        'href' => route('payments.index', [
+                            'portfolio_id' => $portfolio->id,
+                            'status' => 'posted',
+                        ]),
+                        'actionLabel' => trans('app.portfolios.review_payments'),
+                    ] : []),
                 ],
                 [
                     'title' => trans('app.portfolios.net_position'),
@@ -72,6 +87,12 @@ class PortfolioOverviewPresenter
                     ]),
                     'tone' => $net >= 0 ? 'blue' : 'danger',
                     'icon' => 'bi-graph-up-arrow',
+                    ...($reportsEnabled ? [
+                        'href' => route('reports.statement', [
+                            'portfolio_id' => $portfolio->id,
+                        ]),
+                        'actionLabel' => trans('app.portfolios.open_operating_statement'),
+                    ] : []),
                 ],
             ],
             'stats' => $this->resources->detailItems([

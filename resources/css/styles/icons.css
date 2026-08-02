@@ -173,6 +173,9 @@
 .bi-chevron-right::before {
     content: '\f285';
 }
+.bi-chevron-up::before {
+    content: '\f286';
+}
 .bi-check-lg::before {
     content: '\f633';
 }

@@ -2303,6 +2303,45 @@ test.describe('authenticated administration', () => {
         await expect(page.getByText('ملف النشاط')).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
+        await page.goto('/portfolios/1?locale=ar');
+        const completedSetup = page.locator(
+            '.pmc-resource-progress[data-progress-complete="true"]',
+        );
+        await expect(completedSetup).toBeVisible();
+        const setupToggle = completedSetup.locator(
+            '[data-resource-progress-toggle]',
+        );
+        await expect(setupToggle).toBeVisible();
+        await expect(setupToggle).toHaveAccessibleName('عرض خطوات الإعداد');
+        await expect(setupToggle).toHaveAttribute('aria-expanded', 'false');
+        expect(
+            (await setupToggle.boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+        await expect(
+            completedSetup.locator('.pmc-resource-progress-details'),
+        ).not.toBeVisible();
+        await setupToggle.click();
+        await expect(setupToggle).toHaveAccessibleName('إخفاء خطوات الإعداد');
+        await expect(setupToggle).toHaveAttribute('aria-expanded', 'true');
+        await expect(
+            completedSetup.locator('.pmc-resource-progress-details'),
+        ).toBeVisible();
+        await expect(completedSetup.locator('li')).toHaveCount(6);
+        await setupToggle.click();
+        await expect(
+            completedSetup.locator('.pmc-resource-progress-details'),
+        ).not.toBeVisible();
+        await expect(
+            page.getByRole('link', { name: 'مراجعة العقارات' }),
+        ).toHaveAttribute('href', /portfolio_id=1/);
+        await expect(
+            page.getByRole('link', { name: 'مراجعة الدفعات المرحلة' }),
+        ).toHaveAttribute('href', /portfolio_id=1.*status=posted/);
+        await expect(
+            page.getByRole('link', { name: 'فتح كشف التشغيل' }),
+        ).toHaveAttribute('href', /portfolio_id=1/);
+        await expectNoHorizontalOverflow(page);
+
         await page.goto(
             `/users/create?portfolio_id=${portfolioId}&role=property_manager&setup_portfolio_id=${portfolioId}&locale=ar`,
         );

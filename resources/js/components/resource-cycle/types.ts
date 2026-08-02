@@ -111,6 +111,9 @@ export type ResourceProgress = {
     completed: number;
     total: number;
     steps: ResourceProgressStep[];
+    collapseWhenComplete?: boolean;
+    expandLabel?: string;
+    collapseLabel?: string;
 };
 
 export type RelatedCell = ReactNode | { label: string; href: string };
