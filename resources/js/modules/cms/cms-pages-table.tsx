@@ -95,13 +95,43 @@ export function CmsPagesTable({ pages, filters, counts }: CmsPagesTableProps) {
             ]}
             emptyText={t('cms.no_pages')}
             mobileCard={{
-                title: titleCell,
-                subtitle: (page) => <StatusBadge value={page.status} />,
-                status: (page) =>
-                    page.is_homepage ? t('cms.homepage') : `/${page.slug}`,
+                title: pageName,
+                subtitle: (page) =>
+                    page.is_homepage ? '/' : `/pages/${page.slug}`,
+                status: (page) => <StatusBadge value={page.status} />,
                 meta: [
-                    { label: t('cms.public_path'), value: pathCell },
-                    { label: t('cms.sections'), value: sectionCell },
+                    {
+                        label: t('cms.sections'),
+                        value: (page) => page.page_sections_count ?? 0,
+                    },
+                    {
+                        label: t('cms.visibility'),
+                        value: (page) => (
+                            <StatusBadge
+                                value={
+                                    page.is_homepage
+                                        ? 'homepage'
+                                        : page.is_visible
+                                          ? 'visible'
+                                          : 'hidden'
+                                }
+                                label={
+                                    page.is_homepage
+                                        ? t('cms.homepage')
+                                        : page.is_visible
+                                          ? t('cms.visible')
+                                          : t('cms.hidden')
+                                }
+                                tone={
+                                    page.is_homepage
+                                        ? 'blue'
+                                        : page.is_visible
+                                          ? 'success'
+                                          : 'neutral'
+                                }
+                            />
+                        ),
+                    },
                 ],
                 actions,
             }}

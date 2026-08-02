@@ -9,8 +9,15 @@ export function useTenantTableConfig() {
     const { t } = useTranslator();
     const cells = useTenantTableCells();
     const mobileCard: MobileTableConfig<TenantRecord> = {
-        title: cells.tenantCell,
-        subtitle: cells.profileCell,
+        title: (tenant) =>
+            tenant.user?.name ??
+            tenant.company_name ??
+            t('tenants.tenant_number', undefined, { id: tenant.id }),
+        subtitle: (tenant) =>
+            [
+                tenant.user?.email ?? t('tenants.no_email'),
+                t(`tenants.${tenant.profile_type}`),
+            ].join(' · '),
         status: (tenant) => <StatusBadge value={tenant.status} />,
         meta: [
             {

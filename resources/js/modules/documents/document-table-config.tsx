@@ -21,25 +21,13 @@ export function useDocumentTableConfig(locale: string): {
     const { t } = useTranslator();
     const option = (value: string) =>
         t(`documents.options.${value}` as UiTranslationKey, humanLabel(value));
-    const title = (document: DocumentRecord) => (
-        <div className="pmc-primary-cell">
-            <strong>
-                {locale === 'ar'
-                    ? document.title_ar || document.title_en
-                    : document.title_en || document.title_ar}
-            </strong>
-            <span>
-                {document.original_name} · {formatBytes(document.file_size)}
-            </span>
-        </div>
-    );
+    const localizedTitle = (document: DocumentRecord) =>
+        locale === 'ar'
+            ? document.title_ar || document.title_en
+            : document.title_en || document.title_ar;
     const desktopTitle = (document: DocumentRecord) => (
         <div className="pmc-primary-cell">
-            <strong>
-                {locale === 'ar'
-                    ? document.title_ar || document.title_en
-                    : document.title_en || document.title_ar}
-            </strong>
+            <strong>{localizedTitle(document)}</strong>
             <span>
                 {document.original_name} · {formatBytes(document.file_size)}
             </span>
@@ -68,15 +56,17 @@ export function useDocumentTableConfig(locale: string): {
             </span>
         </div>
     );
-    const file = (document: DocumentRecord) => (
-        <div className="pmc-stacked-cell">
-            <strong>{formatBytes(document.file_size)}</strong>
-            <span>{t('documents.pdf')}</span>
-        </div>
-    );
     const validity = (document: DocumentRecord) => (
         <DocumentValidity document={document} />
     );
+    const mobileAttachment = (document: DocumentRecord) =>
+        document.attachment.url ? (
+            <Link href={document.attachment.url}>
+                {document.attachment.label}
+            </Link>
+        ) : (
+            document.attachment.label
+        );
     const access = (document: DocumentRecord) => (
         <StatusBadge
             value={document.is_public ? 'public' : 'internal'}
@@ -154,19 +144,20 @@ export function useDocumentTableConfig(locale: string): {
             },
         ],
         mobileCard: {
-            title,
-            subtitle: (document) => (
-                <StatusBadge
-                    value={document.type}
-                    label={option(document.type)}
-                    tone="blue"
-                />
-            ),
+            title: localizedTitle,
+            subtitle: (document) =>
+                [
+                    option(document.type),
+                    document.original_name,
+                    formatBytes(document.file_size),
+                ].join(' · '),
             status: access,
             meta: [
-                { label: t('documents.attached_to'), value: attachment },
+                {
+                    label: t('documents.attached_to'),
+                    value: mobileAttachment,
+                },
                 { label: t('documents.validity'), value: validity },
-                { label: t('documents.file'), value: file },
             ],
             actions,
         },

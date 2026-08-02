@@ -552,6 +552,27 @@ test.describe('authenticated administration', () => {
             if ((await mobileCards.count()) > 0) {
                 const firstMobileCard = mobileCards.first();
                 await expect(firstMobileCard).toBeVisible();
+                const cardHeights = await mobileCards.evaluateAll((cards) =>
+                    cards.map((card) => card.getBoundingClientRect().height),
+                );
+
+                for (const cardHeight of cardHeights) {
+                    expect(cardHeight).toBeLessThanOrEqual(220);
+                }
+
+                await expect(
+                    firstMobileCard.locator('.pmc-mobile-record-footer'),
+                ).toHaveCount(0);
+                const actionMenus = mobileCards.locator(
+                    '.pmc-mobile-action-menu > summary',
+                );
+
+                if ((await actionMenus.count()) > 0) {
+                    await expectMinimumTouchHeight(
+                        page,
+                        '.pmc-mobile-action-menu > summary',
+                    );
+                }
 
                 const metadata = firstMobileCard.locator(
                     '.pmc-mobile-record-meta',
@@ -569,6 +590,34 @@ test.describe('authenticated administration', () => {
 
                     expect(columns).toBe(Math.min(values, 3));
                 }
+            }
+        }
+    });
+
+    test('compact mobile cards stay bounded in Arabic', async ({ page }) => {
+        await page.setViewportSize(viewports.mobile);
+
+        for (const path of [
+            '/users',
+            '/assets',
+            '/tenants',
+            '/leases',
+            '/documents',
+            '/cms',
+        ]) {
+            await page.goto(`${path}?locale=ar`);
+            await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+            await expectNoHorizontalOverflow(page);
+
+            const cards = page.locator('.pmc-mobile-record-card');
+            expect(await cards.count()).toBeGreaterThan(0);
+
+            const cardHeights = await cards.evaluateAll((records) =>
+                records.map((record) => record.getBoundingClientRect().height),
+            );
+
+            for (const cardHeight of cardHeights) {
+                expect(cardHeight).toBeLessThanOrEqual(220);
             }
         }
     });

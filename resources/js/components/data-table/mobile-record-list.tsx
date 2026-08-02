@@ -33,6 +33,7 @@ export function MobileRecordList<T extends DataTableRow>({
             {rows.length > 0 ? (
                 rows.map((row, index) => {
                     const actions = config.actions?.(row);
+                    const status = config.status?.(row);
 
                     return (
                         <article
@@ -40,7 +41,7 @@ export function MobileRecordList<T extends DataTableRow>({
                             key={rowKey ? rowKey(row) : (row.id ?? index)}
                         >
                             <div className="pmc-mobile-record-head">
-                                <div>
+                                <div className="pmc-mobile-record-identity">
                                     {rowHref ? (
                                         <Link
                                             href={rowHref(row)}
@@ -56,7 +57,9 @@ export function MobileRecordList<T extends DataTableRow>({
                                         config.title(row)
                                     )}
                                     {config.subtitle ? (
-                                        <small>{config.subtitle(row)}</small>
+                                        <div className="pmc-mobile-record-subtitle">
+                                            {config.subtitle(row)}
+                                        </div>
                                     ) : null}
                                     {isShowcaseRow(row) ? (
                                         <ShowcaseBadge
@@ -64,7 +67,24 @@ export function MobileRecordList<T extends DataTableRow>({
                                         />
                                     ) : null}
                                 </div>
-                                {config.status ? config.status(row) : null}
+                                {status || actions ? (
+                                    <div className="pmc-mobile-record-controls">
+                                        {status}
+                                        {actions ? (
+                                            <details className="pmc-mobile-action-menu">
+                                                <summary
+                                                    aria-label={t(
+                                                        'common.more_actions',
+                                                        'More actions',
+                                                    )}
+                                                >
+                                                    <i className="bi bi-three-dots" />
+                                                </summary>
+                                                <div>{actions}</div>
+                                            </details>
+                                        ) : null}
+                                    </div>
+                                ) : null}
                             </div>
                             {config.meta && config.meta.length > 0 ? (
                                 <dl
@@ -77,21 +97,6 @@ export function MobileRecordList<T extends DataTableRow>({
                                         </div>
                                     ))}
                                 </dl>
-                            ) : null}
-                            {actions ? (
-                                <div className="pmc-mobile-record-footer">
-                                    <details className="pmc-mobile-action-menu">
-                                        <summary
-                                            aria-label={t(
-                                                'common.more_actions',
-                                                'More actions',
-                                            )}
-                                        >
-                                            <i className="bi bi-three-dots" />
-                                        </summary>
-                                        <div>{actions}</div>
-                                    </details>
-                                </div>
                             ) : null}
                         </article>
                     );

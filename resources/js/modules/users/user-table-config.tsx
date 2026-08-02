@@ -6,15 +6,22 @@ import type { UserRecord, UserTableProps } from './types';
 import { useUserTableCells } from './user-table-cells';
 
 export function useUserTableConfig(props: UserTableProps) {
-    const { t } = useTranslator();
+    const { locale, t } = useTranslator();
     const cells = useUserTableCells(props);
     const mobileCard: MobileTableConfig<UserRecord> = {
-        title: cells.userCell,
-        subtitle: cells.roleCell,
+        title: (user) => user.name,
+        subtitle: (user) => user.email,
         status: (user) => <StatusBadge value={user.status} />,
         meta: [
-            { label: t('users.portfolio'), value: cells.portfolioCell },
-            { label: t('users.portal_access'), value: cells.accessCell },
+            { label: t('users.role'), value: cells.roleCell },
+            {
+                label: t('users.portfolio'),
+                value: (user) =>
+                    (locale === 'ar'
+                        ? user.portfolio?.name_ar || user.portfolio?.name_en
+                        : user.portfolio?.name_en || user.portfolio?.name_ar) ??
+                    t('users.global_account'),
+            },
             {
                 label: t('users.open_workload'),
                 value: (user) =>
