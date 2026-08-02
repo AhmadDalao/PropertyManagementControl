@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\User;
 use App\Modules\Assets\Support\AssetPropertyContext;
 use App\Modules\Assets\Support\PropertyScope;
+use App\Modules\LeaseRenewals\Presenters\LeaseRenewalDownloadPresenter;
 use App\Modules\LeaseRenewals\Presenters\LeaseRenewalRowPresenter;
 use App\Modules\LeaseRenewals\Support\LeaseRenewalOptions;
 use App\Modules\Shared\PortfolioScope;
@@ -19,6 +20,7 @@ final readonly class LeaseRenewalIndexQuery
     public function __construct(
         private LeaseRenewalDirectoryQuery $directory,
         private LeaseRenewalInsightsQuery $insights,
+        private LeaseRenewalDownloadPresenter $downloads,
         private LeaseRenewalRowPresenter $rows,
         private PortfolioScope $portfolios,
         private PropertyScope $properties,
@@ -64,6 +66,7 @@ final readonly class LeaseRenewalIndexQuery
             'queueOptions' => LeaseRenewalOptions::QUEUES,
             'horizonOptions' => LeaseRenewalOptions::HORIZONS,
             'leaseStatusOptions' => LeaseRenewalOptions::LEASE_STATUSES,
+            'downloads' => $this->downloads->present($filters),
         ];
     }
 

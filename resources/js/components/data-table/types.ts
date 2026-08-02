@@ -31,6 +31,12 @@ export type MobileTableConfig<T> = {
 
 export type DataTableRow = { id?: number | string };
 
+export type TableExportLink = {
+    label: string;
+    href: string;
+    icon?: string;
+};
+
 export type DataTableProps<T extends DataTableRow> = {
     title: string;
     description?: string;
@@ -39,6 +45,7 @@ export type DataTableProps<T extends DataTableRow> = {
     filters: TableFilters;
     basePath: string;
     exportHref?: string;
+    exportLinks?: TableExportLink[];
     counts?: TableCount[];
     filterFields?: TableFilterField[];
     emptyText?: string;

@@ -174,6 +174,7 @@ return [
         'clear' => 'مسح',
         'reset' => 'إعادة ضبط',
         'export_xlsx' => 'تصدير Excel (.xlsx)',
+        'download_report' => 'تنزيل التقرير',
         'view_all' => 'عرض الكل',
     ],
     'common' => [

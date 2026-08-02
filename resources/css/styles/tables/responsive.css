@@ -171,8 +171,25 @@
         flex-direction: column;
     }
 
-    .pmc-export-button {
+    .pmc-table-export-actions,
+    .pmc-table-export-menu,
+    .pmc-table-export-menu .pmc-export-button {
         width: 100%;
+    }
+
+    .pmc-table-export-desktop {
+        display: none;
+    }
+
+    .pmc-table-export-menu {
+        display: block;
+    }
+
+    .pmc-table-export-menu > div {
+        position: static;
+        width: 100%;
+        margin-block-start: 0.4rem;
+        box-shadow: var(--pmc-shadow);
     }
 
     .pmc-table-filter-panel {

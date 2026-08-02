@@ -67,6 +67,65 @@
     flex: 0 0 auto;
 }
 
+.pmc-table-export-actions,
+.pmc-table-export-desktop {
+    display: flex;
+    flex: 0 0 auto;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.pmc-table-export-menu {
+    position: relative;
+    display: none;
+}
+
+.pmc-table-export-menu summary {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    list-style: none;
+}
+
+.pmc-table-export-menu summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-table-export-menu > div {
+    position: absolute;
+    z-index: 25;
+    inset-block-start: calc(100% + 0.4rem);
+    inset-inline-end: 0;
+    display: grid;
+    min-width: 14rem;
+    padding: 0.4rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-table-export-menu a {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.55rem;
+    color: #171612;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.pmc-table-export-menu a:hover,
+.pmc-table-export-menu a:focus-visible {
+    background: #fff6ce;
+}
+
 .pmc-filter-chips {
     display: flex;
     gap: 0.4rem;

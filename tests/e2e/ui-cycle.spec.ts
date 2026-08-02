@@ -1046,6 +1046,19 @@ test.describe('authenticated administration', () => {
             page.locator('.pmc-operations-table > .pmc-table-scroll'),
         ).toBeVisible();
         await expect(page.locator('.pmc-mobile-record-list')).toBeHidden();
+        await expect(
+            page.locator('.pmc-table-export-desktop a'),
+        ).toHaveCount(3);
+        await expect(
+            page.locator(
+                '.pmc-table-export-desktop a[href="/lease-renewals/report.pdf"]',
+            ),
+        ).toBeVisible();
+        await expect(
+            page.locator(
+                '.pmc-table-export-desktop a[href="/lease-renewals/report.docx"]',
+            ),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/dashboard?locale=en');
@@ -1063,6 +1076,13 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-mobile-record-card').first(),
         ).toBeVisible();
+        await expect(page.locator('.pmc-table-export-desktop')).toBeHidden();
+        const renewalDownloadMenu = page.locator(
+            '.pmc-table-export-menu',
+        );
+        await expect(renewalDownloadMenu).toBeVisible();
+        await renewalDownloadMenu.locator('summary').click();
+        await expect(renewalDownloadMenu.locator('a')).toHaveCount(3);
         await expectNoHorizontalOverflow(page);
         await expectMinimumTouchHeight(
             page,
@@ -1071,6 +1091,8 @@ test.describe('authenticated administration', () => {
                 '.pmc-filter-chip',
                 '.pmc-table-search .form-control',
                 '.pmc-mobile-filter-trigger',
+                '.pmc-table-export-menu summary',
+                '.pmc-table-export-menu a',
                 '.pmc-mobile-record-title-link',
                 '.pmc-mobile-action-menu > summary',
             ].join(', '),
@@ -1081,6 +1103,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'تجديد العقود' }),
         ).toBeVisible();
+        await expect(
+            page.locator('.pmc-table-export-menu summary'),
+        ).toContainText('تنزيل التقرير');
         await expectNoHorizontalOverflow(page);
     });
 

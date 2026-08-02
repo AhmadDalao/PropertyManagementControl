@@ -174,6 +174,7 @@ return [
         'clear' => 'Clear',
         'reset' => 'Reset',
         'export_xlsx' => 'Export Excel (.xlsx)',
+        'download_report' => 'Download report',
         'view_all' => 'View all',
     ],
     'common' => [

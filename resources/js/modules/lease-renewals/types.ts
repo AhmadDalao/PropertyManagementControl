@@ -67,4 +67,9 @@ export type LeaseRenewalPageProps = SharedProps & {
     queueOptions: string[];
     horizonOptions: string[];
     leaseStatusOptions: string[];
+    downloads: {
+        pdf: string;
+        docx: string;
+        xlsx: string;
+    };
 };

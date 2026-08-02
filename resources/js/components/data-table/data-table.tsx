@@ -19,6 +19,7 @@ export function DataTable<T extends DataTableRow>({
     filters,
     basePath,
     exportHref,
+    exportLinks,
     counts = [],
     filterFields = [],
     emptyText = 'No records match this search.',
@@ -38,6 +39,7 @@ export function DataTable<T extends DataTableRow>({
                 description={description}
                 total={data.total}
                 exportHref={exportHref}
+                exportLinks={exportLinks}
             />
             <TableToolbar
                 counts={counts}

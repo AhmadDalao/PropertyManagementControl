@@ -22,6 +22,7 @@ use App\Http\Controllers\GlobalSearchController;
 use App\Http\Controllers\LeaseController;
 use App\Http\Controllers\LeaseMoveOutController;
 use App\Http\Controllers\LeaseRenewalController;
+use App\Http\Controllers\LeaseRenewalExportController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MaintenanceAttachmentController;
 use App\Http\Controllers\MaintenanceRequestController;
@@ -171,6 +172,12 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
 
     Route::get('/lease-renewals', [LeaseRenewalController::class, 'index'])
         ->name('lease-renewals.index')
+        ->middleware('portfolio.module:leases');
+    Route::get('/lease-renewals/report.pdf', [LeaseRenewalExportController::class, 'pdf'])
+        ->name('lease-renewals.report.pdf')
+        ->middleware('portfolio.module:leases');
+    Route::get('/lease-renewals/report.docx', [LeaseRenewalExportController::class, 'word'])
+        ->name('lease-renewals.report.word')
         ->middleware('portfolio.module:leases');
 
     Route::get('/rent-collection', [RentCollectionController::class, 'index'])

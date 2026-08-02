@@ -1,6 +1,7 @@
-import { DataTable, exportUrl } from '@/components/data-table';
+import { DataTable } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
 
+import { leaseRenewalDownloads } from './lease-renewal-downloads';
 import { leaseRenewalFilterFields } from './lease-renewal-filters';
 import { useLeaseRenewalTableConfig } from './lease-renewal-table-config';
 import type { LeaseRenewalPageProps } from './types';
@@ -15,6 +16,7 @@ type LeaseRenewalTableProps = Pick<
     | 'queueOptions'
     | 'horizonOptions'
     | 'leaseStatusOptions'
+    | 'downloads'
     | 'auth'
     | 'app'
 >;
@@ -44,7 +46,7 @@ export function LeaseRenewalTable(props: LeaseRenewalTableProps) {
             counts={props.counts}
             basePath="/lease-renewals"
             rowHref={(lease) => `/leases/${lease.id}`}
-            exportHref={exportUrl('/exports/lease-renewals', props.filters)}
+            exportLinks={leaseRenewalDownloads(props.downloads, t)}
             filterFields={filters}
             columns={table.columns}
             mobileCard={table.mobileCard}

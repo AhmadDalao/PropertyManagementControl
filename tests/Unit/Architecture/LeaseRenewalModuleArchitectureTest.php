@@ -28,6 +28,7 @@ final class LeaseRenewalModuleArchitectureTest extends TestCase
     {
         foreach ([
             'app/Modules/LeaseRenewals/Actions/LeaseRenewalWorkbookExport.php',
+            'app/Modules/LeaseRenewals/Presenters/LeaseRenewalDownloadPresenter.php',
             'app/Modules/LeaseRenewals/Presenters/LeaseRenewalRowPresenter.php',
             'app/Modules/LeaseRenewals/Queries/LeaseRenewalDirectoryQuery.php',
             'app/Modules/LeaseRenewals/Queries/LeaseRenewalIndexQuery.php',
@@ -36,6 +37,7 @@ final class LeaseRenewalModuleArchitectureTest extends TestCase
             'app/Modules/LeaseRenewals/Support/LeaseRenewalNoticeScope.php',
             'app/Modules/LeaseRenewals/Support/LeaseRenewalOptions.php',
             'resources/js/modules/lease-renewals/lease-renewal-cells.tsx',
+            'resources/js/modules/lease-renewals/lease-renewal-downloads.ts',
             'resources/js/modules/lease-renewals/lease-renewal-filters.ts',
             'resources/js/modules/lease-renewals/lease-renewal-labels.ts',
             'resources/js/modules/lease-renewals/lease-renewal-metrics.tsx',
@@ -52,6 +54,7 @@ final class LeaseRenewalModuleArchitectureTest extends TestCase
     {
         foreach ([
             'app/Modules/LeaseRenewals/Actions/LeaseRenewalWorkbookExport.php' => 100,
+            'app/Modules/LeaseRenewals/Presenters/LeaseRenewalDownloadPresenter.php' => 60,
             'app/Modules/LeaseRenewals/Presenters/LeaseRenewalRowPresenter.php' => 90,
             'app/Modules/LeaseRenewals/Queries/LeaseRenewalDirectoryQuery.php' => 175,
             'app/Modules/LeaseRenewals/Queries/LeaseRenewalIndexQuery.php' => 125,

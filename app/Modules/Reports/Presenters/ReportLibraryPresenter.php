@@ -154,15 +154,22 @@ final class ReportLibraryPresenter
                 ),
             ], $actor),
             $this->group('operations', [
-                $this->resourceCard(
+                $this->card(
                     'lease-renewals',
                     'bi-calendar2-check',
                     'lease_expiry',
                     'lease_expiry_description',
-                    $this->url('lease-renewals.index', $query),
-                    $this->url('exports.resource', ['resource' => 'lease-renewals', ...$query]),
+                    $this->url('lease-renewals.index', $currentQuery),
+                    [
+                        $this->download('PDF', $this->url('lease-renewals.report.pdf', $currentQuery)),
+                        $this->download('DOCX', $this->url('lease-renewals.report.word', $currentQuery)),
+                        $this->download('XLSX', $this->url('exports.resource', [
+                            'resource' => 'lease-renewals',
+                            ...$currentQuery,
+                        ])),
+                    ],
                     'leases',
-                    $scope['period'],
+                    $scope['current'],
                 ),
                 $this->resourceCard(
                     'lease-move-outs',

@@ -658,6 +658,7 @@ foreach ($reportsPayload['props']['reportLibrary'] ?? [] as $group) {
 $hasArabicScope = false;
 $rentRollCard = null;
 $arrearsAgingCard = null;
+$leaseRenewalCard = null;
 
 foreach ($reportLibrary as $card) {
     if (($card['key'] ?? null) === 'rent-roll') {
@@ -666,6 +667,10 @@ foreach ($reportLibrary as $card) {
 
     if (($card['key'] ?? null) === 'arrears-aging') {
         $arrearsAgingCard = $card;
+    }
+
+    if (($card['key'] ?? null) === 'lease-renewals') {
+        $leaseRenewalCard = $card;
     }
 
     $scope = [];
@@ -773,6 +778,12 @@ if ($arrearsAgingResponse['status'] !== 200
 }
 
 smoke_note('/reports/arrears-aging Arabic schedule');
+
+if (! is_array($leaseRenewalCard)
+    || count($leaseRenewalCard['downloads'] ?? []) !== 3
+    || ! str_contains((string) ($leaseRenewalCard['openHref'] ?? ''), '/lease-renewals')) {
+    smoke_fail('The report library did not expose lease renewals and its three downloads.');
+}
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     $propertyId = (int) $propertyOptions[0]['id'];
@@ -970,6 +981,35 @@ if (! str_contains($leaseRenewalExportHeaders, '.xlsx') || ! str_starts_with((st
 }
 
 smoke_note('/exports/lease-renewals Excel .xlsx');
+
+foreach ([
+    'pdf' => [
+        'path' => '/lease-renewals/report.pdf?queue=all&horizon=90&locale=ar',
+        'content_type' => 'application/pdf',
+        'signature' => '%PDF-',
+    ],
+    'docx' => [
+        'path' => '/lease-renewals/report.docx?queue=all&horizon=90&locale=ar',
+        'content_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'signature' => 'PK',
+    ],
+] as $extension => $expected) {
+    $leaseRenewalReport = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        $expected['path'],
+    );
+    $headers = strtolower((string) $leaseRenewalReport['headers']);
+
+    if ($leaseRenewalReport['status'] !== 200
+        || ! str_contains($headers, $expected['content_type'])
+        || ! str_starts_with((string) $leaseRenewalReport['body'], $expected['signature'])) {
+        smoke_fail("Lease renewal {$extension} report was invalid.");
+    }
+
+    smoke_note("/lease-renewals/report.{$extension} valid");
+}
 
 $rentCollectionExport = smoke_request($baseUrl, $cookieFile, 'GET', '/exports/rent-collection?status=actionable&locale=en');
 $rentCollectionExportHeaders = strtolower((string) $rentCollectionExport['headers']);

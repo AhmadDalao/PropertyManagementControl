@@ -8,8 +8,10 @@ use App\Models\LeaseInstallment;
 use App\Models\Portfolio;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 final class LeaseRenewalWorkspaceTest extends TestCase
 {
@@ -123,7 +125,10 @@ final class LeaseRenewalWorkspaceTest extends TestCase
                 ->where('renewalInsights.expired_unresolved', 1)
                 ->where('counts', fn ($counts): bool => collect($counts)
                     ->firstWhere('filter.queue', 'prepared')['value'] === 1)
-                ->where('propertyOptions.0.id', $property->id));
+                ->where('propertyOptions.0.id', $property->id)
+                ->where('downloads.pdf', '/lease-renewals/report.pdf')
+                ->where('downloads.docx', '/lease-renewals/report.docx')
+                ->where('downloads.xlsx', '/exports/lease-renewals'));
 
         $this->assertNotNull($upcoming);
     }
@@ -230,6 +235,86 @@ final class LeaseRenewalWorkspaceTest extends TestCase
                 ->where('counts.0.label', 'الكل ضمن المدة'));
     }
 
+    public function test_report_files_and_library_card_use_the_exact_current_renewal_scope(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+        $property = $this->property($portfolio, 'Report Tower');
+        $foreignProperty = $this->property($foreignPortfolio, 'Foreign Report Tower');
+        $lease = $this->leaseAtProperty(
+            $portfolio,
+            $owner,
+            $property,
+            'Report Tenant',
+            'REPORT-RENEWAL',
+            ['ends_at' => today()->addDays(20)],
+        );
+        $this->leaseAtProperty(
+            $foreignPortfolio,
+            $foreignOwner,
+            $foreignProperty,
+            'Foreign Report Tenant',
+            'FOREIGN-REPORT-RENEWAL',
+            ['ends_at' => today()->addDays(20)],
+        );
+        LeaseInstallment::query()->create([
+            'lease_id' => $lease->id,
+            'sequence' => 1,
+            'line_type' => 'rent',
+            'label' => 'Renewal balance',
+            'due_date' => today()->subDay(),
+            'amount_due' => 1200,
+            'amount_paid' => 200,
+            'status' => 'partial',
+        ]);
+        $filters = [
+            'queue' => 'all',
+            'horizon' => '90',
+            'property_id' => $property->id,
+            'search' => 'REPORT-RENEWAL',
+        ];
+
+        $pdf = $this->actingAs($owner)
+            ->get(route('lease-renewals.report.pdf', $filters))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+
+        $word = $this->actingAs($owner)
+            ->get(route('lease-renewals.report.word', $filters))
+            ->assertOk();
+        $this->assertStringContainsString(
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            (string) $word->headers->get('content-type'),
+        );
+        $this->assertSame('PK', substr($word->streamedContent(), 0, 2));
+        $documentXml = $this->docxDocumentXml($word);
+        $this->assertStringContainsString('REPORT-RENEWAL', $documentXml);
+        $this->assertStringNotContainsString('FOREIGN-REPORT-RENEWAL', $documentXml);
+        $this->assertStringContainsString('1000', $documentXml);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', [
+                'date_from' => '2026-01-01',
+                'date_to' => '2026-01-31',
+                'property_id' => $property->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reportLibrary.2.cards.0.key', 'lease-renewals')
+                ->where(
+                    'reportLibrary.2.cards.0.openHref',
+                    '/lease-renewals?property_id='.$property->id,
+                )
+                ->has('reportLibrary.2.cards.0.downloads', 3)
+                ->where('reportLibrary.2.cards.0.downloads.0.label', 'Download PDF')
+                ->where('reportLibrary.2.cards.0.downloads.1.label', 'Download DOCX')
+                ->where('reportLibrary.2.cards.0.downloads.2.label', 'Download XLSX')
+                ->where('reportLibrary.2.cards.0.scope.0.label', 'Current snapshot'));
+    }
+
     public function test_tenants_and_disabled_portfolios_cannot_open_or_export_renewal_data(): void
     {
         $portfolio = $this->createPortfolio();
@@ -240,6 +325,12 @@ final class LeaseRenewalWorkspaceTest extends TestCase
             ->assertForbidden();
         $this->actingAs($tenant)
             ->get(route('exports.resource', ['resource' => 'lease-renewals']))
+            ->assertForbidden();
+        $this->actingAs($tenant)
+            ->get(route('lease-renewals.report.pdf'))
+            ->assertForbidden();
+        $this->actingAs($tenant)
+            ->get(route('lease-renewals.report.word'))
             ->assertForbidden();
 
         $disabledPortfolio = $this->createPortfolio([
@@ -252,6 +343,12 @@ final class LeaseRenewalWorkspaceTest extends TestCase
             ->assertForbidden();
         $this->actingAs($owner)
             ->get(route('exports.resource', ['resource' => 'lease-renewals']))
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->get(route('lease-renewals.report.pdf'))
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->get(route('lease-renewals.report.word'))
             ->assertForbidden();
     }
 
@@ -295,5 +392,19 @@ final class LeaseRenewalWorkspaceTest extends TestCase
             ['code' => $code, ...$attributes],
             syncInstallments: false,
         );
+    }
+
+    private function docxDocumentXml(TestResponse $response): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'renewal-docx-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $response->streamedContent());
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $xml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        return html_entity_decode(strip_tags($xml), ENT_QUOTES | ENT_XML1);
     }
 }
