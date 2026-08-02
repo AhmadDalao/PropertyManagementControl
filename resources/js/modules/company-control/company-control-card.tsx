@@ -155,7 +155,7 @@ export function CompanyControlCard({
                     <i className="bi bi-arrow-up-right" aria-hidden="true" />
                     {t('company_control.open_portfolio')}
                 </Link>
-                <Link href={`/reports?portfolio_id=${portfolio.id}`}>
+                <Link href={`/reports/statement?portfolio_id=${portfolio.id}`}>
                     {t('nav.reports')}
                 </Link>
                 <Link href={`/system/readiness?portfolio_id=${portfolio.id}`}>

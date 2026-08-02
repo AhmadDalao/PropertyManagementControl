@@ -32,6 +32,7 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('OwnerStatementPresenter', $statement);
         $this->assertStringContainsString('OwnerStatementPdfExport', $statement);
         $this->assertStringContainsString('OwnerStatementWordExport', $statement);
+        $this->assertStringContainsString('OwnerStatementWorkbookExport', $statement);
         $this->assertStringNotContainsString('Payment::query()', $statement);
 
         $property = $this->source($this->path('app/Http/Controllers/PropertyReportController.php'));
@@ -109,6 +110,7 @@ class ReportModuleArchitectureTest extends TestCase
         foreach ([
             'app/Modules/Reports/Actions/ManageReportPresets.php',
             'app/Modules/Reports/Actions/OwnerStatementPdfExport.php',
+            'app/Modules/Reports/Actions/OwnerStatementWorkbookExport.php',
             'app/Modules/Reports/Actions/OwnerStatementWordExport.php',
             'app/Modules/Reports/Actions/RentRollPdfExport.php',
             'app/Modules/Reports/Actions/RentRollWordExport.php',

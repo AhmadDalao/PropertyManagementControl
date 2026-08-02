@@ -85,7 +85,7 @@ export default function OwnerStatementPage() {
                     },
                     {
                         label: t('actions.export_xlsx'),
-                        href: `/reports/export${suffix}`,
+                        href: `/reports/statement.xlsx${suffix}`,
                         icon: 'bi-file-earmark-excel',
                         tone: 'primary',
                         native: true,

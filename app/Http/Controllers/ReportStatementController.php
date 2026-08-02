@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Modules\Reports\Actions\OwnerStatementPdfExport;
 use App\Modules\Reports\Actions\OwnerStatementWordExport;
+use App\Modules\Reports\Actions\OwnerStatementWorkbookExport;
 use App\Modules\Reports\Presenters\OwnerStatementPresenter;
 use App\Modules\Reports\Requests\ReportIndexRequest;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportStatementController extends Controller
@@ -16,6 +18,7 @@ class ReportStatementController extends Controller
         private readonly OwnerStatementPresenter $statements,
         private readonly OwnerStatementPdfExport $pdfExport,
         private readonly OwnerStatementWordExport $wordExport,
+        private readonly OwnerStatementWorkbookExport $workbookExport,
     ) {}
 
     public function show(ReportIndexRequest $request): Response
@@ -37,6 +40,18 @@ class ReportStatementController extends Controller
     {
         return $this->wordExport->download(
             $this->statements->present($this->actor($request), $request->filters()),
+        );
+    }
+
+    public function workbook(ReportIndexRequest $request): BinaryFileResponse
+    {
+        $filters = $request->filters();
+        $actor = $this->actor($request);
+
+        return $this->workbookExport->download(
+            $this->statements->present($actor, $filters),
+            $filters,
+            $actor,
         );
     }
 }

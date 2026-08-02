@@ -34,7 +34,7 @@ final readonly class PropertyReportPresenter
             'property' => [
                 ...$context,
                 'downloads' => [
-                    'xlsx' => route('reports.export', $query, false),
+                    'xlsx' => route('reports.statement.workbook', $query, false),
                     'pdf' => route('reports.statement.pdf', $query, false),
                     'docx' => route('reports.statement.word', $query, false),
                 ],

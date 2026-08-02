@@ -20,9 +20,13 @@ class ReportWorkbookExport
      * @param  array<string, mixed>  $report
      * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      */
-    public function download(array $report, array $filters, User $actor): BinaryFileResponse
-    {
-        $filename = 'portfolio-report-'.now()->format('Ymd-His').'.xlsx';
+    public function download(
+        array $report,
+        array $filters,
+        User $actor,
+        string $filenamePrefix = 'portfolio-report',
+    ): BinaryFileResponse {
+        $filename = $filenamePrefix.'-'.now()->format('Ymd-His').'.xlsx';
         $property = $this->properties->label(
             $actor,
             $filters['portfolio_id'],

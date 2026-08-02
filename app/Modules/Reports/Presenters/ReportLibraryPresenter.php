@@ -46,7 +46,7 @@ final class ReportLibraryPresenter
                     [
                         $this->download('PDF', $this->url('reports.statement.pdf', $query)),
                         $this->download('DOCX', $this->url('reports.statement.word', $query)),
-                        $this->download('XLSX', $this->url('reports.export', $query)),
+                        $this->download('XLSX', $this->url('reports.statement.workbook', $query)),
                     ],
                     'reports',
                     $scope['period'],
@@ -65,7 +65,7 @@ final class ReportLibraryPresenter
                         [
                             $this->download('PDF', $this->url('reports.statement.pdf', $query)),
                             $this->download('DOCX', $this->url('reports.statement.word', $query)),
-                            $this->download('XLSX', $this->url('reports.export', $query)),
+                            $this->download('XLSX', $this->url('reports.statement.workbook', $query)),
                         ],
                         'reports',
                         $scope['period'],

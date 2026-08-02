@@ -80,6 +80,10 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.0.downloads.1.label', 'Download DOCX')
                 ->where('reportLibrary.0.cards.0.downloads.2.label', 'Download XLSX')
                 ->where(
+                    'reportLibrary.0.cards.0.downloads.2.href',
+                    fn (string $url): bool => str_contains($url, '/reports/statement.xlsx'),
+                )
+                ->where(
                     'reportLibrary.0.cards.0.scope',
                     fn ($scope): bool => collect($scope)->keyBy('label')->get('Portfolio scope')['value'] === 'Owner Operations'
                         && collect($scope)->keyBy('label')->get('Property scope')['value'] === 'All properties'
@@ -681,7 +685,7 @@ class ReportsManagementTest extends TestCase
         $this->assertStringNotContainsString('Foreign outage', $arabicSheet);
     }
 
-    public function test_owner_statement_is_scoped_and_downloads_real_pdf_and_word_files(): void
+    public function test_owner_statement_is_scoped_and_downloads_real_pdf_word_and_workbook_files(): void
     {
         $portfolio = $this->createPortfolio(['name_en' => 'Own Portfolio', 'name_ar' => 'محفظتي']);
         $foreignPortfolio = $this->createPortfolio(['name_en' => 'Foreign Portfolio']);
@@ -755,6 +759,19 @@ class ReportsManagementTest extends TestCase
         $this->assertStringContainsString('كشف المالك', $documentXml);
         $this->assertStringNotContainsString('FOREIGN-STMT', $documentXml);
         $this->assertStringNotContainsString('Foreign Tenant', $documentXml);
+
+        $workbook = $this->actingAs($owner)
+            ->get(route('reports.statement.workbook'))
+            ->assertOk();
+        $this->assertStringContainsString(
+            'owner-statement-',
+            (string) $workbook->headers->get('content-disposition'),
+        );
+        $worksheet = $this->xlsxWorksheetXml($workbook);
+        $this->assertStringContainsString('OWN-STMT', $worksheet);
+        $this->assertStringContainsString('Own Tenant', $worksheet);
+        $this->assertStringNotContainsString('FOREIGN-STMT', $worksheet);
+        $this->assertStringNotContainsString('Foreign Tenant', $worksheet);
     }
 
     public function test_report_date_filters_limit_financial_activity(): void
@@ -1133,6 +1150,10 @@ class ReportsManagementTest extends TestCase
 
         $this->actingAs($tenant)
             ->get(route('reports.statement.word'))
+            ->assertForbidden();
+
+        $this->actingAs($tenant)
+            ->get(route('reports.statement.workbook'))
             ->assertForbidden();
     }
 

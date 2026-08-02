@@ -1026,4 +1026,19 @@ if (! str_contains($ownerStatementWordHeaders, 'application/vnd.openxmlformats-o
 }
 
 smoke_note('/reports/statement.docx Word .docx');
+
+$ownerStatementWorkbook = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/statement.xlsx');
+$ownerStatementWorkbookHeaders = strtolower((string) $ownerStatementWorkbook['headers']);
+
+if ($ownerStatementWorkbook['status'] !== 200) {
+    smoke_fail("Owner statement workbook returned {$ownerStatementWorkbook['status']}.");
+}
+
+if (! str_contains($ownerStatementWorkbookHeaders, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    || ! str_contains($ownerStatementWorkbookHeaders, '.xlsx')
+    || ! str_starts_with((string) $ownerStatementWorkbook['body'], 'PK')) {
+    smoke_fail('Owner statement workbook was not a valid .xlsx download.');
+}
+
+smoke_note('/reports/statement.xlsx Excel .xlsx');
 smoke_note('Live smoke passed.');

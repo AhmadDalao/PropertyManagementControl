@@ -388,6 +388,13 @@ test.describe('authenticated administration', () => {
             await expect(
                 page.locator('.pmc-company-control-card').first(),
             ).toBeVisible();
+            await expect(
+                page
+                    .locator(
+                        '.pmc-company-control-card a[href^="/reports/statement?portfolio_id="]',
+                    )
+                    .first(),
+            ).toBeVisible();
             await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
             await expectMinimumTouchHeight(
                 page,
@@ -792,7 +799,7 @@ test.describe('authenticated administration', () => {
                 page.locator('a[href^="/reports/statement.docx"]'),
             ).toBeVisible();
             await expect(
-                page.locator('a[href^="/reports/export"]'),
+                page.locator('a[href^="/reports/statement.xlsx"]'),
             ).toBeVisible();
 
             await page.getByRole('tab', { name: 'What changed' }).click();
@@ -2952,7 +2959,9 @@ test.describe('authenticated administration', () => {
             await expectNoHorizontalOverflow(page);
         }
 
-        const workbookLink = page.locator('a[href^="/reports/export"]').first();
+        const workbookLink = page
+            .locator('a[href^="/reports/statement.xlsx"]')
+            .first();
         const workbookHref = await workbookLink.getAttribute('href');
         expect(workbookHref).toContain('property_id=');
         const workbook = await page.request.get(workbookHref!);

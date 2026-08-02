@@ -268,6 +268,7 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::get('/reports/statement', [ReportStatementController::class, 'show'])->name('reports.statement')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.pdf', [ReportStatementController::class, 'pdf'])->name('reports.statement.pdf')->middleware('portfolio.module:reports');
     Route::get('/reports/statement.docx', [ReportStatementController::class, 'word'])->name('reports.statement.word')->middleware('portfolio.module:reports');
+    Route::get('/reports/statement.xlsx', [ReportStatementController::class, 'workbook'])->name('reports.statement.workbook')->middleware('portfolio.module:reports');
     Route::post('/reports/presets', [ReportPresetController::class, 'store'])->name('reports.presets.store')->middleware('portfolio.module:reports');
     Route::delete('/reports/presets/{reportPreset}', [ReportPresetController::class, 'destroy'])->name('reports.presets.destroy')->middleware('portfolio.module:reports');
     Route::resource('documents', DocumentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:documents')->middlewareFor(['create', 'store'], 'property.assigned');
