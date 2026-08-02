@@ -51,7 +51,7 @@ export function LoginForm({ status }: { status?: string | null }) {
                 />
 
                 <div className="text-end">
-                    <Link href="/forgot-password">
+                    <Link href="/account-recovery">
                         {t('login.forgot_password')}
                     </Link>
                 </div>

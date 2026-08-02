@@ -149,7 +149,7 @@ function smoke_page_payload(string $html): array
 $publicChecks = [
     '/' => 'public/home',
     '/login' => 'auth/login',
-    '/forgot-password' => 'auth/forgot-password',
+    '/account-recovery' => 'auth/forgot-password',
     '/?locale=ar' => 'public/home',
 ];
 

@@ -140,3 +140,8 @@ Shared hosting can terminate a worker without releasing Laravel's overlap mutex.
 - `/system/readiness` automatic checks, then record backup, restore, legal, opening-data, retention, and pilot evidence there
 
 Do not run `property:seed-demo-data` or generate showcase data in production unless production demo records are explicitly wanted. Lease clauses must be supplied from portfolio-approved legal wording; the application does not invent legal terms.
+
+Hostinger intercepts the conventional `/forgot-password` path before Laravel on
+this account. The application therefore exposes the same recovery workflow at
+`/account-recovery` while retaining Laravel's standard `password.request` and
+`password.email` route names.

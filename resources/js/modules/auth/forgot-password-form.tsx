@@ -11,7 +11,7 @@ export function ForgotPasswordForm({ status }: { status?: string | null }) {
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        form.post('/forgot-password');
+        form.post('/account-recovery');
     };
 
     return (
