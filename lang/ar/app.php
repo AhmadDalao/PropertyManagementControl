@@ -3708,6 +3708,8 @@ return [
         'mobile_portfolio_description' => 'صحة العقارات والعقود والنشاط المالي الأخير.',
         'mobile_system_title' => 'ضوابط النظام',
         'mobile_system_description' => 'جاهزية الإطلاق ونشر الموقع وحالة المنصة.',
+        'workspace_navigation' => 'مساحات عمل لوحة التحكم',
+        'system_workspace_navigation' => 'مجالات التحكم بالنظام',
         'create_portfolio' => 'إنشاء محفظة',
         'create_user' => 'إنشاء مستخدم',
         'create_lease' => 'إنشاء عقد',

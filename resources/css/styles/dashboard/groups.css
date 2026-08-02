@@ -1,86 +1,212 @@
-.pmc-dashboard-section-group,
-.pmc-dashboard-section-body {
-    display: contents;
+.pmc-dashboard-workspace,
+.pmc-dashboard-view-panel,
+.pmc-dashboard-system-workspace {
+    display: grid;
+    min-width: 0;
+    gap: 1rem;
 }
 
-.pmc-dashboard-section-group > button {
+.pmc-dashboard-workspace {
+    margin-top: 1rem;
+}
+
+.pmc-dashboard-view-tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 0.65rem;
+    padding: 0.45rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 1rem;
+    background: #fff;
+}
+
+.pmc-dashboard-view-tabs > button {
+    display: grid;
+    min-width: 0;
+    min-height: 4.5rem;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.7rem 0.8rem;
+    border: 0;
+    border-radius: 0.75rem;
+    background: transparent;
+    color: #111;
+    text-align: start;
+    transition:
+        color 160ms ease,
+        background-color 160ms ease,
+        transform 160ms ease;
+}
+
+.pmc-dashboard-view-tabs > button:hover {
+    background: var(--pmc-sand-soft);
+}
+
+.pmc-dashboard-view-tabs > button.is-active {
+    background: #111;
+    color: #fff;
+}
+
+.pmc-dashboard-view-icon {
+    display: grid;
+    width: 2.55rem;
+    height: 2.55rem;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: var(--pmc-amber-soft);
+    color: #6f5400;
+}
+
+.pmc-dashboard-view-tabs > button.is-active .pmc-dashboard-view-icon {
+    background: var(--pmc-amber);
+    color: #211600;
+}
+
+.pmc-dashboard-view-copy {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-dashboard-view-copy strong {
+    font-size: 0.8rem;
+    font-weight: 900;
+}
+
+.pmc-dashboard-view-copy small {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.67rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-dashboard-view-tabs > button.is-active small {
+    color: #c9c6c0;
+}
+
+.pmc-dashboard-view-count {
+    display: grid;
+    min-width: 2rem;
+    height: 2rem;
+    place-items: center;
+    padding-inline: 0.45rem;
+    border-radius: 999px;
+    background: var(--pmc-sand-soft);
+    color: #111;
+    font-size: 0.72rem;
+    font-weight: 900;
+}
+
+.pmc-dashboard-view-tabs > button.is-active .pmc-dashboard-view-count {
+    background: #fff;
+}
+
+.pmc-dashboard-system-tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.5rem;
+}
+
+.pmc-dashboard-system-tabs button {
+    display: flex;
+    min-width: 0;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.72rem;
+    background: #fff;
+    color: #5f5b54;
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-align: start;
+}
+
+.pmc-dashboard-system-tabs button > span {
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.pmc-dashboard-system-tabs button > strong {
+    display: grid;
+    min-width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    flex: 0 0 auto;
+    padding-inline: 0.3rem;
+    border-radius: 999px;
+    background: var(--pmc-amber-soft);
+    color: #6f5400;
+    font-size: 0.67rem;
+}
+
+.pmc-dashboard-system-tabs button.is-active {
+    border-color: #111;
+    background: #111;
+    color: #fff;
+}
+
+.pmc-dashboard-system-tabs button.is-active > strong {
+    background: var(--pmc-accent);
+    color: #111;
+}
+
+.pmc-dashboard-system-panel {
     display: none;
+    min-width: 0;
+}
+
+.pmc-dashboard-system-panel.is-active {
+    display: block;
 }
 
 @media (max-width: 767.98px) {
-    .pmc-dashboard-section-group {
-        display: block;
-        min-width: 0;
-        margin-bottom: 1rem;
+    .pmc-dashboard-view-tabs {
+        grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+        gap: 0.35rem;
+        padding: 0.35rem;
     }
 
-    .pmc-dashboard-section-group > button {
-        display: grid;
-        width: 100%;
-        min-height: 4.25rem;
-        grid-template-columns: auto minmax(0, 1fr) auto;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.7rem 0.8rem;
-        border: 1px solid var(--pmc-line);
-        border-radius: 0.85rem;
-        background: #fff;
-        color: #111;
-        text-align: start;
+    .pmc-dashboard-view-tabs > button {
+        min-height: 4.75rem;
+        grid-template-columns: 1fr auto;
+        gap: 0.35rem;
+        padding: 0.55rem;
     }
 
-    .pmc-dashboard-section-group > button > span:nth-child(2) {
-        display: grid;
-        min-width: 0;
-        gap: 0.15rem;
+    .pmc-dashboard-view-icon {
+        width: 2.25rem;
+        height: 2.25rem;
     }
 
-    .pmc-dashboard-section-group > button strong {
-        font-size: 0.8rem;
-        font-weight: 900;
+    .pmc-dashboard-view-copy {
+        grid-column: 1 / -1;
+        grid-row: 2;
     }
 
-    .pmc-dashboard-section-group > button small {
-        overflow: hidden;
-        color: var(--pmc-muted);
-        font-size: 0.65rem;
-        line-height: 1.35;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .pmc-dashboard-section-icon {
-        display: grid;
-        width: 2.5rem;
-        height: 2.5rem;
-        place-items: center;
-        border-radius: 0.7rem;
-        background: var(--pmc-amber-soft);
-        color: #6f5400;
-    }
-
-    .pmc-dashboard-section-chevron {
-        color: #6f6b65;
-        font-size: 0.72rem;
-        transition: transform 160ms ease;
-    }
-
-    .pmc-dashboard-section-group.is-open .pmc-dashboard-section-chevron {
-        transform: rotate(180deg);
-    }
-
-    .pmc-dashboard-section-body {
+    .pmc-dashboard-view-copy small {
         display: none;
-        padding-top: 0.75rem;
     }
 
-    .pmc-dashboard-section-group.is-open > .pmc-dashboard-section-body {
-        display: block;
+    .pmc-dashboard-view-count {
+        min-width: 1.75rem;
+        height: 1.75rem;
+        padding-inline: 0.35rem;
+        font-size: 0.65rem;
+    }
+
+    .pmc-dashboard-system-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .pmc-dashboard-section-chevron {
+    .pmc-dashboard-view-tabs > button {
         transition: none;
     }
 }

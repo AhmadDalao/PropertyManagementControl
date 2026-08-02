@@ -1014,6 +1014,7 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/dashboard?locale=en');
+        await page.locator('[data-dashboard-view-tab="portfolio"]').click();
         await expect(
             page.locator('a[href="/lease-renewals?queue=all"]'),
         ).toBeVisible();
@@ -1440,15 +1441,12 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
+        await page.locator('[data-dashboard-view-tab="system"]').click();
+        await page.locator('[data-dashboard-system-tab="readiness"]').click();
         await expect(
             page
                 .locator('.pmc-dashboard-launch-readiness')
                 .getByRole('heading', { name: 'ضبط الإطلاق' }),
-        ).toBeVisible();
-        await expect(
-            page
-                .locator('.pmc-platform-composition')
-                .getByRole('heading', { name: 'النطاق الفعلي للشركة' }),
         ).toBeVisible();
         const showcaseContext = page.locator('.pmc-dashboard-data-context');
 
@@ -1460,6 +1458,12 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
         }
 
+        await page.locator('[data-dashboard-system-tab="company"]').click();
+        await expect(
+            page
+                .locator('.pmc-platform-composition')
+                .getByRole('heading', { name: 'النطاق الفعلي للشركة' }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 
@@ -2828,9 +2832,7 @@ test.describe('authenticated administration', () => {
         await expect(savedCard).toBeVisible();
         await expect(savedCard).toContainText('هذا الشهر');
         await expect(savedCard).toContainText('ROSE-TOWER');
-        const savedDetailLink = savedCard.locator(
-            '.pmc-report-preset-title',
-        );
+        const savedDetailLink = savedCard.locator('.pmc-report-preset-title');
         await expect(savedDetailLink).toHaveCount(1);
         await savedDetailLink.click();
         await expect(page).toHaveURL(/\/reports\/saved\/\d+/);
@@ -3508,10 +3510,16 @@ test.describe('local role dashboards', () => {
             'aria-hidden',
             'true',
         );
+        await page.locator('[data-dashboard-view-tab="system"]').click();
+        await expect(page).toHaveURL(/panel=system/);
         const systemGroup = page.locator('[data-dashboard-group="system"]');
-        await systemGroup.locator(':scope > button').click();
+        await systemGroup
+            .locator('[data-dashboard-system-tab="activity"]')
+            .click();
         await expect(
-            systemGroup.getByText('آخر التغييرات عبر العملاء'),
+            systemGroup.getByRole('heading', {
+                name: 'آخر التغييرات عبر العملاء',
+            }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -3568,22 +3576,32 @@ test.describe('local role dashboards', () => {
                     await page.evaluate(
                         () => document.documentElement.scrollHeight,
                     ),
-                ).toBeLessThan(3500);
-                const systemGroup = page.locator(
-                    '[data-dashboard-group="system"]',
-                );
-                const systemToggle = systemGroup.locator(':scope > button');
-                await expect(systemToggle).toHaveAttribute(
-                    'aria-expanded',
-                    'false',
-                );
-                await systemToggle.click();
+                ).toBeLessThan(2600);
+                await page
+                    .locator('[data-dashboard-view-tab="system"]')
+                    .click();
+                await expect(page).toHaveURL(/panel=system/);
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
                 ).toBeVisible();
+                await page
+                    .locator('[data-dashboard-system-tab="company"]')
+                    .click();
+                await expect(page).toHaveURL(/control=company/);
                 await expect(
                     page.locator('.pmc-platform-composition'),
                 ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-platform-activity'),
+                ).toHaveCount(0);
+                await expectMinimumTouchHeight(
+                    page,
+                    '.pmc-platform-composition-grid nav a',
+                );
+                await page
+                    .locator('[data-dashboard-system-tab="activity"]')
+                    .click();
+                await expect(page).toHaveURL(/control=activity/);
                 await expect(
                     page.locator('.pmc-platform-activity'),
                 ).toBeVisible();
@@ -3592,8 +3610,9 @@ test.describe('local role dashboards', () => {
                 ).toBeGreaterThan(0);
                 await expectMinimumTouchHeight(
                     page,
-                    '.pmc-platform-composition-grid nav a, [data-platform-activity]',
+                    '[data-platform-activity]',
                 );
+                await page.locator('[data-dashboard-view-tab="today"]').click();
             } else {
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
@@ -3610,12 +3629,9 @@ test.describe('local role dashboards', () => {
                 const todayGroup = page.locator(
                     '[data-dashboard-group="today"]',
                 );
-                const portfolioGroup = page.locator(
-                    '[data-dashboard-group="portfolio"]',
-                );
                 await expect(
-                    todayGroup.locator(':scope > button'),
-                ).toHaveAttribute('aria-expanded', 'true');
+                    page.locator('[data-dashboard-view-tab="today"]'),
+                ).toHaveAttribute('aria-pressed', 'true');
                 const workTabs = todayGroup.locator(
                     '.pmc-dashboard-today-tabs button',
                 );
@@ -3641,31 +3657,63 @@ test.describe('local role dashboards', () => {
                     ),
                 ).toBeVisible();
                 await expect(
-                    portfolioGroup.locator(':scope > button'),
-                ).toHaveAttribute('aria-expanded', 'false');
-                await portfolioGroup.locator(':scope > button').click();
+                    page.locator('[data-dashboard-group="portfolio"]'),
+                ).toHaveCount(0);
+                await page
+                    .locator('[data-dashboard-view-tab="portfolio"]')
+                    .click();
+                await expect(page).toHaveURL(/panel=portfolio/);
                 await expect(
-                    portfolioGroup.locator('.pmc-property-performance'),
+                    page.locator(
+                        '[data-dashboard-group="portfolio"] .pmc-property-performance',
+                    ),
                 ).toBeVisible();
             }
 
             if (account.role === 'superadmin') {
                 await page.setViewportSize(viewports.desktop);
                 await page.reload();
-                const desktopGroupToggles = page.locator(
-                    '[data-dashboard-group] > button',
+                const desktopViewTabs = page.locator(
+                    '[data-dashboard-view-tab]',
                 );
-                await expect(desktopGroupToggles).toHaveCount(3);
-                await expect(desktopGroupToggles.first()).toBeHidden();
+                expect(await desktopViewTabs.count()).toBe(3);
+                await expect(
+                    page.locator('.pmc-dashboard-view-tabs'),
+                ).toBeVisible();
+                await expect(
+                    page.locator('[data-dashboard-view-tab="portfolio"]'),
+                ).toHaveAttribute('aria-pressed', 'true');
+                await expect(
+                    page.locator('.pmc-property-performance'),
+                ).toBeVisible();
+                await page
+                    .locator('[data-dashboard-view-tab="system"]')
+                    .click();
+                await page
+                    .locator('[data-dashboard-system-tab="readiness"]')
+                    .click();
+                await expect(page).toHaveURL(/control=readiness/);
                 await expect(
                     page.locator('.pmc-dashboard-launch-readiness'),
                 ).toBeVisible();
+                await page
+                    .locator('[data-dashboard-system-tab="company"]')
+                    .click();
                 await expect(
                     page.locator('.pmc-platform-composition'),
                 ).toBeVisible();
+                await page
+                    .locator('[data-dashboard-system-tab="activity"]')
+                    .click();
                 await expect(
                     page.locator('.pmc-platform-activity'),
                 ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-property-performance'),
+                ).toHaveCount(0);
+                await page
+                    .locator('[data-dashboard-view-tab="portfolio"]')
+                    .click();
                 await expect(
                     page.locator('.pmc-property-performance'),
                 ).toBeVisible();

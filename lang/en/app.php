@@ -3708,6 +3708,8 @@ return [
         'mobile_portfolio_description' => 'Property health, contracts, and recent financial activity.',
         'mobile_system_title' => 'System controls',
         'mobile_system_description' => 'Launch readiness, website publishing, and platform status.',
+        'workspace_navigation' => 'Dashboard workspaces',
+        'system_workspace_navigation' => 'System control areas',
         'create_portfolio' => 'Create portfolio',
         'create_user' => 'Create user',
         'create_lease' => 'Create lease',
