@@ -50,11 +50,7 @@ final readonly class PlatformActivityQuery
             ->latest()
             ->limit(self::QUERY_LIMIT)
             ->get()
-            ->unique(fn (Activity $activity): string => implode(':', [
-                $activity->subject_type,
-                $activity->subject_id,
-                $activity->event,
-            ]))
+            ->unique(fn (Activity $activity): string => $this->activityKey($activity))
             ->values();
         $portfolioIds = $activities
             ->map(fn (Activity $activity): ?int => $this->presenter->portfolioId($activity->subject))
@@ -86,5 +82,14 @@ final readonly class PlatformActivityQuery
             fn (string $alias): array => $this->subjects->typeValues($alias),
             self::SUBJECTS,
         ))));
+    }
+
+    private function activityKey(Activity $activity): string
+    {
+        return implode(':', [
+            $this->subjects->alias($activity->subject_type) ?? $activity->subject_type,
+            $activity->subject_id,
+            $activity->event,
+        ]);
     }
 }

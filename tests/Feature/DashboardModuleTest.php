@@ -136,6 +136,18 @@ class DashboardModuleTest extends TestCase
             'created_at' => now()->addMinutes(3),
             'updated_at' => now()->addMinutes(3),
         ]);
+        $canonicalLiveActivity = Activity::query()->create([
+            'log_name' => 'portfolio',
+            'description' => 'updated',
+            'subject_type' => Portfolio::class,
+            'subject_id' => $livePortfolio->id,
+            'causer_type' => 'user',
+            'causer_id' => $superadmin->id,
+            'event' => 'updated',
+            'properties' => [],
+            'created_at' => now()->addMinutes(4),
+            'updated_at' => now()->addMinutes(4),
+        ]);
 
         $this->actingAs($superadmin)
             ->get(route('dashboard'))
@@ -157,7 +169,7 @@ class DashboardModuleTest extends TestCase
                 ->where('platformComposition.portfolios.showcase', 1)
                 ->where('platformComposition.properties.live', 0)
                 ->where('platformComposition.properties.showcase', 1)
-                ->where('platformActivity.0.id', $latestLiveActivity->id)
+                ->where('platformActivity.0.id', $canonicalLiveActivity->id)
                 ->where('platformActivity.0.portfolio.id', $livePortfolio->id)
                 ->where(
                     'platformActivity.0.subject_url',
@@ -166,7 +178,8 @@ class DashboardModuleTest extends TestCase
                 ->where(
                     'platformActivity',
                     fn (mixed $rows): bool => collect($rows)
-                        ->doesntContain('id', $olderLiveActivity->id),
+                        ->doesntContain('id', $olderLiveActivity->id)
+                        && collect($rows)->doesntContain('id', $latestLiveActivity->id),
                 ));
     }
 
