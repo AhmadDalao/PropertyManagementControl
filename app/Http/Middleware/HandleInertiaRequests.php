@@ -67,6 +67,7 @@ class HandleInertiaRequests extends Middleware
             ],
             'publicNavigation' => [
                 'header' => fn () => app(PublicNavigationQuery::class)->header(),
+                'footer' => fn () => app(PublicNavigationQuery::class)->footer(),
             ],
         ];
     }

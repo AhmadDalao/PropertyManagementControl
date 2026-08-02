@@ -13,6 +13,7 @@ declare module '@inertiajs/core' {
         auth: Auth;
         publicNavigation: {
             header: NavigationItemRecord[];
+            footer: NavigationItemRecord[];
         };
         [key: string]: unknown;
     }

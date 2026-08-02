@@ -74,10 +74,42 @@ test.describe('public shell', () => {
             for (const path of ['/', '/login', '/?locale=ar']) {
                 await page.goto(path);
                 await expect(page.locator('body')).toBeVisible();
+
+                if (path !== '/login') {
+                    await expect(page.locator('.pmc-site-footer')).toBeVisible();
+                }
+
                 await expectNoHorizontalOverflow(page);
             }
         });
     }
+
+    test('public footer is bilingual, controlled, and touch-safe', async ({
+        page,
+    }) => {
+        for (const [locale, navigationLabel] of [
+            ['en', 'Footer navigation'],
+            ['ar', 'روابط تذييل الموقع'],
+        ] as const) {
+            await page.setViewportSize(viewports.mobile);
+            await page.goto(`/?locale=${locale}`);
+
+            const footer = page.locator('.pmc-site-footer');
+            await expect(footer).toBeVisible();
+            await expect(
+                footer.getByRole('navigation', { name: navigationLabel }),
+            ).toBeVisible();
+            await expect(
+                footer.getByRole('link', {
+                    name: locale === 'ar' ? 'فتح البوابة' : 'Open Portal',
+                }),
+            ).toBeVisible();
+            expect(
+                await footer.locator('.pmc-site-footer-links a').count(),
+            ).toBe(4);
+            await expectNoHorizontalOverflow(page);
+        }
+    });
 
     test('public and login pages have no serious accessibility violations', async ({
         page,

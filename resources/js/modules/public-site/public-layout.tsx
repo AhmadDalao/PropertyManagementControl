@@ -6,6 +6,7 @@ import { LanguageSwitcher } from '@/components/language-switcher';
 import { useTranslator } from '@/lib/i18n';
 import type { SharedProps } from '@/types';
 
+import { PublicFooter } from './public-footer';
 import { defaultPublicNavigation, PublicNavigation } from './public-navigation';
 import { usePublicMenu } from './use-public-menu';
 
@@ -77,6 +78,10 @@ export function PublicLayout({ children }: { children: ReactNode }) {
             ) : null}
 
             <main className="pmc-site-main">{children}</main>
+            <PublicFooter
+                items={props.publicNavigation.footer}
+                locale={props.app.locale}
+            />
         </div>
     );
 }

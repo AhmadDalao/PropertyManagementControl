@@ -11,8 +11,20 @@ class PublicNavigationQuery
     /** @return Collection<int, NavigationItem> */
     public function header(): Collection
     {
+        return $this->forLocation('header');
+    }
+
+    /** @return Collection<int, NavigationItem> */
+    public function footer(): Collection
+    {
+        return $this->forLocation('footer');
+    }
+
+    /** @return Collection<int, NavigationItem> */
+    private function forLocation(string $location): Collection
+    {
         return NavigationItem::query()
-            ->where('location', 'header')
+            ->where('location', $location)
             ->where('is_visible', true)
             ->whereNull('parent_id')
             ->where(function ($query): void {
@@ -21,6 +33,7 @@ class PublicNavigationQuery
             ->with([
                 'page:id,slug,title_en,title_ar,status,is_homepage,is_visible',
                 'children' => fn ($query) => $query
+                    ->where('location', $location)
                     ->where('is_visible', true)
                     ->where(function ($destination): void {
                         $this->constrainToPublicDestination($destination);

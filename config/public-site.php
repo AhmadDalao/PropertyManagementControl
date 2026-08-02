@@ -240,9 +240,13 @@ return [
     ],
 
     'navigation' => [
-        ['links_homepage' => true, 'title_en' => 'Home', 'title_ar' => 'الرئيسية', 'url' => '/'],
-        ['title_en' => 'Features', 'title_ar' => 'المزايا', 'url' => '#features'],
-        ['title_en' => 'Workflow', 'title_ar' => 'مسار العمل', 'url' => '#workflow'],
-        ['title_en' => 'FAQ', 'title_ar' => 'الأسئلة', 'url' => '#faq'],
+        ['location' => 'header', 'links_homepage' => true, 'title_en' => 'Home', 'title_ar' => 'الرئيسية', 'url' => '/'],
+        ['location' => 'header', 'title_en' => 'Features', 'title_ar' => 'المزايا', 'url' => '#features'],
+        ['location' => 'header', 'title_en' => 'Workflow', 'title_ar' => 'مسار العمل', 'url' => '#workflow'],
+        ['location' => 'header', 'title_en' => 'FAQ', 'title_ar' => 'الأسئلة', 'url' => '#faq'],
+        ['location' => 'footer', 'links_homepage' => true, 'title_en' => 'Home', 'title_ar' => 'الرئيسية', 'url' => '/'],
+        ['location' => 'footer', 'title_en' => 'Features', 'title_ar' => 'المزايا', 'url' => '#features'],
+        ['location' => 'footer', 'title_en' => 'Workflow', 'title_ar' => 'مسار العمل', 'url' => '#workflow'],
+        ['location' => 'footer', 'title_en' => 'FAQ', 'title_ar' => 'الأسئلة الشائعة', 'url' => '#faq'],
     ],
 ];

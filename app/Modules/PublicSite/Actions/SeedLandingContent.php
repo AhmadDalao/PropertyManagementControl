@@ -82,11 +82,15 @@ class SeedLandingContent
     /** @param array<int, array<string, mixed>> $definitions */
     private function upsertNavigation(CmsPage $page, array $definitions): void
     {
-        foreach ($definitions as $index => $definition) {
+        $sortOrderByLocation = [];
+
+        foreach ($definitions as $definition) {
+            $location = (string) ($definition['location'] ?? 'header');
+            $sortOrderByLocation[$location] = ($sortOrderByLocation[$location] ?? 0) + 1;
             NavigationItem::query()->updateOrCreate(
                 [
                     'parent_id' => null,
-                    'location' => 'header',
+                    'location' => $location,
                     'url' => $definition['url'],
                 ],
                 [
@@ -94,7 +98,7 @@ class SeedLandingContent
                     'title_en' => $definition['title_en'],
                     'title_ar' => $definition['title_ar'],
                     'target' => '_self',
-                    'sort_order' => $index + 1,
+                    'sort_order' => $sortOrderByLocation[$location],
                     'is_visible' => true,
                 ],
             );

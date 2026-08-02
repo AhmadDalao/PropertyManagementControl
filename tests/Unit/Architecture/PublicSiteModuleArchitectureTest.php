@@ -40,7 +40,7 @@ class PublicSiteModuleArchitectureTest extends TestCase
 
         $config = require $this->path('config/public-site.php');
         $this->assertCount(8, $config['sections']);
-        $this->assertCount(4, $config['navigation']);
+        $this->assertCount(8, $config['navigation']);
         $this->assertFileDoesNotExist($this->path('app/Services/LandingContentSeeder.php'));
         $this->assertFileDoesNotExist($this->path('app/Modules/Cms/Queries/PublicCmsPageQuery.php'));
         $this->assertArrayHasKey('public_site', ModuleRegistry::operationalModules());
@@ -77,7 +77,7 @@ class PublicSiteModuleArchitectureTest extends TestCase
         $stylesheet = $this->source('resources/css/styles/public.css');
         $this->assertLessThanOrEqual(10, substr_count($stylesheet, "\n") + 1);
         $layers = glob($this->path('resources/css/styles/public/*.css')) ?: [];
-        $this->assertCount(5, $layers);
+        $this->assertCount(6, $layers);
 
         foreach ($layers as $file) {
             $this->assertLessThanOrEqual(

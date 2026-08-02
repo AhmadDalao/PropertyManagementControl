@@ -121,7 +121,7 @@ function PublicNavItem({
     );
 }
 
-function PublicNavLink({
+export function PublicNavLink({
     item,
     locale,
     onNavigate,

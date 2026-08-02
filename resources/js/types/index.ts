@@ -34,6 +34,7 @@ export type SharedProps = {
     };
     publicNavigation: {
         header: NavigationItemRecord[];
+        footer: NavigationItemRecord[];
     };
 };
 
