@@ -48,6 +48,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportPresetController;
 use App\Http\Controllers\ReportStatementController;
 use App\Http\Controllers\ShowcaseDataController;
+use App\Http\Controllers\SystemBackupController;
 use App\Http\Controllers\SystemReadinessController;
 use App\Http\Controllers\SystemReadinessReportController;
 use App\Http\Controllers\TenantAccountStatementController;
@@ -297,6 +298,15 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->name('email-delivery.export');
     Route::get('/system/email-delivery/{emailDeliveryLog}', [EmailDeliveryController::class, 'show'])
         ->name('email-delivery.show');
+    Route::get('/system/backups', [SystemBackupController::class, 'index'])
+        ->name('system-backups.index');
+    Route::post('/system/backups', [SystemBackupController::class, 'store'])
+        ->middleware('throttle:2,10')
+        ->name('system-backups.store');
+    Route::get('/system/backups/{systemBackupRun}/download', [SystemBackupController::class, 'download'])
+        ->name('system-backups.download');
+    Route::delete('/system/backups/{systemBackupRun}', [SystemBackupController::class, 'destroy'])
+        ->name('system-backups.destroy');
     Route::get('/cms/pages/create', [CmsPageController::class, 'create'])->name('cms.pages.create');
     Route::get('/cms/sections/create', [CmsSectionController::class, 'create'])->name('cms.sections.create');
     Route::get('/cms/sections/{cmsSection}/edit', [CmsSectionController::class, 'edit'])->name('cms.sections.edit');

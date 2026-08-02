@@ -3,6 +3,7 @@
 namespace App\Modules\SystemReadiness\Queries;
 
 use App\Models\Document;
+use App\Models\SystemBackupRun;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use App\Modules\SystemReadiness\Support\MailReadiness;
 use App\Modules\SystemReadiness\Support\ReadinessLocale;
@@ -31,6 +32,7 @@ final class SystemHealthQuery
             $this->queue(),
             $this->storage(),
             $this->documents(),
+            $this->backups(),
         ];
     }
 
@@ -224,6 +226,59 @@ final class SystemHealthQuery
             ]),
             ['total' => $total, 'sampled' => $sample->count(), 'missing' => $missing],
         );
+    }
+
+    /** @return array<string, mixed> */
+    private function backups(): array
+    {
+        $latest = SystemBackupRun::query()
+            ->where('status', 'completed')
+            ->latest('completed_at')
+            ->first();
+
+        if (! $latest || ! $latest->completed_at || ! $latest->archive_path) {
+            return [
+                ...$this->check('backups', 'blocked', trans('app.readiness.backups_missing')),
+                'href' => route('system-backups.index'),
+                'action_label' => trans('app.readiness.open_backups'),
+            ];
+        }
+
+        try {
+            $available = Storage::disk($latest->archive_disk)->exists($latest->archive_path);
+        } catch (Throwable) {
+            $available = false;
+        }
+
+        $ageDays = max(0, (int) $latest->completed_at->diffInDays(now()));
+        $status = ! $available
+            ? 'blocked'
+            : ($ageDays <= 8 ? 'ready' : ($ageDays <= 14 ? 'attention' : 'blocked'));
+
+        return [
+            ...$this->check(
+                'backups',
+                $status,
+                trans(
+                    $available
+                        ? 'app.readiness.backups_detail'
+                        : 'app.readiness.backups_archive_missing',
+                    [
+                        'id' => $this->locale->number($latest->id),
+                        'days' => $this->locale->number($ageDays),
+                        'size' => $this->locale->number($latest->archive_bytes),
+                    ],
+                ),
+                [
+                    'run_id' => $latest->id,
+                    'age_days' => $ageDays,
+                    'archive_bytes' => $latest->archive_bytes,
+                    'archive_available' => $available,
+                ],
+            ),
+            'href' => route('system-backups.index'),
+            'action_label' => trans('app.readiness.open_backups'),
+        ];
     }
 
     /**

@@ -26,9 +26,14 @@ use App\Models\Payment;
 use App\Models\PaymentAllocation;
 use App\Models\Portfolio;
 use App\Models\ReportPreset;
+use App\Models\SystemBackupRun;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\EmailDelivery\Actions\RecordEmailDelivery;
+use App\Modules\SystemBackups\Contracts\DatabaseBackupWriter;
+use App\Modules\SystemBackups\Contracts\DocumentBackupWriter;
+use App\Modules\SystemBackups\Support\MySqlDatabaseBackupWriter;
+use App\Modules\SystemBackups\Support\TarDocumentBackupWriter;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Mail\Events\MessageSending;
@@ -48,6 +53,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->bind(DatabaseBackupWriter::class, MySqlDatabaseBackupWriter::class);
+        $this->app->bind(DocumentBackupWriter::class, TarDocumentBackupWriter::class);
+
         if (! $this->app->environment(['local', 'testing'])) {
             return;
         }
@@ -105,6 +113,7 @@ class AppServiceProvider extends ServiceProvider
             'label_override' => LabelOverride::class,
             'report_preset' => ReportPreset::class,
             'operational_readiness_check' => OperationalReadinessCheck::class,
+            'system_backup_run' => SystemBackupRun::class,
         ]);
 
         Date::use(CarbonImmutable::class);

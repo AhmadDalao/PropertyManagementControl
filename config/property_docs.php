@@ -339,6 +339,15 @@ return [
             'icon' => 'bi-envelope-check',
             'roles' => ['superadmin'],
         ],
+        [
+            'label' => 'Backup Control',
+            'category' => 'System',
+            'route' => '/system/backups',
+            'description' => 'Create, verify, download, and retain private database and document recovery packages.',
+            'action' => 'Open backup control',
+            'icon' => 'bi-database-check',
+            'roles' => ['superadmin'],
+        ],
     ],
     'control_checks' => [
         [
@@ -382,6 +391,14 @@ return [
             'icon' => 'bi-envelope-check',
             'checks' => ['Password resets create one delivery record', 'Retries increment the same notification', 'Accepted does not claim inbox delivery'],
         ],
+        [
+            'title' => 'Backup and restore evidence',
+            'roles' => ['superadmin'],
+            'summary' => 'A recent server package must exist, an offsite copy must be protected, and restoration must be proven separately.',
+            'route' => '/system/backups',
+            'icon' => 'bi-database-check',
+            'checks' => ['Database and private documents share one manifest', 'Downloaded package checksum matches', 'Restore drill evidence names the tested backup'],
+        ],
     ],
     'role_guides' => [
         [
@@ -389,7 +406,7 @@ return [
             'title' => 'System owner',
             'summary' => 'Owns the platform-level setup, website, global users, portfolio oversight, and audit trail.',
             'responsibilities' => ['Control public website', 'Create portfolios', 'Monitor platform totals', 'Audit permissions and content'],
-            'routes' => ['/dashboard', '/portfolios', '/users', '/cms', '/reports', '/system/email-delivery'],
+            'routes' => ['/dashboard', '/portfolios', '/users', '/cms', '/reports', '/system/email-delivery', '/system/backups'],
             'icon' => 'bi-shield-lock',
         ],
         [
@@ -505,6 +522,17 @@ return [
             'steps' => ['Send a readiness test email', 'Open Email Delivery', 'Inspect the newest attempt', 'Confirm inbox receipt separately before launch sign-off'],
             'rules' => ['Accepted means the mail server accepted the message, not that it reached the inbox', 'Never paste SMTP passwords into notes or error reports', 'Use a new password-reset request instead of replaying an old token'],
             'icon' => 'bi-envelope-check',
+        ],
+        [
+            'title' => 'Backup Control',
+            'audience' => 'Superadmin',
+            'roles' => ['superadmin'],
+            'route' => '/system/backups',
+            'summary' => 'Backup Control packages the MySQL database and private document storage with checksums and release identity.',
+            'features' => ['Consistent MySQL snapshot', 'Private document archive', 'SHA-256 integrity checksum', 'Weekly retention schedule'],
+            'steps' => ['Create a backup package', 'Wait for the queue to complete', 'Download the package to protected offsite storage', 'Restore it in an isolated environment and record the evidence'],
+            'rules' => ['Never store downloaded backups in a public folder', 'A same-server copy is not offsite protection', 'Do not mark restore readiness complete until a real restore succeeds'],
+            'icon' => 'bi-database-check',
         ],
     ],
 ];

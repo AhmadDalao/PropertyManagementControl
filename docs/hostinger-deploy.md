@@ -128,6 +128,15 @@ command does not need one. Hostinger cron schedules use UTC.
 
 Do not use Hostinger's unqualified `php` command: its shared-hosting CLI may resolve to an older PHP release than the website. Set `SCHEDULER_PHP_BINARY` when the account uses a different verified PHP 8.4 path. The app records a scheduler heartbeat before running `queue:work --stop-when-empty` every minute and runs `property:sync-operational-statuses` daily. The scheduler is required for queued password-reset mail, showcase jobs, lease expiry, occupancy release, and overdue installment updates. `/system/readiness` requires three distinct heartbeat samples spanning at least 90 seconds, so a manual deployment command cannot make cron look healthy. Wait three minutes after saving the hPanel job, then refresh the readiness page.
 
+The scheduler also queues `property:backup-create --queue` every Sunday at
+02:30. Backup Control stores the latest completed packages under private local
+storage and excludes that directory from its own document archive. The default
+retention is seven packages and can be changed with
+`BACKUP_RETENTION_COUNT`. Create and verify the first production package from
+`/system/backups`, download it to protected offsite storage, and perform a
+separate restore drill before launch. A package held only on the production
+server is not disaster recovery.
+
 Shared hosting can terminate a worker without releasing Laravel's overlap mutex. The heartbeat lock expires after 5 minutes, the queue-worker lock after 10 minutes, and the daily status-sync lock after 120 minutes. If a killed worker left an older lock from a previous release, run `php artisan schedule:clear-cache` once, then confirm the queue count decreases in `/system/readiness`.
 
 ## First production checks
@@ -141,6 +150,7 @@ Shared hosting can terminate a worker without releasing Laravel's overlap mutex.
 - Maintenance request submission
 - Homepage English/Arabic toggle
 - Password reset email delivery through production SMTP
+- `/system/backups` package creation, checksum, download, and protected offsite copy
 - `/system/readiness` automatic checks, then record backup, restore, legal, opening-data, retention, and pilot evidence there
 
 Do not run `property:seed-demo-data` or generate showcase data in production unless production demo records are explicitly wanted. Lease clauses must be supplied from portfolio-approved legal wording; the application does not invent legal terms.

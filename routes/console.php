@@ -7,6 +7,9 @@ use App\Modules\ShowcaseData\Actions\BackfillShowcaseCollectionFollowUps;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseMoveOuts;
 use App\Modules\ShowcaseData\Actions\BackfillShowcaseWorkOrders;
 use App\Modules\ShowcaseData\Actions\StartShowcaseDataset;
+use App\Modules\SystemBackups\Actions\CreateSystemBackup;
+use App\Modules\SystemBackups\Actions\StartSystemBackup;
+use App\Modules\SystemBackups\Jobs\CreateSystemBackupJob;
 use App\Modules\SystemReadiness\Actions\RecordSchedulerHeartbeat;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Inspiring;
@@ -200,6 +203,27 @@ Artisan::command('property:record-scheduler-heartbeat', function (RecordSchedule
     return 0;
 })->purpose('Record evidence that the Laravel scheduler is running.');
 
+Artisan::command('property:backup-create {--queue : Queue the backup for the scheduled worker}', function (
+    StartSystemBackup $start,
+    CreateSystemBackup $backups,
+) {
+    $run = $start->create(null, $this->option('queue') ? 'scheduled' : 'command');
+
+    if ($this->option('queue')) {
+        CreateSystemBackupJob::dispatch($run->id);
+        $this->info("System backup [{$run->id}] queued.");
+
+        return 0;
+    }
+
+    $completed = $backups->handle($run->id);
+    $this->info("System backup [{$completed->id}] completed.");
+    $this->line("Archive: {$completed->archive_path}");
+    $this->line("SHA-256: {$completed->archive_sha256}");
+
+    return 0;
+})->purpose('Create a private database and document backup package.');
+
 Schedule::command('property:record-scheduler-heartbeat')
     ->everyMinute()
     ->withoutOverlapping(5);
@@ -210,4 +234,8 @@ Schedule::command('queue:work --stop-when-empty --queue=default --tries=3 --time
 
 Schedule::command('property:sync-operational-statuses')
     ->dailyAt('00:05')
+    ->withoutOverlapping(120);
+
+Schedule::command('property:backup-create --queue')
+    ->weeklyOn(7, '02:30')
     ->withoutOverlapping(120);

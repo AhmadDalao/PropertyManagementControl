@@ -266,6 +266,8 @@ $authChecks = [
     '/system/readiness?locale=ar' => 'admin/system-readiness/index',
     '/system/email-delivery' => 'admin/email-delivery/index',
     '/system/email-delivery?locale=ar' => 'admin/email-delivery/index',
+    '/system/backups' => 'admin/system-backups/index',
+    '/system/backups?locale=ar' => 'admin/system-backups/index',
     '/cms/sections/create' => 'admin/cms/section-form',
     '/documentation' => 'admin/documentation/index',
     '/reports' => 'admin/reports/index',

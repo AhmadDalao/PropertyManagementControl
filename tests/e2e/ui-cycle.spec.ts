@@ -54,6 +54,7 @@ const primaryAdminRoutes = [
     '/system/showcase-data',
     '/system/readiness',
     '/system/email-delivery',
+    '/system/backups',
     '/reports',
     '/reports/saved',
     '/reports/saved/create',
@@ -778,7 +779,9 @@ test.describe('authenticated administration', () => {
             ).toBeVisible();
             await expect(page.locator('.pmc-statement-context')).toBeVisible();
             await expect(
-                page.getByRole('link', { name: 'Back' }),
+                page.locator(
+                    '.pmc-workspace-actions a.pmc-workspace-action[href^="/reports?"]',
+                ),
             ).toBeVisible();
             await expect(
                 page.locator('.pmc-report-currency-grid article').first(),
@@ -1233,10 +1236,10 @@ test.describe('authenticated administration', () => {
                     name: 'Launch readiness',
                 }),
             ).toBeVisible();
-            await expect(page.locator('.pmc-readiness-check')).toHaveCount(15);
+            await expect(page.locator('.pmc-readiness-check')).toHaveCount(16);
             await expect(
                 page.locator('.pmc-readiness-check-detail'),
-            ).toHaveCount(7);
+            ).toHaveCount(8);
             await expect(
                 page.getByText('Hostinger cron command'),
             ).toBeVisible();
@@ -3103,6 +3106,48 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('backup control stays compact, bilingual, and accessible', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/system/backups?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'إدارة النسخ الاحتياطية',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-backup-command')).toBeVisible();
+        await expect(page.locator('.pmc-metric-card')).toHaveCount(4);
+        await expect(page.locator('.pmc-backup-history')).toBeVisible();
+        await expect(page.locator('.pmc-console-topbar')).toHaveCSS(
+            'height',
+            '64px',
+        );
+        await expectMinimumTouchHeight(
+            page,
+            '.pmc-backup-command .btn, .pmc-backup-history select',
+        );
+        await expectNoHorizontalOverflow(page);
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/system/backups?locale=en');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'Backup Control',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('wording workspace keeps editing focused, responsive, and Arabic', async ({
         page,
     }) => {
@@ -3170,6 +3215,7 @@ test.describe('authenticated administration', () => {
                 '/system/showcase-data',
                 '/system/readiness',
                 '/system/email-delivery',
+                '/system/backups',
             ]) {
                 await page.goto(path);
                 const results = await new AxeBuilder({ page })
@@ -3196,6 +3242,7 @@ test.describe('local role dashboards', () => {
                 '/system/showcase-data',
                 '/system/readiness',
                 '/system/email-delivery',
+                '/system/backups',
             ],
             hidden: [] as string[],
         },
@@ -3215,6 +3262,7 @@ test.describe('local role dashboards', () => {
                 '/system/showcase-data',
                 '/system/readiness',
                 '/system/email-delivery',
+                '/system/backups',
             ],
         },
         manager: {
@@ -3233,6 +3281,7 @@ test.describe('local role dashboards', () => {
                 '/system/showcase-data',
                 '/system/readiness',
                 '/system/email-delivery',
+                '/system/backups',
             ],
         },
         tenant: {
@@ -3248,6 +3297,7 @@ test.describe('local role dashboards', () => {
                 '/cms',
                 '/system/readiness',
                 '/system/email-delivery',
+                '/system/backups',
             ],
         },
     } as const;

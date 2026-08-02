@@ -62,10 +62,10 @@ final class SystemReadinessWorkspaceTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/system-readiness/index')
-                ->has('systemChecks', 7)
+                ->has('systemChecks', 8)
                 ->has('systemConfirmations', 4)
                 ->has('portfolioConfirmations', 6)
-                ->where('summary.total', 25)
+                ->where('summary.total', 26)
                 ->where('portfolioLaunch.live_portfolios', 1)
                 ->where('portfolioLaunch.needs_live_portfolio', false)
                 ->where('portfolioReadiness.portfolio.id', $portfolio->id)
@@ -74,7 +74,8 @@ final class SystemReadinessWorkspaceTest extends TestCase
                 ->where('portfolioReadiness.metrics.tenants', 1)
                 ->where('portfolioReadiness.metrics.properties', 1)
                 ->where('portfolioReadiness.metrics.assignment_gaps', 0)
-                ->where('systemChecks', fn (mixed $checks): bool => ($this->systemCheck($checks, 'scheduler')['status'] ?? null) === 'ready'));
+                ->where('systemChecks', fn (mixed $checks): bool => ($this->systemCheck($checks, 'scheduler')['status'] ?? null) === 'ready'
+                    && ($this->systemCheck($checks, 'backups')['status'] ?? null) === 'blocked'));
 
         $this->actingAs($owner)
             ->get(route('system-readiness.index'))

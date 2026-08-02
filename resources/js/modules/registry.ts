@@ -207,6 +207,12 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 roles: ['superadmin'],
             },
             {
+                labelKey: 'nav.system_backups',
+                href: '/system/backups',
+                icon: 'bi-database-check',
+                roles: ['superadmin'],
+            },
+            {
                 labelKey: 'nav.media',
                 href: '/media-files',
                 icon: 'bi-images',

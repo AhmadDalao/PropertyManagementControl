@@ -8,6 +8,7 @@ export type UiTranslationKey =
     | `assets.${string}`
     | `audit.${string}`
     | `auth.${string}`
+    | `backups.${string}`
     | `cms.${string}`
     | `company_control.${string}`
     | `common.${string}`

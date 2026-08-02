@@ -54,7 +54,7 @@ These are enforced as auditable launch gates in the superadmin-only `/system/rea
 
 1. Configure production SMTP and prove password-reset delivery to a real mailbox.
 2. Confirm the one-minute scheduler cron is active and that queued jobs drain without failed jobs.
-3. Back up MySQL and private document storage, then complete one documented restore drill. An untested backup is just optimism with a filename.
+3. Create and download a package from `/system/backups`, place it in protected offsite storage, then complete one documented restore drill. An untested backup is just optimism with a filename.
 4. Have the property owner or legal adviser approve the English and Arabic lease clauses, renewal wording, termination wording, and receipt template.
 5. Use `/opening-data` to import one real portfolio, then reconcile its opening balances, deposits, active leases, unit occupancy, currencies, and due dates against the source records.
 6. Purge or clearly isolate showcase data before real KPIs are used for operating decisions.
