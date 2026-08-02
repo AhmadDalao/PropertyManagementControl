@@ -659,6 +659,7 @@ $hasArabicScope = false;
 $rentRollCard = null;
 $arrearsAgingCard = null;
 $leaseRenewalCard = null;
+$dailyOperationsCard = null;
 
 foreach ($reportLibrary as $card) {
     if (($card['key'] ?? null) === 'rent-roll') {
@@ -671,6 +672,10 @@ foreach ($reportLibrary as $card) {
 
     if (($card['key'] ?? null) === 'lease-renewals') {
         $leaseRenewalCard = $card;
+    }
+
+    if (($card['key'] ?? null) === 'daily-operations') {
+        $dailyOperationsCard = $card;
     }
 
     $scope = [];
@@ -783,6 +788,12 @@ if (! is_array($leaseRenewalCard)
     || count($leaseRenewalCard['downloads'] ?? []) !== 3
     || ! str_contains((string) ($leaseRenewalCard['openHref'] ?? ''), '/lease-renewals')) {
     smoke_fail('The report library did not expose lease renewals and its three downloads.');
+}
+
+if (! is_array($dailyOperationsCard)
+    || count($dailyOperationsCard['downloads'] ?? []) !== 3
+    || ! str_contains((string) ($dailyOperationsCard['openHref'] ?? ''), '/action-center')) {
+    smoke_fail('The report library did not expose the daily operations brief and its three downloads.');
 }
 
 if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
@@ -1044,6 +1055,35 @@ if (! str_contains($actionCenterExportHeaders, '.xlsx') || ! str_starts_with((st
 }
 
 smoke_note('/action-center/export Excel .xlsx');
+
+foreach ([
+    'pdf' => [
+        'path' => '/action-center/report.pdf?type=all&priority=all&locale=ar',
+        'content_type' => 'application/pdf',
+        'signature' => '%PDF-',
+    ],
+    'docx' => [
+        'path' => '/action-center/report.docx?type=all&priority=all&locale=ar',
+        'content_type' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'signature' => 'PK',
+    ],
+] as $extension => $expected) {
+    $dailyBrief = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        $expected['path'],
+    );
+    $headers = strtolower((string) $dailyBrief['headers']);
+
+    if ($dailyBrief['status'] !== 200
+        || ! str_contains($headers, $expected['content_type'])
+        || ! str_starts_with((string) $dailyBrief['body'], $expected['signature'])) {
+        smoke_fail("Daily operations {$extension} report was invalid.");
+    }
+
+    smoke_note("/action-center/report.{$extension} valid");
+}
 
 $paymentIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/payments?status=posted&per_page=10&locale=en');
 $paymentPayload = smoke_page_payload($paymentIndex['body']);

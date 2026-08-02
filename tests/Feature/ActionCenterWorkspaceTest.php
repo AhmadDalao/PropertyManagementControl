@@ -13,8 +13,10 @@ use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\TestResponse;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 final class ActionCenterWorkspaceTest extends TestCase
 {
@@ -281,6 +283,41 @@ final class ActionCenterWorkspaceTest extends TestCase
         $this->assertStringContainsString('Scale request 01', $worksheet);
         $this->assertStringContainsString('Scale request 13', $worksheet);
         $this->assertStringNotContainsString('Foreign scale request', $worksheet);
+
+        $pdf = $this->actingAs($owner)
+            ->get(route('action-center.report.pdf', $filters))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+
+        $word = $this->actingAs($owner)
+            ->get(route('action-center.report.word', $filters))
+            ->assertOk();
+        $this->assertStringContainsString(
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            (string) $word->headers->get('content-type'),
+        );
+        $this->assertSame('PK', substr($word->streamedContent(), 0, 2));
+        $documentXml = $this->docxDocumentXml($word);
+        $this->assertStringContainsString('Scale request 01', $documentXml);
+        $this->assertStringContainsString('Scale request 13', $documentXml);
+        $this->assertStringNotContainsString('Foreign scale request', $documentXml);
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['portfolio_id' => $portfolio->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('reportLibrary.2.cards', function ($cards) use ($portfolio): bool {
+                    $brief = collect($cards)->firstWhere('key', 'daily-operations');
+
+                    return $brief['openHref'] === '/action-center?portfolio_id='.$portfolio->id
+                        && count($brief['downloads']) === 3
+                        && collect($brief['downloads'])->pluck('label')->all() === [
+                            'Download PDF',
+                            'Download DOCX',
+                            'Download XLSX',
+                        ];
+                }));
     }
 
     public function test_arabic_queue_is_translated_and_tenants_are_denied(): void
@@ -322,6 +359,12 @@ final class ActionCenterWorkspaceTest extends TestCase
             ->assertForbidden();
         $this->actingAs($tenantUser)
             ->get(route('action-center.export'))
+            ->assertForbidden();
+        $this->actingAs($tenantUser)
+            ->get(route('action-center.report.pdf'))
+            ->assertForbidden();
+        $this->actingAs($tenantUser)
+            ->get(route('action-center.report.word'))
             ->assertForbidden();
     }
 
@@ -410,5 +453,19 @@ final class ActionCenterWorkspaceTest extends TestCase
             'requested_at' => now(),
             'due_at' => $dueAt,
         ]);
+    }
+
+    private function docxDocumentXml(TestResponse $response): string
+    {
+        $path = tempnam(sys_get_temp_dir(), 'action-center-docx-');
+        $this->assertNotFalse($path);
+        file_put_contents($path, $response->streamedContent());
+        $zip = new ZipArchive;
+        $this->assertTrue($zip->open($path));
+        $xml = (string) $zip->getFromName('word/document.xml');
+        $zip->close();
+        @unlink($path);
+
+        return html_entity_decode(strip_tags($xml), ENT_QUOTES | ENT_XML1);
     }
 }

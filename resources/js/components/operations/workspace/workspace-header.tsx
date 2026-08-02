@@ -1,8 +1,7 @@
-import { Link } from '@inertiajs/react';
-
 import { useTranslator } from '@/lib/i18n';
 
 import type { WorkspaceAction } from './types';
+import { WorkspaceActionControl } from './workspace-action';
 
 export function WorkspaceHeader({
     eyebrow,
@@ -27,35 +26,12 @@ export function WorkspaceHeader({
 
             {actions.length > 0 ? (
                 <div className="pmc-workspace-actions">
-                    {actions.map((action) => {
-                        const content = (
-                            <>
-                                {action.icon ? (
-                                    <i className={`bi ${action.icon}`} />
-                                ) : null}
-                                <span>{text(action.label)}</span>
-                            </>
-                        );
-                        const className = `pmc-workspace-action is-${action.tone ?? 'secondary'}`;
-
-                        return action.native ? (
-                            <a
-                                key={`${action.href}-${action.label}`}
-                                href={action.href}
-                                className={className}
-                            >
-                                {content}
-                            </a>
-                        ) : (
-                            <Link
-                                key={`${action.href}-${action.label}`}
-                                href={action.href}
-                                className={className}
-                            >
-                                {content}
-                            </Link>
-                        );
-                    })}
+                    {actions.map((action) => (
+                        <WorkspaceActionControl
+                            action={action}
+                            key={`${action.href ?? 'menu'}-${action.label}`}
+                        />
+                    ))}
                 </div>
             ) : null}
         </header>

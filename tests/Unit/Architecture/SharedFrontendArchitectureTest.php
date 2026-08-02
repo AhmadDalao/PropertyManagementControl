@@ -44,6 +44,7 @@ class SharedFrontendArchitectureTest extends TestCase
             'record-actions.tsx',
             'status-badge.tsx',
             'types.ts',
+            'workspace-action.tsx',
             'workspace-header.tsx',
             'workspace-panel.tsx',
         ], 80);

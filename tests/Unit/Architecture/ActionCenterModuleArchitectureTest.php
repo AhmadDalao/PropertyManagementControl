@@ -11,15 +11,19 @@ final class ActionCenterModuleArchitectureTest extends TestCase
     public function action_center_http_and_page_entries_stay_thin(): void
     {
         $controller = $this->source('app/Http/Controllers/ActionCenterController.php');
+        $reportController = $this->source('app/Http/Controllers/ActionCenterReportController.php');
         $page = $this->source('resources/js/modules/action-center/index-page.tsx');
         $wrapper = $this->source('resources/js/pages/admin/action-center/index.tsx');
 
         $this->assertLessThanOrEqual(45, substr_count($controller, "\n") + 1);
+        $this->assertLessThanOrEqual(40, substr_count($reportController, "\n") + 1);
         $this->assertLessThanOrEqual(45, substr_count($page, "\n") + 1);
         $this->assertLessThanOrEqual(3, substr_count($wrapper, "\n") + 1);
         $this->assertStringContainsString('ActionCenterIndexQuery', $controller);
         $this->assertStringContainsString('ActionCenterWorkbookExport', $controller);
+        $this->assertStringContainsString('ActionCenterReportQuery', $reportController);
         $this->assertStringNotContainsString('::query()', $controller);
+        $this->assertStringNotContainsString('::query()', $reportController);
         $this->assertStringContainsString("from './action-center-filters'", $page);
         $this->assertStringContainsString("from './action-center-workspace'", $page);
     }
@@ -34,7 +38,14 @@ final class ActionCenterModuleArchitectureTest extends TestCase
             'app/Modules/ActionCenter/Queries/RenewalActionSource.php' => 190,
             'app/Modules/ActionCenter/Queries/MoveOutActionSource.php' => 200,
             'app/Modules/ActionCenter/Actions/ActionCenterWorkbookExport.php' => 100,
+            'app/Modules/ActionCenter/Actions/ActionCenterPdfExport.php' => 60,
+            'app/Modules/ActionCenter/Actions/ActionCenterWordExport.php' => 90,
+            'app/Modules/ActionCenter/Presenters/ActionCenterExportRows.php' => 160,
+            'app/Modules/ActionCenter/Presenters/ActionCenterReportPresenter.php' => 210,
+            'app/Modules/ActionCenter/Queries/ActionCenterReportQuery.php' => 50,
             'app/Modules/ActionCenter/Requests/ActionCenterIndexRequest.php' => 100,
+            'resources/views/pdf/daily-operations-brief.blade.php' => 180,
+            'resources/js/modules/action-center/action-center-downloads.ts' => 50,
             'resources/js/modules/action-center/action-center-card.tsx' => 190,
             'resources/js/modules/action-center/action-center-work-order-context.tsx' => 70,
             'resources/js/modules/action-center/action-center-filter-controls.tsx' => 220,

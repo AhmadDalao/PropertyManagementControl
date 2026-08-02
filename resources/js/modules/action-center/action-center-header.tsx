@@ -1,7 +1,7 @@
 import { WorkspaceHeader } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 
-import { actionCenterExportUrl } from './action-center-query';
+import { actionCenterDownloads } from './action-center-downloads';
 import type { ActionCenterFilters } from './types';
 
 export function ActionCenterHeader({
@@ -24,11 +24,10 @@ export function ActionCenterHeader({
                     tone: 'quiet',
                 },
                 {
-                    label: t('action_center.export_xlsx'),
-                    href: actionCenterExportUrl(filters),
-                    icon: 'bi-file-earmark-excel',
+                    label: t('action_center.download_brief'),
+                    downloads: actionCenterDownloads(filters, t),
+                    icon: 'bi-download',
                     tone: 'primary',
-                    native: true,
                 },
             ]}
         />

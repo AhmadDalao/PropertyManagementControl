@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActionCenterController;
+use App\Http\Controllers\ActionCenterReportController;
 use App\Http\Controllers\AdminExportController;
 use App\Http\Controllers\ArrearsAgingController;
 use App\Http\Controllers\AssetController;
@@ -96,6 +97,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->name('action-center.index');
     Route::get('/action-center/export', [ActionCenterController::class, 'export'])
         ->name('action-center.export');
+    Route::get('/action-center/report.pdf', [ActionCenterReportController::class, 'pdf'])
+        ->name('action-center.report.pdf');
+    Route::get('/action-center/report.docx', [ActionCenterReportController::class, 'word'])
+        ->name('action-center.report.word');
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])

@@ -996,6 +996,23 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-action-card-grid')).not.toContainText(
             'natural_expiry',
         );
+        const dailyBriefMenu = page.locator('.pmc-workspace-action-menu');
+        await expect(dailyBriefMenu).toBeVisible();
+        await expect(dailyBriefMenu.locator('summary')).toContainText(
+            'Download daily brief',
+        );
+        await dailyBriefMenu.locator('summary').click();
+        await expect(dailyBriefMenu.locator('a')).toHaveCount(3);
+        await expect(
+            dailyBriefMenu.locator(
+                'a[href="/action-center/report.pdf"]',
+            ),
+        ).toBeVisible();
+        await expect(
+            dailyBriefMenu.locator(
+                'a[href="/action-center/report.docx"]',
+            ),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await page.setViewportSize(viewports.mobile);
@@ -1009,6 +1026,7 @@ test.describe('authenticated administration', () => {
             page,
             [
                 '.pmc-workspace-action',
+                '.pmc-workspace-action-menu a',
                 '.pmc-action-type-chips a',
                 '.pmc-action-mobile-filter',
                 '.pmc-action-filter-form .form-control',
@@ -1030,6 +1048,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('قائمة الأولويات', { exact: true }),
         ).toBeVisible();
+        await expect(
+            page.locator('.pmc-workspace-action-menu summary'),
+        ).toContainText('تنزيل الموجز اليومي');
         await expectNoHorizontalOverflow(page);
     });
 

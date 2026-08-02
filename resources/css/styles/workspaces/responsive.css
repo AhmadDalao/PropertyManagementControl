@@ -30,6 +30,16 @@
         width: 100%;
     }
 
+    .pmc-workspace-action-menu,
+    .pmc-workspace-action-menu > div {
+        width: 100%;
+    }
+
+    .pmc-workspace-action-menu > div {
+        position: static;
+        margin-block-start: 0.4rem;
+    }
+
     .pmc-workspace-actions > :last-child:nth-child(odd) {
         grid-column: 1 / -1;
     }

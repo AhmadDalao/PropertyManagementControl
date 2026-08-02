@@ -48,8 +48,25 @@ export function actionCenterUrl(
 }
 
 export function actionCenterExportUrl(filters: ActionCenterFilters): string {
-    return actionCenterUrl(filters).replace(
-        '/action-center',
-        '/action-center/export',
-    );
+    return actionCenterDownloadUrl(filters, '/action-center/export');
+}
+
+export function actionCenterReportUrl(
+    filters: ActionCenterFilters,
+    format: 'pdf' | 'docx' | 'xlsx',
+): string {
+    return format === 'xlsx'
+        ? actionCenterExportUrl(filters)
+        : actionCenterDownloadUrl(filters, `/action-center/report.${format}`);
+}
+
+function actionCenterDownloadUrl(
+    filters: ActionCenterFilters,
+    path: string,
+): string {
+    return actionCenterUrl({
+        ...filters,
+        per_page: 12,
+        page: 1,
+    }).replace('/action-center', path);
 }

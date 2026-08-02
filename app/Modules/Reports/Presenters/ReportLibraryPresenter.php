@@ -171,6 +171,19 @@ final class ReportLibraryPresenter
                     'leases',
                     $scope['current'],
                 ),
+                $this->card(
+                    'daily-operations',
+                    'bi-list-check',
+                    'daily_operations',
+                    'daily_operations_description',
+                    $this->url('action-center.index', $currentQuery),
+                    [
+                        $this->download('PDF', $this->url('action-center.report.pdf', $currentQuery)),
+                        $this->download('DOCX', $this->url('action-center.report.word', $currentQuery)),
+                        $this->download('XLSX', $this->url('action-center.export', $currentQuery)),
+                    ],
+                    scope: $scope['current'],
+                ),
                 $this->resourceCard(
                     'lease-move-outs',
                     'bi-box-arrow-right',
