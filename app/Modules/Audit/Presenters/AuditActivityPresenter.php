@@ -24,6 +24,7 @@ class AuditActivityPresenter
             'event_label' => $this->eventLabel($event),
             'description' => $activity->description,
             'subject_type' => $this->subjects->alias($activity->subject_type),
+            'subject_id' => $activity->subject_id,
             'subject_type_label' => $this->subjects->label($activity->subject_type),
             'subject_label' => $this->modelLabel($activity->subject, $activity->subject_id, $activity->subject_type),
             'subject_url' => $this->subjects->url($activity->subject, $activity->subject_type),

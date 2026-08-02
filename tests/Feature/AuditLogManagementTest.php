@@ -210,6 +210,7 @@ class AuditLogManagementTest extends TestCase
                 ->where('auditInsights.updated', 1)
                 ->has('activities.data', 1)
                 ->where('activities.data.0.event_label', 'تحديث')
+                ->where('activities.data.0.subject_id', $asset->id)
                 ->where('activities.data.0.subject_type_label', 'أصل عقاري')
                 ->where('activities.data.0.subject_label', 'عقار سجل التدقيق')
                 ->where('activities.data.0.subject_url', route('assets.show', $asset))

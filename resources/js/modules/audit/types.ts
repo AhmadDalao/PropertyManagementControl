@@ -11,6 +11,7 @@ export type AuditRecord = {
     event_label: string;
     description: string;
     subject_type?: string | null;
+    subject_id?: number | null;
     subject_type_label: string;
     subject_label: string;
     subject_url?: string | null;

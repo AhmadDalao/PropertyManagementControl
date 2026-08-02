@@ -65,6 +65,7 @@ export type PlatformActivity = {
     event: string;
     event_label: string;
     subject_type: string | null;
+    subject_id: number | null;
     subject_type_label: string;
     subject_label: string;
     subject_url: string;

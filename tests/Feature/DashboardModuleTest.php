@@ -170,6 +170,7 @@ class DashboardModuleTest extends TestCase
                 ->where('platformComposition.properties.live', 0)
                 ->where('platformComposition.properties.showcase', 1)
                 ->where('platformActivity.0.id', $canonicalLiveActivity->id)
+                ->where('platformActivity.0.subject_id', $livePortfolio->id)
                 ->where('platformActivity.0.portfolio.id', $livePortfolio->id)
                 ->where(
                     'platformActivity.0.subject_url',
