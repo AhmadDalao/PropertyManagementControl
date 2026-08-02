@@ -66,15 +66,19 @@ normally use mode `0700`; applying that mode to the web root makes LiteSpeed
 return static `403`/`404` responses before Laravel runs. Extract with:
 
 ```bash
+scripts/build-hostinger-release.sh HEAD storage/app/property-release.tar.gz
 tar --no-overwrite-dir -xzf /home/<hostinger-account>/property-release.tar.gz \
     -C /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
 chmod 755 /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
 stat -c '%a' /home/<hostinger-account>/domains/ahmaddalao.com/public_html/property
 ```
 
-The final command must print `755`. Keep the application in maintenance mode
-during extraction and always register a cleanup path that runs
-`php artisan up` when a release command fails.
+The release builder normalizes directories to `0755` and files to `0644` before
+archiving. This is required: a `0600` `.htaccess` makes LiteSpeed ignore the PHP
+8.4 handler and serve the application with the account default instead. The
+final command must print `755`. Keep the application in maintenance mode during
+extraction and always register a cleanup path that runs `php artisan up` when a
+release command fails.
 
 2. Rebuild Composer's production autoloader after every PHP source deployment. The production autoloader is authoritative, so newly added application classes otherwise cause HTTP 500 responses.
 3. Set correct file permissions for `storage/` and `bootstrap/cache/`.
