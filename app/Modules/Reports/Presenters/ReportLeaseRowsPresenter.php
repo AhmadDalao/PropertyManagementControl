@@ -11,10 +11,13 @@ final readonly class ReportLeaseRowsPresenter
     public function __construct(private PortfolioScope $portfolios) {}
 
     /** @return array<int, array<string, mixed>> */
-    public function present(LeaseReportSnapshot $snapshot): array
+    public function present(LeaseReportSnapshot $snapshot, ?int $limit = 10): array
     {
-        return $snapshot->arrearsLeases
-            ->take(10)
+        $leases = $limit === null
+            ? $snapshot->arrearsLeases
+            : $snapshot->arrearsLeases->take($limit);
+
+        return $leases
             ->map(function (array $item): array {
                 $lease = $item['lease'];
                 $asset = $lease->leaseable;

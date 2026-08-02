@@ -11,11 +11,11 @@ final readonly class ReportExpenseRowsPresenter
     public function __construct(private PortfolioScope $portfolios) {}
 
     /** @return array<int, array<string, mixed>> */
-    public function present(PortfolioReportData $data): array
+    public function present(PortfolioReportData $data, ?int $limit = 8): array
     {
-        return $data->expenses
-            ->sortByDesc('incurred_on')
-            ->take(8)
+        $expenses = $data->expenses->sortByDesc('incurred_on');
+
+        return ($limit === null ? $expenses : $expenses->take($limit))
             ->map(fn (ExpenseEntry $expense): array => [
                 'id' => $expense->id,
                 'title' => $expense->title,

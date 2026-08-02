@@ -433,6 +433,15 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.0.cards.1.downloads.0.label', 'Download PDF')
                 ->where('reportLibrary.0.cards.1.downloads.1.label', 'Download DOCX')
                 ->where('reportLibrary.0.cards.1.downloads.2.label', 'Download XLSX')
+                ->where(
+                    'reportLibrary.0.cards.1.downloads',
+                    fn ($downloads): bool => collect($downloads)->every(
+                        fn (array $download): bool => str_contains(
+                            $download['href'],
+                            "/reports/properties/{$property->id}/operating-report.",
+                        ),
+                    ),
+                )
                 ->where('reportLibrary.0.cards.1.scope', [
                     [
                         'label' => 'Selected period',

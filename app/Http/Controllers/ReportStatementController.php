@@ -32,14 +32,14 @@ class ReportStatementController extends Controller
     public function pdf(ReportIndexRequest $request): StreamedResponse
     {
         return $this->pdfExport->download(
-            $this->statements->present($this->actor($request), $request->filters()),
+            $this->statements->present($this->actor($request), $request->filters(), true),
         );
     }
 
     public function word(ReportIndexRequest $request): StreamedResponse
     {
         return $this->wordExport->download(
-            $this->statements->present($this->actor($request), $request->filters()),
+            $this->statements->present($this->actor($request), $request->filters(), true),
         );
     }
 
@@ -49,7 +49,7 @@ class ReportStatementController extends Controller
         $actor = $this->actor($request);
 
         return $this->workbookExport->download(
-            $this->statements->present($actor, $filters),
+            $this->statements->present($actor, $filters, true),
             $filters,
             $actor,
         );

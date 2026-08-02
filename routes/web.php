@@ -41,6 +41,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PropertyExplorerController;
 use App\Http\Controllers\PropertyMapController;
 use App\Http\Controllers\PropertyReportController;
+use App\Http\Controllers\PropertyReportExportController;
 use App\Http\Controllers\PublicSiteController;
 use App\Http\Controllers\RentCollectionController;
 use App\Http\Controllers\RentRollController;
@@ -262,6 +263,9 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::post('/reports/saved/{reportPreset}/duplicate', [ReportPresetController::class, 'duplicate'])->name('reports.saved.duplicate')->middleware('portfolio.module:reports');
     Route::delete('/reports/saved/{reportPreset}', [ReportPresetController::class, 'destroy'])->name('reports.saved.destroy')->middleware('portfolio.module:reports');
     Route::get('/reports/properties/{asset}', PropertyReportController::class)->name('reports.properties.show')->middleware('portfolio.module:reports');
+    Route::get('/reports/properties/{asset}/operating-report.pdf', [PropertyReportExportController::class, 'pdf'])->name('reports.properties.pdf')->middleware('portfolio.module:reports');
+    Route::get('/reports/properties/{asset}/operating-report.docx', [PropertyReportExportController::class, 'word'])->name('reports.properties.word')->middleware('portfolio.module:reports');
+    Route::get('/reports/properties/{asset}/operating-report.xlsx', [PropertyReportExportController::class, 'workbook'])->name('reports.properties.workbook')->middleware('portfolio.module:reports');
     Route::get('/reports/rent-roll', [RentRollController::class, 'index'])->name('reports.rent-roll.index')->middleware('portfolio.module:reports');
     Route::get('/reports/rent-roll.pdf', [RentRollController::class, 'pdf'])->name('reports.rent-roll.pdf')->middleware('portfolio.module:reports');
     Route::get('/reports/rent-roll.docx', [RentRollController::class, 'word'])->name('reports.rent-roll.word')->middleware('portfolio.module:reports');

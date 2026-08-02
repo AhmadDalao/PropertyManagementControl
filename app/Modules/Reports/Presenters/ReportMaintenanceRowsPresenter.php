@@ -14,10 +14,9 @@ final readonly class ReportMaintenanceRowsPresenter
      * @param  Collection<int, MaintenanceRequest>  $backlog
      * @return array<int, array<string, mixed>>
      */
-    public function present(Collection $backlog): array
+    public function present(Collection $backlog, ?int $limit = 8): array
     {
-        return $backlog
-            ->take(8)
+        return ($limit === null ? $backlog : $backlog->take($limit))
             ->map(fn (MaintenanceRequest $request): array => [
                 'id' => $request->id,
                 'title' => $request->title,

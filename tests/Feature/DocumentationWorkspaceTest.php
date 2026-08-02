@@ -145,6 +145,10 @@ class DocumentationWorkspaceTest extends TestCase
                     'workflowTracks.2.steps.2.label',
                     'اختيار مستأجر حالي أو إضافة مستأجر جديد',
                 )
+                ->where('workflowTracks', fn ($workflows) => collect($workflows)
+                    ->contains(fn (array $workflow): bool => $workflow['key'] === 'property_operating_report'
+                        && $workflow['title'] === 'إعداد تقرير تشغيل العقار'
+                        && count($workflow['steps']) === 4))
                 ->where('pageShortcuts', fn ($shortcuts) => collect($shortcuts)->contains(
                     fn ($shortcut) => $shortcut['route'] === '/assets/building-setup'
                         && $shortcut['label'] === 'إعداد المبنى',

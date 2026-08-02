@@ -21,7 +21,7 @@ final readonly class OwnerStatementPresenter
      * @param  array{date_from:string,date_to:string,portfolio_id:int|null,property_id:int|null}  $filters
      * @return array<string, mixed>
      */
-    public function present(User $actor, array $filters): array
+    public function present(User $actor, array $filters, bool $forExport = false): array
     {
         $portfolioId = $filters['portfolio_id'] ?? $actor->portfolio_id;
         $portfolio = $portfolioId ? Portfolio::query()->find($portfolioId) : null;
@@ -30,7 +30,7 @@ final readonly class OwnerStatementPresenter
             : null;
 
         return [
-            ...$this->reports->handle($actor, $filters),
+            ...$this->reports->handle($actor, $filters, $forExport),
             'filters' => $filters,
             'portfolioOptions' => $this->portfolios->options($actor),
             'propertyOptions' => $this->properties->options($actor),

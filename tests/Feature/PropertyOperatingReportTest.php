@@ -9,6 +9,7 @@ use App\Models\Payment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
+use ZipArchive;
 
 class PropertyOperatingReportTest extends TestCase
 {
@@ -166,8 +167,72 @@ class PropertyOperatingReportTest extends TestCase
                 ], false))
                 ->where('property.downloads.xlsx', fn (string $href): bool => str_contains(
                     $href,
-                    'property_id='.$property->id,
+                    "/reports/properties/{$property->id}/operating-report.xlsx",
                 )));
+
+        $query = [
+            'asset' => $property,
+            'date_from' => now()->startOfYear()->toDateString(),
+            'date_to' => now()->toDateString(),
+        ];
+        $pdf = $this->actingAs($owner)
+            ->get(route('reports.properties.pdf', $query))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+        $this->assertSame('%PDF-', substr($pdf->streamedContent(), 0, 5));
+        $this->assertStringContainsString(
+            'property-operating-report-north-01-',
+            (string) $pdf->headers->get('content-disposition'),
+        );
+
+        $word = $this->actingAs($owner)
+            ->get(route('reports.properties.word', $query))
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            );
+        $wordPath = tempnam(sys_get_temp_dir(), 'property-operating-word-');
+        $this->assertNotFalse($wordPath);
+        file_put_contents($wordPath, $word->streamedContent());
+        $wordZip = new ZipArchive;
+        $this->assertTrue($wordZip->open($wordPath));
+        $documentXml = (string) $wordZip->getFromName('word/document.xml');
+        $wordZip->close();
+        @unlink($wordPath);
+        $this->assertStringContainsString('Property Operating Report', $documentXml);
+        $this->assertStringContainsString('تقرير تشغيل العقار', $documentXml);
+        $this->assertStringContainsString('North Tower', $documentXml);
+        $this->assertStringContainsString('NORTH-PAY', $documentXml);
+        $this->assertStringNotContainsString('OTHER-PAY', $documentXml);
+
+        $workbook = $this->actingAs($owner)
+            ->get(route('reports.properties.workbook', $query))
+            ->assertOk()
+            ->assertHeader(
+                'content-type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            );
+        $workbookPath = $workbook->baseResponse->getFile()->getPathname();
+        $this->assertSame('PK', substr((string) file_get_contents($workbookPath), 0, 2));
+        $workbookZip = new ZipArchive;
+        $this->assertTrue($workbookZip->open($workbookPath));
+        $workbookXml = (string) $workbookZip->getFromName('xl/workbook.xml');
+        $allSheets = collect(range(1, 5))
+            ->map(fn (int $index): string => (string) $workbookZip->getFromName(
+                "xl/worksheets/sheet{$index}.xml",
+            ))
+            ->join("\n");
+        $workbookZip->close();
+
+        foreach (['Overview', 'Collections', 'Costs', 'Maintenance', 'Activity'] as $sheet) {
+            $this->assertStringContainsString('name="'.$sheet.'"', $workbookXml);
+        }
+        $this->assertStringContainsString('North Tower', $allSheets);
+        $this->assertStringContainsString('NORTH-PAY', $allSheets);
+        $this->assertStringContainsString('North repair', $allSheets);
+        $this->assertStringContainsString('North leak', $allSheets);
+        $this->assertStringNotContainsString('OTHER-PAY', $allSheets);
     }
 
     public function test_property_report_rejects_tenants_children_and_unassigned_properties(): void
@@ -198,7 +263,13 @@ class PropertyOperatingReportTest extends TestCase
             ->get(route('reports.properties.show', $property))
             ->assertOk();
         $this->actingAs($manager)
+            ->get(route('reports.properties.workbook', $property))
+            ->assertOk();
+        $this->actingAs($manager)
             ->get(route('reports.properties.show', $otherProperty))
+            ->assertForbidden();
+        $this->actingAs($manager)
+            ->get(route('reports.properties.pdf', $otherProperty))
             ->assertForbidden();
         $this->actingAs($owner)
             ->get(route('reports.properties.show', $child))
@@ -209,5 +280,86 @@ class PropertyOperatingReportTest extends TestCase
         $this->actingAs($tenant)
             ->get(route('reports.properties.show', $property))
             ->assertForbidden();
+        $this->actingAs($tenant)
+            ->get(route('reports.properties.word', $property))
+            ->assertForbidden();
+    }
+
+    public function test_property_exports_include_the_complete_scoped_period_not_the_browser_preview(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $property = $this->createAsset($portfolio, [
+            'parent_id' => null,
+            'asset_type' => 'building',
+            'title_en' => 'Complete Tower',
+            'code' => 'COMPLETE-01',
+            'rentable' => false,
+        ]);
+        $unit = $this->createAsset($portfolio, [
+            'parent_id' => $property->id,
+            'asset_type' => 'unit',
+        ]);
+        $tenant = $this->createTenantProfile(
+            $portfolio,
+            $this->createUserWithRole('tenant', $portfolio),
+        );
+        $lease = $this->createLease($portfolio, $tenant, $unit, $manager);
+
+        foreach (range(1, 12) as $sequence) {
+            Payment::query()->create([
+                'portfolio_id' => $portfolio->id,
+                'lease_id' => $lease->id,
+                'tenant_profile_id' => $tenant->id,
+                'recorded_by_user_id' => $manager->id,
+                'reference' => sprintf('COMPLETE-PAY-%02d', $sequence),
+                'type' => 'rent',
+                'method' => 'bank_transfer',
+                'status' => 'posted',
+                'received_on' => today()->subDays($sequence),
+                'amount' => 100 + $sequence,
+                'currency' => 'SAR',
+            ]);
+        }
+
+        $query = [
+            'asset' => $property,
+            'date_from' => today()->subMonth()->toDateString(),
+            'date_to' => today()->toDateString(),
+        ];
+
+        $this->actingAs($owner)
+            ->get(route('reports.properties.show', $query))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('recentPayments', 8));
+
+        $word = $this->actingAs($owner)
+            ->get(route('reports.properties.word', $query))
+            ->assertOk();
+        $wordPath = tempnam(sys_get_temp_dir(), 'property-full-word-');
+        $this->assertNotFalse($wordPath);
+        file_put_contents($wordPath, $word->streamedContent());
+        $wordZip = new ZipArchive;
+        $this->assertTrue($wordZip->open($wordPath));
+        $documentXml = (string) $wordZip->getFromName('word/document.xml');
+        $wordZip->close();
+        @unlink($wordPath);
+
+        $this->assertStringContainsString('COMPLETE-PAY-01', $documentXml);
+        $this->assertStringContainsString('COMPLETE-PAY-12', $documentXml);
+
+        $workbook = $this->actingAs($owner)
+            ->get(route('reports.properties.workbook', $query))
+            ->assertOk();
+        $workbookPath = $workbook->baseResponse->getFile()->getPathname();
+        $workbookZip = new ZipArchive;
+        $this->assertTrue($workbookZip->open($workbookPath));
+        $collections = (string) $workbookZip->getFromName('xl/worksheets/sheet2.xml');
+        $workbookZip->close();
+
+        $this->assertStringContainsString('COMPLETE-PAY-01', $collections);
+        $this->assertStringContainsString('COMPLETE-PAY-12', $collections);
     }
 }

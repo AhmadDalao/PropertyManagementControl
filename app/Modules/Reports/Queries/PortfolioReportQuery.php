@@ -41,6 +41,8 @@ final readonly class PortfolioReportQuery
             ->sortByDesc('created_at')
             ->values();
         $summary = $this->summary->present($data, $leaseSnapshot, $maintenanceBacklog);
+        $recordLimit = $forExport ? null : 8;
+        $arrearsLimit = $forExport ? null : 10;
 
         return [
             'mode' => $actor->hasRole('superadmin') ? 'superadmin' : 'portfolio',
@@ -55,10 +57,10 @@ final readonly class PortfolioReportQuery
                 $leaseSnapshot,
             ),
             'charts' => $this->charts->present($data),
-            'arrearsLeases' => $this->leaseRows->present($leaseSnapshot),
-            ...$this->paymentRows->present($data),
-            'recentExpenses' => $this->expenseRows->present($data),
-            'maintenanceBacklog' => $this->maintenanceRows->present($maintenanceBacklog),
+            'arrearsLeases' => $this->leaseRows->present($leaseSnapshot, $arrearsLimit),
+            ...$this->paymentRows->present($data, $recordLimit),
+            'recentExpenses' => $this->expenseRows->present($data, $recordLimit),
+            'maintenanceBacklog' => $this->maintenanceRows->present($maintenanceBacklog, $recordLimit),
             ...$this->journal->present($data, $filters, $forExport ? null : 12),
         ];
     }

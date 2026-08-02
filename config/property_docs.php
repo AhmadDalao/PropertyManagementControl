@@ -146,6 +146,22 @@ return [
             ],
         ],
         [
+            'key' => 'property_operating_report',
+            'title' => 'Prepare a property operating report',
+            'audience' => 'Owner / Manager',
+            'roles' => ['superadmin', 'owner', 'property_manager'],
+            'route' => '/portfolio-control',
+            'icon' => 'bi-building-check',
+            'summary' => 'Choose one building, review its full operating position, then issue a dedicated PDF, editable Word file, or five-sheet Excel workbook.',
+            'outcome' => 'A property-specific package covering hierarchy, ownership, occupancy, collections, arrears, costs, maintenance, and operational activity without mixing another building.',
+            'steps' => [
+                ['label' => 'Open Portfolio Control', 'route' => '/portfolio-control'],
+                ['label' => 'Choose the property report', 'route' => '/portfolio-control', 'module' => 'reports'],
+                ['label' => 'Review each report tab', 'route' => '/reports', 'module' => 'reports'],
+                ['label' => 'Download PDF, Word, or Excel', 'route' => '/reports', 'module' => 'reports'],
+            ],
+        ],
+        [
             'key' => 'lease_move_out',
             'title' => 'Close a tenancy without losing the handover trail',
             'audience' => 'Owner / Manager',

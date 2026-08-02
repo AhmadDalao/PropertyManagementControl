@@ -615,6 +615,30 @@ if (is_array($propertyOptions) && isset($propertyOptions[0]['id'])) {
     }
 
     smoke_note("/reports/properties/{$propertyId} admin/reports/property");
+    $propertyReportPayload = smoke_page_payload($propertyReport['body']);
+    $propertyDownloads = $propertyReportPayload['props']['property']['downloads'] ?? [];
+
+    foreach ([
+        'pdf' => ['application/pdf', '%PDF-'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'PK'],
+        'xlsx' => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'PK'],
+    ] as $format => [$contentType, $signature]) {
+        $downloadPath = (string) ($propertyDownloads[$format] ?? '');
+
+        if (! str_contains($downloadPath, "/reports/properties/{$propertyId}/operating-report.")) {
+            smoke_fail("Property report {$format} did not use the dedicated operating-report route.");
+        }
+
+        $download = smoke_request($baseUrl, $cookieFile, 'GET', $downloadPath);
+
+        if ($download['status'] !== 200
+            || ! str_contains($download['headers'], $contentType)
+            || ! str_starts_with((string) $download['body'], $signature)) {
+            smoke_fail("Property operating report {$format} was invalid.");
+        }
+    }
+
+    smoke_note("/reports/properties/{$propertyId} dedicated PDF, DOCX, and XLSX");
 
     $scopedReports = smoke_request(
         $baseUrl,

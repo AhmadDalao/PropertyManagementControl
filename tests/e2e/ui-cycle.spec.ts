@@ -2987,16 +2987,38 @@ test.describe('authenticated administration', () => {
         }
 
         const workbookLink = page
-            .locator('a[href^="/reports/statement.xlsx"]')
+            .locator('a[href*="/operating-report.xlsx"]')
             .first();
         const workbookHref = await workbookLink.getAttribute('href');
-        expect(workbookHref).toContain('property_id=');
+        expect(workbookHref).toContain('/reports/properties/');
         const workbook = await page.request.get(workbookHref!);
         expect(workbook.ok()).toBeTruthy();
         expect(workbook.headers()['content-type']).toContain(
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         );
         expect((await workbook.body()).subarray(0, 2).toString()).toBe('PK');
+
+        for (const [selector, contentType, signature] of [
+            ['a[href*="/operating-report.pdf"]', 'application/pdf', '%PDF-'],
+            [
+                'a[href*="/operating-report.docx"]',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'PK',
+            ],
+        ] as const) {
+            const href = await page
+                .locator(selector)
+                .first()
+                .getAttribute('href');
+            const response = await page.request.get(href!);
+            expect(response.ok()).toBeTruthy();
+            expect(response.headers()['content-type']).toContain(contentType);
+            expect(
+                (await response.body())
+                    .subarray(0, signature.length)
+                    .toString(),
+            ).toBe(signature);
+        }
 
         const accessibility = await new AxeBuilder({ page })
             .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

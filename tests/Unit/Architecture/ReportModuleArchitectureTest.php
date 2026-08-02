@@ -40,6 +40,13 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('PropertyReportPresenter', $property);
         $this->assertStringContainsString('PropertyReportRequest', $property);
         $this->assertStringNotContainsString('Asset::query()', $property);
+
+        $propertyExports = $this->source($this->path('app/Http/Controllers/PropertyReportExportController.php'));
+        $this->assertLessThanOrEqual(55, substr_count($propertyExports, "\n") + 1);
+        $this->assertStringContainsString('PropertyOperatingReportPdfExport', $propertyExports);
+        $this->assertStringContainsString('PropertyOperatingReportWordExport', $propertyExports);
+        $this->assertStringContainsString('PropertyOperatingReportWorkbookExport', $propertyExports);
+        $this->assertStringNotContainsString('Payment::query()', $propertyExports);
     }
 
     #[Test]
@@ -114,6 +121,9 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Actions/OwnerStatementPdfExport.php',
             'app/Modules/Reports/Actions/OwnerStatementWorkbookExport.php',
             'app/Modules/Reports/Actions/OwnerStatementWordExport.php',
+            'app/Modules/Reports/Actions/PropertyOperatingReportPdfExport.php',
+            'app/Modules/Reports/Actions/PropertyOperatingReportWordExport.php',
+            'app/Modules/Reports/Actions/PropertyOperatingReportWorkbookExport.php',
             'app/Modules/Reports/Actions/RentRollPdfExport.php',
             'app/Modules/Reports/Actions/RentRollWordExport.php',
             'app/Modules/Reports/Actions/RentRollWorkbookExport.php',
@@ -153,6 +163,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Support/ReportPeriod.php',
             'app/Modules/Reports/Support/ReportComparisonPeriod.php',
             'app/Modules/Reports/Support/ReportPropertyScope.php',
+            'app/Modules/Reports/Support/PropertyOperatingReportFilename.php',
             'app/Modules/Reports/Support/LeaseReportSnapshotFactory.php',
             'app/Modules/Reports/Support/ReportQueryScope.php',
             'app/Modules/Reports/Support/RentRollOptions.php',

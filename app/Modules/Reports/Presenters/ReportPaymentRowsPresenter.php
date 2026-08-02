@@ -13,13 +13,13 @@ final readonly class ReportPaymentRowsPresenter
     public function __construct(private PortfolioScope $portfolios) {}
 
     /** @return array{topAssets:array<int, array<string, mixed>>,recentPayments:array<int, array<string, mixed>>} */
-    public function present(PortfolioReportData $data): array
+    public function present(PortfolioReportData $data, ?int $limit = 8): array
     {
+        $payments = $data->payments->sortByDesc('received_on');
+
         return [
             'topAssets' => $this->topAssetsByRevenue($data->payments),
-            'recentPayments' => $data->payments
-                ->sortByDesc('received_on')
-                ->take(8)
+            'recentPayments' => ($limit === null ? $payments : $payments->take($limit))
                 ->map(fn (Payment $payment): array => [
                     'id' => $payment->id,
                     'reference' => $payment->reference ?: '#'.$payment->id,

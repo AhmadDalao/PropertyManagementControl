@@ -63,9 +63,21 @@ final class ReportLibraryPresenter
                             'date_to' => $filters['date_to'],
                         ]),
                         [
-                            $this->download('PDF', $this->url('reports.statement.pdf', $query)),
-                            $this->download('DOCX', $this->url('reports.statement.word', $query)),
-                            $this->download('XLSX', $this->url('reports.statement.workbook', $query)),
+                            $this->download('PDF', $this->url('reports.properties.pdf', [
+                                'asset' => $filters['property_id'],
+                                'date_from' => $filters['date_from'],
+                                'date_to' => $filters['date_to'],
+                            ])),
+                            $this->download('DOCX', $this->url('reports.properties.word', [
+                                'asset' => $filters['property_id'],
+                                'date_from' => $filters['date_from'],
+                                'date_to' => $filters['date_to'],
+                            ])),
+                            $this->download('XLSX', $this->url('reports.properties.workbook', [
+                                'asset' => $filters['property_id'],
+                                'date_from' => $filters['date_from'],
+                                'date_to' => $filters['date_to'],
+                            ])),
                         ],
                         'reports',
                         $scope['period'],
