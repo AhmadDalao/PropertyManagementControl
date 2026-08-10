@@ -1,10 +1,19 @@
 # MVP Readiness Audit
 
-Updated: August 2, 2026
+Updated: August 10, 2026
 
 ## Decision
 
 The product is an operational MVP release candidate. It does not need another broad redesign. It needs controlled production onboarding, business-rule approval, and recovery/communication infrastructure before real tenant rollout.
+
+## Production activation evidence
+
+- Revision `fe9d109802b33d253ff7b46c18fe860c2b80a499` passes 636 PHP tests with 36,709 assertions, zero PHPStan errors against the accepted baseline, and all 68 Playwright/axe scenarios.
+- The August 10 superadmin production smoke cycle passes `/up`, EN/AR public and admin routes, scoped private PDF downloads, maintenance service-report PDF/DOCX, and real XLSX exports. Four-role behavior remains covered locally until named real pilot participants exist.
+- Launch Readiness remains 9 of 12: production safety, PHP, queue, storage, document sampling, backup availability, offsite backup evidence, and restore evidence are ready; SMTP configuration and scheduler cadence are blocked; SMTP receipt evidence remains unconfirmed.
+- Backup #4 was downloaded from production again on August 10 to permission-restricted off-server storage. Its outer checksum, database-stream checksum, private-document checksum, byte size, and three-file archive structure all match the recorded manifest.
+- Production has zero live portfolios and 12 showcase portfolios. The first real import and 30-day pilot cannot start until an approved opening workbook, legal/billing/retention decisions, and named owner, manager, and tenant participants are supplied.
+- Hostinger hPanel access and real mailbox credentials are external activation inputs. They are not stored in the repository and cannot be replaced safely by FTP-only access.
 
 ## What works end to end
 
@@ -29,11 +38,11 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## UI and scale evidence
 
-- Playwright and axe cover 66 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes, Opening Data, Launch Readiness report controls, every Property Operating Report tab, and the tenant Account Statement have no page-level horizontal overflow. Browser titles use the localized product name instead of framework starter branding, the operations dashboard uses focused URL-backed workspaces instead of a full-page section wall, and the tenant command center keeps its payment, maintenance, and contract panels fully translated in Arabic.
+- Playwright and axe cover 68 scenarios at 390, 768, 1024, and 1440 pixels. Primary routes, Opening Data, Launch Readiness report controls, every Property Operating Report tab, and the tenant Account Statement have no page-level horizontal overflow. Browser titles use the localized product name instead of framework starter branding, the operations dashboard uses focused URL-backed workspaces instead of a full-page section wall, and the tenant command center keeps its payment, maintenance, and contract panels fully translated in Arabic.
 - Desktop resource indexes use bounded server-side tables; below 992 pixels they switch to compact record cards. Detail pages become one column below 1200 pixels and split long content into query-backed tabs.
 - The local stress database contains 861 assets, 484 tenant profiles, 486 leases, 1,611 payments, 126 collection follow-ups, 330 maintenance requests, 250 expenses, 972 documents, and 15,625 audit events.
 - Table tests cover 10, 25, 50, and 100 records per page, search, filtering, pagination, portfolio isolation, Arabic query state, and scoped XLSX exports.
-- The main CSS bundle is 322.57 KB before gzip, below the 325 KB release ceiling. Opening Data, Property Operating Reports, Action Center, Map, and other heavy route styles/scripts remain lazy chunks.
+- The main CSS bundle is 322.70 KB before gzip, below the 325 KB release ceiling. Opening Data, Property Operating Reports, Action Center, Map, and other heavy route styles/scripts remain lazy chunks.
 - The Playwright PHP server now runs with a 1 GB test memory limit; the previous 128 MB long-suite process accumulated memory and died during the repeated route sweep.
 
 ## Data and security integrity
