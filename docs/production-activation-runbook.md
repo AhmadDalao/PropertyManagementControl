@@ -6,7 +6,7 @@ This runbook starts the first real portfolio without changing the product scope 
 
 ## Current checkpoint
 
-- Production revision: `fe9d109802b33d253ff7b46c18fe860c2b80a499`
+- Production revision: use `storage/app/.deployed-revision` as the release authority and verify it against GitHub `main` before activation.
 - Readiness: 9 ready, 1 attention, 2 blocked
 - Queue: database connection, 0 pending, 0 failed
 - Portfolios: 0 live, 12 showcase
@@ -16,15 +16,14 @@ This runbook starts the first real portfolio without changing the product scope 
 ## 1. Configure production mail
 
 1. In Hostinger hPanel, create a dedicated mailbox such as `no-reply@property.ahmaddalao.com` and retain its SMTP settings in the password manager.
-2. Update the server-only `.env` with Hostinger's displayed SMTP host, port, encryption, username, password, and sender identity. Set `MAIL_MAILER=smtp`; never commit these values.
-3. Clear and rebuild Laravel configuration caches using the verified PHP 8.4 binary.
-4. From `/system/readiness`, send the readiness test to the signed-in superadmin and confirm receipt from the real mailbox.
-5. Request one password-reset link through `/account-recovery`, confirm delivery, open the link, and stop before changing the production superadmin password unless rotation is intended.
-6. Record SMTP receipt evidence only after both messages arrive. The automatic mail check and manual delivery evidence are separate gates.
+2. Open `/system/settings`, enter Hostinger's displayed SMTP host, port, connection security, username, password, and sender identity, then activate SMTP. The password is encrypted and never written to git or the audit log.
+3. From `/system/settings` or `/system/readiness`, send the readiness test to the signed-in superadmin and confirm receipt from the real mailbox.
+4. Request one password-reset link through `/account-recovery`, confirm delivery, open the link, and stop before changing the production superadmin password unless rotation is intended.
+5. Record SMTP receipt evidence only after both messages arrive. The automatic mail check and manual delivery evidence are separate gates.
 
 ## 2. Configure the scheduler
 
-In **Websites -> Dashboard -> Advanced -> Cron Jobs**, add one Custom cron scheduled every minute in UTC:
+Copy the prepared command from `/system/settings`. In **Websites -> Dashboard -> Advanced -> Cron Jobs**, add one Custom cron scheduled every minute in UTC:
 
 ```bash
 /opt/alt/php84/usr/bin/php /home/u867436826/domains/ahmaddalao.com/public_html/property/artisan schedule:run

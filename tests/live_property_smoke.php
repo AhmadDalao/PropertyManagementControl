@@ -266,6 +266,8 @@ $authChecks = [
     '/system/showcase-data?locale=ar' => 'admin/showcase-data/index',
     '/system/readiness' => 'admin/system-readiness/index',
     '/system/readiness?locale=ar' => 'admin/system-readiness/index',
+    '/system/settings' => 'admin/infrastructure-settings/index',
+    '/system/settings?locale=ar' => 'admin/infrastructure-settings/index',
     '/system/email-delivery' => 'admin/email-delivery/index',
     '/system/email-delivery?locale=ar' => 'admin/email-delivery/index',
     '/system/backups' => 'admin/system-backups/index',
@@ -297,6 +299,16 @@ foreach ($authChecks as $path => $expectedComponent) {
 
     smoke_note("{$path} {$component}");
 }
+
+$settingsPage = smoke_request($baseUrl, $cookieFile, 'GET', '/system/settings');
+$settingsPayload = smoke_page_payload($settingsPage['body']);
+$settingsProps = $settingsPayload['props']['settings'] ?? [];
+
+if (! is_array($settingsProps) || array_key_exists('mail_password', $settingsProps)) {
+    smoke_fail('Infrastructure settings exposed the SMTP password field in the page payload.');
+}
+
+smoke_note('/system/settings keeps the SMTP password out of the page payload');
 
 $savedReports = smoke_request($baseUrl, $cookieFile, 'GET', '/reports/saved?locale=ar');
 $savedReportsPayload = smoke_page_payload($savedReports['body']);

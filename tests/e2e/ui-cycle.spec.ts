@@ -54,6 +54,7 @@ const primaryAdminRoutes = [
     '/wording',
     '/system/showcase-data',
     '/system/readiness',
+    '/system/settings',
     '/system/email-delivery',
     '/system/backups',
     '/reports',
@@ -525,6 +526,7 @@ test.describe('authenticated administration', () => {
             '/documents',
             '/media-files',
             '/audit-logs',
+            '/system/settings',
             '/system/email-delivery',
             '/reports',
             '/documentation',
@@ -3497,6 +3499,48 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
     });
 
+    test('infrastructure settings are bilingual, mobile-safe, and never expose the SMTP secret', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/system/settings?locale=ar');
+
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'إعدادات البنية التشغيلية',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-infrastructure-status-grid article'),
+        ).toHaveCount(3);
+        await expect(page.getByLabel('مضيف SMTP')).toBeVisible();
+        await expect(page.getByLabel('كلمة مرور SMTP')).toHaveValue('');
+        await expect(page.locator('body')).not.toContainText(
+            'smtp-secret-that-must-never-leak',
+        );
+        await expect(
+            page.getByRole('button', { name: 'نسخ الأمر' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+
+        await page.setViewportSize(viewports.desktop);
+        await page.goto('/system/settings?locale=en');
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'Infrastructure Settings',
+            }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+    });
+
     test('backup control stays compact, bilingual, and accessible', async ({
         page,
     }) => {
@@ -3650,6 +3694,7 @@ test.describe('authenticated administration', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/settings',
                 '/system/email-delivery',
                 '/system/backups',
             ]) {
@@ -3677,6 +3722,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/settings',
                 '/system/email-delivery',
                 '/system/backups',
             ],
@@ -3697,6 +3743,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/settings',
                 '/system/email-delivery',
                 '/system/backups',
             ],
@@ -3716,6 +3763,7 @@ test.describe('local role dashboards', () => {
                 '/wording',
                 '/system/showcase-data',
                 '/system/readiness',
+                '/system/settings',
                 '/system/email-delivery',
                 '/system/backups',
             ],
@@ -3732,6 +3780,7 @@ test.describe('local role dashboards', () => {
                 '/users',
                 '/cms',
                 '/system/readiness',
+                '/system/settings',
                 '/system/email-delivery',
                 '/system/backups',
             ],

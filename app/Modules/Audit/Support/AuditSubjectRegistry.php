@@ -35,6 +35,7 @@ class AuditSubjectRegistry
         'cms_page_section',
         'navigation_item',
         'operational_readiness_check',
+        'infrastructure_setting',
     ];
 
     /** @var array<int, string> */
@@ -169,6 +170,7 @@ class AuditSubjectRegistry
             'operational_readiness_check' => route('system-readiness.index', array_filter([
                 'portfolio_id' => $subject->getAttribute('portfolio_id'),
             ])),
+            'infrastructure_setting' => route('infrastructure-settings.index'),
             default => null,
         };
     }

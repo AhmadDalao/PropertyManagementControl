@@ -77,7 +77,7 @@ final class SystemHealthQuery
     {
         $configured = $this->mail->configured();
 
-        return $this->check(
+        $check = $this->check(
             'mail',
             $configured ? 'ready' : 'blocked',
             trans(
@@ -85,6 +85,13 @@ final class SystemHealthQuery
                 ['mailer' => $this->mail->mailer()],
             ),
         );
+
+        if (! $configured) {
+            $check['href'] = route('infrastructure-settings.index');
+            $check['action_label'] = trans('app.readiness.open_infrastructure_settings');
+        }
+
+        return $check;
     }
 
     /** @return array<string, mixed> */

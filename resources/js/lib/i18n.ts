@@ -21,6 +21,7 @@ export type UiTranslationKey =
     | `expenses.${string}`
     | `fields.${string}`
     | `filters.${string}`
+    | `infrastructure_settings.${string}`
     | `leases.${string}`
     | `lease_renewals.${string}`
     | `lease_move_outs.${string}`

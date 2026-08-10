@@ -54,7 +54,7 @@ MAIL_FROM_ADDRESS=<hostinger-mailbox>
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
-Configure a working Hostinger SMTP mailbox before enabling password recovery for users. `MAIL_MAILER=log` does not deliver reset links.
+Configure a working Hostinger SMTP mailbox before enabling password recovery for users. `MAIL_MAILER=log` does not deliver reset links. A superadmin can enter and activate the mailbox later from `/system/settings`; the password is encrypted in the database and never returned to the browser. Server `.env` mail values remain the safe fallback when no saved configuration is active.
 
 ## Deploy steps
 
@@ -133,6 +133,8 @@ command into **Command to Run**:
 ```bash
 /opt/alt/php84/usr/bin/php /home/u867436826/domains/ahmaddalao.com/public_html/property/artisan schedule:run
 ```
+
+The same command is prepared in `/system/settings`. If Hostinger exposes a different verified PHP 8.4 binary, update the path there and copy the regenerated command. The application cannot create an hPanel cron job itself.
 
 Do not add `>> /dev/null 2>&1` to the hPanel field. Hostinger rejects those
 special characters unless a separate shell wrapper is created, and the direct

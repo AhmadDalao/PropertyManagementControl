@@ -1,0 +1,134 @@
+.pmc-infrastructure-toggle,
+.pmc-infrastructure-clear-secret {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    min-height: 44px;
+    cursor: pointer;
+}
+
+.pmc-infrastructure-toggle {
+    padding: 0.9rem;
+    margin-block-end: 1rem;
+    border: 1px solid #b9dfd4;
+    border-radius: var(--pmc-radius);
+    background: #f4fbf8;
+}
+
+.pmc-infrastructure-toggle input,
+.pmc-infrastructure-clear-secret input {
+    width: 1.15rem;
+    height: 1.15rem;
+    margin-block-start: 0.12rem;
+}
+
+.pmc-infrastructure-toggle strong,
+.pmc-infrastructure-toggle small {
+    display: block;
+}
+
+.pmc-infrastructure-toggle small {
+    color: var(--pmc-muted);
+}
+
+.pmc-infrastructure-fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.pmc-infrastructure-panel label > span {
+    display: block;
+    margin-block-end: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 750;
+}
+
+.pmc-infrastructure-panel label > small:not(.text-muted) {
+    display: block;
+    margin-block-start: 0.3rem;
+    color: var(--bs-danger);
+}
+
+.pmc-infrastructure-clear-secret {
+    margin-block-start: 1rem;
+}
+
+.pmc-infrastructure-command-label {
+    margin: 1rem 0 0.45rem;
+}
+
+.pmc-infrastructure-command {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.6rem;
+    align-items: stretch;
+}
+
+.pmc-infrastructure-command code {
+    min-width: 0;
+    padding: 0.85rem;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    color: var(--pmc-ink);
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-infrastructure-steps {
+    display: grid;
+    gap: 0.35rem;
+    margin: 1rem 0 0;
+    padding-inline-start: 1.25rem;
+    color: var(--pmc-muted);
+}
+
+.pmc-infrastructure-security-note {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    padding: 1rem;
+    border: 1px solid #ecd69e;
+    border-radius: var(--pmc-radius-lg);
+    background: #fffbef;
+}
+
+.pmc-infrastructure-security-note i {
+    font-size: 1.25rem;
+}
+
+.pmc-infrastructure-security-note p {
+    margin: 0.25rem 0 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-infrastructure-actions {
+    display: flex;
+    gap: 0.65rem;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-infrastructure-actions > div {
+    min-width: 0;
+    margin-inline-end: auto;
+}
+
+.pmc-infrastructure-actions span,
+.pmc-infrastructure-actions strong {
+    display: block;
+}
+
+.pmc-infrastructure-actions span {
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+}
+
+.pmc-infrastructure-actions strong {
+    overflow-wrap: anywhere;
+}

@@ -1,0 +1,37 @@
+@media (max-width: 991.98px) {
+    .pmc-infrastructure-status-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-infrastructure-fields,
+    .pmc-infrastructure-command {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-infrastructure-actions {
+        position: sticky;
+        z-index: 20;
+        bottom: 0.5rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pmc-infrastructure-actions > div {
+        grid-column: 1 / -1;
+        margin: 0;
+    }
+
+    .pmc-infrastructure-actions .btn {
+        min-height: 44px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-infrastructure-form *,
+    .pmc-infrastructure-status-grid * {
+        scroll-behavior: auto !important;
+        transition: none !important;
+    }
+}

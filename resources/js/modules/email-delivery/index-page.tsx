@@ -21,6 +21,12 @@ export default function EmailDeliveryIndexPage() {
                 description={t('email_delivery.description')}
                 actions={[
                     {
+                        label: t('email_delivery.open_settings'),
+                        href: '/system/settings',
+                        icon: 'bi-sliders2',
+                        tone: 'quiet',
+                    },
+                    {
                         label: t('email_delivery.open_readiness'),
                         href: '/system/readiness',
                         icon: 'bi-shield-check',

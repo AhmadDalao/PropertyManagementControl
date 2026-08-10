@@ -21,6 +21,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EmailDeliveryController;
 use App\Http\Controllers\ExpenseEntryController;
 use App\Http\Controllers\GlobalSearchController;
+use App\Http\Controllers\InfrastructureSettingsController;
 use App\Http\Controllers\LeaseController;
 use App\Http\Controllers\LeaseMoveOutController;
 use App\Http\Controllers\LeaseRenewalController;
@@ -330,6 +331,10 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
     Route::post('/system/showcase-data/{showcaseDataset}/retry', [ShowcaseDataController::class, 'retry'])->name('showcase-data.retry');
     Route::delete('/system/showcase-data/{showcaseDataset}', [ShowcaseDataController::class, 'destroy'])->name('showcase-data.destroy');
     Route::get('/system/readiness', [SystemReadinessController::class, 'index'])->name('system-readiness.index');
+    Route::get('/system/settings', [InfrastructureSettingsController::class, 'index'])
+        ->name('infrastructure-settings.index');
+    Route::put('/system/settings', [InfrastructureSettingsController::class, 'update'])
+        ->name('infrastructure-settings.update');
     Route::get('/system/readiness/report.pdf', [SystemReadinessReportController::class, 'pdf'])->name('system-readiness.report.pdf');
     Route::get('/system/readiness/report.docx', [SystemReadinessReportController::class, 'word'])->name('system-readiness.report.word');
     Route::get('/system/readiness/report.xlsx', [SystemReadinessReportController::class, 'workbook'])->name('system-readiness.report.workbook');

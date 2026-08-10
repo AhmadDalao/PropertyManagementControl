@@ -1,0 +1,51 @@
+.pmc-infrastructure-form {
+    display: grid;
+    gap: 1rem;
+    margin-block-end: 2rem;
+}
+
+.pmc-infrastructure-panel {
+    min-width: 0;
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+    box-shadow: var(--pmc-shadow);
+}
+
+.pmc-infrastructure-panel > header {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    margin-block-end: 1.25rem;
+}
+
+.pmc-infrastructure-panel > header span:not(.pmc-infrastructure-panel-icon),
+.pmc-infrastructure-command-label {
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-infrastructure-panel h2 {
+    margin: 0.2rem 0 0.35rem;
+    font-size: clamp(1.1rem, 2vw, 1.35rem);
+}
+
+.pmc-infrastructure-panel p {
+    margin: 0;
+    color: var(--pmc-muted);
+}
+
+.pmc-infrastructure-panel-icon {
+    display: grid;
+    flex: 0 0 44px;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 14px;
+    color: var(--pmc-teal);
+    background: #e5f5f1;
+}

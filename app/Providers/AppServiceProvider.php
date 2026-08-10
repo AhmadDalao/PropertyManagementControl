@@ -11,6 +11,7 @@ use App\Models\CollectionFollowUp;
 use App\Models\DailyOperationsReportRun;
 use App\Models\Document;
 use App\Models\ExpenseEntry;
+use App\Models\InfrastructureSetting;
 use App\Models\LabelOverride;
 use App\Models\Lease;
 use App\Models\LeaseInstallment;
@@ -31,6 +32,7 @@ use App\Models\SystemBackupRun;
 use App\Models\TenantProfile;
 use App\Models\User;
 use App\Modules\EmailDelivery\Actions\RecordEmailDelivery;
+use App\Modules\InfrastructureSettings\Actions\ApplyInfrastructureSettings;
 use App\Modules\SystemBackups\Contracts\DatabaseBackupWriter;
 use App\Modules\SystemBackups\Contracts\DocumentBackupWriter;
 use App\Modules\SystemBackups\Support\MySqlDatabaseBackupWriter;
@@ -54,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        $this->app->singleton(ApplyInfrastructureSettings::class);
         $this->app->bind(DatabaseBackupWriter::class, MySqlDatabaseBackupWriter::class);
         $this->app->bind(DocumentBackupWriter::class, TarDocumentBackupWriter::class);
 
@@ -78,6 +81,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        app(ApplyInfrastructureSettings::class)->handle();
         $this->configureDefaults();
         $this->registerEmailDeliveryTracking();
     }
@@ -106,6 +110,7 @@ class AppServiceProvider extends ServiceProvider
             'maintenance_vendor' => MaintenanceVendor::class,
             'maintenance_work_order' => MaintenanceWorkOrder::class,
             'expense_entry' => ExpenseEntry::class,
+            'infrastructure_setting' => InfrastructureSetting::class,
             'cms_page' => CmsPage::class,
             'cms_section' => CmsSection::class,
             'cms_page_section' => CmsPageSection::class,
