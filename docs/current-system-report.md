@@ -1,7 +1,7 @@
 # Property Management Control: Current System Report
 
 **Report date:** August 11, 2026  
-**Application build revision:** `1451c25fcf3076fff2cda96e96c498156b0dd95f`  
+**Application build revision:** `1451c25fcf3076fff2cda96e96c498156b0dd95f`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
