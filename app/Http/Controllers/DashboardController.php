@@ -13,7 +13,11 @@ class DashboardController extends Controller
     {
         return Inertia::render(
             'dashboard',
-            $dashboard->forUser($this->actor($request), $request->propertyId()),
+            $dashboard->forUser(
+                $this->actor($request),
+                $request->propertyId(),
+                $request->period(),
+            ),
         );
     }
 }

@@ -96,13 +96,19 @@ class CmsModuleArchitectureTest extends TestCase
     public function cms_styles_are_owned_by_small_concern_layers(): void
     {
         $appCss = $this->source($this->path('resources/css/app.css'));
+        $pageStyles = implode('', [
+            $this->source($this->path('resources/js/modules/cms/index-page.tsx')),
+            $this->source($this->path('resources/js/modules/cms/builder-page.tsx')),
+            $this->source($this->path('resources/js/modules/cms/section-form-page.tsx')),
+        ]);
 
         $this->assertFileDoesNotExist($this->path('resources/css/styles/cms.css'));
 
         foreach (['workspace', 'section-editor', 'responsive'] as $layer) {
             $relativePath = "resources/css/styles/cms/{$layer}.css";
             $source = $this->source($this->path($relativePath));
-            $this->assertStringContainsString("./styles/cms/{$layer}.css", $appCss);
+            $this->assertStringNotContainsString("./styles/cms/{$layer}.css", $appCss);
+            $this->assertStringContainsString("css/styles/cms/{$layer}.css", $pageStyles);
             $this->assertLessThanOrEqual(250, substr_count($source, "\n") + 1);
         }
 
@@ -119,7 +125,8 @@ class CmsModuleArchitectureTest extends TestCase
             $builderLayers,
         );
 
-        $this->assertStringContainsString('./styles/cms/builder.css', $appCss);
+        $this->assertStringNotContainsString('./styles/cms/builder.css', $appCss);
+        $this->assertStringContainsString('css/styles/cms/builder.css', $pageStyles);
         $this->assertSame(
             implode('', $builderImports),
             $this->source($this->path('resources/css/styles/cms/builder.css')),

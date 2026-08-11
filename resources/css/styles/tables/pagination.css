@@ -38,8 +38,8 @@
 }
 
 .pmc-page-button.active {
-    border-color: #111;
-    background: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
     color: #fff;
 }
 

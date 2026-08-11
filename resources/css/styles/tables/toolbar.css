@@ -5,7 +5,7 @@
     padding: 0.75rem;
     border: 1px solid var(--pmc-line);
     border-radius: 0.85rem;
-    background: var(--pmc-surface-soft);
+    background: #f8fafc;
 }
 
 .pmc-table-primary-tools {
@@ -41,7 +41,7 @@
     position: absolute;
     inset-inline: auto 0.85rem;
     animation: pmc-table-search-spin 0.75s linear infinite;
-    color: #8a6800;
+    color: var(--pmc-primary);
 }
 
 @keyframes pmc-table-search-spin {
@@ -124,10 +124,10 @@
     align-items: center;
     gap: 0.25rem;
     padding: 0.25rem 0.5rem;
-    border: 1px solid #ead476;
+    border: 1px solid #b9dfc7;
     border-radius: 999px;
-    background: #fff8d6;
-    color: #544300;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
     font-size: 0.63rem;
     font-weight: 750;
 }

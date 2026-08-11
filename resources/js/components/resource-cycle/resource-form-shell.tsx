@@ -3,6 +3,12 @@ import type { FormEvent } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 
+import {
+    fieldError,
+    groupResourceFields,
+    sectionId,
+} from './resource-form-helpers';
+import { ResourceFormSummary } from './resource-form-summary';
 import { ResourceHeader } from './resource-header';
 import { ResourceInput } from './resource-input';
 import type {
@@ -69,7 +75,7 @@ export function ResourceFormShell({
     return (
         <>
             <ResourceHeader
-                eyebrow="Focused input"
+                eyebrow={t('resource.form_eyebrow', 'Record form')}
                 title={title}
                 description={description}
                 backHref={backHref}
@@ -77,15 +83,24 @@ export function ResourceFormShell({
                 actions={headerActions}
             />
 
-            <section className="pmc-resource-form-shell">
-                <div className="pmc-resource-form-brief">
-                    <span className="pmc-table-icon">
-                        <i className="bi bi-pencil-square" />
-                    </span>
-                    <strong>{text('One job on this page')}</strong>
-                    <p>{t('resource.form_guidance')}</p>
-                </div>
+            {usesSections ? (
+                <nav
+                    className="pmc-resource-form-nav"
+                    aria-label={t('resource.form_sections', 'Form sections')}
+                >
+                    {groupedFields.map((group, index) => (
+                        <a
+                            href={`#${sectionId(group.title, index)}`}
+                            key={group.title}
+                        >
+                            <span>{index + 1}</span>
+                            {text(group.title)}
+                        </a>
+                    ))}
+                </nav>
+            ) : null}
 
+            <section className="pmc-resource-form-shell">
                 <form className="pmc-resource-form" onSubmit={submit}>
                     {errors.length > 0 ? (
                         <div
@@ -109,15 +124,24 @@ export function ResourceFormShell({
                         </div>
                     ) : null}
                     {usesSections
-                        ? groupedFields.map((group) => (
+                        ? groupedFields.map((group, index) => (
                               <fieldset
                                   className="pmc-resource-form-section"
                                   key={group.title}
+                                  id={sectionId(group.title, index)}
                               >
-                                  <legend>{text(group.title)}</legend>
-                                  {group.description ? (
-                                      <p>{text(group.description)}</p>
-                                  ) : null}
+                                  <legend className="visually-hidden">
+                                      {text(group.title)}
+                                  </legend>
+                                  <div className="pmc-resource-form-section-head">
+                                      <span>{index + 1}</span>
+                                      <div>
+                                          <h2>{text(group.title)}</h2>
+                                          {group.description ? (
+                                              <p>{text(group.description)}</p>
+                                          ) : null}
+                                      </div>
+                                  </div>
                                   <div>
                                       {group.fields.map((field) => (
                                           <ResourceInput
@@ -160,49 +184,15 @@ export function ResourceFormShell({
                         </button>
                     </div>
                 </form>
+
+                <ResourceFormSummary
+                    action={action}
+                    description={description}
+                    fields={fields}
+                    title={title}
+                    values={form.data}
+                />
             </section>
         </>
-    );
-}
-
-function groupResourceFields(fields: ResourceField[]) {
-    const groups = new Map<
-        string,
-        {
-            title: string;
-            description?: string;
-            fields: ResourceField[];
-        }
-    >();
-
-    fields.forEach((field) => {
-        const title = field.section ?? 'Details';
-        const group = groups.get(title) ?? {
-            title,
-            description: field.sectionDescription,
-            fields: [],
-        };
-
-        group.fields.push(field);
-        groups.set(title, group);
-    });
-
-    return Array.from(groups.values());
-}
-
-function fieldError(
-    errors: Partial<Record<string, string>>,
-    fieldName: string,
-): string {
-    const direct = errors[fieldName];
-
-    if (direct) {
-        return direct;
-    }
-
-    return (
-        Object.entries(errors).find(
-            ([key, value]) => key.startsWith(`${fieldName}.`) && Boolean(value),
-        )?.[1] ?? ''
     );
 }

@@ -7,7 +7,7 @@
     --pmc-surface-warm: var(--pmc-surface-soft);
     --pmc-text: var(--pmc-ink);
     --pmc-text-muted: var(--pmc-muted);
-    --pmc-amber-700: var(--pmc-amber-strong);
+    --pmc-amber-700: #8a5200;
     --pmc-success: var(--pmc-green);
     --pmc-warning: var(--pmc-amber-strong);
     --pmc-danger: var(--pmc-red);
@@ -31,15 +31,16 @@
 
 .pmc-readiness-decision {
     padding: 1.35rem;
+    border: 1px solid #f0d8d3;
     border-radius: var(--pmc-radius-md);
-    color: #fff;
+    color: var(--pmc-ink);
     background:
         radial-gradient(
             circle at top right,
-            rgb(255 193 7 / 35%),
+            rgb(239 68 68 / 10%),
             transparent 42%
         ),
-        #111;
+        #fff;
 }
 
 .pmc-readiness-decision > span,
@@ -72,11 +73,11 @@
 .pmc-readiness-decision p {
     max-width: 44rem;
     margin: 0.65rem 0 1.2rem;
-    color: rgb(255 255 255 / 74%);
+    color: var(--pmc-muted);
 }
 
 .pmc-readiness-decision small {
-    color: rgb(255 255 255 / 58%);
+    color: var(--pmc-muted);
 }
 
 .pmc-readiness-summary-grid {
@@ -470,8 +471,9 @@
     margin-bottom: 0.8rem;
     padding: 0.85rem 1rem;
     border-radius: var(--pmc-radius-md);
-    color: #fff;
-    background: #111;
+    border: 1px solid #cfe8d8;
+    color: var(--pmc-ink);
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-readiness-portfolio-banner strong {

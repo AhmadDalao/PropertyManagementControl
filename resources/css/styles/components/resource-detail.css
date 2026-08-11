@@ -34,7 +34,7 @@
 }
 
 .pmc-resource-tabs button.active {
-    background: #111;
+    background: var(--pmc-primary);
     color: #fff;
 }
 
@@ -59,10 +59,11 @@
     gap: 1rem;
     margin-bottom: 1rem;
     padding: 1.15rem;
-    border: 1px solid #111;
+    border: 1px solid var(--pmc-line);
     border-radius: var(--pmc-radius);
-    background: #111;
-    color: #fff;
+    background: #fff;
+    color: var(--pmc-ink);
+    box-shadow: var(--pmc-shadow);
 }
 
 .pmc-resource-spotlight-main {
@@ -91,14 +92,14 @@
 
 .pmc-resource-spotlight p,
 .pmc-resource-spotlight .pmc-kicker {
-    color: rgba(255, 255, 255, 0.66);
+    color: var(--pmc-muted);
 }
 
 .pmc-resource-spotlight-main > em {
     padding: 0.35rem 0.55rem;
     border-radius: 999px;
-    background: var(--pmc-amber);
-    color: #111;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
     font-size: 0.68rem;
     font-style: normal;
     font-weight: 800;
@@ -120,7 +121,8 @@
 }
 
 .pmc-resource-spotlight dl > div {
-    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--pmc-line-soft);
+    background: var(--pmc-surface-soft);
 }
 
 .pmc-resource-spotlight dt,

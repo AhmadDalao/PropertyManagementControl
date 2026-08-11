@@ -59,7 +59,7 @@
 }
 
 .pmc-action-workspace > header span {
-    color: #856a00;
+    color: var(--pmc-primary-strong);
     font-size: 0.65rem;
     font-weight: 900;
     letter-spacing: 0.04em;

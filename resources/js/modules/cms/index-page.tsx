@@ -1,5 +1,10 @@
 import { Head, usePage } from '@inertiajs/react';
 
+import '../../../css/styles/cms/workspace.css';
+import '../../../css/styles/cms/section-editor.css';
+import '../../../css/styles/cms/builder.css';
+import '../../../css/styles/cms/responsive.css';
+
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 

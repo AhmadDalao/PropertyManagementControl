@@ -42,6 +42,7 @@ export type UiTranslationKey =
     | `portfolios.${string}`
     | `profile.${string}`
     | `public.${string}`
+    | `quick_actions.${string}`
     | `reports.${string}`
     | `rent_collection.${string}`
     | `readiness.${string}`

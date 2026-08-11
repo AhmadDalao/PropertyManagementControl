@@ -14,8 +14,8 @@
 }
 
 .pmc-console-content {
-    width: min(100%, 100rem);
+    width: min(100%, 108rem);
     min-width: 0;
     margin-inline: auto;
-    padding: clamp(1.25rem, 2.2vw, 2.25rem) clamp(1rem, 2.6vw, 2.5rem) 3rem;
+    padding: clamp(1.25rem, 2vw, 2rem) clamp(1rem, 2.3vw, 2.25rem) 3rem;
 }

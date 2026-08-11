@@ -71,9 +71,9 @@
     place-items: center;
     border: 3px solid #fff;
     border-radius: 50% 50% 50% 12%;
-    color: #171713;
-    background: #ffc400;
-    box-shadow: 0 7px 17px rgba(29, 25, 17, 0.27);
+    color: #fff;
+    background: var(--pmc-primary);
+    box-shadow: 0 7px 17px rgba(22, 163, 74, 0.24);
     font-size: 0.9rem;
     transform: rotate(-45deg);
 }

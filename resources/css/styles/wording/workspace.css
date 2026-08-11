@@ -36,8 +36,8 @@
 
 .pmc-wording-tabs button.is-active,
 .pmc-wording-module-chips button.is-active {
-    color: #171713;
-    background: #ffc400;
+    color: #fff;
+    background: var(--pmc-primary);
 }
 
 .pmc-wording-tabs button span {

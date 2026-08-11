@@ -40,10 +40,10 @@ class OperationsDashboardPresenter
     ) {}
 
     /** @return array<string, mixed> */
-    public function present(User $user, ?int $propertyId = null): array
+    public function present(User $user, ?int $propertyId = null, string $period = 'month'): array
     {
         $context = $this->propertyContext->forUser($user, $propertyId);
-        $financial = $this->financial->forUser($user, $context);
+        $financial = $this->financial->forUser($user, $context, $period);
         $stats = [
             ...$this->stats->forUser($user, $context),
             'monthlyRevenue' => $financial['revenue'],
@@ -57,6 +57,7 @@ class OperationsDashboardPresenter
 
         return [
             'mode' => $user->hasRole('superadmin') ? 'superadmin' : 'portfolio',
+            'period' => $period,
             'propertyFocus' => $context->payload(),
             'setupTarget' => $setup['target'],
             'stats' => $stats,

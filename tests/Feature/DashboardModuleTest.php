@@ -69,6 +69,24 @@ class DashboardModuleTest extends TestCase
                 ->missing('charts.maintenanceByStatus'));
     }
 
+    public function test_dashboard_accepts_the_command_center_reporting_period(): void
+    {
+        $owner = $this->createUserWithRole('owner', $this->createPortfolio());
+
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['period' => 'quarter']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('dashboard')
+                ->where('period', 'quarter'));
+
+        $this->actingAs($owner)
+            ->get(route('dashboard', ['period' => 'invalid']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('period', 'month'));
+    }
+
     public function test_superadmin_dashboard_exposes_platform_only_cms_status(): void
     {
         $superadmin = $this->createUserWithRole('superadmin');

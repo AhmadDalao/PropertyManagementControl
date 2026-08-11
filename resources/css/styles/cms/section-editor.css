@@ -30,7 +30,7 @@
 }
 
 .pmc-section-editor-head span {
-    color: #856a00;
+    color: var(--pmc-primary-strong);
     font-size: 0.7rem;
     font-weight: 900;
     letter-spacing: 0.04em;

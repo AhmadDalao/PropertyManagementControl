@@ -138,10 +138,11 @@ class DashboardModuleArchitectureTest extends TestCase
         }
 
         $stylesheet = $this->source('resources/css/styles/dashboard.css');
-        $this->assertLessThanOrEqual(10, substr_count($stylesheet, "\n") + 1);
+        $this->assertLessThanOrEqual(12, substr_count($stylesheet, "\n") + 1);
         $this->assertStringContainsString('./dashboard/metrics.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/actions.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/focus.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/period.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/panels.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/groups.css', $stylesheet);

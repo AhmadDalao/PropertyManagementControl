@@ -4,9 +4,9 @@
     gap: 1rem;
     margin-bottom: 1.25rem;
     padding: 1rem;
-    border: 1px solid #e2dfd9;
+    border: 1px solid var(--pmc-line);
     border-radius: 1rem;
-    background: #fbfaf7;
+    background: #fff;
 }
 
 .pmc-action-queue-label {
@@ -17,7 +17,7 @@
 }
 
 .pmc-action-queue-label span {
-    color: #8a6f00;
+    color: var(--pmc-primary-strong);
     font-size: 0.72rem;
     font-weight: 900;
     text-transform: uppercase;
@@ -30,7 +30,7 @@
 
 .pmc-action-queue-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
     gap: 0.65rem;
 }
 
@@ -49,7 +49,7 @@
 }
 
 .pmc-action-queue-grid > a:hover {
-    border-color: #d3b65f;
+    border-color: var(--pmc-primary);
 }
 
 .pmc-action-queue-grid > a > span {
@@ -59,7 +59,7 @@
 }
 
 .pmc-action-queue-grid > a > i:first-of-type {
-    color: #a67d00;
+    color: var(--pmc-primary);
 }
 
 .pmc-action-queue-grid > a > i:last-of-type {

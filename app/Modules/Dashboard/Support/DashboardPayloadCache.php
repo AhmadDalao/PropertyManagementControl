@@ -14,26 +14,27 @@ final class DashboardPayloadCache
      * @param  Closure(): array<string, mixed>  $resolver
      * @return array<string, mixed>
      */
-    public function remember(User $user, ?int $propertyId, Closure $resolver): array
+    public function remember(User $user, ?int $propertyId, string $period, Closure $resolver): array
     {
         if (! app()->isProduction()) {
             return $resolver();
         }
 
         return Cache::remember(
-            $this->key($user, $propertyId),
+            $this->key($user, $propertyId, $period),
             self::CACHE_SECONDS,
             $resolver,
         );
     }
 
-    private function key(User $user, ?int $propertyId): string
+    private function key(User $user, ?int $propertyId, string $period): string
     {
         return implode(':', [
             'dashboard-payload-v1',
             $user->id,
             app()->getLocale(),
             $propertyId ?? 'all',
+            $period,
         ]);
     }
 }

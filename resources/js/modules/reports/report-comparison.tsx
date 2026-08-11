@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { Fragment } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 import { currency, humanDate, localizedNumber, percent } from '@/lib/utils';
@@ -122,37 +123,43 @@ function ComparisonCard({
             </header>
             <dl>
                 {metrics.map((metric) => (
-                    <div key={metric.key}>
+                    <Fragment key={metric.key}>
                         <dt>{t(`reports.${metric.key}`)}</dt>
                         <dd>
-                            <strong>{formatValue(metric)}</strong>
-                            <span>
-                                {t('reports.previous_value', undefined, {
-                                    value: formatPrevious(metric),
-                                })}
-                            </span>
+                            <div className="pmc-report-comparison-card__value">
+                                <strong>{formatValue(metric)}</strong>
+                                <span>
+                                    {t('reports.previous_value', undefined, {
+                                        value: formatPrevious(metric),
+                                    })}
+                                </span>
+                            </div>
+                            <ChangeBadge metric={metric} />
+                            <Link
+                                className="pmc-report-comparison-card__source"
+                                href={comparisonMetricHref(metric.key, filters)}
+                                aria-label={t(
+                                    'reports.open_metric_records',
+                                    undefined,
+                                    {
+                                        metric: t(`reports.${metric.key}`),
+                                    },
+                                )}
+                                title={t(
+                                    'reports.open_metric_records',
+                                    undefined,
+                                    {
+                                        metric: t(`reports.${metric.key}`),
+                                    },
+                                )}
+                            >
+                                <i
+                                    className="bi bi-arrow-up-right"
+                                    aria-hidden="true"
+                                />
+                            </Link>
                         </dd>
-                        <ChangeBadge metric={metric} />
-                        <Link
-                            className="pmc-report-comparison-card__source"
-                            href={comparisonMetricHref(metric.key, filters)}
-                            aria-label={t(
-                                'reports.open_metric_records',
-                                undefined,
-                                {
-                                    metric: t(`reports.${metric.key}`),
-                                },
-                            )}
-                            title={t('reports.open_metric_records', undefined, {
-                                metric: t(`reports.${metric.key}`),
-                            })}
-                        >
-                            <i
-                                className="bi bi-arrow-up-right"
-                                aria-hidden="true"
-                            />
-                        </Link>
-                    </div>
+                    </Fragment>
                 ))}
             </dl>
             <footer>

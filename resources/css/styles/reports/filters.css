@@ -5,9 +5,9 @@
     gap: 0.75rem;
     margin-bottom: 1rem;
     padding: 0.9rem;
-    border: 1px solid #e2dfd9;
+    border: 1px solid var(--pmc-line);
     border-radius: 0.9rem;
-    background: #fbfaf7;
+    background: #fff;
 }
 
 .pmc-report-filter-trigger {
@@ -40,7 +40,7 @@
 }
 
 .pmc-report-tabs button.is-active {
-    background: #111;
+    background: var(--pmc-primary);
     color: #fff;
 }
 
@@ -72,10 +72,10 @@
     align-items: center;
     gap: 0.55rem;
     padding: 0.65rem 0.75rem;
-    border: 1px solid #eadfc4;
+    border: 1px solid #cfe8d8;
     border-radius: 0.65rem;
-    background: #fff8e8;
-    color: #6f5612;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
     font-size: 0.72rem;
     font-weight: 750;
 }

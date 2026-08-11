@@ -44,7 +44,7 @@
     height: 2.5rem;
     place-items: center;
     border-radius: 0.72rem;
-    background: var(--pmc-amber-soft);
+    background: var(--pmc-primary-soft);
     color: #745800;
     font-size: 0.95rem;
 }

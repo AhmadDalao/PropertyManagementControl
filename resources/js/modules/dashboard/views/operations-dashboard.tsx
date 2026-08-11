@@ -24,7 +24,7 @@ export function OperationsDashboard({
                 mode={props.mode}
                 propertyFocus={props.propertyFocus}
             />
-            <PropertyFocus focus={props.propertyFocus} />
+            <PropertyFocus focus={props.propertyFocus} period={props.period} />
             <PortfolioSetupPanel target={props.setupTarget} />
             <OperationsMetrics props={props} />
             <OperationsDashboardGroups props={props} />

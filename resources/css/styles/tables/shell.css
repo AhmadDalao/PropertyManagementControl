@@ -30,8 +30,8 @@
     flex: 0 0 auto;
     place-items: center;
     border-radius: 0.55rem;
-    background: #fff2b6;
-    color: #715900;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
 }
 
 .pmc-table-heading > strong {
@@ -50,7 +50,7 @@
     justify-content: center;
     padding: 0.15rem 0.45rem;
     border-radius: 999px;
-    background: #111;
+    background: var(--pmc-primary);
     color: #fff;
     font-size: 0.62rem;
     font-weight: 800;
@@ -123,7 +123,7 @@
 
 .pmc-table-export-menu a:hover,
 .pmc-table-export-menu a:focus-visible {
-    background: #fff6ce;
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-filter-chips {
@@ -150,7 +150,7 @@
 }
 
 .pmc-filter-chip.active {
-    border-color: #ddba00;
-    background: #fff2ad;
-    color: #111;
+    border-color: #a9d8b9;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
 }

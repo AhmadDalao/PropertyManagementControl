@@ -258,7 +258,66 @@
     display: block;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, #111, #ffc107);
+    background: linear-gradient(90deg, var(--pmc-primary-strong), #4ade80);
+}
+
+.pmc-report-command-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.34fr);
+    gap: 0.85rem;
+    align-items: start;
+}
+
+.pmc-report-command-main,
+.pmc-report-command-saved {
+    min-width: 0;
+    padding: 0.95rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius-lg);
+    background: #fff;
+}
+
+.pmc-report-command-main > header,
+.pmc-report-command-saved > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+}
+
+.pmc-report-command-main > header span,
+.pmc-report-command-saved > header span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.65rem;
+    font-weight: 850;
+    text-transform: uppercase;
+}
+
+.pmc-report-command-main > header h2,
+.pmc-report-command-saved > header h2 {
+    margin: 0.12rem 0 0;
+    font-size: 0.95rem;
+    font-weight: 850;
+}
+
+.pmc-report-command-saved > header > a {
+    color: var(--pmc-primary-strong);
+    font-size: 0.68rem;
+    font-weight: 800;
+}
+
+.pmc-report-command-main .pmc-report-currency-section,
+.pmc-report-command-main .pmc-report-pulse-grid,
+.pmc-report-command-main .pmc-report-comparison {
+    margin-bottom: 0.75rem;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-report-command-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .pmc-report-breakdown-cards {

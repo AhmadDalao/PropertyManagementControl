@@ -158,7 +158,7 @@
     width: 0.55rem;
     height: 0.55rem;
     border-radius: 999px;
-    background: var(--pmc-amber);
+    background: var(--pmc-primary);
 }
 
 .pmc-history-timeline strong {

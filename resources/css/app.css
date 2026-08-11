@@ -5,10 +5,6 @@
 @import './styles/workspaces.css';
 @import './styles/public.css';
 @import './styles/auth.css';
-@import './styles/cms/workspace.css';
-@import './styles/cms/section-editor.css';
-@import './styles/cms/builder.css';
-@import './styles/cms/responsive.css';
 @import './styles/maintenance/evidence.css';
 @import './styles/tables.css';
 @import './styles/forms.css';

@@ -103,6 +103,7 @@ export type OperationsStats = {
 
 export type OperationsDashboardProps = SharedProps & {
     mode: 'portfolio' | 'superadmin';
+    period: 'month' | 'quarter' | 'year';
     propertyFocus: {
         selected: PropertyFocusOption | null;
         property_count: number;

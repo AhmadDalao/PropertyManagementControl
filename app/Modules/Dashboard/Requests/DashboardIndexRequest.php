@@ -2,6 +2,7 @@
 
 namespace App\Modules\Dashboard\Requests;
 
+use App\Modules\Dashboard\Support\DashboardPeriod;
 use Illuminate\Foundation\Http\FormRequest;
 
 final class DashboardIndexRequest extends FormRequest
@@ -19,6 +20,9 @@ final class DashboardIndexRequest extends FormRequest
             'property_id' => in_array($propertyId, [null, '', 'all'], true)
                 ? null
                 : $propertyId,
+            'period' => DashboardPeriod::normalize(
+                is_string($this->query('period')) ? $this->query('period') : null,
+            ),
         ]);
     }
 
@@ -27,6 +31,7 @@ final class DashboardIndexRequest extends FormRequest
     {
         return [
             'property_id' => ['nullable', 'integer', 'min:1'],
+            'period' => ['required', 'in:'.implode(',', DashboardPeriod::VALUES)],
         ];
     }
 
@@ -35,5 +40,10 @@ final class DashboardIndexRequest extends FormRequest
         $propertyId = $this->validated('property_id');
 
         return $propertyId === null ? null : (int) $propertyId;
+    }
+
+    public function period(): string
+    {
+        return DashboardPeriod::normalize($this->validated('period'));
     }
 }

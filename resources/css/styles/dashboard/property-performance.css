@@ -143,7 +143,7 @@
 
 .pmc-property-performance-card > footer a {
     margin-inline-start: auto;
-    color: #856a00;
+    color: var(--pmc-primary-strong);
 }
 
 @media (max-width: 575.98px) {

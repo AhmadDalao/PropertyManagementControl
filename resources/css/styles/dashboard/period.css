@@ -1,0 +1,28 @@
+.pmc-dashboard-period {
+    display: inline-flex;
+    gap: 0.2rem;
+    padding: 0.2rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    background: #f8fafc;
+}
+
+.pmc-dashboard-period a {
+    display: inline-flex;
+    min-height: 2.25rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.4rem 0.65rem;
+    border-radius: 0.42rem;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 750;
+    text-decoration: none;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.pmc-dashboard-period a.active {
+    background: var(--pmc-primary);
+    color: #fff;
+}

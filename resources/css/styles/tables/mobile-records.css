@@ -42,7 +42,7 @@
 
     .pmc-mobile-record-title-link > i {
         flex: 0 0 auto;
-        color: #856a00;
+        color: var(--pmc-primary);
         font-size: 0.68rem;
     }
 

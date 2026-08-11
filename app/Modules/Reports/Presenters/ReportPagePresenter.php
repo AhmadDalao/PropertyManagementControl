@@ -4,6 +4,7 @@ namespace App\Modules\Reports\Presenters;
 
 use App\Models\User;
 use App\Modules\Reports\Queries\PortfolioReportQuery;
+use App\Modules\Reports\Queries\ReportPresetQuery;
 use App\Modules\Reports\Support\ReportPagePayloadCache;
 use App\Modules\Reports\Support\ReportPropertyScope;
 use App\Modules\Shared\PortfolioScope;
@@ -15,6 +16,7 @@ class ReportPagePresenter
         private readonly ReportLibraryPresenter $library,
         private readonly PortfolioScope $portfolios,
         private readonly ReportPropertyScope $properties,
+        private readonly ReportPresetQuery $presets,
         private readonly ReportPagePayloadCache $cache,
     ) {}
 
@@ -51,6 +53,7 @@ class ReportPagePresenter
                 $portfolioOptions,
                 $propertyOptions,
             ),
+            'savedPresets' => array_slice($this->presets->visibleTo($actor), 0, 5),
         ];
     }
 }

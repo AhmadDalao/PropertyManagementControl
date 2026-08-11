@@ -8,15 +8,12 @@ import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 
-import { ReportCollections } from './report-collections';
-import { ReportCosts } from './report-costs';
 import { ReportFilters } from './report-filters';
 import { ReportLibrary } from './report-library';
-import { ReportOperations } from './report-operations';
 import { ReportOverview } from './report-overview';
+import { ReportPresetList } from './report-preset-list';
 import { cleanReportFilters } from './report-query';
-import { isReportTab, ReportTabs } from './report-tabs';
-import type { ReportFilterValues, ReportsPageProps, ReportTab } from './types';
+import type { ReportFilterValues, ReportsPageProps } from './types';
 
 export default function ReportsIndexPage() {
     const { props } = usePage<ReportsPageProps>();
@@ -33,17 +30,6 @@ export default function ReportsIndexPage() {
             : 'all',
     });
     const [filtersOpen, setFiltersOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<ReportTab>(() => {
-        if (typeof window === 'undefined') {
-            return 'library';
-        }
-
-        const requested = new URLSearchParams(window.location.search).get(
-            'tab',
-        );
-
-        return isReportTab(requested) ? requested : 'library';
-    });
     const exportQuery = new URLSearchParams(
         cleanReportFilters(filters),
     ).toString();
@@ -56,39 +42,11 @@ export default function ReportsIndexPage() {
 
     const applyFilters = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const libraryGroup =
-            typeof window === 'undefined'
-                ? null
-                : new URLSearchParams(window.location.search).get(
-                      'library_group',
-                  );
-        router.get(
-            '/reports',
-            {
-                ...cleanReportFilters(filters),
-                tab: activeTab,
-                ...(activeTab === 'library' && libraryGroup
-                    ? { library_group: libraryGroup }
-                    : {}),
-            },
-            {
-                preserveScroll: true,
-                preserveState: true,
-                replace: true,
-            },
-        );
-    };
-
-    const selectTab = (tab: ReportTab) => {
-        setActiveTab(tab);
-
-        if (typeof window === 'undefined') {
-            return;
-        }
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('tab', tab);
-        window.history.replaceState({}, '', url);
+        router.get('/reports', cleanReportFilters(filters), {
+            preserveScroll: true,
+            preserveState: true,
+            replace: true,
+        });
     };
 
     return (
@@ -133,19 +91,32 @@ export default function ReportsIndexPage() {
                 onSubmit={applyFilters}
                 onToggle={() => setFiltersOpen((open) => !open)}
             />
-            <ReportTabs active={activeTab} onSelect={selectTab} />
+            <ReportLibrary groups={props.reportLibrary} />
 
-            {activeTab === 'library' ? (
-                <ReportLibrary groups={props.reportLibrary} />
-            ) : null}
-            {activeTab === 'overview' ? <ReportOverview props={props} /> : null}
-            {activeTab === 'collections' ? (
-                <ReportCollections props={props} />
-            ) : null}
-            {activeTab === 'costs' ? <ReportCosts props={props} /> : null}
-            {activeTab === 'operations' ? (
-                <ReportOperations props={props} />
-            ) : null}
+            <div className="pmc-report-command-grid">
+                <section className="pmc-report-command-main">
+                    <header>
+                        <div>
+                            <span>{t('reports.tab_overview')}</span>
+                            <h2>{t('reports.financial_overview')}</h2>
+                        </div>
+                    </header>
+                    <ReportOverview props={props} />
+                </section>
+
+                <aside className="pmc-report-command-saved">
+                    <header>
+                        <div>
+                            <span>{t('reports.saved_reports_eyebrow')}</span>
+                            <h2>{t('reports.saved_reports_title')}</h2>
+                        </div>
+                        <a href="/reports/saved">
+                            {t('reports.manage_saved_reports')}
+                        </a>
+                    </header>
+                    <ReportPresetList presets={props.savedPresets} />
+                </aside>
+            </div>
         </AdminLayout>
     );
 }

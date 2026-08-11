@@ -50,8 +50,8 @@
 }
 
 .pmc-cms-preview-toolbar button.active {
-    border-color: #111;
-    background: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
     color: #fff;
 }
 
@@ -63,12 +63,12 @@
     padding: 0.75rem;
     overflow: auto;
     background:
-        linear-gradient(45deg, #eceae5 25%, transparent 25%) 0 0 / 18px 18px,
-        linear-gradient(-45deg, #eceae5 25%, transparent 25%) 0 9px / 18px 18px,
-        linear-gradient(45deg, transparent 75%, #eceae5 75%) 9px -9px / 18px
+        linear-gradient(45deg, #e8edf2 25%, transparent 25%) 0 0 / 18px 18px,
+        linear-gradient(-45deg, #e8edf2 25%, transparent 25%) 0 9px / 18px 18px,
+        linear-gradient(45deg, transparent 75%, #e8edf2 75%) 9px -9px / 18px
             18px,
-        linear-gradient(-45deg, transparent 75%, #eceae5 75%) -9px 0 / 18px 18px,
-        #f7f5f0;
+        linear-gradient(-45deg, transparent 75%, #e8edf2 75%) -9px 0 / 18px 18px,
+        #f5f7fa;
 }
 
 .pmc-cms-preview-document {

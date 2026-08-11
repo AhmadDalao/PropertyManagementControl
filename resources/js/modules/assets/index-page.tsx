@@ -27,35 +27,15 @@ export default function AssetsIndexPage() {
                 title={t('assets.title')}
                 description={t('assets.workspace_description')}
                 actions={[
-                    {
-                        label: t('assets.explorer.title'),
-                        href: '/property-explorer',
-                        icon: 'bi-diagram-3',
-                        tone: 'primary',
-                    },
-                    {
-                        label: t('assets.property_map'),
-                        href: '/property-map',
-                        icon: 'bi-map',
-                        tone: 'quiet',
-                    },
                     ...(canCreate
                         ? [
                               {
-                                  label: t('assets.builder.single_asset'),
-                                  href: '/assets/create',
+                                  label: t('assets.add_property'),
+                                  href: canSetupBuilding
+                                      ? '/assets/building-setup'
+                                      : '/assets/create',
                                   icon: 'bi-plus-lg',
-                                  tone: 'secondary' as const,
-                              },
-                          ]
-                        : []),
-                    ...(canSetupBuilding
-                        ? [
-                              {
-                                  label: t('assets.builder.setup_building'),
-                                  href: '/assets/building-setup',
-                                  icon: 'bi-buildings',
-                                  tone: 'secondary' as const,
+                                  tone: 'primary' as const,
                               },
                           ]
                         : []),

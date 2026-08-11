@@ -236,6 +236,7 @@ export type ReportsPageProps = ReportDataProps & {
         name: string;
     }>;
     reportLibrary: ReportLibraryGroup[];
+    savedPresets: ReportPreset[];
 };
 
 export type SavedReportsPageProps = SharedProps & {

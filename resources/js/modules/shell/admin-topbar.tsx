@@ -9,6 +9,7 @@ import type { NotificationSummary } from '@/modules/notifications/types';
 import type { AppUser } from '@/types/auth';
 
 import { AccountMenu } from './account-menu';
+import { QuickActionMenu } from './quick-action-menu';
 
 type AdminTopbarProps = {
     user: AppUser | null;
@@ -50,6 +51,7 @@ export function AdminTopbar({
             {user ? <GlobalSearch /> : null}
 
             <div className="pmc-topbar-actions">
+                {user ? <QuickActionMenu user={user} /> : null}
                 {user ? (
                     <NotificationMenu notifications={notifications} />
                 ) : null}

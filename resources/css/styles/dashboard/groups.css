@@ -7,11 +7,11 @@
 }
 
 .pmc-dashboard-workspace {
-    margin-top: 1rem;
+    margin-top: 0.75rem;
 }
 
 .pmc-dashboard-view-tabs {
-    display: grid;
+    display: none;
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
     gap: 0.65rem;
     padding: 0.45rem;
@@ -44,7 +44,7 @@
 }
 
 .pmc-dashboard-view-tabs > button.is-active {
-    background: #111;
+    background: var(--pmc-primary);
     color: #fff;
 }
 
@@ -54,13 +54,13 @@
     height: 2.55rem;
     place-items: center;
     border-radius: 0.7rem;
-    background: var(--pmc-amber-soft);
-    color: #6f5400;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
 }
 
 .pmc-dashboard-view-tabs > button.is-active .pmc-dashboard-view-icon {
-    background: var(--pmc-amber);
-    color: #211600;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
 }
 
 .pmc-dashboard-view-copy {
@@ -140,20 +140,20 @@
     flex: 0 0 auto;
     padding-inline: 0.3rem;
     border-radius: 999px;
-    background: var(--pmc-amber-soft);
-    color: #6f5400;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
     font-size: 0.67rem;
 }
 
 .pmc-dashboard-system-tabs button.is-active {
-    border-color: #111;
-    background: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
     color: #fff;
 }
 
 .pmc-dashboard-system-tabs button.is-active > strong {
-    background: var(--pmc-accent);
-    color: #111;
+    background: #fff;
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-dashboard-system-panel {
@@ -163,6 +163,20 @@
 
 .pmc-dashboard-system-panel.is-active {
     display: block;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-dashboard-view-tabs {
+        display: grid;
+    }
+
+    .pmc-dashboard-view-panel {
+        display: none;
+    }
+
+    .pmc-dashboard-view-panel.is-active {
+        display: grid;
+    }
 }
 
 @media (max-width: 767.98px) {

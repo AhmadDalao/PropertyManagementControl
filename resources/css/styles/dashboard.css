@@ -1,5 +1,6 @@
 @import './dashboard/metrics.css';
 @import './dashboard/focus.css';
+@import './dashboard/period.css';
 @import './dashboard/actions.css';
 @import './dashboard/panels.css';
 @import './dashboard/property-performance.css';

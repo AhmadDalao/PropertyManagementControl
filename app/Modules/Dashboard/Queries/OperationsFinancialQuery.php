@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\LeaseInstallment;
 use App\Models\Payment;
 use App\Models\User;
+use App\Modules\Dashboard\Support\DashboardPeriod;
 use App\Modules\Dashboard\Support\DashboardPropertyContext;
 use App\Modules\Dashboard\Support\OperationsCurrencySummary;
 use App\Modules\Shared\PortfolioScope;
@@ -19,29 +20,30 @@ final readonly class OperationsFinancialQuery
     ) {}
 
     /** @return array<string, mixed> */
-    public function forUser(User $actor, DashboardPropertyContext $context): array
+    public function forUser(User $actor, DashboardPropertyContext $context, string $period = 'month'): array
     {
+        $bounds = DashboardPeriod::bounds($period);
         $leases = $context
             ->leases($this->portfolios->apply(Lease::query(), $actor))
             ->whereIn('status', ['active', 'expired'])
             ->get(['id', 'currency']);
         $installments = LeaseInstallment::query()
             ->whereIn('lease_id', $leases->pluck('id'))
-            ->whereDate('due_date', '<=', now()->endOfMonth())
+            ->whereDate('due_date', '<=', $bounds['end'])
             ->get(['lease_id', 'due_date', 'amount_due', 'amount_paid']);
         $payments = $context->leaseRecords(
             $this->portfolios->apply(Payment::query(), $actor),
         )
             ->where('status', 'posted')
-            ->whereDate('received_on', '>=', now()->startOfMonth())
-            ->whereDate('received_on', '<=', now()->endOfMonth())
+            ->whereDate('received_on', '>=', $bounds['start'])
+            ->whereDate('received_on', '<=', $bounds['end'])
             ->get(['currency', 'amount']);
         $expenses = $context->assetRecords(
             $this->portfolios->apply(ExpenseEntry::query(), $actor),
         )
             ->where('status', 'posted')
-            ->whereDate('incurred_on', '>=', now()->startOfMonth())
-            ->whereDate('incurred_on', '<=', now()->endOfMonth())
+            ->whereDate('incurred_on', '>=', $bounds['start'])
+            ->whereDate('incurred_on', '<=', $bounds['end'])
             ->get(['currency', 'amount']);
         $currencyTotals = $this->currencies->summarize(
             $actor,
@@ -49,6 +51,8 @@ final readonly class OperationsFinancialQuery
             $installments,
             $payments,
             $expenses,
+            $bounds['start'],
+            $bounds['end'],
         );
         $singleCurrency = count($currencyTotals) === 1
             ? $currencyTotals[0]

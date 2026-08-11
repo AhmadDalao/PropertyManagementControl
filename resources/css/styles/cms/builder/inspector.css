@@ -13,8 +13,8 @@
 
 .pmc-cms-outline article:hover,
 .pmc-cms-outline article.active {
-    border-color: #d1ae00;
-    background: #fffaf0;
+    border-color: #9ed6b2;
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-cms-outline article.is-dragging {

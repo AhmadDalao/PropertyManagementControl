@@ -1,11 +1,10 @@
 import type { WorkspaceMetric } from '@/components/operations';
 import type { Translator } from '@/lib/i18n';
-import { compactCurrency, currency, localizedNumber } from '@/lib/utils';
+import { currency, localizedNumber, percent } from '@/lib/utils';
 
 import type { OperationsDashboardProps } from '../types';
 import {
     currencyPositionAmounts,
-    currencyPositionCount,
     financialMetricValue,
 } from './currency-metric-values';
 import { propertyFocusUrl } from './property-focus-url';
@@ -16,31 +15,21 @@ export function platformMetrics(
     t: Translator,
 ): WorkspaceMetric[] {
     const propertyId = props.propertyFocus.selected?.id;
-    const valuationSingle =
-        props.stats.valuationTotals.length === 1
-            ? props.stats.valuationTotals[0]
-            : null;
-    const valuationValue =
-        props.stats.totalValue !== null && valuationSingle
-            ? compactCurrency(
-                  props.stats.totalValue,
-                  locale,
-                  valuationSingle.currency,
-              )
-            : currencyPositionCount(
-                  props.stats.valuationTotals.length,
-                  locale,
-                  t,
-              );
-    const valuationDetail = valuationSingle
-        ? t('dashboard.active_leases_count', undefined, {
-              count: localizedNumber(props.stats.activeLeases, locale),
-          })
-        : props.stats.valuationTotals
-              .map((position) =>
-                  currency(position.amount, locale, position.currency),
-              )
-              .join(' · ');
+    const occupied =
+        Number(props.charts.occupancy.occupied ?? 0) +
+        Number(props.charts.occupancy.partially_occupied ?? 0);
+    const units = Object.values(props.charts.occupancy).reduce(
+        (total, value) => total + Number(value),
+        0,
+    );
+    const occupancyRate = units > 0 ? (occupied / units) * 100 : 0;
+    const scheduled = financialMetricValue(
+        props.financial.scheduledDue,
+        props.financial.currencyTotals,
+        'scheduledDue',
+        locale,
+        t,
+    );
     const revenue = financialMetricValue(
         props.financial.revenue,
         props.financial.currencyTotals,
@@ -58,8 +47,8 @@ export function platformMetrics(
 
     return [
         {
-            label: t('dashboard.managed_assets'),
-            value: localizedNumber(props.stats.totalAssets, locale),
+            label: t('dashboard.total_properties'),
+            value: localizedNumber(props.propertyFocus.property_count, locale),
             detail:
                 props.mode === 'superadmin' && !propertyId
                     ? t('dashboard.portfolios_users', undefined, {
@@ -72,9 +61,9 @@ export function platformMetrics(
                               locale,
                           ),
                       })
-                    : t('dashboard.vacant_units', undefined, {
+                    : t('dashboard.active_leases_count', undefined, {
                           count: localizedNumber(
-                              props.stats.vacantUnits,
+                              props.stats.activeLeases,
                               locale,
                           ),
                       }),
@@ -83,12 +72,35 @@ export function platformMetrics(
             href: propertyFocusUrl('/assets', propertyId),
         },
         {
-            label: t('dashboard.portfolio_value'),
-            value: valuationValue,
-            detail: valuationDetail,
-            icon: 'bi-bank',
+            label: t('dashboard.total_units'),
+            value: localizedNumber(units, locale),
+            detail: t('dashboard.vacant_units', undefined, {
+                count: localizedNumber(props.stats.vacantUnits, locale),
+            }),
+            icon: 'bi-door-open',
             tone: 'blue',
-            href: propertyFocusUrl('/assets', propertyId),
+            href: propertyFocusUrl('/assets?rentable=1', propertyId),
+        },
+        {
+            label: t('dashboard.occupancy_rate'),
+            value: percent(occupancyRate, locale),
+            detail: t('dashboard.occupied_units', undefined, {
+                occupied: localizedNumber(occupied, locale),
+                total: localizedNumber(units, locale),
+            }),
+            icon: 'bi-pie-chart',
+            tone: occupancyRate >= 70 ? 'teal' : 'amber',
+            href: propertyFocusUrl('/property-map', propertyId),
+        },
+        {
+            label: t('dashboard.scheduled_rent'),
+            value: scheduled.value,
+            detail: t('dashboard.active_leases_count', undefined, {
+                count: localizedNumber(props.stats.activeLeases, locale),
+            }),
+            icon: 'bi-file-earmark-text',
+            tone: 'blue',
+            href: propertyFocusUrl('/rent-collection', propertyId),
         },
         {
             label: t('dashboard.collected_this_month'),

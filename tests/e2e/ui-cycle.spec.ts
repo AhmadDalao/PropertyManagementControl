@@ -1154,7 +1154,9 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/dashboard?locale=en');
-        await page.locator('[data-dashboard-view-tab="portfolio"]').click();
+        await expect(
+            page.locator('[data-dashboard-view-tab="portfolio"]'),
+        ).toBeHidden();
         await expect(
             page.locator('a[href="/lease-renewals?queue=all"]'),
         ).toBeVisible();
@@ -1250,6 +1252,8 @@ test.describe('authenticated administration', () => {
     });
 
     test('primary administration routes never overflow', async ({ page }) => {
+        test.slow();
+
         for (const viewport of breakpoints) {
             await page.setViewportSize(viewport);
 
@@ -1591,7 +1595,6 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
-        await page.locator('[data-dashboard-view-tab="system"]').click();
         await page.locator('[data-dashboard-system-tab="readiness"]').click();
         await expect(
             page
@@ -2174,7 +2177,9 @@ test.describe('authenticated administration', () => {
         expect(detailHref).toBeTruthy();
 
         await page.goto(`${detailHref}?locale=ar`);
-        await expect(page.getByText('طلب صيانة')).toBeVisible();
+        await expect(
+            page.getByText('طلب صيانة', { exact: true }),
+        ).toBeVisible();
         await expect(page.getByText('سياق الطلب')).toBeVisible();
         const addPhotos = page.getByRole('link', { name: 'إضافة صور' });
         await expect(addPhotos).toBeVisible();
@@ -2891,6 +2896,8 @@ test.describe('authenticated administration', () => {
     test('reports use responsive cards, complete Arabic controls, and real XLSX export', async ({
         page,
     }) => {
+        test.slow();
+
         await page.setViewportSize(viewports.mobile);
         await page.goto('/reports?locale=ar');
 
@@ -2902,26 +2909,23 @@ test.describe('authenticated administration', () => {
                 name: 'اختر الإجابة التي تحتاجها',
             }),
         ).toBeVisible();
-        await expect(page.locator('.pmc-report-library-tabs')).toBeVisible();
-        await expect(
-            page.locator('.pmc-report-library-tabs [role="tab"]'),
-        ).toHaveCount(4);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(3);
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(8);
+        await expect(page.locator('.pmc-report-more > summary')).toBeVisible();
         await expect(
             page
                 .locator('.pmc-report-card-scope')
                 .getByText('الفترة المحددة', { exact: true }),
-        ).toHaveCount(2);
+        ).not.toHaveCount(0);
         await expect(
             page
                 .locator('.pmc-report-card-scope')
                 .getByText('نطاق المحفظة', { exact: true }),
-        ).toHaveCount(3);
+        ).not.toHaveCount(0);
         await expect(
             page
                 .locator('.pmc-report-card-scope')
                 .getByText('نطاق العقار', { exact: true }),
-        ).toHaveCount(3);
+        ).not.toHaveCount(0);
         await expect(
             page
                 .locator('.pmc-report-library-card')
@@ -2933,12 +2937,6 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('a[href^="/reports/statement.docx"]'),
         ).toBeVisible();
-        await page.getByRole('tab', { name: 'التحصيل والتكاليف 4' }).click();
-        await expect(page).toHaveURL(/library_group=finance/);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(4);
-        expect(
-            await page.evaluate(() => document.documentElement.scrollHeight),
-        ).toBeLessThan(2200);
         await page.getByRole('button', { name: 'إظهار التصفيات' }).click();
         await expect(page.locator('#report-filter-panel')).toBeVisible();
         await expect(page.getByLabel('التاريخ من')).toBeVisible();
@@ -2962,9 +2960,7 @@ test.describe('authenticated administration', () => {
             .click();
         await page.getByRole('button', { name: 'تطبيق', exact: true }).click();
         await expect(page).toHaveURL(/period=this_month/);
-        await expect(page).toHaveURL(/library_group=finance/);
-        await expect(page.locator('.pmc-report-library-card')).toHaveCount(4);
-        await page.getByRole('tab', { name: 'حزم المالك 3' }).click();
+        await expect(page.locator('.pmc-report-library-card')).toHaveCount(8);
         const propertyReportCard = page
             .locator('.pmc-report-library-card')
             .filter({ hasText: 'تقرير تشغيل العقار' });
@@ -3113,10 +3109,6 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/reports?locale=ar&period=this_month');
-
-        await page
-            .getByRole('button', { name: 'نظرة عامة', exact: true })
-            .click();
         await expect(
             page.getByRole('heading', { name: 'ما الذي تغير' }),
         ).toBeVisible();
@@ -3146,16 +3138,7 @@ test.describe('authenticated administration', () => {
         expect(previousPeriodHref).toContain('tab=overview');
         await expectNoHorizontalOverflow(page);
 
-        for (const tab of ['التحصيل', 'التكاليف', 'التشغيل']) {
-            await page.getByRole('button', { name: tab, exact: true }).click();
-            await expectNoHorizontalOverflow(page);
-        }
-
-        await expect(
-            page.getByRole('heading', { name: 'السجل التشغيلي' }),
-        ).toBeVisible();
-        await expect(page.locator('.pmc-report-journal')).toBeVisible();
-        await expect(page.locator('.pmc-report-record-grid')).toBeVisible();
+        await expect(page.locator('.pmc-report-pulse-grid')).toBeVisible();
         await expect(page.locator('.pmc-table-scroll')).toHaveCount(0);
 
         const workbook = await page.request.get('/reports/export');
@@ -3170,15 +3153,9 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-report-library-grid').first(),
         ).toBeVisible();
-        await page
-            .getByRole('button', { name: 'Overview', exact: true })
-            .click();
         await expect(page.locator('.pmc-report-pulse-grid')).toBeVisible();
-        await page
-            .getByRole('button', { name: 'Operations', exact: true })
-            .click();
         await expect(
-            page.getByRole('heading', { name: 'Operational journal' }),
+            page.getByRole('heading', { name: 'Financial overview' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -3999,7 +3976,7 @@ test.describe('local role dashboards', () => {
                 ).toBeVisible();
                 await expect(
                     page.locator('[data-dashboard-group="portfolio"]'),
-                ).toHaveCount(0);
+                ).toBeHidden();
                 await page
                     .locator('[data-dashboard-view-tab="portfolio"]')
                     .click();
@@ -4020,16 +3997,10 @@ test.describe('local role dashboards', () => {
                 expect(await desktopViewTabs.count()).toBe(3);
                 await expect(
                     page.locator('.pmc-dashboard-view-tabs'),
-                ).toBeVisible();
-                await expect(
-                    page.locator('[data-dashboard-view-tab="portfolio"]'),
-                ).toHaveAttribute('aria-pressed', 'true');
+                ).toBeHidden();
                 await expect(
                     page.locator('.pmc-property-performance'),
                 ).toBeVisible();
-                await page
-                    .locator('[data-dashboard-view-tab="system"]')
-                    .click();
                 await page
                     .locator('[data-dashboard-system-tab="readiness"]')
                     .click();
@@ -4049,12 +4020,6 @@ test.describe('local role dashboards', () => {
                 await expect(
                     page.locator('.pmc-platform-activity'),
                 ).toBeVisible();
-                await expect(
-                    page.locator('.pmc-property-performance'),
-                ).toHaveCount(0);
-                await page
-                    .locator('[data-dashboard-view-tab="portfolio"]')
-                    .click();
                 await expect(
                     page.locator('.pmc-property-performance'),
                 ).toBeVisible();

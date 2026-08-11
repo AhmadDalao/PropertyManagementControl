@@ -8,6 +8,7 @@ use App\Models\LeaseInstallment;
 use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
 final class OperationsCurrencySummary
@@ -34,7 +35,11 @@ final class OperationsCurrencySummary
         Collection $installments,
         Collection $payments,
         Collection $expenses,
+        ?CarbonInterface $periodStart = null,
+        ?CarbonInterface $periodEnd = null,
     ): array {
+        $periodStart ??= now()->startOfMonth();
+        $periodEnd ??= now()->endOfMonth();
         $totals = [];
         $leaseCurrencies = $leases->mapWithKeys(
             fn (Lease $lease): array => [
@@ -54,7 +59,7 @@ final class OperationsCurrencySummary
             );
             $totals[$currency] ??= $this->emptyTotal($currency);
 
-            if ($installment->due_date?->isCurrentMonth()) {
+            if ($installment->due_date?->betweenIncluded($periodStart, $periodEnd)) {
                 $totals[$currency]['scheduledDue'] += (float) $installment->amount_due;
                 $totals[$currency]['scheduledPaid'] += min(
                     (float) $installment->amount_due,

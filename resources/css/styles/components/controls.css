@@ -36,16 +36,16 @@
 }
 
 .btn-primary {
-    border-color: var(--pmc-amber);
-    background: var(--pmc-amber);
-    color: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
+    color: #fff;
 }
 
 .btn-primary:hover,
 .btn-primary:focus {
-    border-color: var(--pmc-amber-strong);
-    background: var(--pmc-amber-strong);
-    color: #111;
+    border-color: var(--pmc-primary-strong);
+    background: var(--pmc-primary-strong);
+    color: #fff;
 }
 
 .btn-light {

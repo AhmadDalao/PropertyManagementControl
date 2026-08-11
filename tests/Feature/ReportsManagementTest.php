@@ -97,6 +97,36 @@ class ReportsManagementTest extends TestCase
                 ->where('reportLibrary.3.key', 'control'));
     }
 
+    public function test_report_command_center_includes_only_accessible_saved_reports(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $foreignOwner = $this->createUserWithRole('owner', $foreignPortfolio);
+
+        $this->actingAs($owner)->post(route('reports.presets.store'), [
+            'title_en' => 'Monthly owner review',
+            'title_ar' => 'مراجعة المالك الشهرية',
+            'visibility' => 'private',
+            'filters_json' => ['period' => 'this_month'],
+        ])->assertRedirect();
+
+        $this->actingAs($foreignOwner)->post(route('reports.presets.store'), [
+            'title_en' => 'Foreign review',
+            'title_ar' => 'مراجعة خارجية',
+            'visibility' => 'private',
+            'filters_json' => ['period' => 'this_month'],
+        ])->assertRedirect();
+
+        $this->actingAs($owner)
+            ->get(route('reports.index', ['period' => 'this_month']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/index')
+                ->has('savedPresets', 1)
+                ->where('savedPresets.0.title_en', 'Monthly owner review'));
+    }
+
     public function test_reports_compare_the_previous_equivalent_period_and_export_the_evidence(): void
     {
         CarbonImmutable::setTestNow('2026-08-15 12:00:00');

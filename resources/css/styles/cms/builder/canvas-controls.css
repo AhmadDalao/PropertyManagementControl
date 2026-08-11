@@ -7,7 +7,7 @@
 }
 
 .pmc-cms-preview-section.is-selected {
-    outline: 3px solid #e6b900;
+    outline: 3px solid var(--pmc-primary);
 }
 
 .pmc-cms-preview-edit {

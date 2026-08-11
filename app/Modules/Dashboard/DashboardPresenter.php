@@ -16,14 +16,15 @@ class DashboardPresenter
     ) {}
 
     /** @return array<string, mixed> */
-    public function forUser(User $user, ?int $propertyId = null): array
+    public function forUser(User $user, ?int $propertyId = null, string $period = 'month'): array
     {
         return $this->cache->remember(
             $user,
             $propertyId,
+            $period,
             fn (): array => $user->hasRole('tenant')
                 ? $this->tenant->present($user)
-                : $this->operations->present($user, $propertyId),
+                : $this->operations->present($user, $propertyId, $period),
         );
     }
 }

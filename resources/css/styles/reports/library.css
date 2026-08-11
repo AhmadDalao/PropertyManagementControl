@@ -23,7 +23,7 @@
 }
 
 .pmc-report-library-intro span {
-    color: #8a6700;
+    color: var(--pmc-primary-strong);
     font-size: 0.68rem;
     font-weight: 900;
 }
@@ -59,14 +59,14 @@
     gap: 0.45rem;
     flex: 0 0 auto;
     padding: 0.6rem 0.75rem;
-    border: 1px solid #eadfbf;
+    border: 1px solid #cfe8d8;
     border-radius: 0.7rem;
-    background: #fffaf0;
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-report-library-note span {
     max-width: 34ch;
-    color: #68551c;
+    color: var(--pmc-primary-strong);
     font-size: 0.68rem;
     font-weight: 750;
     line-height: 1.4;
@@ -125,8 +125,8 @@
 }
 
 .pmc-report-library-tabs button.is-active > strong {
-    background: var(--pmc-accent);
-    color: #111;
+    background: #fff;
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-report-library-group > header {
@@ -159,7 +159,7 @@
 
 .pmc-report-library-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
     gap: 0.7rem;
 }
 
@@ -169,7 +169,7 @@
     align-content: space-between;
     gap: 1rem;
     padding: 0.9rem;
-    border: 1px solid #dedad3;
+    border: 1px solid var(--pmc-line);
     border-radius: 0.85rem;
     background: #fff;
 }
@@ -185,10 +185,10 @@
     width: 2.25rem;
     height: 2.25rem;
     place-items: center;
-    border: 1px solid #eadfbf;
+    border: 1px solid #cfe8d8;
     border-radius: 0.65rem;
-    background: #fff8e7;
-    color: #6d5100;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
 }
 
 .pmc-report-library-card-head > div {
@@ -220,10 +220,10 @@
     gap: 0.08rem 0.35rem;
     align-items: center;
     padding: 0.35rem 0.55rem;
-    border: 1px solid #e5ded0;
+    border: 1px solid var(--pmc-line-soft);
     border-radius: 0.6rem;
-    background: #fffaf0;
-    color: #68551c;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
 }
 
 .pmc-report-card-scope dt {
@@ -268,25 +268,111 @@
 
 .pmc-report-source-link {
     flex: 1 1 8rem;
-    border: 1px solid #dedad3;
+    border: 1px solid var(--pmc-line);
     background: #fff;
     color: #111;
 }
 
 .pmc-report-download-link {
     flex: 1 1 7rem;
-    border: 1px solid #111;
-    background: #111;
+    border: 1px solid var(--pmc-primary);
+    background: var(--pmc-primary);
     color: #fff;
 }
 
 .pmc-report-library-card-actions a:hover {
-    border-color: #c89b12;
-    color: #8a6700;
+    border-color: var(--pmc-primary);
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-report-more {
+    border: 1px solid var(--pmc-line);
+    border-radius: var(--pmc-radius);
+    background: #fff;
+}
+
+.pmc-report-more > summary {
+    display: flex;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.65rem 0.8rem;
+    list-style: none;
+    cursor: pointer;
+}
+
+.pmc-report-more > summary > span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--pmc-ink);
+    font-size: 0.72rem;
+    font-weight: 850;
+}
+
+.pmc-report-more > summary > span i {
+    color: var(--pmc-primary);
+}
+
+.pmc-report-more > summary > strong {
+    display: grid;
+    min-width: 1.65rem;
+    min-height: 1.65rem;
+    place-items: center;
+    border-radius: 999px;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 0.65rem;
+}
+
+.pmc-report-more > div {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    gap: 0.45rem;
+    padding: 0 0.7rem 0.7rem;
+}
+
+.pmc-report-more > div > a {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.6rem;
+    color: var(--pmc-ink);
+    text-decoration: none;
+}
+
+.pmc-report-more > div > a > i:first-child {
+    color: var(--pmc-primary);
+}
+
+.pmc-report-more > div > a > span {
+    display: grid;
+    min-width: 0;
+}
+
+.pmc-report-more > div strong,
+.pmc-report-more > div small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-report-more > div strong {
+    font-size: 0.68rem;
+}
+
+.pmc-report-more > div small {
+    color: var(--pmc-muted);
+    font-size: 0.61rem;
 }
 
 .pmc-report-download-link:hover {
-    background: #2a2a2a;
+    background: var(--pmc-primary-strong);
     color: #fff !important;
 }
 

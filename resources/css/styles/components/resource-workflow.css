@@ -14,8 +14,8 @@
 }
 
 .pmc-resource-workflow-primary {
-    border-inline-start-color: var(--pmc-amber);
-    background: linear-gradient(105deg, #fffaf0 0%, #fff 54%);
+    border-inline-start-color: var(--pmc-primary);
+    background: linear-gradient(105deg, var(--pmc-primary-soft) 0%, #fff 54%);
 }
 
 .pmc-resource-workflow-teal {

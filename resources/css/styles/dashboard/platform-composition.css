@@ -34,7 +34,7 @@
     place-items: center;
     border-radius: 0.72rem;
     background: #111;
-    color: #ffc107;
+    color: var(--pmc-primary);
     font-size: 1rem;
 }
 
@@ -74,7 +74,7 @@
 }
 
 .pmc-platform-composition-grid nav a:hover span {
-    color: #856a00;
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-platform-role-counts {
@@ -110,7 +110,7 @@
 }
 
 .pmc-platform-composition-note i {
-    color: #856a00;
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-platform-composition-note p {

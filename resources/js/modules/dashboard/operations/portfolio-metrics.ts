@@ -43,6 +43,26 @@ export function portfolioMetrics(
 
     return [
         {
+            label: t('dashboard.total_properties'),
+            value: localizedNumber(props.propertyFocus.property_count, locale),
+            detail: t('dashboard.active_leases_count', undefined, {
+                count: localizedNumber(props.stats.activeLeases, locale),
+            }),
+            icon: 'bi-buildings',
+            tone: 'ink',
+            href: propertyFocusUrl('/assets', propertyId),
+        },
+        {
+            label: t('dashboard.total_units'),
+            value: localizedNumber(rentable, locale),
+            detail: t('dashboard.vacant_units', undefined, {
+                count: localizedNumber(props.stats.vacantUnits, locale),
+            }),
+            icon: 'bi-door-open',
+            tone: 'blue',
+            href: propertyFocusUrl('/assets?rentable=1', propertyId),
+        },
+        {
             label: t('dashboard.rent_due_month'),
             value: rentDue.value,
             detail:

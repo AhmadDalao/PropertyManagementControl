@@ -28,10 +28,10 @@
     height: 2.25rem;
     flex: 0 0 auto;
     place-items: center;
-    border: 2px solid #f2c300;
+    border: 2px solid #b8dec4;
     border-radius: 999px;
-    background: #111;
-    color: #fff;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
     font-size: 0.72rem;
     font-weight: 800;
 }
@@ -117,5 +117,6 @@
 
 .pmc-account-panel a:hover,
 .pmc-account-panel button:hover {
-    background: #fff7d2;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
 }

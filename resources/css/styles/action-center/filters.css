@@ -50,7 +50,8 @@
 }
 
 .pmc-action-type-chips a.is-active strong {
-    background: var(--pmc-amber);
+    background: var(--pmc-primary);
+    color: #fff;
 }
 
 .pmc-action-mobile-filter {
@@ -128,9 +129,9 @@
 }
 
 .pmc-action-apply {
-    border-color: var(--pmc-amber);
-    background: var(--pmc-amber);
-    color: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
+    color: #fff;
 }
 
 .pmc-action-reset {

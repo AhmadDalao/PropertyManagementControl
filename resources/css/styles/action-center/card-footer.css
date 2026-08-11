@@ -46,6 +46,6 @@
 }
 
 .pmc-action-open:hover {
-    background: var(--pmc-amber);
-    color: #111;
+    background: var(--pmc-primary);
+    color: #fff;
 }

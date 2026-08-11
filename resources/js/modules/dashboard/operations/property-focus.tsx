@@ -7,8 +7,10 @@ import type { OperationsDashboardProps, PropertyFocusOption } from '../types';
 
 export function PropertyFocus({
     focus,
+    period,
 }: {
     focus: OperationsDashboardProps['propertyFocus'];
+    period: OperationsDashboardProps['period'];
 }) {
     const { locale, t } = useTranslator();
     const selectedTitle = focus.selected
@@ -79,8 +81,33 @@ export function PropertyFocus({
                     {t('shell.property_scope_help')}
                 </span>
             )}
+            <nav
+                className="pmc-dashboard-period"
+                aria-label={t('dashboard.reporting_period', 'Reporting period')}
+            >
+                {(['month', 'quarter', 'year'] as const).map((value) => (
+                    <Link
+                        key={value}
+                        href={periodHref(value, focus.selected?.id)}
+                        className={period === value ? 'active' : ''}
+                        preserveScroll
+                    >
+                        {t(`dashboard.period_${value}`, value)}
+                    </Link>
+                ))}
+            </nav>
         </section>
     );
+}
+
+function periodHref(period: string, propertyId?: number): string {
+    const query = new URLSearchParams({ period });
+
+    if (propertyId) {
+        query.set('property_id', String(propertyId));
+    }
+
+    return `/dashboard?${query.toString()}`;
 }
 
 function propertyTitle(property: PropertyFocusOption, locale: string): string {

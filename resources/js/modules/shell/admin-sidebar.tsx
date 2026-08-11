@@ -68,13 +68,11 @@ export function AdminSidebar({
             >
                 <div className="pmc-console-brand">
                     <Link href="/dashboard" className="pmc-brand-mark">
-                        PC
+                        P
                     </Link>
                     <div>
-                        <span>{t('shell.brand', 'Property Control')}</span>
-                        <strong>
-                            {t('shell.brand_subtitle', 'Operations Suite')}
-                        </strong>
+                        <strong>{t('shell.brand', 'Property')}</strong>
+                        <span>{t('shell.brand_subtitle', 'Management')}</span>
                     </div>
                     <button
                         type="button"

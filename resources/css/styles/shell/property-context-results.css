@@ -45,8 +45,8 @@
 }
 
 .pmc-property-picker-option.is-selected {
-    border-color: #e4bf00;
-    background: #fff8d5;
+    border-color: #a8d8b8;
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-property-picker-option > i:first-child {
@@ -60,7 +60,7 @@
 }
 
 .pmc-property-picker-option.is-selected > i:first-child {
-    background: #111;
+    background: var(--pmc-primary);
     color: #fff;
 }
 

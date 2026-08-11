@@ -14,9 +14,9 @@
 
 .pmc-data-table thead th {
     padding: 0.7rem 0.8rem;
-    border-block: 1px solid #ece8df;
-    background: #faf8f3;
-    color: #5f5a52;
+    border-block: 1px solid var(--pmc-line-soft);
+    background: #f8fafc;
+    color: var(--pmc-muted);
     font-size: 0.68rem;
     font-weight: 800;
     letter-spacing: 0.05em;
@@ -27,14 +27,14 @@
 .pmc-data-table tbody td {
     max-width: 18rem;
     padding: 0.72rem 0.8rem;
-    border-bottom: 1px solid #eeeae3;
-    color: #2f2d29;
+    border-bottom: 1px solid var(--pmc-line-soft);
+    color: #273142;
     font-size: 0.79rem;
     vertical-align: middle;
 }
 
 .pmc-data-table tbody tr:hover {
-    background: #fffaf0;
+    background: #f4fbf6;
 }
 
 .pmc-table-row-link {

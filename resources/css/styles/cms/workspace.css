@@ -12,7 +12,7 @@
     padding: 0.4rem;
     border: 1px solid var(--pmc-line);
     border-radius: 1rem;
-    background: #faf8f2;
+    background: var(--pmc-canvas);
 }
 
 .pmc-cms-view-switcher a {
@@ -73,7 +73,7 @@
 
 .pmc-cms-library-card:hover,
 .pmc-cms-navigation-card:hover {
-    border-color: #cfbf8c;
+    border-color: var(--pmc-primary);
 }
 
 .pmc-cms-library-card {
@@ -86,8 +86,8 @@
     height: 2.45rem;
     place-items: center;
     border-radius: 0.72rem;
-    background: #fff3c4;
-    color: #775c00;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
 }
 
 .pmc-cms-library-copy,
@@ -99,7 +99,7 @@
 
 .pmc-cms-library-copy > span,
 .pmc-cms-navigation-card > div:first-child > span {
-    color: #8a6f0c;
+    color: var(--pmc-primary-strong);
     font-size: 0.65rem;
     font-weight: 900;
     letter-spacing: 0.045em;

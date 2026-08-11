@@ -93,6 +93,16 @@
         gap: 0.35rem;
     }
 
+    .pmc-quick-action-menu > summary {
+        width: 2.75rem;
+        padding: 0;
+        border-radius: 999px;
+    }
+
+    .pmc-quick-action-menu > summary span {
+        display: none;
+    }
+
     .pmc-account-trigger > div,
     .pmc-account-trigger > i {
         display: none;
@@ -106,7 +116,7 @@
         flex-direction: column;
         gap: 1rem;
         padding: max(1rem, env(safe-area-inset-top)) 1rem 1rem;
-        background: #faf8f3;
+        background: var(--pmc-canvas);
     }
 
     .pmc-mobile-search-head {

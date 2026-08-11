@@ -5,15 +5,15 @@
     flex: 0 0 auto;
     place-items: center;
     margin: 0.65rem auto 0;
-    border: 1px solid #e0cfac;
+    border: 1px solid #bcdcc7;
     border-radius: 0.72rem;
-    background: #fff7dc;
-    color: #4e3b09;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-property-context-collapsed:hover,
 .pmc-property-context-collapsed:focus-visible {
-    border-color: #c9a900;
-    background: #ffdf35;
-    color: #111;
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
+    color: #fff;
 }

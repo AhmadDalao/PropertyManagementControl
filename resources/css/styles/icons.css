@@ -104,6 +104,9 @@
 .bi-building::before {
     content: '\f1dd';
 }
+.bi-building-add::before {
+    content: '\f867';
+}
 .bi-building-check::before {
     content: '\f868';
 }
@@ -311,6 +314,9 @@
 .bi-house-check::before {
     content: '\f889';
 }
+.bi-house-door::before {
+    content: '\f423';
+}
 .bi-images::before {
     content: '\f42b';
 }
@@ -404,11 +410,17 @@
 .bi-plus-lg::before {
     content: '\f64d';
 }
+.bi-pie-chart::before {
+    content: '\f4e9';
+}
 .bi-question-circle::before {
     content: '\f505';
 }
 .bi-receipt::before {
     content: '\f50f';
+}
+.bi-receipt-cutoff::before {
+    content: '\f50e';
 }
 .bi-rocket-takeoff::before {
     content: '\f845';

@@ -39,7 +39,7 @@
 .pmc-cms-inspector-pane > header > span,
 .pmc-cms-preview-toolbar > div:first-child > span,
 .pmc-cms-selection > div:first-child > span {
-    color: #816600;
+    color: var(--pmc-primary-strong);
     font-size: 0.62rem;
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -94,8 +94,8 @@
     height: 2rem;
     place-items: center;
     border-radius: 0.55rem;
-    background: #fff0a3;
-    color: #715900;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
 }
 
 .pmc-cms-library-list article > div {

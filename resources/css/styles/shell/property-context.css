@@ -4,16 +4,16 @@
     gap: 0.4rem;
     margin: 0.65rem 0.15rem 0;
     padding: 0.7rem;
-    border: 1px solid #e7dcc5;
+    border: 1px solid #cfe8d8;
     border-radius: 0.78rem;
-    background: #fffaf0;
+    background: var(--pmc-primary-soft);
 }
 
 .pmc-property-context > span {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    color: #6b5b3f;
+    color: var(--pmc-primary-strong);
     font-size: 0.65rem;
     font-weight: 800;
     letter-spacing: 0.07em;
@@ -28,7 +28,7 @@
     align-items: center;
     gap: 0.55rem;
     padding: 0.5rem 0.6rem;
-    border: 1px solid #d8c9ad;
+    border: 1px solid #c8dfd0;
     border-radius: 0.65rem;
     background: #fff;
     color: var(--pmc-ink);
@@ -41,8 +41,8 @@
     height: 1.8rem;
     place-items: center;
     border-radius: 0.5rem;
-    background: #fff2b9;
-    color: #5d4600;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
 }
 
 .pmc-property-context-trigger > span {
@@ -69,18 +69,18 @@
 }
 
 .pmc-property-context-trigger > i:last-child {
-    color: #7c705c;
+    color: var(--pmc-muted);
     font-size: 0.72rem;
 }
 
 .pmc-property-context-trigger:hover,
 .pmc-property-context-trigger:focus-visible {
-    border-color: #b58b00;
-    background: #fffdf7;
+    border-color: var(--pmc-primary);
+    background: #fff;
 }
 
 .pmc-property-context-trigger:focus-visible {
-    outline: 3px solid rgb(255 207 0 / 24%);
+    outline: 3px solid rgba(22, 163, 74, 0.2);
 }
 
 .pmc-property-context > small {

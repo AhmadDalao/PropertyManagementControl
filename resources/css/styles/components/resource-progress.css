@@ -99,8 +99,8 @@
 }
 
 .pmc-resource-progress .is-current .pmc-resource-progress-marker {
-    background: var(--pmc-amber);
-    color: var(--pmc-ink);
+    background: var(--pmc-primary);
+    color: #fff;
 }
 
 .pmc-resource-progress .is-complete .pmc-resource-progress-marker {
