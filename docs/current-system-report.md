@@ -1,7 +1,7 @@
 # Property Management Control: Current System Report
 
 **Report date:** August 11, 2026  
-**Source revision:** `2ea1dce80a0cebb24fd70da6f837e2e55c5ae0dc`  
+**Application build revision:** `1451c25fcf3076fff2cda96e96c498156b0dd95f`  
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The audit reran the complete PHP suite: **642 tests and 37,094 assertions passed**. The recorded release baseline also includes 69 Playwright/axe scenarios, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and PHPStan checks.
+The application code is healthy. The release reran the complete PHP suite: **644 tests and 37,255 assertions passed**. The release baseline also includes 69 passing Playwright/axe scenarios, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
 
-The production operation is not finished. The live site responds successfully at `/up`, but the repository's new Infrastructure Settings page is not deployed: unauthenticated production lookup of `/system/settings` returns `404` instead of the authentication redirect expected from the current route. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The verified release is deployed to Hostinger and matches GitHub. The live site responds successfully at `/up`, `/system/settings` is active, a pre-migration backup completed, and authenticated EN/AR dashboard, reports, CMS, PDF, and XLSX smoke checks passed. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -26,7 +26,7 @@ The production operation is not finished. The live site responds successfully at
 | Scheduler/queue | Blocked in production | Code is ready, but no three-heartbeat production evidence exists. |
 | Real portfolio data | Not started | Production has showcase data but no approved live portfolio import. |
 | Legal/compliance approval | Owner action required | Lease wording, billing rules, retention, and opening balances need business/legal sign-off. |
-| Latest deployment | Behind repository | `/system/settings` exists in source but not on the live site. |
+| Latest deployment | Current | GitHub and Hostinger run the verified release; the production manifest matches the local build. |
 
 ## 2. Audit Scope And Method
 
@@ -786,18 +786,17 @@ Key components that define the current UI:
 - CMS: builder canvas, section selection/library, inspector/editor, media picker, preview, navigation forms, and optimistic reorder hooks.
 - Reports: `ReportLibrary`, `CurrencyPositionGrid`, `ReportComparison`, `ReportPulse`, `BreakdownCards`, `ReportJournal`, and report-specific record sections.
 
-The production CSS is route-split. The main built CSS is about 316KB on disk and the recorded pre-gzip release value is 322.70KB. The visual stack is white/warm-sand with amber primary actions, restrained teal/red status colors, responsive cards, Manrope for English, and IBM Plex Sans Arabic.
+The production CSS is route-split. The main built CSS is 311.43KB on disk. The visual stack is white/gray with green primary actions, restrained status colors, responsive cards, Manrope for English, and IBM Plex Sans Arabic.
 
 ## 15. Detected Problems And Unfinished Work
 
 ### Critical launch blockers
 
-1. **The latest repository revision is not deployed.** `/system/settings` is in source but returns `404` live. Production and GitHub are not currently identical.
-2. **SMTP is not proven.** Password reset, readiness email, Arabic rendering, queued delivery, and failure reporting need receipt evidence through a real mailbox.
-3. **The scheduler is not proven.** Readiness requires three distinct one-minute heartbeats spanning at least 90 seconds, a draining queue, and zero failed jobs.
-4. **No real portfolio is reconciled.** Showcase records are useful for scale testing but cannot prove real opening balances, occupancy, contracts, deposits, or payment totals.
-5. **No four-role pilot is complete.** Real superadmin, owner, manager, and tenant workflows have not been run for 30 days.
-6. **Legal/business rules are unapproved.** Bilingual lease terms, billing rules, retention, opening balances, and local legal obligations require owner/legal approval.
+1. **SMTP is not proven.** Password reset, readiness email, Arabic rendering, queued delivery, and failure reporting need receipt evidence through a real mailbox.
+2. **The scheduler is not proven.** Readiness requires three distinct one-minute heartbeats spanning at least 90 seconds, a draining queue, and zero failed jobs.
+3. **No real portfolio is reconciled.** Showcase records are useful for scale testing but cannot prove real opening balances, occupancy, contracts, deposits, or payment totals.
+4. **No four-role pilot is complete.** Real superadmin, owner, manager, and tenant workflows have not been run for 30 days.
+5. **Legal/business rules are unapproved.** Bilingual lease terms, billing rules, retention, opening balances, and local legal obligations require owner/legal approval.
 
 ### Product limitations that must stay explicit
 
@@ -830,14 +829,13 @@ The production CSS is route-split. The main built CSS is about 316KB on disk and
 
 The goal should be **a trustworthy 30-day pilot for one reconciled real portfolio**, not another redesign.
 
-1. Deploy revision `2ea1dce` or a later verified revision so GitHub and Hostinger match.
-2. Configure SMTP in `/system/settings`, create the Hostinger mailbox, clear caches, and prove password-reset and Arabic readiness-email receipt.
-3. Register the one-minute Hostinger cron and obtain three heartbeat samples, a drained queue, and zero failed jobs.
-4. Create and download a fresh backup; verify archive and inner stream SHA-256 checksums off-server.
-5. Import one approved non-showcase portfolio through `/opening-data`.
-6. Reconcile properties, rentable units, occupancy, owners, managers, tenants, leases, deposits, installments, payments, currencies, and PDFs against source records.
-7. Assign one real participant per role and run login/recovery, contract, payment/receipt, tenant view, maintenance, work order, resolution, tenant sign-off, and service report in English/Arabic on desktop and 390px mobile.
-8. Run the pilot for 30 days. Fix only reproduced defects and add a regression test for each one.
+1. Configure SMTP in `/system/settings`, create the Hostinger mailbox, clear caches, and prove password-reset and Arabic readiness-email receipt.
+2. Register the one-minute Hostinger cron and obtain three heartbeat samples, a drained queue, and zero failed jobs.
+3. Download the fresh deployment backup, verify its checksums, and retain it off-server.
+4. Import one approved non-showcase portfolio through `/opening-data`.
+5. Reconcile properties, rentable units, occupancy, owners, managers, tenants, leases, deposits, installments, payments, currencies, and PDFs against source records.
+6. Assign one real participant per role and run login/recovery, contract, payment/receipt, tenant view, maintenance, work order, resolution, tenant sign-off, and service report in English/Arabic on desktop and 390px mobile.
+7. Run the pilot for 30 days. Fix only reproduced defects and add a regression test for each one.
 
 ### Definition of fully operational MVP
 
@@ -856,19 +854,20 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 642 passed, 37,094 assertions |
+| Fresh PHPUnit run | 644 passed, 37,255 assertions |
 | Route inventory | 233 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 69 scenarios |
 | Recorded responsive widths | 390, 768, 1024, 1440 |
 | Recorded PHPStan state | Zero current errors with 13 accepted legacy baseline entries |
 | Production health on report date | `/up` HTTP 200 |
-| Production latest-settings route | `/system/settings` HTTP 404; repository deployment pending |
+| Production latest-settings route | Authenticated page active; unauthenticated request correctly redirects to login |
+| Production release | Revision and Vite manifest match GitHub/local build |
+| Production documents | Maintenance PDF `%PDF-` and report XLSX `PK` signatures verified |
 
 ## 18. Report Limitations
 
 - The report does not include tenant PII, production credentials, SMTP secrets, or private file contents.
-- The current source was fully inspected and PHP-tested; this report did not rerun the complete browser suite because no UI code changed during the audit.
-- Production authenticated internals were not modified for this report. Live readiness values use the latest recorded authenticated smoke evidence plus public endpoint verification.
+- The current source was fully inspected and PHP-tested; the complete 69-scenario browser and accessibility suite was rerun for this UI release.
+- Production authenticated internals were smoke-tested after deployment without modifying operational records.
 - Legal compliance is a business/legal approval, not something source inspection can certify.
-
