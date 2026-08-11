@@ -193,7 +193,7 @@ Tenants receive a deliberately smaller navigation instead of the management dire
 | Page Wording | `/wording` | Superadmin |
 | Data Lab | `/system/showcase-data` | Superadmin |
 | Launch Readiness | `/system/readiness` | Superadmin |
-| Infrastructure Settings | `/system/settings` | Superadmin; source only until deployed |
+| Infrastructure Settings | `/system/settings` | Superadmin; deployed and active |
 | Email Delivery | `/system/email-delivery` | Superadmin |
 | Backup Control | `/system/backups` | Superadmin |
 | Media | `/media-files` | Superadmin, owner, manager; media module |
@@ -668,7 +668,7 @@ Imported tenant accounts do not receive known production passwords; portal acces
 ### 9.16 System Controls
 
 - **Launch Readiness:** environment, HTTPS, production safety, scheduler cadence, queue health, failed jobs, storage/private files, backup age, and auditable evidence for SMTP, offsite backup, restore drill, legal approval, opening data, billing, retention, and four-role pilot. PDF/DOCX/XLSX evidence outputs exist.
-- **Infrastructure Settings:** encrypted SMTP enable/host/port/scheme/username/password/from identity and scheduler PHP binary. Password is never returned to the browser or audit payload. Current source page is not deployed.
+- **Infrastructure Settings:** encrypted SMTP enable/host/port/scheme/username/password/from identity and scheduler PHP binary. Password is never returned to the browser or audit payload. The page is deployed and active; live SMTP values still await operator entry.
 - **Email Delivery:** processing/accepted/failed logs, type/recipient/attempt/date filters, detail, XLSX export.
 - **Backup Control:** queued/running/completed/failed/pruned history, one active run, private download, checksum manifest, retention/prune. Weekly schedule Sunday 02:30.
 - **Data Lab:** tagged showcase dataset generation, progress, retry, and purge. Showcase accounts use `.invalid`, random passwords, inactive status, and cannot log in.
@@ -905,7 +905,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 ## 18. Report Limitations
 
 - The report does not include tenant PII, production credentials, SMTP secrets, or private file contents.
-- The current source was fully inspected and PHP-tested; the complete 69-scenario browser and accessibility suite was rerun for this UI release.
+- The current source was fully inspected and PHP-tested; the complete 70-scenario browser and accessibility suite was rerun for this UI release.
 - Production authenticated internals were smoke-tested after deployment without modifying operational records.
 - Legal compliance is a business/legal approval, not something source inspection can certify.
 
