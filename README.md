@@ -59,3 +59,5 @@ php -d memory_limit=1G artisan test
 Hostinger deployment notes live in [docs/hostinger-deploy.md](docs/hostinger-deploy.md). Production secrets are intentionally not committed.
 
 The vertical feature-module rules and refactor checklist live in [docs/modular-refactor.md](docs/modular-refactor.md).
+
+The source-backed architecture, route, module, permission, workflow, data-model, and MVP status audit lives in [docs/current-system-report.md](docs/current-system-report.md).
