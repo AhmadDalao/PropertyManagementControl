@@ -128,7 +128,6 @@ class ResourceCycleRouteTest extends TestCase
             ['maintenance-requests.show', $maintenance],
             ['expenses.show', $expense],
             ['documents.show', $document],
-            ['media-files.show', $media],
         ];
 
         foreach ($detailRoutes as [$routeName, $model]) {
@@ -137,6 +136,11 @@ class ResourceCycleRouteTest extends TestCase
                 ->assertOk()
                 ->assertInertia(fn (Assert $page) => $page->component('admin/resource-show'));
         }
+
+        $this->actingAs($owner)
+            ->get(route('media-files.show', $media))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('admin/media/show'));
 
         $editRoutes = [
             ['portfolios.edit', $portfolio],

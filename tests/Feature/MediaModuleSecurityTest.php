@@ -421,6 +421,7 @@ class MediaModuleSecurityTest extends TestCase
             ->get(route('media-files.show', $mediaFile))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/media/show')
                 ->where('detailPage.header.title', 'صورة المحفظة المؤرشفة')
                 ->where('detailPage.header.actions.0.label', 'فتح الصورة')
                 ->where('detailPage.header.actions.0.href', route('media-files.file', $mediaFile))

@@ -9,7 +9,7 @@ export function TenantPaymentHistory({
 }: {
     props: TenantDashboardProps;
 }) {
-    const { t, text } = useTranslator();
+    const { t } = useTranslator();
     const payments = props.tenantPortal.payments;
 
     return (
@@ -17,6 +17,7 @@ export function TenantPaymentHistory({
             eyebrow={t('dashboard.tenant_payments_eyebrow')}
             title={t('dashboard.tenant_payment_history')}
             description={t('dashboard.tenant_payment_history_description')}
+            action={{ label: t('actions.view_all'), href: '/my-payments' }}
         >
             <div className="pmc-command-list">
                 {payments.length > 0 ? (
@@ -49,7 +50,7 @@ export function TenantPaymentHistory({
                     ))
                 ) : (
                     <div className="pmc-command-empty">
-                        {text('No posted payments yet.')}
+                        {t('tenant_portal.empty_payment_description')}
                     </div>
                 )}
             </div>

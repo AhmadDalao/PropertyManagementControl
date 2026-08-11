@@ -1,0 +1,5 @@
+@import './tenant-portal/base.css';
+@import './tenant-portal/downloads.css';
+@import './tenant-portal/filters.css';
+@import './tenant-portal/records.css';
+@import './tenant-portal/responsive.css';

@@ -23,6 +23,7 @@ export type UiTranslationKey =
     | `filters.${string}`
     | `infrastructure_settings.${string}`
     | `leases.${string}`
+    | `locales.${string}`
     | `lease_renewals.${string}`
     | `lease_move_outs.${string}`
     | `map.${string}`
@@ -54,6 +55,7 @@ export type UiTranslationKey =
     | `status.${string}`
     | `table.${string}`
     | `tenants.${string}`
+    | `tenant_portal.${string}`
     | `users.${string}`
     | `validation.${string}`
     | `wording.${string}`

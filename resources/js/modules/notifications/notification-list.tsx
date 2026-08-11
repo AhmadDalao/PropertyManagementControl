@@ -19,32 +19,30 @@ export function NotificationList({
     return (
         <>
             {items.data.length > 0 ? (
-                <div className="list-group list-group-flush rounded-4 overflow-hidden border">
+                <div className="pmc-notification-list">
                     {items.data.map((item) => (
                         <button
                             key={item.id}
                             type="button"
-                            className={`list-group-item list-group-item-action d-flex align-items-start gap-3 p-3 p-md-4 ${item.read ? '' : 'bg-warning-subtle'}`}
+                            className={item.read ? '' : 'is-unread'}
                             onClick={() => openNotification(item)}
                         >
                             <span
-                                className={`badge rounded-circle d-grid p-3 text-bg-${item.tone === 'blue' ? 'primary' : item.tone === 'neutral' ? 'secondary' : item.tone}`}
+                                className={`pmc-notification-icon is-${item.tone}`}
                             >
                                 <i
                                     className={`bi ${item.icon}`}
                                     aria-hidden="true"
                                 />
                             </span>
-                            <span className="d-grid gap-1 flex-grow-1 text-start">
-                                <span className="d-flex align-items-center gap-2 flex-wrap">
+                            <span className="pmc-notification-copy">
+                                <span>
                                     <strong>{item.title}</strong>
-                                    <span className="badge rounded-pill text-bg-light border">
-                                        {item.resource_label}
-                                    </span>
+                                    <em>{item.resource_label}</em>
                                 </span>
-                                <span className="text-muted">{item.body}</span>
+                                <span>{item.body}</span>
                                 {item.created_at ? (
-                                    <small className="text-muted">
+                                    <small>
                                         {new Intl.DateTimeFormat(locale, {
                                             dateStyle: 'medium',
                                             timeStyle: 'short',
@@ -53,22 +51,19 @@ export function NotificationList({
                                 ) : null}
                             </span>
                             {!item.read ? (
-                                <span className="badge text-bg-warning">
-                                    {t('notifications.new')}
-                                </span>
+                                <span
+                                    className="pmc-notification-new"
+                                    aria-label={t('notifications.new')}
+                                />
                             ) : null}
                         </button>
                     ))}
                 </div>
             ) : (
-                <div className="py-5 px-3 text-center">
-                    <i className="bi bi-envelope fs-1 text-muted" />
-                    <h3 className="h5 mt-3">
-                        {t('notifications.no_notifications')}
-                    </h3>
-                    <p className="text-muted mb-0">
-                        {t('notifications.no_notifications_help')}
-                    </p>
+                <div className="pmc-notification-empty">
+                    <i className="bi bi-envelope" />
+                    <h3>{t('notifications.no_notifications')}</h3>
+                    <p>{t('notifications.no_notifications_help')}</p>
                 </div>
             )}
 

@@ -1634,9 +1634,9 @@ test.describe('authenticated administration', () => {
                 'Search titles, details, codes, or people...',
             ),
         ).toBeVisible();
-        await expect(page.locator('a[href*="type=payment"]')).toContainText(
-            'Payments',
-        );
+        await expect(
+            page.locator('.pmc-filter-chips a[href*="type=payment"]'),
+        ).toContainText('Payments');
         await expectMinimumTouchHeight(
             page,
             '.pmc-filter-chips a, #notification-search, button[type="submit"]',
@@ -1653,9 +1653,9 @@ test.describe('authenticated administration', () => {
                 'ابحث في العناوين والتفاصيل والرموز والأشخاص...',
             ),
         ).toBeVisible();
-        await expect(page.locator('a[href*="type=payment"]')).toContainText(
-            'المدفوعات',
-        );
+        await expect(
+            page.locator('.pmc-filter-chips a[href*="type=payment"]'),
+        ).toContainText('المدفوعات');
         await expectNoHorizontalOverflow(page);
     });
 
@@ -2616,7 +2616,7 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', { name: 'مكتبة الوسائط' }),
         ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('media.');
-        const mediaCards = page.locator('.pmc-mobile-record-card');
+        const mediaCards = page.locator('.pmc-media-library-card');
         await expectNoHorizontalOverflow(page);
 
         if ((await mediaCards.count()) > 0) {
@@ -2631,6 +2631,7 @@ test.describe('authenticated administration', () => {
             await expect(page.getByText('سجل الوسائط')).toBeVisible();
             const openImageAction = page.getByRole('link', {
                 name: 'فتح الصورة',
+                exact: true,
             });
             await expect(openImageAction).toHaveClass(/btn-primary/);
             expect(
@@ -2642,9 +2643,7 @@ test.describe('authenticated administration', () => {
             await expect(page.locator('body')).not.toContainText('media.');
             await expectNoHorizontalOverflow(page);
         } else {
-            const mobileEmptyState = page.locator(
-                '.pmc-mobile-record-list .pmc-empty-state',
-            );
+            const mobileEmptyState = page.locator('.pmc-media-library-empty');
             await expect(mobileEmptyState).toBeVisible();
             await expect(mobileEmptyState).toContainText(
                 'لا توجد سجلات مطابقة',
@@ -3746,10 +3745,18 @@ test.describe('local role dashboards', () => {
             ],
         },
         tenant: {
-            visible: ['/dashboard', '/maintenance-requests', '/documentation'],
+            visible: [
+                '/dashboard',
+                '/my-lease',
+                '/my-payments',
+                '/maintenance-requests',
+                '/my-documents',
+                '/profile',
+            ],
             hidden: [
                 '/action-center',
                 '/company-control',
+                '/documentation',
                 '/property-explorer',
                 '/lease-renewals',
                 '/rent-collection',
@@ -4058,6 +4065,52 @@ test.describe('local role dashboards', () => {
             'Lease and documents',
         );
         await expectNoHorizontalOverflow(page);
+    });
+
+    test('tenant portal workspaces are scoped, responsive, and bilingual', async ({
+        page,
+    }) => {
+        await login(
+            page,
+            process.env.E2E_TENANT_EMAIL ?? localAccounts[3].email,
+            process.env.E2E_PASSWORD ?? 'password',
+        );
+
+        for (const viewport of [viewports.mobile, viewports.desktop]) {
+            await page.setViewportSize(viewport);
+
+            for (const [path, heading] of [
+                ['/my-lease?locale=en', 'My Lease'],
+                ['/my-payments?locale=en', 'Payments & Receipts'],
+                ['/my-documents?locale=en', 'My Documents'],
+            ] as const) {
+                await page.goto(path);
+                await expect(
+                    page.getByRole('heading', { level: 1, name: heading }),
+                ).toBeVisible();
+                await expectNoHorizontalOverflow(page);
+            }
+        }
+
+        await page.setViewportSize(viewports.mobile);
+
+        for (const [path, heading] of [
+            ['/my-lease?locale=ar', 'عقدي'],
+            ['/my-payments?locale=ar', 'الدفعات والإيصالات'],
+            ['/my-documents?locale=ar', 'مستنداتي'],
+        ] as const) {
+            await page.goto(path);
+            await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+            await expect(
+                page.getByRole('heading', { level: 1, name: heading }),
+            ).toBeVisible();
+            await expectNoHorizontalOverflow(page);
+        }
+
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
     });
 });
 

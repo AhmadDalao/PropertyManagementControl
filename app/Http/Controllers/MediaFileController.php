@@ -46,7 +46,7 @@ class MediaFileController extends Controller
 
     public function show(Request $request, MediaFile $mediaFile): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/media/show', [
             'detailPage' => $this->detailPresenter->present($mediaFile, $this->actor($request)),
         ]);
     }

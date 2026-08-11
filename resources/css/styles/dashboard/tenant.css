@@ -75,6 +75,19 @@
 }
 
 @media (max-width: 767.98px) {
+    .pmc-tenant-home-hero {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-tenant-home-building {
+        min-height: 8rem;
+        grid-row: 1;
+    }
+
+    .pmc-tenant-home-building i {
+        font-size: 2.2rem;
+    }
+
     .pmc-tenant-lease-summary {
         grid-template-columns: 1fr;
     }
@@ -83,4 +96,96 @@
         flex: 1 1 100%;
         justify-content: center;
     }
+}
+.pmc-tenant-home-hero {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(12rem, 0.36fr);
+    gap: 1.25rem;
+    align-items: stretch;
+    margin-block-end: 1rem;
+    overflow: hidden;
+    border: 1px solid #cce8d5;
+    border-radius: var(--pmc-radius-lg);
+    background: linear-gradient(120deg, #edf9f1, #fff 70%);
+}
+
+.pmc-tenant-home-hero > div:first-child {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 0.35rem;
+    padding: 1.4rem;
+}
+
+.pmc-tenant-home-hero > div:first-child > span {
+    color: var(--pmc-primary);
+    font-size: 0.65rem;
+    font-weight: 850;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-tenant-home-hero h1,
+.pmc-tenant-home-hero p {
+    margin: 0;
+}
+
+.pmc-tenant-home-hero h1 {
+    font-size: clamp(1.15rem, 2.5vw, 1.75rem);
+    font-weight: 850;
+}
+
+.pmc-tenant-home-hero p {
+    max-width: 42rem;
+    color: var(--pmc-muted);
+    font-size: 0.75rem;
+}
+
+.pmc-tenant-home-hero > div:first-child > div {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-block-start: 0.45rem;
+    flex-wrap: wrap;
+}
+
+.pmc-tenant-home-hero > div:first-child > div > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: var(--pmc-radius-sm);
+    background: var(--pmc-primary);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-tenant-home-building {
+    display: grid;
+    min-width: 0;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    padding: 1.5rem;
+    background: linear-gradient(145deg, #0f7b38, #174d2a);
+    color: #fff;
+    text-align: center;
+}
+
+.pmc-tenant-home-building i {
+    font-size: 3rem;
+}
+
+.pmc-tenant-home-building span {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.72rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

@@ -31,7 +31,7 @@ class MediaModuleArchitectureTest extends TestCase
 
         $this->assertLessThanOrEqual(55, substr_count($source, "\n") + 1);
         $this->assertStringContainsString("from './media-metrics'", $source);
-        $this->assertStringContainsString("from './media-table'", $source);
+        $this->assertStringContainsString("from './media-library'", $source);
         $this->assertStringContainsString("from './types'", $source);
         $this->assertStringNotContainsString("from '@/components/data-table'", $source);
     }
@@ -113,6 +113,8 @@ class MediaModuleArchitectureTest extends TestCase
             'resources/js/modules/media/media-filters.ts',
             'resources/js/modules/media/media-format.ts',
             'resources/js/modules/media/media-metrics.tsx',
+            'resources/js/modules/media/media-library.tsx',
+            'resources/js/modules/media/media-detail-page.tsx',
             'resources/js/modules/media/media-picker.tsx',
             'resources/js/modules/media/media-picker-copy.ts',
             'resources/js/modules/media/media-picker-panel.tsx',

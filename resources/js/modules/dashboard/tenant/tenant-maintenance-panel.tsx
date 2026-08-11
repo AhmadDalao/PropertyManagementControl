@@ -20,8 +20,8 @@ export function TenantMaintenancePanel({
             title={t('dashboard.tenant_maintenance_requests')}
             description={t('dashboard.tenant_maintenance_requests_description')}
             action={{
-                label: t('dashboard.tenant_submit_request'),
-                href: '/maintenance-requests/create',
+                label: t('actions.view_all'),
+                href: '/maintenance-requests',
             }}
         >
             <div className="pmc-command-list">
@@ -45,7 +45,7 @@ export function TenantMaintenancePanel({
                     ))
                 ) : (
                     <div className="pmc-command-empty">
-                        {text('No maintenance requests submitted.')}
+                        {text(t('dashboard.no_maintenance_requests'))}
                     </div>
                 )}
             </div>

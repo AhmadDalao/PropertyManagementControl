@@ -1,43 +1,52 @@
-import { WorkspaceHeader } from '@/components/operations';
+import { Link } from '@inertiajs/react';
+
+import { StatusBadge } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 
 import type { TenantDashboardProps } from '../types';
 
 export function TenantHeader({ props }: { props: TenantDashboardProps }) {
-    const { t, text } = useTranslator();
+    const { t } = useTranslator();
     const lease = props.tenantPortal.lease;
     const isArabic = props.app.locale === 'ar';
 
     return (
-        <WorkspaceHeader
-            eyebrow="Tenant portal"
-            title={
-                (isArabic
-                    ? lease?.leaseable?.title_ar || lease?.leaseable?.title_en
-                    : lease?.leaseable?.title_en ||
-                      lease?.leaseable?.title_ar) ?? text('Your rental portal')
-            }
-            description={
-                lease
-                    ? `${lease.code} · ${lease.leaseable?.code ?? t('dashboard.rental_asset')}`
-                    : text(
-                          'Your owner or manager needs to activate a lease before payment and document information appears.',
-                      )
-            }
-            actions={[
-                {
-                    label: 'Request maintenance',
-                    href: '/maintenance-requests/create',
-                    icon: 'bi-tools',
-                    tone: 'primary',
-                },
-                {
-                    label: 'Tenant guide',
-                    href: '/documentation',
-                    icon: 'bi-journal-text',
-                    tone: 'quiet',
-                },
-            ]}
-        />
+        <section className="pmc-tenant-home-hero">
+            <div>
+                <span>{t('tenant_portal.portal_eyebrow')}</span>
+                <h1>
+                    {t('dashboard.welcome_user', undefined, {
+                        name: props.auth.user?.name ?? '',
+                    })}
+                </h1>
+                <p>
+                    {lease
+                        ? `${lease.code} · ${isArabic ? lease.leaseable?.title_ar || lease.leaseable?.title_en : lease.leaseable?.title_en || lease.leaseable?.title_ar}`
+                        : t('tenant_portal.empty_lease_description')}
+                </p>
+                <div>
+                    {lease ? (
+                        <StatusBadge
+                            value="active"
+                            label={t('dashboard.active_lease')}
+                        />
+                    ) : null}
+                    <Link href="/maintenance-requests/create">
+                        <i className="bi bi-plus-lg" />
+                        {t('tenant_portal.new_request')}
+                    </Link>
+                </div>
+            </div>
+            <div className="pmc-tenant-home-building" aria-hidden="true">
+                <i className="bi bi-buildings" />
+                <span>
+                    {isArabic
+                        ? lease?.leaseable?.title_ar ||
+                          lease?.leaseable?.title_en
+                        : lease?.leaseable?.title_en ||
+                          lease?.leaseable?.title_ar}
+                </span>
+            </div>
+        </section>
     );
 }

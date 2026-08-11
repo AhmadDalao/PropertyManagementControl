@@ -161,6 +161,9 @@
 .bi-check2::before {
     content: '\f272';
 }
+.bi-check2-all::before {
+    content: '\f26f';
+}
 .bi-check2-circle::before {
     content: '\f270';
 }
@@ -196,6 +199,9 @@
 }
 .bi-compass::before {
     content: '\f2d1';
+}
+.bi-credit-card::before {
+    content: '\f2dc';
 }
 .bi-copy::before {
     content: '\f759';

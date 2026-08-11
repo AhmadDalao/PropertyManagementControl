@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+
 import { useTranslator } from '@/lib/i18n';
 
 import type { SearchFieldProps } from './types';
@@ -80,6 +82,15 @@ export function SearchField({
                             ))}
                         </section>
                     ))}
+                    {!loading && query.trim().length >= 2 ? (
+                        <Link
+                            className="pmc-global-search-all"
+                            href={`/search?q=${encodeURIComponent(query.trim())}`}
+                        >
+                            {t('search.view_all_results')}
+                            <i className="bi bi-arrow-up-right" />
+                        </Link>
+                    ) : null}
                 </div>
             ) : null}
         </div>

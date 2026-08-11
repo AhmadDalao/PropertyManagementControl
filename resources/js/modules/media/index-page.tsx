@@ -6,8 +6,8 @@ import { WorkspaceHeader } from '@/components/operations';
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 
+import { MediaLibrary } from './media-library';
 import { MediaMetrics } from './media-metrics';
-import { MediaTable } from './media-table';
 import type { MediaIndexPageProps } from './types';
 
 export default function MediaIndexPage() {
@@ -31,7 +31,7 @@ export default function MediaIndexPage() {
                 ]}
             />
             <MediaMetrics insights={props.mediaInsights} />
-            <MediaTable props={props} />
+            <MediaLibrary props={props} />
         </AdminLayout>
     );
 }

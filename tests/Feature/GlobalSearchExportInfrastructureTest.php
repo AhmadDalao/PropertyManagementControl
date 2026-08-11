@@ -42,6 +42,24 @@ class GlobalSearchExportInfrastructureTest extends TestCase
             ->assertJsonValidationErrors('q');
     }
 
+    public function test_global_search_has_a_scoped_inertia_results_page(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $foreignPortfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $this->createAsset($portfolio, ['title_en' => 'Visible search tower', 'code' => 'VISIBLE-SEARCH']);
+        $this->createAsset($foreignPortfolio, ['title_en' => 'Foreign search tower', 'code' => 'FOREIGN-SEARCH']);
+
+        $this->actingAs($owner)
+            ->get(route('search.index', ['q' => 'search tower']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/search/index')
+                ->where('search.query', 'search tower')
+                ->where('search.results', fn ($results) => collect($results)->contains('title', 'Visible search tower'))
+                ->where('search.results', fn ($results) => ! collect($results)->contains('title', 'Foreign search tower')));
+    }
+
     public function test_expense_search_is_localized_and_portfolio_scoped(): void
     {
         $portfolio = $this->createPortfolio();

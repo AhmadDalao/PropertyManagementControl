@@ -14,6 +14,48 @@ export type ModuleNavGroup = {
 
 export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     {
+        labelKey: 'nav.group_tenant_portal',
+        items: [
+            {
+                labelKey: 'nav.home',
+                href: '/dashboard',
+                icon: 'bi-house-door',
+                roles: ['tenant'],
+            },
+            {
+                labelKey: 'nav.my_lease',
+                href: '/my-lease',
+                icon: 'bi-file-earmark-text',
+                roles: ['tenant'],
+            },
+            {
+                labelKey: 'nav.my_payments',
+                href: '/my-payments',
+                icon: 'bi-credit-card',
+                roles: ['tenant'],
+            },
+            {
+                labelKey: 'nav.maintenance',
+                href: '/maintenance-requests',
+                icon: 'bi-tools',
+                roles: ['tenant'],
+                module: 'maintenance',
+            },
+            {
+                labelKey: 'nav.my_documents',
+                href: '/my-documents',
+                icon: 'bi-folder2-open',
+                roles: ['tenant'],
+            },
+            {
+                labelKey: 'nav.profile',
+                href: '/profile',
+                icon: 'bi-person',
+                roles: ['tenant'],
+            },
+        ],
+    },
+    {
         labelKey: 'nav.group_overview',
         items: [
             {
@@ -21,11 +63,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 href: '/dashboard',
                 icon: 'bi-grid-1x2',
                 propertyScoped: true,
+                roles: ['superadmin', 'owner', 'property_manager'],
             },
             {
                 labelKey: 'nav.notifications',
                 href: '/notifications',
                 icon: 'bi-envelope',
+                roles: ['superadmin', 'owner', 'property_manager'],
             },
             {
                 labelKey: 'nav.company_control',
@@ -153,6 +197,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 labelKey: 'nav.maintenance',
                 href: '/maintenance-requests',
                 icon: 'bi-tools',
+                roles: ['superadmin', 'owner', 'property_manager'],
                 module: 'maintenance',
                 propertyScoped: true,
             },
@@ -251,6 +296,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 labelKey: 'nav.documentation',
                 href: '/documentation',
                 icon: 'bi-journal-richtext',
+                roles: ['superadmin', 'owner', 'property_manager'],
             },
         ],
     },

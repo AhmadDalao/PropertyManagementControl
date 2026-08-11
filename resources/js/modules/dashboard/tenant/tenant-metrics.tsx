@@ -10,7 +10,7 @@ import {
 import type { TenantDashboardProps } from '../types';
 
 export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
-    const { locale, t, text } = useTranslator();
+    const { locale, t } = useTranslator();
     const lease = props.tenantPortal.lease;
     const currencyCode = lease?.currency ?? 'SAR';
 
@@ -18,7 +18,7 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
         <MetricGrid
             metrics={[
                 {
-                    label: 'Lease',
+                    label: t('tenant_portal.lease'),
                     value: props.stats.leaseCode ?? t('dashboard.not_active'),
                     detail: lease?.ends_at
                         ? t('dashboard.ends_on', undefined, {
@@ -27,16 +27,18 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
                         : t('dashboard.no_end_date'),
                     icon: 'bi-file-earmark-text',
                     tone: 'ink',
+                    href: '/my-lease',
                 },
                 {
-                    label: 'Days remaining',
+                    label: t('tenant_portal.days_left'),
                     value: localizedNumber(props.stats.daysLeft ?? 0, locale),
-                    detail: text('In the current contract'),
+                    detail: t('tenant_portal.contract_to_date'),
                     icon: 'bi-calendar3',
                     tone: 'blue',
+                    href: '/my-lease',
                 },
                 {
-                    label: 'Paid',
+                    label: t('tenant_portal.total_paid'),
                     value: compactCurrency(
                         props.stats.paidAmount,
                         props.app.locale,
@@ -50,6 +52,7 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
                     }),
                     icon: 'bi-check-circle',
                     tone: 'teal',
+                    href: '/my-payments',
                 },
                 {
                     label: t('dashboard.due_now'),
@@ -82,6 +85,7 @@ export function TenantMetrics({ props }: { props: TenantDashboardProps }) {
                             : props.stats.dueNow > 0
                               ? 'amber'
                               : 'teal',
+                    href: '/my-payments',
                 },
             ]}
         />

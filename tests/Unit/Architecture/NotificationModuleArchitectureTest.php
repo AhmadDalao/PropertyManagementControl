@@ -43,6 +43,8 @@ class NotificationModuleArchitectureTest extends TestCase
             'resources/js/modules/notifications/index-page.tsx',
             'resources/js/modules/notifications/notification-filters.tsx',
             'resources/js/modules/notifications/notification-list.tsx',
+            'resources/js/modules/notifications/notification-center.tsx',
+            'resources/js/modules/notifications/notification-metrics.tsx',
             'resources/js/modules/notifications/notification-menu.tsx',
             'resources/js/modules/notifications/types.ts',
         ] as $path) {
@@ -53,6 +55,7 @@ class NotificationModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(80, substr_count($entry, "\n") + 1);
         $this->assertStringContainsString("from './notification-filters'", $entry);
         $this->assertStringContainsString("from './notification-list'", $entry);
+        $this->assertStringContainsString("from './notification-metrics'", $entry);
     }
 
     private function source(string $relativePath): string
