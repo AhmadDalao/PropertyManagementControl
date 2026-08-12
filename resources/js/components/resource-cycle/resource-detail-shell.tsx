@@ -6,9 +6,10 @@ import { DecisionCardGrid } from './decision-card-grid';
 import { DetailCard } from './detail-card';
 import { DocumentStrip } from './document-strip';
 import { HistoryTimeline } from './history-timeline';
+import { MaintenanceTriageLayout } from './maintenance-triage-layout';
 import { RelatedRecordsTable } from './related-records-table';
+import { buildAvailableTabs, requestedTab } from './resource-detail-tab-state';
 import { ResourceDetailTabs } from './resource-detail-tabs';
-import type { ResourceDetailTabDefinition } from './resource-detail-tabs';
 import { ResourceHeader } from './resource-header';
 import { ResourceProgressPanel } from './resource-progress-panel';
 import { ResourceSpotlightPanel } from './resource-spotlight-panel';
@@ -20,6 +21,7 @@ import type {
 import { WorkflowActionPanel } from './workflow-action-panel';
 
 export function ResourceDetailShell({
+    layout = 'default',
     header,
     spotlight,
     workflow,
@@ -34,7 +36,9 @@ export function ResourceDetailShell({
     const visibleSections = sections.filter(
         (section) => section.items.length > 0,
     );
-    const financialSections = visibleSections.filter(isFinancialSection);
+    const financialSections = visibleSections.filter(
+        (section) => section.tab === 'financial',
+    );
     const overviewSections = visibleSections.filter(
         (section) => !financialSections.includes(section),
     );
@@ -47,6 +51,22 @@ export function ResourceDetailShell({
     const [activeTab, setActiveTab] = useState<ResourceDetailTab>(() =>
         requestedTab(availableTabs),
     );
+
+    if (layout === 'maintenance-triage') {
+        return (
+            <MaintenanceTriageLayout
+                header={header}
+                spotlight={spotlight}
+                workflow={workflow}
+                progress={progress}
+                stats={stats}
+                sections={visibleSections}
+                related={related}
+                documents={documents}
+                timeline={timeline}
+            />
+        );
+    }
 
     const selectTab = (tab: ResourceDetailTab) => {
         setActiveTab(tab);
@@ -160,74 +180,4 @@ function DetailSectionStack({ sections }: { sections: DetailSection[] }) {
             ))}
         </div>
     );
-}
-
-function requestedTab(tabs: ResourceDetailTabDefinition[]): ResourceDetailTab {
-    if (typeof window === 'undefined') {
-        return 'overview';
-    }
-
-    const requested = new URLSearchParams(window.location.search).get(
-        'tab',
-    ) as ResourceDetailTab | null;
-
-    return tabs.some((tab) => tab.key === requested)
-        ? (requested ?? 'overview')
-        : 'overview';
-}
-
-function buildAvailableTabs({
-    hasFinancial,
-    hasDocuments,
-    hasRelated,
-    hasHistory,
-}: {
-    hasFinancial: boolean;
-    hasDocuments: boolean;
-    hasRelated: boolean;
-    hasHistory: boolean;
-}): ResourceDetailTabDefinition[] {
-    return [
-        { key: 'overview', label: 'Overview', icon: 'bi-grid' },
-        ...(hasFinancial
-            ? [
-                  {
-                      key: 'financial' as const,
-                      label: 'Financial',
-                      icon: 'bi-cash-stack',
-                  },
-              ]
-            : []),
-        ...(hasDocuments
-            ? [
-                  {
-                      key: 'documents' as const,
-                      label: 'Documents',
-                      icon: 'bi-folder2-open',
-                  },
-              ]
-            : []),
-        ...(hasRelated
-            ? [
-                  {
-                      key: 'related' as const,
-                      label: 'Related',
-                      icon: 'bi-diagram-3',
-                  },
-              ]
-            : []),
-        ...(hasHistory
-            ? [
-                  {
-                      key: 'history' as const,
-                      label: 'History',
-                      icon: 'bi-clock-history',
-                  },
-              ]
-            : []),
-    ];
-}
-
-function isFinancialSection(section: DetailSection): boolean {
-    return section.tab === 'financial';
 }

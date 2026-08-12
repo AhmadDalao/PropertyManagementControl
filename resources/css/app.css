@@ -9,3 +9,8 @@
 @import './styles/tables.css';
 @import './styles/forms.css';
 @import './styles/shell.css';
+@import './styles/reference/foundation/shell.css';
+@import './styles/reference/foundation/headers.css';
+@import './styles/reference/foundation/tables.css';
+@import './styles/reference/foundation/forms.css';
+@import './styles/reference/foundation/touch.css';

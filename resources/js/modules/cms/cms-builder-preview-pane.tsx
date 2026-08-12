@@ -1,6 +1,6 @@
 import { useTranslator } from '@/lib/i18n';
-import { CmsRenderer } from '@/modules/public-site/cms-renderer';
 
+import { CmsBuilderOutline } from './cms-builder-outline';
 import type { CmsBuilderController } from './use-cms-builder';
 
 export function CmsBuilderPreviewPane({
@@ -70,53 +70,17 @@ export function CmsBuilderPreviewPane({
                 </div>
             </header>
             <div
-                className={`pmc-cms-preview-frame is-${builder.previewWidth}`}
-                dir={builder.previewLocale === 'ar' ? 'rtl' : 'ltr'}
-                lang={builder.previewLocale}
+                className={`pmc-cms-preview-frame pmc-cms-canvas-outline is-${builder.previewWidth}`}
             >
-                <div className="pmc-cms-preview-document">
-                    {builder.visibleSections.length > 0 ? (
-                        builder.visibleSections.map((item) => (
-                            <article
-                                key={item.id}
-                                className={`pmc-cms-preview-section ${
-                                    builder.selected?.id === item.id
-                                        ? 'is-selected'
-                                        : ''
-                                }`}
-                            >
-                                <button
-                                    type="button"
-                                    className="pmc-cms-preview-edit"
-                                    aria-label={t(
-                                        'cms.edit_section_from_canvas',
-                                        undefined,
-                                        {
-                                            title: builder.localizedSectionName(
-                                                item.section,
-                                                builder.previewLocale,
-                                            ),
-                                        },
-                                    )}
-                                    onClick={() => builder.openEditor(item)}
-                                >
-                                    <i className="bi bi-pencil" />
-                                    <span>{t('cms.edit_copy')}</span>
-                                </button>
-                                <CmsRenderer
-                                    sections={[item]}
-                                    locale={builder.previewLocale}
-                                />
-                            </article>
-                        ))
-                    ) : (
-                        <div className="pmc-empty-state">
-                            <i className="bi bi-layout-text-window" />
-                            <strong>{t('cms.no_visible_sections')}</strong>
-                            <span>{t('cms.no_visible_sections_help')}</span>
-                        </div>
-                    )}
-                </div>
+                {builder.orderedSections.length > 0 ? (
+                    <CmsBuilderOutline builder={builder} />
+                ) : (
+                    <div className="pmc-empty-state">
+                        <i className="bi bi-layout-text-window" />
+                        <strong>{t('cms.no_visible_sections')}</strong>
+                        <span>{t('cms.no_visible_sections_help')}</span>
+                    </div>
+                )}
             </div>
         </main>
     );

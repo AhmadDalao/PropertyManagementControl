@@ -1,2 +1,4 @@
 @import './platform-composition.css';
 @import './platform-activity.css';
+@import '../reference/tenant.css';
+@import '../reference/dashboard.css';

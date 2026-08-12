@@ -1,0 +1,25 @@
+@media (max-width: 991.98px) {
+    .pmc-workspace-action,
+    .pmc-create-page-button,
+    .pmc-resource-action-menu > summary,
+    .pmc-mobile-action-menu > summary,
+    .pmc-record-action-menu > summary,
+    .pmc-filter-chip,
+    .pmc-mobile-filter-trigger,
+    .pmc-active-filters button,
+    .pmc-mobile-record-title-link,
+    .pmc-table-search .form-control,
+    .pmc-table-filter .form-control,
+    .pmc-table-filter .form-select,
+    .pmc-action-type-chips a,
+    .pmc-action-mobile-filter,
+    .pmc-action-filter-form .form-control,
+    .pmc-action-filter-form .form-select,
+    .pmc-action-filter-actions .btn,
+    .pmc-workspace-action-menu a,
+    .pmc-filter-chips a,
+    #notification-search,
+    .pmc-console-content button[type='submit'] {
+        min-height: 2.75rem;
+    }
+}

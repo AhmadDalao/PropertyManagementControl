@@ -1,3 +1,5 @@
+@import '../reference/reports.css';
+
 .pmc-report-library {
     display: grid;
     gap: 1.15rem;

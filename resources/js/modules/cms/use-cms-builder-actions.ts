@@ -71,6 +71,27 @@ export function useCmsBuilderActions(
             onFinish: finishMutation,
         });
     };
+    const attachSectionById = (sectionId: number) => {
+        if (!startMutation()) {
+            return;
+        }
+
+        router.post(
+            `/cms/pages/${props.page.id}/sections`,
+            {
+                cms_section_id: String(sectionId),
+                sort_order: String(state.orderedSections.length + 1),
+                is_visible: true,
+            },
+            {
+                preserveScroll: true,
+                preserveState: false,
+                onSuccess: () => state.setSaveState('saved'),
+                onError: () => state.setSaveState('error'),
+                onFinish: finishMutation,
+            },
+        );
+    };
     const reorder = (targetId: number) => {
         const sourceId = state.draggingId;
         state.setDraggingId(null);
@@ -145,6 +166,7 @@ export function useCmsBuilderActions(
     return {
         attachForm,
         attachSection,
+        attachSectionById,
         isBusy: state.saveState === 'saving' || attachForm.processing,
         moveSection,
         removeSection,

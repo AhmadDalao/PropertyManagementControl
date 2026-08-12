@@ -22,6 +22,14 @@
     align-items: center;
 }
 
+.pmc-topbar-search {
+    min-width: 0;
+}
+
+.pmc-topbar-search > .pmc-global-search {
+    width: 100%;
+}
+
 .pmc-quick-action-menu {
     position: relative;
 }

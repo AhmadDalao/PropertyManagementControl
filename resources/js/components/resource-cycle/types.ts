@@ -167,6 +167,7 @@ export type ResourceFormShellProps = {
 };
 
 export type ResourceDetailShellProps = {
+    layout?: 'default' | 'maintenance-triage';
     header: ResourceHeaderProps;
     spotlight?: ResourceSpotlight;
     workflow?: ResourceWorkflow;

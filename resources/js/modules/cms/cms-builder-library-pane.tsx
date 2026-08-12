@@ -1,6 +1,7 @@
+import { Link } from '@inertiajs/react';
+
 import { useTranslator } from '@/lib/i18n';
 
-import { CmsBuilderAttachForm } from './cms-builder-attach-form';
 import { CmsBuilderLibraryList } from './cms-builder-library-list';
 import type { CmsBuilderController } from './use-cms-builder';
 
@@ -23,8 +24,14 @@ export function CmsBuilderLibraryPane({
                     {t('cms.library_limit_notice')}
                 </div>
             ) : null}
-            <CmsBuilderAttachForm builder={builder} />
             <CmsBuilderLibraryList builder={builder} />
+            <Link
+                href="/cms/sections/create"
+                className="btn btn-outline-secondary"
+            >
+                <i className="bi bi-plus-lg" />
+                {t('cms.create_new_section')}
+            </Link>
         </aside>
     );
 }

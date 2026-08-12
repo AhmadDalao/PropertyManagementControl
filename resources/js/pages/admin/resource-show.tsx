@@ -1,5 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
+import '../../../css/styles/reference/maintenance.css';
+
 import { ResourceDetailShell } from '@/components/resource-cycle';
 import type {
     DecisionCard,

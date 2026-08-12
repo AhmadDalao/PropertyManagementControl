@@ -29,7 +29,7 @@ export default function CmsBuilderPage() {
             />
             <ResourceHeader
                 eyebrow={t('cms.builder')}
-                title={builder.localizedPageTitle}
+                title={`${builder.localizedPageTitle} — ${t('cms.builder')}`}
                 description={t('cms.page_summary', undefined, {
                     status: t(`status.${builder.page.status}`),
                     count: builder.orderedSections.length,

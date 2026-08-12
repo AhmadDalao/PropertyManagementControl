@@ -3,30 +3,10 @@ import { Link } from '@inertiajs/react';
 import { MetricGrid, WorkspaceHeader } from '@/components/operations';
 import { useTranslator } from '@/lib/i18n';
 
-import type { CmsWorkspaceStats, CmsWorkspaceView } from './types';
+import type { CmsWorkspaceStats } from './types';
 
-export function CmsWorkspaceHeader({
-    view,
-    stats,
-}: {
-    view: CmsWorkspaceView;
-    stats: CmsWorkspaceStats;
-}) {
+export function CmsWorkspaceHeader({ stats }: { stats: CmsWorkspaceStats }) {
     const { t } = useTranslator();
-    const createAction = {
-        pages: {
-            label: t('cms.create_page'),
-            href: '/cms/pages/create',
-        },
-        sections: {
-            label: t('cms.create_section'),
-            href: '/cms/sections/create',
-        },
-        navigation: {
-            label: t('cms.create_navigation'),
-            href: '/cms/navigation/create',
-        },
-    }[view];
 
     return (
         <>
@@ -43,13 +23,8 @@ export function CmsWorkspaceHeader({
                         native: true,
                     },
                     {
-                        label: t('cms.page_wording'),
-                        href: '/wording',
-                        icon: 'bi-translate',
-                        tone: 'secondary',
-                    },
-                    {
-                        ...createAction,
+                        label: t('cms.create_page'),
+                        href: '/cms/pages/create',
                         icon: 'bi-plus-lg',
                         tone: 'primary',
                     },
@@ -59,18 +34,18 @@ export function CmsWorkspaceHeader({
             <MetricGrid
                 metrics={[
                     {
-                        label: t('cms.pages'),
-                        value: stats.pages,
-                        detail: t('cms.page_shells'),
-                        icon: 'bi-file-earmark-text',
-                        tone: 'ink',
-                    },
-                    {
                         label: t('cms.published'),
                         value: stats.published,
                         detail: t('cms.published_help'),
                         icon: 'bi-globe2',
                         tone: 'teal',
+                    },
+                    {
+                        label: t('status.draft'),
+                        value: stats.drafts,
+                        detail: t('cms.page_shells'),
+                        icon: 'bi-file-earmark-text',
+                        tone: 'amber',
                     },
                     {
                         label: t('cms.sections'),
@@ -90,6 +65,16 @@ export function CmsWorkspaceHeader({
                         icon: 'bi-signpost-split',
                         tone: 'amber',
                     },
+                    {
+                        label: t('cms.missing_arabic', 'Missing Arabic'),
+                        value: stats.missing_arabic,
+                        detail: t(
+                            'cms.missing_arabic_help',
+                            'Needs translation review',
+                        ),
+                        icon: 'bi-translate',
+                        tone: stats.missing_arabic > 0 ? 'red' : 'teal',
+                    },
                 ]}
             />
 
@@ -97,35 +82,19 @@ export function CmsWorkspaceHeader({
                 className="pmc-cms-view-switcher"
                 aria-label={t('cms.workspace_views')}
             >
-                {(['pages', 'sections', 'navigation'] as const).map(
-                    (target) => (
-                        <Link
-                            key={target}
-                            href={`/cms?view=${target}`}
-                            className={view === target ? 'active' : ''}
-                            aria-current={view === target ? 'page' : undefined}
-                        >
-                            <i className={`bi ${viewIcon(target)}`} />
-                            <span>{t(`cms.view_${target}`)}</span>
-                            <strong>
-                                {target === 'pages'
-                                    ? stats.pages
-                                    : target === 'sections'
-                                      ? stats.sections
-                                      : stats.navigation}
-                            </strong>
-                        </Link>
-                    ),
-                )}
+                <a href="#cms-pages" className="active">
+                    <span>{t('cms.view_pages')}</span>
+                </a>
+                <a href="#cms-sections">
+                    <span>{t('cms.view_sections')}</span>
+                </a>
+                <a href="#cms-navigation">
+                    <span>{t('cms.view_navigation')}</span>
+                </a>
+                <Link href="/wording">
+                    <span>{t('cms.publishing_translation')}</span>
+                </Link>
             </nav>
         </>
     );
-}
-
-function viewIcon(view: CmsWorkspaceView) {
-    return {
-        pages: 'bi-file-earmark-text',
-        sections: 'bi-grid-1x2',
-        navigation: 'bi-signpost-split',
-    }[view];
 }

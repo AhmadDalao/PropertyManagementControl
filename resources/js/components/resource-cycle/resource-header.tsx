@@ -20,17 +20,22 @@ export function ResourceHeader({
     return (
         <section className="pmc-resource-header">
             <div>
-                <div className="pmc-kicker mb-2">{text(eyebrow)}</div>
+                {backHref ? (
+                    <nav
+                        className="pmc-resource-breadcrumb"
+                        aria-label={t('common.breadcrumbs', 'Breadcrumbs')}
+                    >
+                        <Link href={backHref}>{text(backLabel)}</Link>
+                        <i className="bi bi-chevron-right" aria-hidden="true" />
+                        <span>{text(title)}</span>
+                    </nav>
+                ) : (
+                    <div className="pmc-kicker">{text(eyebrow)}</div>
+                )}
                 <h1>{text(title)}</h1>
                 {description ? <p>{text(description)}</p> : null}
             </div>
             <div className="pmc-resource-actions">
-                {backHref ? (
-                    <Link href={backHref} className="btn btn-light">
-                        <i className="bi bi-arrow-left me-2" />
-                        {text(backLabel)}
-                    </Link>
-                ) : null}
                 {primaryActions.map((action) => (
                     <ActionLink
                         key={`${action.href}-${action.label}`}

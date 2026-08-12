@@ -66,7 +66,7 @@ class ShellModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('module_settings', $access);
         $this->assertStringContainsString('aria-current', $sidebar);
         $this->assertStringContainsString('inert={drawerHidden}', $sidebar);
-        $this->assertStringContainsString('PropertyContextSwitcher', $sidebar);
+        $this->assertStringNotContainsString('PropertyContextSwitcher', $sidebar);
         $this->assertStringContainsString("url.searchParams.set('property_id'", $propertyState);
         $this->assertStringContainsString("url.searchParams.delete('portfolio_id'", $propertyState);
         $this->assertStringContainsString('data-property-scope-trigger', $propertyContext);

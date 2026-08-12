@@ -70,19 +70,7 @@ export function MobileRecordList<T extends DataTableRow>({
                                 {status || actions ? (
                                     <div className="pmc-mobile-record-controls">
                                         {status}
-                                        {actions ? (
-                                            <details className="pmc-mobile-action-menu">
-                                                <summary
-                                                    aria-label={t(
-                                                        'common.more_actions',
-                                                        'More actions',
-                                                    )}
-                                                >
-                                                    <i className="bi bi-three-dots" />
-                                                </summary>
-                                                <div>{actions}</div>
-                                            </details>
-                                        ) : null}
+                                        {actions}
                                     </div>
                                 ) : null}
                             </div>

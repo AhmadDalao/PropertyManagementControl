@@ -1,0 +1,232 @@
+.pmc-occupancy-summary {
+    display: grid;
+    min-height: 8.6rem;
+    grid-template-columns: minmax(6.8rem, 0.9fr) minmax(0, 1fr);
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pmc-occupancy-donut {
+    display: grid;
+    width: min(7.4rem, 100%);
+    aspect-ratio: 1;
+    place-content: center;
+    justify-self: center;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle at center, #fff 0 55%, transparent 56%),
+        conic-gradient(
+            #0c9d42 0 var(--occupied),
+            #d9dee5 var(--occupied) var(--vacant),
+            #f39a2c var(--vacant) 100%
+        );
+    text-align: center;
+}
+
+.pmc-occupancy-donut strong {
+    color: #131721;
+    font-size: 1.12rem;
+}
+
+.pmc-occupancy-donut span {
+    color: var(--pmc-muted);
+    font-size: 0.52rem;
+}
+
+.pmc-occupancy-summary dl {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+}
+
+.pmc-occupancy-summary dl > div {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.4rem;
+    padding-inline-start: 0.7rem;
+}
+
+.pmc-occupancy-summary dl > div::before {
+    position: absolute;
+    inset-block: 0.18rem;
+    inset-inline-start: 0;
+    width: 0.38rem;
+    border-radius: 999px;
+    background: #0c9d42;
+    content: '';
+}
+
+.pmc-occupancy-summary dl > div.is-vacant::before {
+    background: #d9dee5;
+}
+
+.pmc-occupancy-summary dl > div.is-other::before {
+    background: #f39a2c;
+}
+
+.pmc-occupancy-summary dt,
+.pmc-occupancy-summary dd {
+    margin: 0;
+    font-size: 0.55rem;
+}
+
+.pmc-occupancy-summary dt {
+    color: #495366;
+}
+
+.pmc-occupancy-summary dd {
+    color: #171b24;
+    font-weight: 800;
+}
+
+.pmc-summary-list,
+.pmc-money-list,
+.pmc-system-status-list,
+.pmc-dashboard-activity-list {
+    display: grid;
+    gap: 0.32rem;
+}
+
+.pmc-summary-list > div {
+    display: grid;
+    min-height: 2rem;
+    grid-template-columns: 1.55rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.38rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.34rem;
+}
+
+.pmc-summary-list > div > i {
+    display: grid;
+    width: 1.45rem;
+    height: 1.45rem;
+    place-items: center;
+    border-radius: 0.3rem;
+    background: #fff3df;
+    color: #e77708;
+    font-size: 0.65rem;
+}
+
+.pmc-summary-list > div > i.is-info {
+    background: #e9f1ff;
+    color: #1769dc;
+}
+
+.pmc-summary-list > div > i.is-danger {
+    background: #ffebeb;
+    color: #e52b2b;
+}
+
+.pmc-summary-list span {
+    color: #3d4759;
+    font-size: 0.54rem;
+}
+
+.pmc-summary-list strong {
+    color: #171b24;
+    font-size: 0.6rem;
+}
+
+.pmc-summary-list strong.is-danger {
+    color: #e52b2b;
+}
+
+.pmc-summary-list strong.is-warning {
+    color: #e77708;
+}
+
+.pmc-summary-list strong.is-info {
+    color: #1769dc;
+}
+
+.pmc-money-list > div {
+    display: grid;
+    min-height: 2.45rem;
+    grid-template-columns: 0.45rem minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0;
+    border-bottom: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-money-list > div > i {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: #0aa54f;
+}
+
+.pmc-money-list > div > i.is-warning {
+    background: #f39a2c;
+}
+
+.pmc-money-list > div > i.is-danger {
+    background: #e52b2b;
+}
+
+.pmc-money-list span,
+.pmc-money-list strong,
+.pmc-money-list em {
+    font-size: 0.56rem;
+}
+
+.pmc-money-list span {
+    color: #495366;
+}
+
+.pmc-money-list strong {
+    color: #171b24;
+}
+
+.pmc-money-list em {
+    color: #087332;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.pmc-maintenance-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+}
+
+.pmc-maintenance-metrics > div {
+    display: grid;
+    min-height: 5rem;
+    align-content: center;
+    gap: 0.45rem;
+    padding: 0.42rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.38rem;
+    text-align: center;
+}
+
+.pmc-maintenance-metrics strong {
+    color: #171b24;
+    font-size: 1rem;
+}
+
+.pmc-maintenance-metrics .is-danger strong {
+    color: #e52b2b;
+}
+
+.pmc-maintenance-metrics .is-warning strong {
+    color: #e77708;
+}
+
+.pmc-maintenance-metrics .is-info strong {
+    color: #1769dc;
+}
+
+.pmc-maintenance-metrics .is-success strong {
+    color: #087332;
+}
+
+.pmc-maintenance-metrics span {
+    color: #657084;
+    font-size: 0.47rem;
+    line-height: 1.25;
+}

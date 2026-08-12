@@ -202,12 +202,7 @@ export function useRentCollectionTableConfig(locale: string): {
                         ),
                 },
             ],
-            actions: (installment) => (
-                <>
-                    {manageFollowUp(installment)}
-                    {postPayment(installment)}
-                </>
-            ),
+            actions,
         },
     };
 }

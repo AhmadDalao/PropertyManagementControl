@@ -28,7 +28,7 @@ class UserModuleArchitectureTest extends TestCase
         $source = $this->source($this->path('resources/js/modules/users/index-page.tsx'));
 
         $this->assertLessThanOrEqual(70, substr_count($source, "\n") + 1);
-        $this->assertStringContainsString("from './user-metrics'", $source);
+        $this->assertStringContainsString('WorkspaceHeader', $source);
         $this->assertStringContainsString("from './user-table'", $source);
         $this->assertStringContainsString("from './types'", $source);
         $this->assertStringNotContainsString("from '@/components/data-table'", $source);

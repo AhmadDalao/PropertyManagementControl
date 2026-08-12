@@ -5,7 +5,6 @@ import { AdminLayout } from '@/layouts/admin-layout';
 import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
-import { AssetMetrics } from './asset-metrics';
 import { AssetTable } from './asset-table';
 import type { AssetIndexPageProps } from './types';
 
@@ -42,7 +41,6 @@ export default function AssetsIndexPage() {
                 ]}
             />
 
-            <AssetMetrics insights={props.insights} locale={props.app.locale} />
             <AssetTable {...props} />
         </AdminLayout>
     );

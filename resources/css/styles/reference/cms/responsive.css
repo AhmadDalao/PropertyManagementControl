@@ -1,0 +1,18 @@
+@media (max-width: 1199.98px) {
+    .pmc-cms-overview-grid,
+    .pmc-cms-directory-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-cms-directory-grid .pmc-cms-library-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-cms-directory-grid .pmc-cms-library-grid {
+        grid-template-columns: 1fr;
+    }
+}

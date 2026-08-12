@@ -84,6 +84,12 @@
         display: none;
     }
 
+    .pmc-topbar-search {
+        display: flex;
+        min-width: 0;
+        justify-content: flex-end;
+    }
+
     .pmc-mobile-search-trigger {
         display: inline-flex;
         justify-self: end;
@@ -154,5 +160,20 @@
 
     .pmc-console-content {
         padding: 1.15rem 1rem 5rem;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-notification-menu {
+        display: none;
+    }
+
+    .pmc-console-topbar {
+        gap: 0.35rem;
+        padding-inline: 0.5rem;
+    }
+
+    .pmc-topbar-actions {
+        min-width: max-content;
     }
 }

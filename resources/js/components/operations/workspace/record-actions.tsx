@@ -15,22 +15,26 @@ export function RecordActions({
     const { t } = useTranslator();
 
     return (
-        <div className="pmc-record-actions">
-            <Link href={showHref} className="pmc-record-open">
-                {t('actions.open', 'Open')}
-                <i className="bi bi-arrow-up-right" />
-            </Link>
-            {editHref ? (
-                <Link
-                    href={editHref}
-                    className="btn btn-outline-secondary btn-sm"
-                    aria-label={t('actions.edit_record', 'Edit record')}
-                >
-                    <i className="bi bi-pencil" />
-                    <span>{t('actions.edit', 'Edit')}</span>
+        <details className="pmc-record-action-menu pmc-mobile-action-menu">
+            <summary aria-label={t('common.more_actions', 'More actions')}>
+                <i className="bi bi-three-dots" aria-hidden="true" />
+            </summary>
+            <div>
+                <Link href={showHref} className="pmc-record-open">
+                    <i className="bi bi-box-arrow-up-right" />
+                    <span>{t('actions.open', 'Open')}</span>
                 </Link>
-            ) : null}
-            {children}
-        </div>
+                {editHref ? (
+                    <Link
+                        href={editHref}
+                        aria-label={t('actions.edit_record', 'Edit record')}
+                    >
+                        <i className="bi bi-pencil" />
+                        <span>{t('actions.edit', 'Edit')}</span>
+                    </Link>
+                ) : null}
+                {children}
+            </div>
+        </details>
     );
 }

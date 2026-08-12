@@ -10,6 +10,7 @@ import { useTranslator } from '@/lib/i18n';
 
 import { CmsNavigationPanel } from './cms-navigation-panel';
 import { CmsPagesTable } from './cms-pages-table';
+import { CmsPublishingRail } from './cms-publishing-rail';
 import { CmsSectionLibrary } from './cms-section-library';
 import { CmsWorkspaceHeader } from './cms-workspace-header';
 import type { CmsIndexPageProps } from './types';
@@ -21,24 +22,27 @@ export default function CmsIndexPage() {
     return (
         <AdminLayout>
             <Head title={t('cms.website_control')} />
-            <CmsWorkspaceHeader
-                view={props.view}
-                stats={props.workspaceStats}
-            />
+            <CmsWorkspaceHeader stats={props.workspaceStats} />
 
-            {props.view === 'pages' ? <CmsPagesTable {...props} /> : null}
-            {props.view === 'sections' ? (
-                <CmsSectionLibrary
-                    sections={props.sections}
-                    limitReached={props.sectionLimitReached}
-                />
-            ) : null}
-            {props.view === 'navigation' ? (
-                <CmsNavigationPanel
-                    items={props.navigationItems}
-                    limitReached={props.navigationLimitReached}
-                />
-            ) : null}
+            <div className="pmc-cms-overview-grid" id="cms-pages">
+                <CmsPagesTable {...props} />
+                <CmsPublishingRail stats={props.workspaceStats} />
+            </div>
+
+            <div className="pmc-cms-directory-grid">
+                <div id="cms-sections">
+                    <CmsSectionLibrary
+                        sections={props.sections}
+                        limitReached={props.sectionLimitReached}
+                    />
+                </div>
+                <div id="cms-navigation">
+                    <CmsNavigationPanel
+                        items={props.navigationItems}
+                        limitReached={props.navigationLimitReached}
+                    />
+                </div>
+            </div>
         </AdminLayout>
     );
 }

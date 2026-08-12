@@ -1,0 +1,110 @@
+.pmc-workspace-header,
+.pmc-resource-header,
+.pmc-page-head {
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.72rem;
+    padding-bottom: 0.72rem;
+}
+
+.pmc-workspace-heading > span,
+.pmc-kicker {
+    margin-bottom: 0.28rem;
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
+}
+
+.pmc-workspace-heading h1,
+.pmc-resource-header h1,
+.pmc-page-title {
+    font-size: clamp(1.22rem, 1.8vw, 1.55rem);
+    line-height: 1.15;
+    letter-spacing: -0.035em;
+}
+
+.pmc-workspace-heading p,
+.pmc-resource-header p,
+.pmc-page-head p {
+    margin-top: 0.26rem;
+    font-size: 0.65rem;
+    line-height: 1.4;
+}
+
+.pmc-workspace-action,
+.pmc-create-page-button,
+.pmc-resource-action-menu > summary,
+.pmc-mobile-action-menu > summary {
+    min-height: 2.25rem;
+    padding: 0.4rem 0.68rem;
+    border-radius: 0.38rem;
+    font-size: 0.62rem;
+}
+
+.pmc-resource-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-bottom: 0.35rem;
+    color: var(--pmc-muted);
+    font-size: 0.55rem;
+    font-weight: 650;
+}
+
+.pmc-resource-breadcrumb a {
+    color: var(--pmc-primary-strong);
+    text-decoration: none;
+}
+
+.pmc-resource-breadcrumb i {
+    font-size: 0.45rem;
+}
+
+[dir='rtl'] .pmc-resource-breadcrumb i {
+    transform: rotate(180deg);
+}
+
+.pmc-console-content > .pmc-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 0.72rem;
+}
+
+.pmc-console-content > .pmc-metric-grid .pmc-metric-card {
+    display: grid;
+    min-height: 5.25rem;
+    grid-template-columns: 2.2rem minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    align-content: center;
+    column-gap: 0.58rem;
+    padding: 0.62rem 0.7rem;
+    border-color: var(--pmc-line);
+    border-radius: 0.46rem;
+    background: #fff;
+}
+
+.pmc-console-content > .pmc-metric-grid .pmc-metric-icon {
+    width: 2.2rem;
+    height: 2.2rem;
+    grid-row: 1 / 4;
+    align-self: center;
+    margin: 0;
+    border-radius: 50%;
+}
+
+.pmc-console-content > .pmc-metric-grid .pmc-metric-card > span {
+    font-size: 0.55rem;
+}
+
+.pmc-console-content > .pmc-metric-grid .pmc-metric-card > strong {
+    margin-top: 0.08rem;
+    font-size: 1.05rem;
+}
+
+.pmc-console-content > .pmc-metric-grid .pmc-metric-card > small {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-size: 0.49rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

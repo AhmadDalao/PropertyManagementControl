@@ -71,6 +71,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-envelope',
                 roles: ['superadmin', 'owner', 'property_manager'],
             },
+        ],
+    },
+    {
+        labelKey: 'nav.group_portfolio',
+        items: [
             {
                 labelKey: 'nav.company_control',
                 href: '/company-control',
@@ -85,10 +90,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 module: 'assets',
             },
             {
-                labelKey: 'nav.action_center',
-                href: '/action-center',
-                icon: 'bi-collection',
+                labelKey: 'nav.assets',
+                href: '/assets',
+                icon: 'bi-building',
                 roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'assets',
                 propertyScoped: true,
             },
             {
@@ -100,18 +106,13 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 propertyScoped: true,
             },
             {
-                labelKey: 'nav.reports',
-                href: '/reports',
-                icon: 'bi-graph-up-arrow',
+                labelKey: 'nav.property_explorer',
+                href: '/property-explorer',
+                icon: 'bi-diagram-3',
                 roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'reports',
+                module: 'assets',
                 propertyScoped: true,
             },
-        ],
-    },
-    {
-        labelKey: 'nav.group_portfolio',
-        items: [
             {
                 labelKey: 'nav.portfolios',
                 href: '/portfolios',
@@ -124,22 +125,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 icon: 'bi-file-earmark-spreadsheet',
                 roles: ['superadmin', 'owner'],
             },
-            {
-                labelKey: 'nav.property_explorer',
-                href: '/property-explorer',
-                icon: 'bi-diagram-3',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'assets',
-                propertyScoped: true,
-            },
-            {
-                labelKey: 'nav.tenants',
-                href: '/tenants',
-                icon: 'bi-person-badge',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'tenants',
-                propertyScoped: true,
-            },
+        ],
+    },
+    {
+        labelKey: 'nav.group_operations',
+        items: [
             {
                 labelKey: 'nav.leases',
                 href: '/leases',
@@ -164,11 +154,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 module: 'leases',
                 propertyScoped: true,
             },
-        ],
-    },
-    {
-        labelKey: 'nav.group_operations',
-        items: [
             {
                 labelKey: 'nav.rent_collection',
                 href: '/rent-collection',
@@ -194,6 +179,33 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 propertyScoped: true,
             },
             {
+                labelKey: 'nav.tenants',
+                href: '/tenants',
+                icon: 'bi-person-badge',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'tenants',
+                propertyScoped: true,
+            },
+            {
+                labelKey: 'nav.users',
+                href: '/users',
+                icon: 'bi-people',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'users',
+            },
+            {
+                labelKey: 'nav.action_center',
+                href: '/action-center',
+                icon: 'bi-collection',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                propertyScoped: true,
+            },
+        ],
+    },
+    {
+        labelKey: 'nav.group_maintenance',
+        items: [
+            {
                 labelKey: 'nav.maintenance',
                 href: '/maintenance-requests',
                 icon: 'bi-tools',
@@ -217,6 +229,11 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 module: 'maintenance',
                 propertyScoped: true,
             },
+        ],
+    },
+    {
+        labelKey: 'nav.group_documents_reports',
+        items: [
             {
                 labelKey: 'nav.documents',
                 href: '/documents',
@@ -225,18 +242,26 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 module: 'documents',
                 propertyScoped: true,
             },
+            {
+                labelKey: 'nav.reports',
+                href: '/reports',
+                icon: 'bi-graph-up-arrow',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'reports',
+                propertyScoped: true,
+            },
+            {
+                labelKey: 'nav.media',
+                href: '/media-files',
+                icon: 'bi-images',
+                roles: ['superadmin', 'owner', 'property_manager'],
+                module: 'media',
+            },
         ],
     },
     {
         labelKey: 'nav.group_system',
         items: [
-            {
-                labelKey: 'nav.users',
-                href: '/users',
-                icon: 'bi-people',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'users',
-            },
             {
                 labelKey: 'nav.cms',
                 href: '/cms',
@@ -278,13 +303,6 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
                 href: '/system/backups',
                 icon: 'bi-database-check',
                 roles: ['superadmin'],
-            },
-            {
-                labelKey: 'nav.media',
-                href: '/media-files',
-                icon: 'bi-images',
-                roles: ['superadmin', 'owner', 'property_manager'],
-                module: 'media',
             },
             {
                 labelKey: 'nav.audit',

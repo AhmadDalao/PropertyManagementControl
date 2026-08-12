@@ -9,7 +9,7 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **653 tests and 37,915 assertions passed**. The release baseline also includes 70 passing Playwright/axe scenarios, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
+The application code is healthy. The release reran the complete PHP suite: **653 tests and 38,172 assertions passed**. The release baseline also includes 70 passing Playwright/axe scenarios, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
 
 The verified release is deployed to Hostinger and matches GitHub. The live site responds successfully at `/up`, `/system/settings` is active, a pre-migration backup completed, and authenticated EN/AR dashboard, reports, CMS, PDF, and XLSX smoke checks passed. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
@@ -891,7 +891,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 653 passed, 37,915 assertions |
+| Fresh PHPUnit run | 653 passed, 38,172 assertions |
 | Route inventory | 237 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 70 scenarios |
@@ -1136,3 +1136,21 @@ The generic `ResourceFormShell` and `ResourceDetailShell` do not make the domain
 | Native mobile application | Not implemented | Current product is a responsive Laravel/Inertia web application. |
 
 Section 15 contains the detailed defects and debt. The blunt conclusion is unchanged: the system is broad enough for a controlled pilot. SMTP, scheduler evidence, reconciled real data, legal/business approval, and four-role user acceptance matter more than adding another module.
+
+## 23. Exact Design Rebuild Coverage
+
+The August 2026 design archives are now the active layout contract rather than a color reference. The implementation preserves the existing Laravel/Inertia workflows and replaces their page composition as follows:
+
+| Screen family | Implemented composition |
+|---|---|
+| Authenticated shell | Fixed light sidebar with compact grouped navigation, persisted collapse state, mobile drawer, 64px topbar, role-aware quick actions, search sheet, language control, notifications, and account menu. |
+| Management dashboard | Six operational KPIs followed by financial, occupancy, lease/move-out, action-center, rent collection, maintenance, property performance, quick-action, collection, activity, and system-status panels. |
+| Tenant portal | Dedicated Home, My Lease, Payments, Maintenance, Documents, and Profile navigation with the supplied compact welcome, KPI, activity, contract, payment, document, and request patterns. |
+| Directories | Compact page header, real create action, count chips, filters, 10/25/50/100 pagination, XLSX export, desktop table, mobile record cards, and one ellipsis action menu. |
+| Create/edit forms | Dedicated pages with grouped sections, responsive one/two-column fields, contextual summary rail, validation summary, and mobile Save/Cancel treatment. |
+| Maintenance | Queue directory plus a dedicated triage detail layout with lifecycle, service context, workflow actions, costs, documents, and audit history. |
+| Reports | Card-based command center, scoped filters, saved reports, real report links, and existing PDF/DOCX/XLSX outputs only. |
+| CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
+| Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
+
+The visual CSS is split into route-owned foundation, dashboard, report, CMS, maintenance, and tenant layers under `resources/css/styles/reference/`. The shared production CSS bundle is 320KB, below the 325KB release ceiling. Browser regression at 390px covered dashboard, all core indexes and create pages, maintenance queue/detail/create, documents, reports, CMS/index/builder, property map, readiness, settings, documentation, audit, media, and notifications with zero page-level horizontal overflow.

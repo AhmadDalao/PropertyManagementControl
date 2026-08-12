@@ -28,11 +28,20 @@ export function CmsBuilderLibraryList({
                                 : section.name_ar}
                         </small>
                     </div>
-                    <em>
-                        {t('cms.uses', undefined, {
-                            count: section.page_sections_count ?? 0,
-                        })}
-                    </em>
+                    <button
+                        type="button"
+                        aria-label={t(
+                            'cms.attach_named_section',
+                            'Attach :name',
+                            {
+                                name: builder.localizedSectionName(section),
+                            },
+                        )}
+                        disabled={builder.isBusy}
+                        onClick={() => builder.attachSectionById(section.id)}
+                    >
+                        <i className="bi bi-plus-lg" aria-hidden="true" />
+                    </button>
                 </article>
             ))}
         </div>

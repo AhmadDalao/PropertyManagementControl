@@ -6,7 +6,6 @@ import { canCreateOperationalRecord } from '@/lib/access';
 import { useTranslator } from '@/lib/i18n';
 
 import type { UserIndexPageProps } from './types';
-import { UserMetrics } from './user-metrics';
 import { UserTable } from './user-table';
 
 export default function UsersIndexPage() {
@@ -36,7 +35,6 @@ export default function UsersIndexPage() {
                 }
             />
 
-            <UserMetrics insights={props.userInsights} />
             <UserTable {...props} />
         </AdminLayout>
     );

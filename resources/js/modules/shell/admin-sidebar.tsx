@@ -10,7 +10,6 @@ import {
     navigationHref,
     visibleNavigationGroups,
 } from './navigation-access';
-import { PropertyContextSwitcher } from './property-context-switcher';
 
 type AdminSidebarProps = {
     currentUrl: string;
@@ -67,8 +66,12 @@ export function AdminSidebar({
                 inert={drawerHidden}
             >
                 <div className="pmc-console-brand">
-                    <Link href="/dashboard" className="pmc-brand-mark">
-                        P
+                    <Link
+                        href="/dashboard"
+                        className="pmc-brand-mark"
+                        aria-label={t('nav.dashboard')}
+                    >
+                        <i className="bi bi-house-door" aria-hidden="true" />
                     </Link>
                     <div>
                         <strong>{t('shell.brand', 'Property')}</strong>
@@ -83,15 +86,6 @@ export function AdminSidebar({
                         <i className="bi bi-x-lg" />
                     </button>
                 </div>
-
-                {propertyContext ? (
-                    <PropertyContextSwitcher
-                        context={propertyContext}
-                        currentUrl={currentUrl}
-                        collapsed={sidebarCollapsed && !drawerViewport}
-                        onExpand={toggleNavigation}
-                    />
-                ) : null}
 
                 <nav
                     className="pmc-console-nav"

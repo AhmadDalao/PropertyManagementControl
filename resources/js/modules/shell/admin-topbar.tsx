@@ -48,10 +48,14 @@ export function AdminTopbar({
                 </button>
             </div>
 
-            {user ? <GlobalSearch /> : null}
+            <div className="pmc-topbar-search">
+                {user ? <GlobalSearch /> : null}
+            </div>
 
             <div className="pmc-topbar-actions">
-                {user ? <QuickActionMenu user={user} /> : null}
+                {user && !user.roles.includes('tenant') ? (
+                    <QuickActionMenu user={user} />
+                ) : null}
                 {user ? (
                     <NotificationMenu notifications={notifications} />
                 ) : null}

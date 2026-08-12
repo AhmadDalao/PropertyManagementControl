@@ -14,6 +14,12 @@ final class CmsWorkspaceInsightsQuery
         return [
             'pages' => CmsPage::query()->count(),
             'published' => CmsPage::query()->where('status', 'published')->count(),
+            'drafts' => CmsPage::query()->where('status', 'draft')->count(),
+            'missing_arabic' => CmsPage::query()
+                ->where(fn ($query) => $query
+                    ->whereNull('title_ar')
+                    ->orWhere('title_ar', ''))
+                ->count(),
             'sections' => CmsSection::query()->count(),
             'active_sections' => CmsSection::query()->where('status', 'active')->count(),
             'navigation' => NavigationItem::query()->count(),

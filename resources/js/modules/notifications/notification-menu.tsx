@@ -47,7 +47,7 @@ export function NotificationMenu({
     }
 
     return (
-        <div ref={menuRef} className="pmc-account-menu">
+        <div ref={menuRef} className="pmc-account-menu pmc-notification-menu">
             <button
                 ref={triggerRef}
                 type="button"

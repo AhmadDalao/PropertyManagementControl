@@ -1,0 +1,117 @@
+:root {
+    --pmc-sidebar-width: 13.25rem;
+    --pmc-sidebar-collapsed: 4rem;
+    --pmc-topbar-height: 4rem;
+    --pmc-canvas: #f7f9fb;
+    --pmc-line: #e3e8ee;
+    --pmc-line-soft: #edf1f5;
+    --pmc-radius: 0.5rem;
+    --pmc-radius-lg: 0.625rem;
+    --pmc-shadow-card: 0 1px 2px rgba(15, 23, 42, 0.025);
+}
+
+.pmc-console-sidebar {
+    padding: 0.55rem 0.5rem;
+}
+
+.pmc-console-brand {
+    min-height: 3rem;
+    gap: 0.55rem;
+    padding: 0.1rem 0.35rem 0.55rem;
+}
+
+.pmc-brand-mark {
+    width: 2.15rem;
+    height: 2.15rem;
+    border: 0;
+    background: transparent;
+    color: var(--pmc-primary);
+    font-size: 1.8rem;
+}
+
+.pmc-console-brand > div strong {
+    font-size: 0.78rem;
+}
+
+.pmc-console-brand > div span {
+    font-size: 0.48rem;
+}
+
+.pmc-console-nav {
+    gap: 0.48rem;
+    margin-top: 0.5rem;
+    padding: 0 0.05rem 0.75rem;
+}
+
+.pmc-console-nav section {
+    gap: 0.08rem;
+}
+
+.pmc-console-nav section > p {
+    margin: 0.15rem 0 0.14rem;
+    padding-inline: 0.55rem;
+    font-size: 0.52rem;
+    letter-spacing: 0.06em;
+}
+
+.pmc-nav-link {
+    min-height: 1.94rem;
+    gap: 0.42rem;
+    padding: 0.24rem 0.42rem;
+    border-radius: 0.34rem;
+    font-size: 0.63rem;
+    font-weight: 600;
+}
+
+.pmc-nav-link > i {
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 0.3rem;
+    font-size: 0.7rem;
+}
+
+.pmc-sidebar-collapse {
+    min-height: 2.2rem;
+    border: 0;
+    justify-content: flex-start;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.62rem;
+}
+
+.pmc-console-topbar {
+    grid-template-columns: auto minmax(15rem, 34rem) minmax(0, 1fr);
+    gap: 0.65rem;
+    padding: 0.42rem 1rem;
+    backdrop-filter: none;
+}
+
+.pmc-menu-trigger,
+.pmc-mobile-close,
+.pmc-mobile-search-trigger,
+.pmc-language-switcher button {
+    min-width: 2.2rem;
+    min-height: 2.2rem;
+}
+
+.pmc-quick-action-menu > summary {
+    min-height: 2.2rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.35rem;
+    font-size: 0.62rem;
+}
+
+.pmc-topbar-actions {
+    gap: 0.35rem;
+}
+
+.pmc-console-content {
+    width: 100%;
+    max-width: 112rem;
+    padding: 1rem 1.15rem 2rem;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-console-topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+}

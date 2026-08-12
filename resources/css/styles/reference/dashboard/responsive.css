@@ -1,0 +1,128 @@
+@media (max-width: 991.98px) {
+    .pmc-console-topbar {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-console-content {
+        padding: 0.9rem 0.85rem 2rem;
+    }
+
+    .pmc-management-dashboard > .pmc-metric-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-dashboard-layout > * {
+        grid-column: span 6 !important;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-management-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .pmc-dashboard-scope-controls {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    }
+
+    .pmc-dashboard-property-scope {
+        width: auto;
+    }
+
+    .pmc-management-dashboard > .pmc-metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-management-dashboard .pmc-metric-card {
+        min-height: 5.2rem;
+        padding: 0.55rem;
+    }
+
+    .pmc-dashboard-layout > * {
+        grid-column: 1 / -1 !important;
+    }
+
+    .pmc-financial-overview,
+    .pmc-dashboard-panel {
+        min-height: 0;
+    }
+
+    .pmc-dashboard-table-head {
+        display: none;
+    }
+
+    .pmc-dashboard-table > a {
+        grid-template-columns: 1fr auto;
+        gap: 0.2rem 0.65rem;
+        padding: 0.55rem 0.35rem;
+    }
+
+    .pmc-dashboard-table > a > span:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+
+    .pmc-dashboard-table > a > span:nth-child(4),
+    .pmc-dashboard-table > a > em {
+        text-align: end;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-console-content {
+        padding: 0.75rem 0.68rem 1.5rem;
+    }
+
+    .pmc-management-heading h1 {
+        font-size: 1.15rem;
+    }
+
+    .pmc-dashboard-scope-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-dashboard-scope-controls nav a {
+        flex: 1;
+        text-align: center;
+    }
+
+    .pmc-management-dashboard .pmc-metric-card {
+        grid-template-columns: 1.9rem minmax(0, 1fr);
+        column-gap: 0.45rem;
+    }
+
+    .pmc-management-dashboard .pmc-metric-icon {
+        width: 1.9rem;
+        height: 1.9rem;
+        font-size: 0.82rem;
+    }
+
+    .pmc-management-dashboard .pmc-metric-card > strong {
+        font-size: 0.88rem;
+    }
+
+    .pmc-occupancy-summary {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pmc-maintenance-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-financial-totals {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-property-performance-head,
+    .pmc-property-performance-table > a {
+        grid-template-columns: 1.1fr 0.9fr;
+    }
+
+    .pmc-property-performance-head > :last-child,
+    .pmc-property-performance-table > a > :last-child {
+        display: none;
+    }
+}

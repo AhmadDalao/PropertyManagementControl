@@ -59,9 +59,7 @@
 
 @media (max-width: 767.98px) {
     .pmc-property-map-workspace {
-        margin-inline: -1rem;
-        border-inline: 0;
-        border-radius: 0;
+        margin-inline: 0;
     }
 
     .pmc-property-map-head,

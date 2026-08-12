@@ -25,6 +25,7 @@ class MaintenanceDetailPresenter
         $data = $this->details->get($request, $actor);
 
         return [
+            'layout' => 'maintenance-triage',
             ...$this->overview->present($data),
             'progress' => $this->progress->present($data),
             'workflow' => $this->workflow->present($data),

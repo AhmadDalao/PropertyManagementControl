@@ -323,6 +323,9 @@
 .bi-house-door::before {
     content: '\f423';
 }
+.bi-house-add::before {
+    content: '\f887';
+}
 .bi-images::before {
     content: '\f42b';
 }
@@ -461,6 +464,9 @@
 .bi-stars::before {
     content: '\f589';
 }
+.bi-sun::before {
+    content: '\f5a2';
+}
 .bi-table::before {
     content: '\f5aa';
 }
@@ -478,6 +484,9 @@
 }
 .bi-tools::before {
     content: '\f5db';
+}
+.bi-truck::before {
+    content: '\f5ea';
 }
 .bi-trash3::before {
     content: '\f78b';

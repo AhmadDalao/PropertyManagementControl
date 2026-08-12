@@ -62,7 +62,7 @@ class AssetModuleArchitectureTest extends TestCase
         $source = $this->source($this->path('resources/js/modules/assets/index-page.tsx'));
 
         $this->assertLessThanOrEqual(70, substr_count($source, "\n") + 1);
-        $this->assertStringContainsString("from './asset-metrics'", $source);
+        $this->assertStringContainsString('WorkspaceHeader', $source);
         $this->assertStringContainsString("from './asset-table'", $source);
         $this->assertStringContainsString("from './types'", $source);
         $this->assertStringNotContainsString("from '@/components/data-table'", $source);

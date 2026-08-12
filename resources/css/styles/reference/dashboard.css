@@ -1,0 +1,5 @@
+@import './dashboard/layout.css';
+@import './dashboard/financial.css';
+@import './dashboard/summaries.css';
+@import './dashboard/records.css';
+@import './dashboard/responsive.css';

@@ -66,6 +66,8 @@ export type CmsWorkspaceView = 'pages' | 'sections' | 'navigation';
 export type CmsWorkspaceStats = {
     pages: number;
     published: number;
+    drafts: number;
+    missing_arabic: number;
     sections: number;
     active_sections: number;
     navigation: number;
