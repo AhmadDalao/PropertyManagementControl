@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
-**Report date:** August 11, 2026  
-**Application build revision:** `fecf276fc0c31f9e4e2038e7db09c10acdcaac04`
+**Report date:** August 12, 2026
+**Application build revision:** `d8e5dbe7cfc6a4d85a4ca22ee4d27d3a910cf374`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,7 +9,7 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **653 tests and 38,172 assertions passed**. The release baseline also includes 70 passing Playwright/axe scenarios, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
+The application code is healthy. The release reran the complete PHP suite: **653 tests and 38,334 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
 
 The verified release is deployed to Hostinger and matches GitHub. The live site responds successfully at `/up`, `/system/settings` is active, a pre-migration backup completed, and authenticated EN/AR dashboard, reports, CMS, PDF, and XLSX smoke checks passed. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
@@ -1153,4 +1153,4 @@ The August 2026 design archives are now the active layout contract rather than a
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into route-owned foundation, dashboard, report, CMS, maintenance, and tenant layers under `resources/css/styles/reference/`. The shared production CSS bundle is 320KB, below the 325KB release ceiling. Browser regression at 390px covered dashboard, all core indexes and create pages, maintenance queue/detail/create, documents, reports, CMS/index/builder, property map, readiness, settings, documentation, audit, media, and notifications with zero page-level horizontal overflow.
+The visual CSS is split into route-owned foundation, dashboard, report, CMS, maintenance, and tenant layers under `resources/css/styles/reference/`. The shared production CSS bundle is 320.02KB, below the 325KB release ceiling; module-specific form composition is a separate 6.01KB lazy chunk. The August 12 correction gives every generic create/edit presenter an explicit property, tenant, lease, payment, expense, maintenance, work-order, contractor, move-out, user, portfolio, document, media, or CMS layout. Desktop forms now use one header Save/Cancel action and mobile keeps one bottom action bar rather than rendering duplicate submit controls. Browser regression covered 92 authenticated routes, plus targeted English and Arabic checks at 390, 768, 1024, and 1440 pixels, with zero page-level horizontal overflow and a 64px-or-smaller topbar.
