@@ -13,6 +13,7 @@ final class DocumentCreateFormPresenter
     public function present(DocumentFormData $data): array
     {
         return [
+            'layout' => 'document',
             'title' => trans('app.documents.upload_document'),
             'description' => $data->attachment
                 ? trans('app.documents.upload_attachment', ['record' => $data->attachment['label']])

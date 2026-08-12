@@ -46,6 +46,7 @@ final class TenantCreateFormPresenter
         }
 
         return [
+            'layout' => 'tenant',
             'title' => trans($continueToLease
                 ? 'app.tenants.onboard_tenant'
                 : 'app.tenants.create_tenant'),

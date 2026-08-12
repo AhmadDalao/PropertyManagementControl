@@ -23,6 +23,7 @@ class MaintenanceTriageFormPresenter
     {
         if ($actor->hasRole('tenant')) {
             return [
+                'layout' => 'maintenance',
                 'title' => trans('app.maintenance.add_comment'),
                 'description' => trans('app.maintenance.add_comment_help'),
                 'backHref' => route('maintenance-requests.show', $request),
@@ -43,6 +44,7 @@ class MaintenanceTriageFormPresenter
         $this->access->ensureManager($actor);
 
         return [
+            'layout' => 'maintenance',
             'title' => trans('app.maintenance.triage_request', ['id' => $request->id]),
             'description' => trans('app.maintenance.triage_request_help'),
             'backHref' => route('maintenance-requests.show', $request),

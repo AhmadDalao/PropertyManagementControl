@@ -18,6 +18,7 @@ final class ExpenseEditFormPresenter
         }
 
         return [
+            'layout' => 'expense',
             'title' => trans('app.expenses.edit_expense'),
             'description' => trans('app.expenses.edit_description'),
             'backHref' => route('expenses.show', $expense),

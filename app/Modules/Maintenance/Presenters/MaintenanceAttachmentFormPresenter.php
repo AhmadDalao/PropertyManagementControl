@@ -10,6 +10,7 @@ final class MaintenanceAttachmentFormPresenter
     public function present(MaintenanceRequest $request): array
     {
         return [
+            'layout' => 'maintenance',
             'title' => trans('app.maintenance.add_photos'),
             'description' => trans('app.maintenance.add_photos_help', ['id' => $request->id]),
             'backHref' => route('maintenance-requests.show', [$request, 'tab' => 'documents']),

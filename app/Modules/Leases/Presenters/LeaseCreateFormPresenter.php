@@ -22,6 +22,7 @@ final class LeaseCreateFormPresenter
         ], fn (mixed $value): bool => $value !== null);
 
         return [
+            'layout' => 'lease',
             'title' => trans($onboarding
                 ? 'app.leases.start_tenancy'
                 : 'app.leases.create_lease'),

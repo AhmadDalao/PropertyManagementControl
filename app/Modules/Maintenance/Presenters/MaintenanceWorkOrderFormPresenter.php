@@ -185,6 +185,7 @@ final class MaintenanceWorkOrderFormPresenter
         }
 
         return [
+            'layout' => 'work-order',
             'title' => trans($creating ? 'app.work_orders.create' : 'app.work_orders.edit', [
                 'reference' => $workOrder?->reference_code,
             ]),

@@ -22,6 +22,7 @@ final class NavigationFormPresenter
         $this->access->ensureAdmin($actor);
 
         return [
+            'layout' => 'cms',
             'title' => $item ? trans('app.cms.edit_navigation') : trans('app.cms.create_navigation'),
             'description' => trans('app.cms.navigation_form_description'),
             'backHref' => route('cms.index', ['view' => 'navigation']),

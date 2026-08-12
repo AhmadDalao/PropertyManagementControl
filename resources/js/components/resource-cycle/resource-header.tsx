@@ -12,6 +12,8 @@ export function ResourceHeader({
     backHref,
     backLabel = 'Back',
     actions = [],
+    formSubmit,
+    formCancel,
 }: ResourceHeaderProps) {
     const { t, text } = useTranslator();
     const primaryActions = actions.slice(0, 2);
@@ -36,6 +38,14 @@ export function ResourceHeader({
                 {description ? <p>{text(description)}</p> : null}
             </div>
             <div className="pmc-resource-actions">
+                {formCancel ? (
+                    <Link
+                        href={formCancel.href}
+                        className="btn btn-light pmc-resource-header-cancel"
+                    >
+                        {text(formCancel.label)}
+                    </Link>
+                ) : null}
                 {primaryActions.map((action) => (
                     <ActionLink
                         key={`${action.href}-${action.label}`}
@@ -59,6 +69,16 @@ export function ResourceHeader({
                             ))}
                         </div>
                     </details>
+                ) : null}
+                {formSubmit ? (
+                    <button
+                        className="btn btn-primary pmc-resource-header-submit"
+                        type="submit"
+                        form={formSubmit.form}
+                    >
+                        <i className="bi bi-check2" aria-hidden="true" />
+                        {text(formSubmit.label)}
+                    </button>
                 ) : null}
             </div>
         </section>

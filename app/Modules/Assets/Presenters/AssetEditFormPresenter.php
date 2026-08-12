@@ -19,6 +19,7 @@ class AssetEditFormPresenter
         $data = $this->options->get($actor, $asset);
 
         return [
+            'layout' => 'asset',
             'title' => trans('app.assets.edit_asset', [
                 'name' => app()->isLocale('ar') ? $asset->title_ar : $asset->title_en,
             ]),

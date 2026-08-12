@@ -21,6 +21,7 @@ class AssetCreateFormPresenter
         $data = $this->options->get($actor, defaults: $defaults);
 
         return [
+            'layout' => 'asset',
             'title' => trans('app.assets.create_asset'),
             'description' => trans('app.assets.create_description'),
             'backHref' => route('assets.index'),

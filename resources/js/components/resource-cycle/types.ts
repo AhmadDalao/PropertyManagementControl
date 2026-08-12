@@ -16,6 +16,8 @@ export type ResourceHeaderProps = {
     backHref?: string;
     backLabel?: string;
     actions?: ResourceAction[];
+    formSubmit?: { form: string; label: string };
+    formCancel?: { href: string; label: string };
 };
 
 export type ResourceField = {
@@ -154,6 +156,22 @@ export type ResourceTimelineEntry = {
 };
 
 export type ResourceFormShellProps = {
+    layout?:
+        | 'asset'
+        | 'tenant'
+        | 'lease'
+        | 'payment'
+        | 'expense'
+        | 'maintenance'
+        | 'work-order'
+        | 'vendor'
+        | 'move-out'
+        | 'user'
+        | 'portfolio'
+        | 'document'
+        | 'media'
+        | 'cms'
+        | 'default';
     title: string;
     description: string;
     backHref: string;

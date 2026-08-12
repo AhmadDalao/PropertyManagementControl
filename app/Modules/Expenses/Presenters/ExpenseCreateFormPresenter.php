@@ -12,6 +12,7 @@ final class ExpenseCreateFormPresenter
     public function present(ExpenseFormData $data): array
     {
         return [
+            'layout' => 'expense',
             'title' => trans('app.expenses.record_expense'),
             'description' => trans('app.expenses.create_description'),
             'backHref' => route('expenses.index'),

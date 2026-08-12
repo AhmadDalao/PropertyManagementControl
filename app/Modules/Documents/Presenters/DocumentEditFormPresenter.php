@@ -15,6 +15,7 @@ final class DocumentEditFormPresenter
         assert($document !== null);
 
         return [
+            'layout' => 'document',
             'title' => trans('app.documents.edit_document'),
             'description' => $data->attachment
                 ? trans('app.documents.edit_attachment', ['record' => $data->attachment['label']])

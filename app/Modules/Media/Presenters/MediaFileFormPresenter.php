@@ -23,6 +23,7 @@ final class MediaFileFormPresenter
         $data = $this->forms->get($actor, $mediaFile, $defaults);
 
         return [
+            'layout' => 'media',
             'title' => $mediaFile ? trans('app.media.edit_media') : trans('app.media.upload_media'),
             'description' => $mediaFile ? trans('app.media.edit_description') : trans('app.media.upload_description'),
             'backHref' => $mediaFile ? route('media-files.show', $mediaFile) : route('media-files.index'),

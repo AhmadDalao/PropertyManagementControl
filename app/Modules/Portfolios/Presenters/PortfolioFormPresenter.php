@@ -125,6 +125,7 @@ class PortfolioFormPresenter
         }
 
         return [
+            'layout' => 'portfolio',
             'title' => $portfolio
                 ? trans('app.portfolios.edit_portfolio')
                 : trans('app.portfolios.create_portfolio'),

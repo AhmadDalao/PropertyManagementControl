@@ -14,6 +14,7 @@ final class TenantEditFormPresenter
     public function present(User $actor, TenantProfile $tenant): array
     {
         return [
+            'layout' => 'tenant',
             'title' => trans('app.tenants.edit_tenant'),
             'description' => trans('app.tenants.edit_description'),
             'backHref' => route('tenants.show', $tenant),

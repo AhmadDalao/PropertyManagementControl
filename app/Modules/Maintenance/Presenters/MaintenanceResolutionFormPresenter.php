@@ -10,6 +10,7 @@ final class MaintenanceResolutionFormPresenter
     public function present(MaintenanceRequest $request): array
     {
         return [
+            'layout' => 'maintenance',
             'title' => trans('app.maintenance.review_resolution_title', ['id' => $request->id]),
             'description' => trans('app.maintenance.review_resolution_help'),
             'backHref' => route('maintenance-requests.show', $request),

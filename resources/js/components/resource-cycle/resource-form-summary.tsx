@@ -1,7 +1,9 @@
 import { useTranslator } from '@/lib/i18n';
+import type { Translator, UiTranslationKey } from '@/lib/i18n';
 
 import type {
     ResourceField,
+    ResourceFormShellProps,
     ResourceFormValue,
     ResourceFormValues,
 } from './types';
@@ -10,12 +12,14 @@ export function ResourceFormSummary({
     action,
     description,
     fields,
+    layout,
     title,
     values,
 }: {
     action: string;
     description: string;
     fields: ResourceField[];
+    layout: ResourceFormShellProps['layout'];
     title: string;
     values: ResourceFormValues;
 }) {
@@ -33,7 +37,7 @@ export function ResourceFormSummary({
             <div className="pmc-resource-form-summary-icon">
                 <i className={`bi ${resourceIcon(action)}`} />
             </div>
-            <span>{t('resource.live_summary', 'Live summary')}</span>
+            <span>{summaryLabel(layout, t)}</span>
             <h2>{title}</h2>
             <p>{description}</p>
             {requiredFields.length > 0 ? (
@@ -76,6 +80,34 @@ export function ResourceFormSummary({
             )}
         </aside>
     );
+}
+
+function summaryLabel(
+    layout: ResourceFormShellProps['layout'],
+    translate: Translator,
+): string {
+    const labels: Record<string, [string, string]> = {
+        asset: ['resource.asset_summary', 'Property summary'],
+        tenant: ['resource.tenant_summary', 'Tenant summary'],
+        lease: ['resource.lease_summary', 'Lease summary'],
+        payment: ['resource.payment_summary', 'Payment summary'],
+        expense: ['resource.expense_summary', 'Expense summary'],
+        maintenance: ['resource.request_summary', 'Request summary'],
+        'work-order': ['resource.work_order_summary', 'Work order summary'],
+        vendor: ['resource.vendor_summary', 'Contractor summary'],
+        'move-out': ['resource.move_out_summary', 'Move-out summary'],
+        user: ['resource.user_summary', 'User summary'],
+        portfolio: ['resource.portfolio_summary', 'Portfolio summary'],
+        document: ['resource.document_summary', 'Document summary'],
+        media: ['resource.media_summary', 'Media summary'],
+        cms: ['resource.cms_summary', 'Publishing summary'],
+    };
+    const [key, fallback] = labels[layout ?? 'default'] ?? [
+        'resource.live_summary',
+        'Live summary',
+    ];
+
+    return translate(key as UiTranslationKey, fallback);
 }
 
 function hasValue(value: ResourceFormValue): boolean {

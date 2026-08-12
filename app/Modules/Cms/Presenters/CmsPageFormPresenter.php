@@ -86,6 +86,7 @@ class CmsPageFormPresenter
             ];
 
         return [
+            'layout' => 'cms',
             'title' => $page ? trans('app.cms.edit_page') : trans('app.cms.create_page'),
             'description' => $page
                 ? trans('app.cms.edit_page_description')

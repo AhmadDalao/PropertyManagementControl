@@ -15,6 +15,7 @@ final class UserEditFormPresenter
         $definition = $this->definition->present(new UserFormData($actor, $target));
 
         return [
+            'layout' => 'user',
             'title' => trans('app.users.edit_user'),
             'description' => trans('app.users.edit_description'),
             'backHref' => route('users.show', $target),

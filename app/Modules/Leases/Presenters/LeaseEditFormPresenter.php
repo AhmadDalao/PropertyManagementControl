@@ -16,6 +16,7 @@ final class LeaseEditFormPresenter
     public function present(Lease $lease): array
     {
         return [
+            'layout' => 'lease',
             'title' => trans('app.leases.edit_lease', ['code' => $lease->code]),
             'description' => trans('app.leases.edit_description'),
             'backHref' => route('leases.show', $lease),

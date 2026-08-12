@@ -111,11 +111,25 @@ class ResourceCycleRouteTest extends TestCase
             'media-files.create',
         ];
 
+        $expectedLayouts = [
+            'users.create' => 'user',
+            'assets.create' => 'asset',
+            'tenants.create' => 'tenant',
+            'leases.create' => 'lease',
+            'payments.create' => 'payment',
+            'maintenance-requests.create' => 'maintenance',
+            'expenses.create' => 'expense',
+            'documents.create' => 'document',
+            'media-files.create' => 'media',
+        ];
+
         foreach ($createRoutes as $routeName) {
             $this->actingAs($owner)
                 ->get(route($routeName))
                 ->assertOk()
-                ->assertInertia(fn (Assert $page) => $page->component('admin/resource-form'));
+                ->assertInertia(fn (Assert $page) => $page
+                    ->component('admin/resource-form')
+                    ->where('formPage.layout', $expectedLayouts[$routeName]));
         }
 
         $detailRoutes = [
@@ -155,11 +169,26 @@ class ResourceCycleRouteTest extends TestCase
             ['media-files.edit', $media],
         ];
 
+        $expectedEditLayouts = [
+            'portfolios.edit' => 'portfolio',
+            'users.edit' => 'user',
+            'assets.edit' => 'asset',
+            'tenants.edit' => 'tenant',
+            'leases.edit' => 'lease',
+            'payments.edit' => 'payment',
+            'maintenance-requests.edit' => 'maintenance',
+            'expenses.edit' => 'expense',
+            'documents.edit' => 'document',
+            'media-files.edit' => 'media',
+        ];
+
         foreach ($editRoutes as [$routeName, $model]) {
             $this->actingAs($owner)
                 ->get(route($routeName, $model))
                 ->assertOk()
-                ->assertInertia(fn (Assert $page) => $page->component('admin/resource-form'));
+                ->assertInertia(fn (Assert $page) => $page
+                    ->component('admin/resource-form')
+                    ->where('formPage.layout', $expectedEditLayouts[$routeName]));
         }
     }
 
@@ -206,7 +235,9 @@ class ResourceCycleRouteTest extends TestCase
         $this->actingAs($superadmin)
             ->get(route('cms.pages.create'))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('admin/resource-form'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where('formPage.layout', 'cms'));
 
         $this->actingAs($superadmin)
             ->get(route('cms.pages.show', $page))
@@ -219,7 +250,9 @@ class ResourceCycleRouteTest extends TestCase
         $this->actingAs($superadmin)
             ->get(route('cms.pages.edit', $page))
             ->assertOk()
-            ->assertInertia(fn (Assert $page) => $page->component('admin/resource-form'));
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/resource-form')
+                ->where('formPage.layout', 'cms'));
 
         $this->actingAs($superadmin)
             ->put(route('cms.pages.sections.reorder', $page), [

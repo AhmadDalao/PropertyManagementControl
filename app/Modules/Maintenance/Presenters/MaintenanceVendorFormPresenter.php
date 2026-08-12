@@ -77,6 +77,7 @@ final class MaintenanceVendorFormPresenter
         ];
 
         return [
+            'layout' => 'vendor',
             'title' => trans($creating
                 ? 'app.maintenance_vendors.create'
                 : 'app.maintenance_vendors.edit'),

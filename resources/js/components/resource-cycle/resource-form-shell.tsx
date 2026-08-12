@@ -19,6 +19,7 @@ import type {
 } from './types';
 
 export function ResourceFormShell({
+    layout = 'default',
     title,
     description,
     backHref,
@@ -36,6 +37,9 @@ export function ResourceFormShell({
     const errors = Object.values(form.errors).filter(Boolean);
     const groupedFields = groupResourceFields(fields);
     const usesSections = fields.some((field) => field.section);
+    const formId = `pmc-${layout}-resource-form`;
+    const showSectionNavigation =
+        usesSections && ['asset', 'lease'].includes(layout);
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -81,11 +85,13 @@ export function ResourceFormShell({
                 backHref={backHref}
                 backLabel={backLabel}
                 actions={headerActions}
+                formSubmit={{ form: formId, label: submitLabel }}
+                formCancel={{ href: backHref, label: text('Cancel') }}
             />
 
-            {usesSections ? (
+            {showSectionNavigation ? (
                 <nav
-                    className="pmc-resource-form-nav"
+                    className={`pmc-resource-form-nav pmc-resource-form-nav-${layout}`}
                     aria-label={t('resource.form_sections', 'Form sections')}
                 >
                     {groupedFields.map((group, index) => (
@@ -100,8 +106,15 @@ export function ResourceFormShell({
                 </nav>
             ) : null}
 
-            <section className="pmc-resource-form-shell">
-                <form className="pmc-resource-form" onSubmit={submit}>
+            <section
+                className={`pmc-resource-form-shell pmc-resource-form-shell-${layout}`}
+                data-form-layout={layout}
+            >
+                <form
+                    id={formId}
+                    className={`pmc-resource-form pmc-resource-form-${layout}${usesSections ? '' : 'pmc-resource-form-flat'}`}
+                    onSubmit={submit}
+                >
                     {errors.length > 0 ? (
                         <div
                             className="pmc-form-error-summary"
@@ -126,7 +139,7 @@ export function ResourceFormShell({
                     {usesSections
                         ? groupedFields.map((group, index) => (
                               <fieldset
-                                  className="pmc-resource-form-section"
+                                  className={`pmc-resource-form-section pmc-resource-form-section-${index + 1}`}
                                   key={group.title}
                                   id={sectionId(group.title, index)}
                               >
@@ -189,6 +202,7 @@ export function ResourceFormShell({
                     action={action}
                     description={description}
                     fields={fields}
+                    layout={layout}
                     title={title}
                     values={form.data}
                 />

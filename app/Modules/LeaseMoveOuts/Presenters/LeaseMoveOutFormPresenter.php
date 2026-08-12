@@ -49,6 +49,7 @@ final readonly class LeaseMoveOutFormPresenter
             ];
 
         return [
+            'layout' => 'move-out',
             'title' => trans($moveOut ? 'app.lease_move_outs.edit_title' : 'app.lease_move_outs.create_title', [
                 'code' => $lease->code,
             ]),

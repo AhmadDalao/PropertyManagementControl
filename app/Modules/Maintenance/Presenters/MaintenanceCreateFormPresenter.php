@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Modules\Maintenance\Queries\MaintenanceFormOptionsQuery;
 use App\Modules\Maintenance\Support\MaintenanceAccess;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
+use App\Modules\Shared\ResourcePresenter;
 
 class MaintenanceCreateFormPresenter
 {
@@ -13,6 +14,7 @@ class MaintenanceCreateFormPresenter
         private readonly MaintenanceAccess $access,
         private readonly MaintenanceFormOptionsQuery $options,
         private readonly MaintenanceFormOptionPresenter $presentOptions,
+        private readonly ResourcePresenter $resources,
     ) {}
 
     /**
@@ -35,6 +37,7 @@ class MaintenanceCreateFormPresenter
         $assets = $this->presentOptions->assets($this->options->tenantAssets($actor));
 
         return [
+            'layout' => 'maintenance',
             'title' => trans('app.maintenance.submit_request'),
             'description' => trans('app.maintenance.submit_request_help'),
             'backHref' => route('maintenance-requests.index'),
@@ -42,14 +45,14 @@ class MaintenanceCreateFormPresenter
             'action' => route('maintenance-requests.store'),
             'method' => 'post',
             'submitLabel' => trans('app.maintenance.submit_request'),
-            'fields' => [
+            'fields' => $this->sections([
                 ['name' => 'asset_id', 'label' => trans('app.maintenance.rented_asset'), 'type' => 'select', 'required' => true, 'options' => $assets],
                 ['name' => 'category', 'label' => trans('app.maintenance.category'), 'type' => 'select', 'options' => $this->presentOptions->values(MaintenanceOptions::CATEGORIES)],
                 ['name' => 'priority', 'label' => trans('app.maintenance.priority'), 'type' => 'select', 'options' => $this->presentOptions->values(MaintenanceOptions::PRIORITIES)],
                 ['name' => 'title', 'label' => trans('app.maintenance.issue_title'), 'required' => true],
                 ['name' => 'description', 'label' => trans('app.maintenance.issue_description'), 'type' => 'textarea', 'required' => true],
                 $this->photoField(),
-            ],
+            ]),
             'initialValues' => [
                 'asset_id' => (string) ($defaults['asset_id'] ?? ($assets[0]['value'] ?? '')),
                 'category' => 'general',
@@ -84,6 +87,7 @@ class MaintenanceCreateFormPresenter
         }
 
         return [
+            'layout' => 'maintenance',
             'title' => trans('app.maintenance.create_request'),
             'description' => trans('app.maintenance.create_request_help'),
             'backHref' => route('maintenance-requests.index'),
@@ -91,7 +95,7 @@ class MaintenanceCreateFormPresenter
             'action' => route('maintenance-requests.store'),
             'method' => 'post',
             'submitLabel' => trans('app.maintenance.create_request'),
-            'fields' => [
+            'fields' => $this->sections([
                 ...$fields,
                 ['name' => 'asset_id', 'label' => trans('app.maintenance.asset'), 'type' => 'select', 'required' => true, 'options' => $assets],
                 ['name' => 'tenant_profile_id', 'label' => trans('app.maintenance.tenant'), 'type' => 'select', 'required' => true, 'options' => $tenants],
@@ -109,7 +113,7 @@ class MaintenanceCreateFormPresenter
                 ],
                 ['name' => 'internal_notes', 'label' => trans('app.maintenance.internal_notes'), 'type' => 'textarea'],
                 $this->photoField(),
-            ],
+            ]),
             'initialValues' => [
                 'portfolio_id' => (string) $portfolioId,
                 'asset_id' => (string) ($defaults['asset_id'] ?? ($assets[0]['value'] ?? '')),
@@ -138,5 +142,35 @@ class MaintenanceCreateFormPresenter
             'accept' => '.jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp',
             'help' => trans('app.maintenance.photos_help'),
         ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $fields
+     * @return array<int, array<string, mixed>>
+     */
+    private function sections(array $fields): array
+    {
+        return $this->resources->sectionFields($fields, [
+            trans('app.maintenance.request_context_section') => [
+                'description' => trans('app.maintenance.request_context_section_help'),
+                'fields' => ['portfolio_id', 'asset_id', 'tenant_profile_id', 'assigned_to_user_id'],
+            ],
+            trans('app.maintenance.classification_section') => [
+                'description' => trans('app.maintenance.classification_section_help'),
+                'fields' => ['category', 'priority', 'status'],
+            ],
+            trans('app.maintenance.issue_section') => [
+                'description' => trans('app.maintenance.issue_section_help'),
+                'fields' => ['title', 'description'],
+            ],
+            trans('app.maintenance.evidence_section') => [
+                'description' => trans('app.maintenance.evidence_section_help'),
+                'fields' => ['photos'],
+            ],
+            trans('app.maintenance.internal_section') => [
+                'description' => trans('app.maintenance.internal_section_help'),
+                'fields' => ['resolution_summary', 'internal_notes'],
+            ],
+        ]);
     }
 }

@@ -16,6 +16,7 @@ final class PaymentEditFormPresenter
     public function present(Payment $payment): array
     {
         return [
+            'layout' => 'payment',
             'title' => trans('app.payments.edit_payment', [
                 'reference' => $payment->reference ?: '#'.$payment->id,
             ]),

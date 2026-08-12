@@ -1,5 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
+import '../../../css/styles/reference/forms.css';
+
 import { ResourceFormShell } from '@/components/resource-cycle';
 import type { ResourceFormShellProps } from '@/components/resource-cycle';
 import { AdminLayout } from '@/layouts/admin-layout';

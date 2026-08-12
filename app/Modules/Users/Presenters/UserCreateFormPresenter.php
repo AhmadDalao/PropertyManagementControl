@@ -42,6 +42,7 @@ final class UserCreateFormPresenter
         $portfolioName = $setup ? $this->continuation->name($setup) : '';
 
         return [
+            'layout' => 'user',
             'title' => $continuesSetup
                 ? trans('app.portfolios.setup_user_title', [
                     'role' => $roleLabel,

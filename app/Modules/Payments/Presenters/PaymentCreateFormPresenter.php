@@ -12,6 +12,7 @@ final class PaymentCreateFormPresenter
     public function present(PaymentFormData $data): array
     {
         return [
+            'layout' => 'payment',
             'title' => trans('app.payments.record_payment'),
             'description' => trans('app.payments.create_description'),
             'backHref' => route('payments.index'),
