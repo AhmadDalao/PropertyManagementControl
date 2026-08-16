@@ -5,7 +5,6 @@ import { ResourceHeader } from '@/components/resource-cycle';
 import { DocumentStrip } from '@/components/resource-cycle/document-strip';
 import { HistoryTimeline } from '@/components/resource-cycle/history-timeline';
 import { RelatedRecordsTable } from '@/components/resource-cycle/related-records-table';
-import { WorkflowActionPanel } from '@/components/resource-cycle/workflow-action-panel';
 import { useTranslator } from '@/lib/i18n';
 
 import { MaintenanceContextCard } from './maintenance-context-card';
@@ -17,6 +16,7 @@ import {
 } from './maintenance-detail-tabs';
 import type { MaintenanceDetailTab } from './maintenance-detail-tabs';
 import { MaintenanceLifecyclePanel } from './maintenance-lifecycle-panel';
+import { MaintenanceNextStepPanel } from './maintenance-next-step-panel';
 import type { MaintenanceDetailPage } from './types';
 
 export function MaintenanceDetailWorkspace({
@@ -67,6 +67,8 @@ export function MaintenanceDetailWorkspace({
             <section
                 className="pmc-maintenance-detail-panel"
                 role="tabpanel"
+                id="maintenance-detail-panel"
+                aria-labelledby={`maintenance-tab-${active}`}
                 tabIndex={0}
             >
                 {active === 'overview' ? (
@@ -88,7 +90,9 @@ export function MaintenanceDetailWorkspace({
                             <MaintenanceLifecyclePanel
                                 progress={detail.progress}
                             />
-                            <WorkflowActionPanel workflow={detail.workflow} />
+                            <MaintenanceNextStepPanel
+                                workflow={detail.workflow}
+                            />
                         </aside>
                     </div>
                 ) : null}

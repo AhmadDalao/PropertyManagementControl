@@ -86,9 +86,15 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'resources/js/modules/maintenance/detail-page.tsx',
             'resources/js/modules/maintenance/maintenance-detail-workspace.tsx',
             'resources/js/modules/maintenance/maintenance-detail-tabs.tsx',
+            'resources/js/modules/maintenance/maintenance-next-step-panel.tsx',
+            'resources/css/styles/maintenance/next-step.css',
         ] as $path) {
             $this->assertFileExists($this->path($path));
         }
+
+        $detailWorkspace = $this->source('resources/js/modules/maintenance/maintenance-detail-workspace.tsx');
+        $this->assertStringContainsString('MaintenanceNextStepPanel', $detailWorkspace);
+        $this->assertStringNotContainsString('WorkflowActionPanel', $detailWorkspace);
 
         $this->assertStringNotContainsString(
             'admin/resource-form',

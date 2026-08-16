@@ -1626,19 +1626,33 @@ test.describe('authenticated administration', () => {
     }) => {
         await page.setViewportSize(viewports.mobile);
 
-        for (const path of [
-            '/leases/1',
-            '/payments/1',
-            '/maintenance-requests/1',
-            '/expenses/1',
+        for (const record of [
+            {
+                path: '/leases/1',
+                selector: '.pmc-resource-workflow',
+                title: '#pmc-resource-workflow-title',
+            },
+            {
+                path: '/payments/1',
+                selector: '.pmc-resource-workflow',
+                title: '#pmc-resource-workflow-title',
+            },
+            {
+                path: '/maintenance-requests/1',
+                selector: '.pmc-maintenance-next-step',
+                title: '#pmc-maintenance-next-step-title',
+            },
+            {
+                path: '/expenses/1',
+                selector: '.pmc-resource-workflow',
+                title: '#pmc-resource-workflow-title',
+            },
         ]) {
-            await page.goto(path);
+            await page.goto(record.path);
 
-            const workflow = page.locator('.pmc-resource-workflow');
+            const workflow = page.locator(record.selector);
             await expect(workflow).toBeVisible();
-            await expect(
-                workflow.locator('#pmc-resource-workflow-title'),
-            ).toBeVisible();
+            await expect(workflow.locator(record.title)).toBeVisible();
             expect(
                 await workflow.evaluate(
                     (node) =>
@@ -2167,6 +2181,30 @@ test.describe('authenticated administration', () => {
 
         await page.goto(`${detailHref}?locale=ar`);
         await expect(page.getByText('سياق الطلب')).toBeVisible();
+        const detailTabs = page.locator('.pmc-maintenance-detail-tabs');
+        const mobileTabLayout = await detailTabs.evaluate((tabList) => ({
+            display: getComputedStyle(tabList).display,
+            columns:
+                getComputedStyle(tabList).gridTemplateColumns.split(' ').length,
+            overflow: tabList.scrollWidth > tabList.clientWidth,
+        }));
+        expect(mobileTabLayout).toEqual({
+            display: 'grid',
+            columns: 3,
+            overflow: false,
+        });
+        const overviewTab = page.getByRole('tab', {
+            name: 'نظرة عامة',
+            exact: true,
+        });
+        await overviewTab.press('ArrowLeft');
+        const workOrdersTab = page.getByRole('tab', {
+            name: /أوامر العمل/,
+        });
+        await expect(workOrdersTab).toHaveAttribute('aria-selected', 'true');
+        await expect(page).toHaveURL(/tab=work-orders/);
+        await workOrdersTab.press('Home');
+        await expect(overviewTab).toHaveAttribute('aria-selected', 'true');
         const addPhotos = page.getByRole('link', { name: 'إضافة صور' });
         await expect(addPhotos).toBeVisible();
         expect(
@@ -2184,6 +2222,27 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         const addPhotosHref = await addPhotos.getAttribute('href');
         expect(addPhotosHref).toBeTruthy();
+
+        await page.setViewportSize(viewports.desktop);
+        await page.reload();
+        const nextStep = page.locator('.pmc-maintenance-next-step');
+        await expect(nextStep).toBeVisible();
+        const nextStepGeometry = await nextStep.evaluate((panel) => ({
+            width: panel.getBoundingClientRect().width,
+            height: panel.getBoundingClientRect().height,
+            titleHeight:
+                panel.querySelector('h2')?.getBoundingClientRect().height ?? 0,
+            descriptionHeight:
+                panel.querySelector(':scope > p')?.getBoundingClientRect()
+                    .height ?? 0,
+        }));
+        expect(nextStepGeometry.width).toBeGreaterThanOrEqual(280);
+        expect(nextStepGeometry.height).toBeLessThan(420);
+        expect(nextStepGeometry.titleHeight).toBeLessThan(80);
+        expect(nextStepGeometry.descriptionHeight).toBeLessThan(100);
+        await expect(page.locator('.pmc-resource-workflow')).toHaveCount(0);
+        await expectNoHorizontalOverflow(page);
+        await page.setViewportSize(viewports.mobile);
 
         const detailPath = new URL(detailHref!, page.url()).pathname;
         await page.goto(`${detailPath}/edit?locale=ar`);

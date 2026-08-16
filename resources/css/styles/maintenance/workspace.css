@@ -378,12 +378,6 @@
     background: transparent;
 }
 
-.pmc-maintenance-overview-grid .pmc-resource-workflow {
-    margin: 0;
-    border-radius: 0.62rem;
-    box-shadow: none;
-}
-
 .pmc-maintenance-empty-panel {
     display: grid;
     min-height: 14rem;
@@ -454,12 +448,19 @@
     }
 
     .pmc-maintenance-detail-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         top: calc(var(--pmc-topbar-height) + 0.25rem);
         margin-inline: -0.25rem;
+        overflow: visible;
     }
 
     .pmc-maintenance-detail-tabs button {
         min-height: 2.75rem;
+        justify-content: center;
+        padding-inline: 0.35rem;
+        text-align: center;
+        white-space: normal;
     }
 
     .pmc-maintenance-mobile-actions {
