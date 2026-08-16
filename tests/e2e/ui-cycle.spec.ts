@@ -998,7 +998,8 @@ test.describe('authenticated administration', () => {
             page.getByRole('heading', { level: 1, name: 'Action Center' }),
         ).toBeVisible();
         await expect(page.locator('.pmc-action-filter-form')).toBeVisible();
-        await expect(page.locator('.pmc-action-card').first()).toBeVisible();
+        await expect(page.locator('.pmc-action-card')).toHaveCount(6);
+        await expect(page.locator('.pmc-action-card-facts')).toHaveCount(6);
         await expect(page.locator('.pmc-action-card-grid')).toHaveCSS(
             'display',
             'grid',
@@ -1014,6 +1015,21 @@ test.describe('authenticated administration', () => {
                 .locator('.pmc-action-type-chips')
                 .getByText('Document expiry', { exact: true }),
         ).toBeVisible();
+        const maintenanceQueue = page.locator(
+            '.pmc-action-type-chips a[href="/action-center?type=maintenance"]',
+        );
+        await expect(maintenanceQueue).toHaveCount(1);
+        await maintenanceQueue.click();
+        await expect(page).toHaveURL(/[?&]type=maintenance(?:&|$)/);
+        await expect(
+            page.getByRole('heading', {
+                level: 2,
+                name: 'Maintenance response',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-action-card')).toHaveCount(4);
+
+        await page.goto('/action-center?locale=en');
         const dailyBriefMenu = page.locator('.pmc-workspace-action-menu');
         await expect(dailyBriefMenu).toBeVisible();
         await expect(dailyBriefMenu.locator('summary')).toContainText(
@@ -1051,7 +1067,7 @@ test.describe('authenticated administration', () => {
         );
         await expectNoHorizontalOverflow(page);
 
-        await page.goto('/action-center?locale=ar');
+        await page.goto('/action-center?locale=ar&type=maintenance');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(
             page.getByRole('heading', {
@@ -1061,6 +1077,12 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expect(
             page.getByText('قائمة الأولويات', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                level: 2,
+                name: 'معالجة الصيانة',
+            }),
         ).toBeVisible();
         await expect(
             page

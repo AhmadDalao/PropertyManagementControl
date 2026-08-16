@@ -7,15 +7,25 @@ import type { ActionCenterPageProps } from './types';
 
 export function ActionCenterWorkspace({
     actionItems,
-}: Pick<ActionCenterPageProps, 'actionItems'>) {
+    auth,
+    filters,
+}: Pick<ActionCenterPageProps, 'actionItems' | 'auth' | 'filters'>) {
     const { locale, t } = useTranslator();
+    const showPortfolio =
+        (auth.user?.roles.includes('superadmin') ?? false) &&
+        filters.portfolio_id === null &&
+        filters.property_id === null;
+    const queueTitle =
+        filters.type === 'all'
+            ? t('action_center.work_queue_title')
+            : t(`action_center.work_queue_title_${filters.type}`);
 
     return (
         <section className="pmc-action-workspace">
             <header>
                 <div>
                     <span>{t('action_center.work_queue')}</span>
-                    <h2>{t('action_center.work_queue_title')}</h2>
+                    <h2>{queueTitle}</h2>
                 </div>
                 <p>
                     {t('action_center.result_count', undefined, {
@@ -28,7 +38,10 @@ export function ActionCenterWorkspace({
                 <div className="pmc-action-card-grid" role="list">
                     {actionItems.data.map((item) => (
                         <div key={item.key} role="listitem">
-                            <ActionCenterCard item={item} />
+                            <ActionCenterCard
+                                item={item}
+                                showPortfolio={showPortfolio}
+                            />
                         </div>
                     ))}
                 </div>

@@ -34,7 +34,7 @@ export function actionCenterUrl(
         params.set('property_id', String(next.property_id));
     }
 
-    if (next.per_page !== 12) {
+    if (next.per_page !== 6) {
         params.set('per_page', String(next.per_page));
     }
 
@@ -66,7 +66,7 @@ function actionCenterDownloadUrl(
 ): string {
     return actionCenterUrl({
         ...filters,
-        per_page: 12,
+        per_page: 6,
         page: 1,
     }).replace('/action-center', path);
 }

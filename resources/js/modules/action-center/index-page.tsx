@@ -24,7 +24,11 @@ export default function ActionCenterIndexPage() {
                     metrics={props.metrics}
                 />
                 <ActionCenterFilters {...props} />
-                <ActionCenterWorkspace actionItems={props.actionItems} />
+                <ActionCenterWorkspace
+                    actionItems={props.actionItems}
+                    auth={props.auth}
+                    filters={props.filters}
+                />
             </div>
         </AdminLayout>
     );

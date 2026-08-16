@@ -17,7 +17,7 @@ final class ActionCenterOptions
     public const PRIORITIES = ['critical', 'high', 'normal'];
 
     /** @var list<int> */
-    public const PAGE_SIZES = [12, 24, 48];
+    public const PAGE_SIZES = [6, 12, 24];
 
     private function __construct() {}
 }

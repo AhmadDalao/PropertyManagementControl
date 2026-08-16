@@ -162,7 +162,7 @@ export function ActionCenterFilterControls({
                 label={t('action_center.page_size')}
                 value={draft.per_page}
                 onChange={(value) => update('per_page', Number(value))}
-                options={[12, 24, 48].map((size) => ({
+                options={[6, 12, 24].map((size) => ({
                     value: size,
                     label: localizedNumber(size, locale),
                 }))}

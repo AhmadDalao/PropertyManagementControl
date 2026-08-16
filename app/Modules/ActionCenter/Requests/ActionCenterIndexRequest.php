@@ -22,7 +22,7 @@ final class ActionCenterIndexRequest extends FormRequest
             'assignee' => trim((string) $this->query('assignee', 'all')),
             'portfolio_id' => $this->nullableQueryId('portfolio_id'),
             'property_id' => $this->nullableQueryId('property_id'),
-            'per_page' => $this->query('per_page', 12),
+            'per_page' => $this->query('per_page', 6),
             'page' => $this->query('page', 1),
         ]);
     }

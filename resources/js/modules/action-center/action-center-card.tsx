@@ -2,19 +2,19 @@ import { Link } from '@inertiajs/react';
 
 import { ShowcaseBadge } from '@/components/data-table';
 import { useTranslator } from '@/lib/i18n';
-import { currency, humanDate } from '@/lib/utils';
 
-import { ActionCenterWorkOrderContext } from './action-center-work-order-context';
+import { ActionCenterCardContext } from './action-center-card-context';
+import { ActionCenterCardFacts } from './action-center-card-facts';
 import type { ActionCenterItem } from './types';
 
-export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
-    const { locale, t } = useTranslator();
-    const asset = localized(item.asset?.title_en, item.asset?.title_ar, locale);
-    const portfolio = localized(
-        item.portfolio?.name_en,
-        item.portfolio?.name_ar,
-        locale,
-    );
+export function ActionCenterCard({
+    item,
+    showPortfolio,
+}: {
+    item: ActionCenterItem;
+    showPortfolio: boolean;
+}) {
+    const { t } = useTranslator();
 
     return (
         <article
@@ -33,6 +33,11 @@ export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
                     <span className={`pmc-action-priority is-${item.priority}`}>
                         {t(`action_center.priority_${item.priority}`)}
                     </span>
+                    <span
+                        className={`pmc-action-due-state is-${item.due_state}`}
+                    >
+                        {t(`action_center.due_state_${item.due_state}`)}
+                    </span>
                     {item.is_showcase ? (
                         <ShowcaseBadge label={t('showcase.badge')} />
                     ) : null}
@@ -43,67 +48,11 @@ export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
                 {item.subtitle ? <p>{item.subtitle}</p> : null}
             </header>
 
-            <dl className="pmc-action-card-context">
-                {item.tenant ? (
-                    <ContextValue
-                        icon="bi-person"
-                        label={t('action_center.tenant')}
-                        value={item.tenant}
-                    />
-                ) : null}
-                {asset ? (
-                    <ContextValue
-                        icon="bi-building"
-                        label={t('action_center.asset')}
-                        value={[asset, item.asset?.code]
-                            .filter(Boolean)
-                            .join(' · ')}
-                    />
-                ) : null}
-                {portfolio ? (
-                    <ContextValue
-                        icon="bi-buildings"
-                        label={t('action_center.portfolio')}
-                        value={portfolio}
-                    />
-                ) : null}
-                {item.work_order ? (
-                    <ActionCenterWorkOrderContext workOrder={item.work_order} />
-                ) : null}
-            </dl>
-
-            <div className="pmc-action-card-timing">
-                <div>
-                    <span>{t('action_center.due')}</span>
-                    <strong>
-                        {item.due_on
-                            ? humanDate(item.due_on, locale)
-                            : t('action_center.no_due_date')}
-                    </strong>
-                </div>
-                <span className={`is-${item.due_state}`}>
-                    {t(`action_center.due_state_${item.due_state}`)}
-                </span>
-            </div>
-
-            <div className="pmc-action-card-state">
-                <div>
-                    <span>{t('action_center.status')}</span>
-                    <strong>{t(`action_center.status_${item.status}`)}</strong>
-                </div>
-                {item.amount !== null && item.amount !== undefined ? (
-                    <div>
-                        <span>{t('action_center.amount')}</span>
-                        <strong>
-                            {currency(
-                                item.amount,
-                                locale,
-                                item.currency ?? 'SAR',
-                            )}
-                        </strong>
-                    </div>
-                ) : null}
-            </div>
+            <ActionCenterCardContext
+                item={item}
+                showPortfolio={showPortfolio}
+            />
+            <ActionCenterCardFacts item={item} />
 
             <footer className="pmc-action-card-footer">
                 <div
@@ -137,36 +86,6 @@ export function ActionCenterCard({ item }: { item: ActionCenterItem }) {
             </footer>
         </article>
     );
-}
-
-function ContextValue({
-    icon,
-    label,
-    value,
-}: {
-    icon: string;
-    label: string;
-    value: string;
-}) {
-    return (
-        <div>
-            <dt>
-                <i className={`bi ${icon}`} aria-hidden="true" />
-                {label}
-            </dt>
-            <dd>{value}</dd>
-        </div>
-    );
-}
-
-function localized(
-    english: string | null | undefined,
-    arabic: string | null | undefined,
-    locale: string,
-): string | null {
-    return locale === 'ar'
-        ? arabic || english || null
-        : english || arabic || null;
 }
 
 function typeIcon(type: ActionCenterItem['type']): string {

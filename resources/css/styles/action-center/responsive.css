@@ -64,9 +64,10 @@
     }
 
     .pmc-action-center .pmc-metric-card {
-        min-height: 7.2rem;
+        min-height: 6.35rem;
         display: grid;
         grid-template-columns: auto minmax(0, 1fr);
+        padding: 0.7rem;
     }
 
     .pmc-action-center .pmc-metric-card > strong {
@@ -123,11 +124,19 @@
     }
 
     .pmc-action-card {
-        padding: 0.85rem;
+        padding: 0.78rem;
     }
 
     .pmc-action-card-context > div {
-        grid-template-columns: 5.5rem minmax(0, 1fr);
+        grid-template-columns: 5rem minmax(0, 1fr);
+    }
+
+    .pmc-action-card-facts {
+        padding: 0.58rem;
+    }
+
+    .pmc-action-card-facts > div {
+        padding-inline: 0.45rem;
     }
 
     .pmc-action-open {

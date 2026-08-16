@@ -111,6 +111,8 @@ final class ActionCenterWorkspaceTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/action-center/index')
                 ->where('actionItems.total', 4)
+                ->where('actionItems.per_page', 6)
+                ->where('filters.per_page', 6)
                 ->where('metrics.total', 4)
                 ->where('metrics.critical', 3)
                 ->where('metrics.high', 1)

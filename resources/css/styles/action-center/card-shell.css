@@ -16,8 +16,8 @@
     display: grid;
     min-width: 0;
     height: 100%;
-    gap: 0.8rem;
-    padding: 0.9rem;
+    gap: 0.65rem;
+    padding: 0.8rem;
     overflow: hidden;
     border: 1px solid var(--pmc-line);
     border-radius: var(--pmc-radius);
