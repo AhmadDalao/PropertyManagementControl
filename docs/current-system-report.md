@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
-**Report date:** August 12, 2026
-**Application build revision:** `d8e5dbe7cfc6a4d85a4ca22ee4d27d3a910cf374`
+**Report date:** August 16, 2026
+**Application build revision verified in production:** `c60e1f632a4ac5efd9940398279121900fec5d0f`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -11,7 +11,7 @@ The repository contains a broad, working property-operations platform rather tha
 
 The application code is healthy. The release reran the complete PHP suite: **653 tests and 38,511 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
 
-The verified release is deployed to Hostinger and matches GitHub. The live site responds successfully at `/up`, `/system/settings` is active, a pre-migration backup completed, and authenticated EN/AR dashboard, reports, CMS, PDF, and XLSX smoke checks passed. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The verified maintenance release is deployed to Hostinger and its Vite manifest hash matches the local build. The live site responds successfully at `/up`; authenticated EN/AR maintenance index, guided create form, tabbed detail, and triage pages pass at mobile width. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -26,6 +26,7 @@ The verified release is deployed to Hostinger and matches GitHub. The live site 
 | Scheduler/queue | Blocked in production | Code is ready, but no three-heartbeat production evidence exists. |
 | Real portfolio data | Not started | Production has showcase data but no approved live portfolio import. |
 | Legal/compliance approval | Owner action required | Lease wording, billing rules, retention, and opening balances need business/legal sign-off. |
+| Production migration | Pending operator command | Run the uploaded August 16 category-normalization migration through Hostinger PHP 8.4; it changes data values only, not schema. |
 | Latest deployment | Current | GitHub and Hostinger run the verified release; the production manifest matches the local build. |
 
 ## 2. Audit Scope And Method

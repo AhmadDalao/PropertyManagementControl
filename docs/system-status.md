@@ -1,15 +1,16 @@
 # Property Control System Status
 
-Updated: August 10, 2026
+Updated: August 16, 2026
 
 ## Current position
 
 The application is an operational MVP release candidate. Core property, tenant, lease, payment, maintenance, document, reporting, CMS, localization, map, permission, and audit workflows are implemented. The remaining launch work is operational configuration and business approval, not another UI rewrite.
 
-## August 10 activation checkpoint
+## August 16 activation checkpoint
 
 - Local release gates pass for the current release candidate: 653 PHP tests with 38,511 assertions, zero PHPStan errors against the accepted baseline, 70 Playwright/axe scenarios, PHP syntax, Pint, TypeScript, ESLint, Prettier, migrations, route discovery, and the Vite production build.
-- The authenticated production smoke cycle passes public EN/AR pages, login, dashboard, operational modules, Launch Readiness, Opening Data, maintenance closeout PDF/DOCX, tenant statements, private PDF downloads, and genuine XLSX exports. `/up` returns HTTP 200 and production still reports the same deployed revision.
+- The authenticated production smoke cycle passes the EN/AR maintenance queue, guided request form, tabbed case detail, and triage workspace at mobile width without horizontal overflow. `/up` returns HTTP 200, and the production Vite manifest SHA-256 matches the verified local build.
+- The August 16 category-normalization migration is uploaded but awaits `php artisan migrate --force` through Hostinger PHP 8.4. It is data-only; legacy translation aliases keep existing electrical, HVAC, and appliance records readable until the command runs.
 - Production Launch Readiness is 9 of 12 ready. Mail remains blocked because the live mailer is `log`; the scheduler remains blocked because no heartbeat exists. Queue health is clean with zero pending and zero failed jobs.
 - Production contains 12 showcase portfolios and zero live portfolios. Real onboarding and the 30-day four-role pilot are intentionally not started without an approved opening-data workbook and named real participants.
 - Backup #4 remains available, seven days old, and backed by the isolated restore drill recorded on August 2. It was downloaded from production again on August 10 into permission-restricted off-server storage; the outer archive and both inner stream hashes matched the recorded manifest. A fresh queued backup must wait until the recurring scheduler is active.
@@ -100,7 +101,7 @@ The application is an operational MVP release candidate. Core property, tenant, 
 - The database stream matched its manifest SHA-256 and restored into an isolated disposable MySQL database with exactly 45 tables and 61,559 rows. All migrations were applied, five relationship-orphan checks returned zero, and the database was removed after validation.
 - The private-document stream matched its manifest SHA-256. It contained exactly 1,955 files, zero unsafe traversal paths, and zero archive links.
 - On August 10, Backup #4 was downloaded from production again to `/Users/ahmaddalao/Documents/PropertyControlBackups` with owner-only file permissions. Its 36,381,655-byte outer checksum and both embedded stream checksums matched the August 2 manifest exactly.
-- Backup #4 identifies release `a55406b`; the later releases through production revision `fe9d109` changed presentation and bounded shared-hosting query behavior without adding migrations. The restored database reported every current migration as applied.
+- Backup #4 identifies release `a55406b`; later releases through the August 16 maintenance rebuild changed presentation and bounded shared-hosting query behavior. The restored database was current through the August 10 migration set; the uploaded August 16 data-only category normalization remains pending on production.
 - The verified database backup, document backup, and restore drill were recorded in production Launch Readiness by the superadmin. The August 10 live audit remains 9 of 12 checks ready, with SMTP evidence needing attention and the mail and scheduler checks blocked.
 
 ## Required before real tenant onboarding
