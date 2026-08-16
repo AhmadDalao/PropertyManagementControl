@@ -1,6 +1,6 @@
 # MVP Readiness Audit
 
-Updated: August 10, 2026
+Updated: August 17, 2026
 
 ## Decision
 
@@ -8,8 +8,8 @@ The product is an operational MVP release candidate. It does not need another br
 
 ## Production activation evidence
 
-- Revision `fe9d109802b33d253ff7b46c18fe860c2b80a499` passes 636 PHP tests with 36,709 assertions, zero PHPStan errors against the accepted baseline, and all 68 Playwright/axe scenarios.
-- The August 10 superadmin production smoke cycle passes `/up`, EN/AR public and admin routes, scoped private PDF downloads, maintenance service-report PDF/DOCX, and real XLSX exports. Four-role behavior remains covered locally until named real pilot participants exist.
+- Revision `169a24f0e3d2aab94b4c71b3f829e7bd7a53a4f6` passes 657 PHP tests with 38,887 assertions, zero PHPStan errors against the accepted baseline, and all 70 Playwright/axe scenarios.
+- The August 17 superadmin production smoke cycle passes `/up`, EN/AR public pages, login, mobile Arabic RTL, global property scoping, keyboard dashboard workspaces, single-panel rendering, and horizontal-overflow checks. Scoped private PDF, maintenance service-report PDF/DOCX, and real XLSX behavior remain covered by the release baseline. Four-role behavior remains covered locally until named real pilot participants exist.
 - Launch Readiness remains 9 of 12: production safety, PHP, queue, storage, document sampling, backup availability, offsite backup evidence, and restore evidence are ready; SMTP configuration and scheduler cadence are blocked; SMTP receipt evidence remains unconfirmed.
 - Backup #4 was downloaded from production again on August 10 to permission-restricted off-server storage. Its outer checksum, database-stream checksum, private-document checksum, byte size, and three-file archive structure all match the recorded manifest.
 - Production has zero live portfolios and 12 showcase portfolios. The first real import and 30-day pilot cannot start until an approved opening workbook, legal/billing/retention decisions, and named owner, manager, and tenant participants are supplied.
