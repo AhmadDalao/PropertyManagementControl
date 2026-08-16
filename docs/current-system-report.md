@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `169a24f0e3d2aab94b4c71b3f829e7bd7a53a4f6`
+**Application build revision verified in production:** `27f3db2c04b54b41d7eded958e2d43ef355e050f`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,887 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,916 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
-The focused-dashboard release is deployed to Hostinger and its Vite manifest SHA-256, `213553761686633baada3b4b9e66f28808a9fd903e2b9a5de2789482c6c855a4`, matches the local build. The live site responds successfully at `/up`; authenticated mobile smoke checks pass for login, global property scope, Arabic RTL, keyboard workspace navigation, one-panel rendering, and horizontal overflow. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The focused Action Center release is deployed to Hostinger and its Vite manifest SHA-256, `e9e9e39e83942ce20ecb81eeb854447e5e67a4fa4d9e1a17b1bc82eaf42bfb70`, matches the local build. The live site responds successfully at `/up`; authenticated mobile smoke checks pass for login, property scope, the six-record decision queue, work-type-specific English/Arabic headings, responsive filters, pagination, direct actions, and horizontal overflow. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -894,7 +894,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 657 passed, 38,887 assertions |
+| Fresh PHPUnit run | 657 passed, 38,916 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 70 scenarios |
@@ -1159,4 +1159,4 @@ The August 2026 design archives are now the active layout contract rather than a
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, and tenant modules under `resources/css/styles/`. The shared production CSS bundle is 320.22KB, below the 325KB release ceiling; the dashboard is a 28.91KB lazy CSS chunk and the dedicated maintenance workspace is an 8.49KB lazy CSS chunk. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center, its desktop and mobile workspaces share keyboard-accessible tabs, the global property picker is available from the expanded sidebar and mobile drawer, and mobile KPI cards use a readable two-column grid. All 70 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
+The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, and tenant modules under `resources/css/styles/`. The shared production CSS bundle is 320.21KB, below the 325KB release ceiling; the dashboard is a 28.90KB lazy CSS chunk and Action Center is a 10.72KB lazy CSS chunk. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center, while Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. All 70 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
