@@ -72,35 +72,49 @@ final class DocumentAccess
             return $query->whereRaw('1 = 0');
         }
 
-        return $query
-            ->where('is_public', true)
-            ->where(function (Builder $documents) use ($actor): void {
-                $documents
-                    ->where(function (Builder $leaseDocuments) use ($actor): void {
-                        $leaseDocuments
-                            ->whereIn('documentable_type', $this->attachments->typesFor('lease'))
-                            ->whereIn('type', DocumentOptions::portalTypes('lease'))
-                            ->whereIn('documentable_id', Lease::query()
-                                ->select('id')
-                                ->whereColumn('leases.portfolio_id', 'documents.portfolio_id')
-                                ->whereHas(
-                                    'tenantProfile',
-                                    fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
-                                ));
-                    })
-                    ->orWhere(function (Builder $paymentDocuments) use ($actor): void {
-                        $paymentDocuments
-                            ->whereIn('documentable_type', $this->attachments->typesFor('payment'))
-                            ->whereIn('type', DocumentOptions::portalTypes('payment'))
-                            ->whereIn('documentable_id', Payment::query()
-                                ->select('id')
-                                ->whereColumn('payments.portfolio_id', 'documents.portfolio_id')
-                                ->whereHas(
-                                    'tenantProfile',
-                                    fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
-                                ));
-                    });
-            });
+        $ownPayments = Payment::query()
+            ->select('id')
+            ->whereColumn('payments.portfolio_id', 'documents.portfolio_id')
+            ->whereHas(
+                'tenantProfile',
+                fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
+            );
+
+        return $query->where(function (Builder $visible) use ($actor, $ownPayments): void {
+            $visible
+                ->where(function (Builder $portalDocuments) use ($actor, $ownPayments): void {
+                    $portalDocuments
+                        ->where('is_public', true)
+                        ->where(function (Builder $documents) use ($actor, $ownPayments): void {
+                            $documents
+                                ->where(function (Builder $leaseDocuments) use ($actor): void {
+                                    $leaseDocuments
+                                        ->whereIn('documentable_type', $this->attachments->typesFor('lease'))
+                                        ->whereIn('type', DocumentOptions::portalTypes('lease'))
+                                        ->whereIn('documentable_id', Lease::query()
+                                            ->select('id')
+                                            ->whereColumn('leases.portfolio_id', 'documents.portfolio_id')
+                                            ->whereHas(
+                                                'tenantProfile',
+                                                fn (Builder $tenants) => $tenants->where('user_id', $actor->id),
+                                            ));
+                                })
+                                ->orWhere(function (Builder $paymentDocuments) use ($ownPayments): void {
+                                    $paymentDocuments
+                                        ->whereIn('documentable_type', $this->attachments->typesFor('payment'))
+                                        ->whereIn('type', DocumentOptions::portalTypes('payment'))
+                                        ->whereIn('documentable_id', $ownPayments);
+                                });
+                        });
+                })
+                ->orWhere(function (Builder $proofs) use ($actor, $ownPayments): void {
+                    $proofs
+                        ->where('type', 'payment_proof')
+                        ->where('uploaded_by_user_id', $actor->id)
+                        ->whereIn('documentable_type', $this->attachments->typesFor('payment'))
+                        ->whereIn('documentable_id', $ownPayments);
+                });
+        });
     }
 
     public function ensureCanDownload(User $actor, Document $document): void
@@ -118,13 +132,26 @@ final class DocumentAccess
             return $this->canManage($actor, $document);
         }
 
-        if (! $actor->hasRole('tenant') || ! $document->is_public) {
+        if (! $actor->hasRole('tenant')) {
             return false;
         }
 
         $attachment = $this->attachments->aliasForDocument($document);
 
-        if ($attachment === null || ! DocumentOptions::canShowInPortal($attachment, $document->type)) {
+        if ($attachment === 'payment'
+            && DocumentOptions::isPaymentProof($document->type)
+            && (int) $document->uploaded_by_user_id === (int) $actor->id) {
+            $document->loadMissing('documentable');
+            $payment = $document->documentable;
+
+            return $payment instanceof Payment
+                && $payment->portfolio_id === $document->portfolio_id
+                && $payment->tenantProfile()->where('user_id', $actor->id)->exists();
+        }
+
+        if (! $document->is_public
+            || $attachment === null
+            || ! DocumentOptions::canShowInPortal($attachment, $document->type)) {
             return false;
         }
 

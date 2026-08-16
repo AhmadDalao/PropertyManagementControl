@@ -124,9 +124,11 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($createRoutes as $routeName) {
-            $component = $routeName === 'maintenance-requests.create'
-                ? 'admin/maintenance/create'
-                : 'admin/resource-form';
+            $component = match ($routeName) {
+                'maintenance-requests.create' => 'admin/maintenance/create',
+                'payments.create' => 'admin/payments/form',
+                default => 'admin/resource-form',
+            };
 
             $this->actingAs($owner)
                 ->get(route($routeName))
@@ -149,9 +151,11 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($detailRoutes as [$routeName, $model]) {
-            $component = $routeName === 'maintenance-requests.show'
-                ? 'admin/maintenance/show'
-                : 'admin/resource-show';
+            $component = match ($routeName) {
+                'maintenance-requests.show' => 'admin/maintenance/show',
+                'payments.show' => 'admin/payments/show',
+                default => 'admin/resource-show',
+            };
 
             $this->actingAs($owner)
                 ->get(route($routeName, $model))
@@ -191,9 +195,11 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($editRoutes as [$routeName, $model]) {
-            $component = $routeName === 'maintenance-requests.edit'
-                ? 'admin/maintenance/triage'
-                : 'admin/resource-form';
+            $component = match ($routeName) {
+                'maintenance-requests.edit' => 'admin/maintenance/triage',
+                'payments.edit' => 'admin/payments/form',
+                default => 'admin/resource-form',
+            };
 
             $this->actingAs($owner)
                 ->get(route($routeName, $model))

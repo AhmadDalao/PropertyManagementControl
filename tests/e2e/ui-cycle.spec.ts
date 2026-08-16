@@ -1835,11 +1835,35 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('غير الموزع', { exact: true }).first(),
         ).toBeVisible();
+        const localizedAmount = page
+            .locator('.pmc-payment-detail-metrics strong')
+            .first();
+        await expect(localizedAmount).toContainText(/[٠-٩]/);
+        await expect(localizedAmount).not.toContainText('SAR');
+        const receivedDate = page
+            .locator('.pmc-resource-detail-card dl > div')
+            .filter({ hasText: 'تاريخ الاستلام' })
+            .locator('dd');
+        await expect(receivedDate).toContainText(/[٠-٩]/);
+        await expect(receivedDate).not.toContainText(/\d{4}-\d{2}-\d{2}/);
         await expect(
-            page.getByRole('option', { name: 'البيانات المالية' }),
-        ).toHaveCount(0);
+            page.getByRole('tab', { name: 'نظرة عامة' }),
+        ).toHaveAttribute('aria-selected', 'true');
         await expect(
             page.getByText('سجل الدفعة', { exact: true }),
+        ).toBeVisible();
+        const evidenceTab = page.getByRole('tab', { name: /الإثباتات/ });
+        await expect(evidenceTab).toBeVisible();
+        await evidenceTab.click();
+        await expect(page).toHaveURL(/tab=evidence/);
+        await expect(
+            page.getByRole('heading', {
+                name: 'إثبات الدفعة',
+                exact: true,
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'إيصال النظام' }),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
@@ -1851,6 +1875,9 @@ test.describe('authenticated administration', () => {
         await expect(page.getByLabel(/^العقد/)).toBeVisible();
         await expect(page.getByLabel(/^طريقة الدفع/)).toBeVisible();
         await expect(page.getByLabel(/^المبلغ/)).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'قائمة تحقق الدفعة' }),
+        ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
 
@@ -3890,6 +3917,30 @@ test.describe('local role dashboards', () => {
         }
 
         await page.setViewportSize(viewports.mobile);
+        await page.goto('/my-payments?locale=en');
+        const paymentLinks = page.locator(
+            '.pmc-portal-records a[href^="/payments/"]',
+        );
+        expect(await paymentLinks.count()).toBeGreaterThan(0);
+        await paymentLinks.first().click();
+        const tenantEvidenceTab = page.getByRole('tab', { name: /Evidence/ });
+        await expect(tenantEvidenceTab).toBeVisible();
+        await tenantEvidenceTab.click();
+        await expect(page).toHaveURL(/tab=evidence/);
+        await expect(
+            page.getByRole('heading', { name: 'Upload payment proof' }),
+        ).toBeVisible();
+        await expect(page.getByLabel(/Payment proof PDF/)).toHaveAttribute(
+            'accept',
+            'application/pdf,.pdf',
+        );
+        await expect(
+            page.getByRole('button', { name: 'Submit proof for review' }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('button', { name: 'Accept proof' }),
+        ).toHaveCount(0);
+        await expectNoHorizontalOverflow(page);
 
         for (const [path, heading] of [
             ['/my-lease?locale=ar', 'عقدي'],

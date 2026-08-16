@@ -272,6 +272,9 @@
 .bi-file-earmark-pdf::before {
     content: '\f63e';
 }
+.bi-file-earmark-arrow-up::before {
+    content: '\f358';
+}
 .bi-file-earmark-spreadsheet::before {
     content: '\f389';
 }
@@ -496,6 +499,9 @@
 }
 .bi-type::before {
     content: '\f5f7';
+}
+.bi-upload::before {
+    content: '\f603';
 }
 .bi-view-list::before {
     content: '\f605';

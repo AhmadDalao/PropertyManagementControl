@@ -45,7 +45,7 @@ final class DocumentFormDataQuery
             ? (string) $defaults['documentable_type']
             : 'lease';
         $attachmentId = $this->id($defaults['documentable_id'] ?? null);
-        $type = in_array($defaults['type'] ?? null, DocumentOptions::TYPES, true)
+        $type = in_array($defaults['type'] ?? null, DocumentOptions::UPLOAD_TYPES, true)
             ? (string) $defaults['type']
             : 'signed_contract';
         $attachment = null;

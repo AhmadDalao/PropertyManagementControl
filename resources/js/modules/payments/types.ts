@@ -1,4 +1,14 @@
 import type {
+    DetailItem,
+    DetailSection,
+    RelatedTable,
+    ResourceDocument,
+    ResourceFormShellProps,
+    ResourceHeaderProps,
+    ResourceTimelineEntry,
+    ResourceWorkflow,
+} from '@/components/resource-cycle';
+import type {
     PaginatedData,
     SharedProps,
     TableCount,
@@ -57,4 +67,46 @@ export type PaymentIndexPageProps = SharedProps & {
     statusOptions: string[];
     typeOptions: string[];
     methodOptions: string[];
+};
+
+export type PaymentProof = {
+    id: number;
+    title: string;
+    original_name: string;
+    file_size: number;
+    status: 'pending' | 'accepted' | 'rejected' | 'superseded';
+    status_label: string;
+    submission_note?: string | null;
+    review_note?: string | null;
+    submitted_by?: string | null;
+    submitted_at?: string | null;
+    reviewed_at?: string | null;
+    download_url: string;
+    review_url?: string | null;
+};
+
+export type PaymentEvidence = {
+    can_submit: boolean;
+    upload_url: string;
+    receipt_url?: string | null;
+    proofs: PaymentProof[];
+};
+
+export type PaymentDetail = {
+    header: ResourceHeaderProps;
+    workflow: ResourceWorkflow;
+    stats: DetailItem[];
+    sections: DetailSection[];
+    related: RelatedTable[];
+    documents: ResourceDocument[];
+    evidence: PaymentEvidence;
+    timeline: ResourceTimelineEntry[];
+};
+
+export type PaymentDetailPageProps = SharedProps & {
+    detailPage: PaymentDetail;
+};
+
+export type PaymentFormPageProps = SharedProps & {
+    formPage: ResourceFormShellProps;
 };

@@ -3,6 +3,7 @@
 namespace App\Modules\Payments\Presenters;
 
 use App\Modules\Payments\Data\PaymentDetailData;
+use App\Modules\Payments\Support\PaymentDisplayFormatter;
 use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
@@ -12,6 +13,7 @@ final class PaymentDetailOverviewPresenter
     public function __construct(
         private readonly ResourcePresenter $resources,
         private readonly UserAccess $userAccess,
+        private readonly PaymentDisplayFormatter $format,
     ) {}
 
     /** @return array<int, array<string, mixed>> */
@@ -22,9 +24,9 @@ final class PaymentDetailOverviewPresenter
         $amount = (float) $payment->amount;
 
         return $this->resources->detailItems([
-            ['label' => trans('app.payments.amount'), 'value' => $this->money($amount, $payment->currency), 'tone' => 'primary'],
-            ['label' => trans('app.payments.allocated'), 'value' => $this->money($allocated, $payment->currency), 'tone' => 'teal'],
-            ['label' => trans('app.payments.unallocated'), 'value' => $this->money(max(0, $amount - $allocated), $payment->currency)],
+            ['label' => trans('app.payments.amount'), 'value' => $this->format->money($amount, $payment->currency), 'tone' => 'primary'],
+            ['label' => trans('app.payments.allocated'), 'value' => $this->format->money($allocated, $payment->currency), 'tone' => 'teal'],
+            ['label' => trans('app.payments.unallocated'), 'value' => $this->format->money(max(0, $amount - $allocated), $payment->currency)],
             ['label' => trans('app.payments.status'), 'value' => trans("app.status.{$payment->status}"), 'tone' => $payment->status === 'void' ? 'danger' : 'teal'],
         ]);
     }
@@ -88,14 +90,9 @@ final class PaymentDetailOverviewPresenter
                         ? $this->userAccess->recordHref($data->actor, $payment->recordedBy)
                         : null,
                 ],
-                ['label' => trans('app.payments.received_on'), 'value' => $payment->received_on?->toDateString()],
+                ['label' => trans('app.payments.received_on'), 'value' => $this->format->date($payment->received_on)],
                 ['label' => trans('app.payments.notes'), 'value' => $data->adminMode ? $payment->notes : null],
             ]),
         ]];
-    }
-
-    private function money(float $amount, ?string $currency): string
-    {
-        return number_format($amount, 2).' '.($currency ?: 'SAR');
     }
 }

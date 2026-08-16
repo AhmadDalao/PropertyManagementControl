@@ -9,7 +9,7 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **653 tests and 38,511 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, and touched-module PHPStan checks.
+The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,865 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
 The verified maintenance release is deployed to Hostinger and its Vite manifest hash matches the local build. The live site responds successfully at `/up`; authenticated EN/AR maintenance index, guided create form, tabbed detail, and triage pages pass at mobile width. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
@@ -114,12 +114,12 @@ There is no generic `admin` role. The real roles are `superadmin`, `owner`, `pro
 | Assets/property hierarchy | All | Own portfolio | Assigned roots and descendants | No |
 | Tenant profiles | All | Own portfolio | Assigned-property tenants | Own profile through portal only |
 | Leases | All | Own portfolio | Assigned-property leases | View own leases only |
-| Payments | All | Own portfolio | Assigned-property payments | View own posted payments/receipts |
+| Payments | All | Own portfolio | Assigned-property payments | View own payments/receipts and submit private PDF proof |
 | Rent follow-up | All | Own portfolio | Assigned-property installments | No |
 | Maintenance | All | Own portfolio | Assigned-property requests | Create/view/comment on own requests |
 | Vendors/work orders | All | Own portfolio | Assigned-property requests | No |
 | Expenses | All | Own portfolio | Assigned-property expenses | No |
-| Documents | All | Own portfolio | Assigned records | Public portal-safe own lease/payment PDFs only |
+| Documents | All | Own portfolio | Assigned records | Portal-safe own records plus own private payment proofs |
 | Reports | Global | Own portfolio | Assigned properties | Own lease/payment views only |
 | CMS/public website | Yes | No | No | No |
 | Wording overrides | Yes | No | No | No |
@@ -220,8 +220,8 @@ Access abbreviations: **SA** superadmin, **O** owner, **M** property manager, **
 | `/notifications` | Operational notification inbox | SA/O/M/T |
 | `/dashboard` | Role-specific command center | SA/O/M/T |
 | `/my-lease` | Tenant-owned lease selector, contract summary, installment schedule, and authorized contract/statement downloads | T |
-| `/my-payments` | Tenant-owned manual-payment history, balances, filters, pagination, and posted receipts | T |
-| `/my-documents` | Tenant-safe lease, receipt, and statement document library | T |
+| `/my-payments` | Tenant-owned manual-payment history, balances, filters, pagination, posted receipts, and payment-detail evidence entry | T |
+| `/my-documents` | Tenant-safe lease, receipt, statement, and tenant-submitted payment-proof library | T |
 | `/documentation` | Searchable guide library | SA/O/M/T |
 | `/documentation/{guide}` | Individual bilingual guide | Role/module filtered |
 
@@ -283,8 +283,10 @@ Access abbreviations: **SA** superadmin, **O** owner, **M** property manager, **
 | `/rent-collection/{installment}/follow-up` | Append-only contact and promise history | SA/O/M scoped |
 | `/payments` | Payment register | SA/O/M |
 | `/payments/create` | Post manual payment | SA/O/M scoped |
-| `/payments/{payment}` | Receipt, allocation, tenant/lease, audit | SA/O/M scoped; T own payment |
+| `/payments/{payment}` | Overview, allocation, payment proof, receipt, documents, and audit | SA/O/M scoped; T own payment |
 | `/payments/{payment}/edit` | Edit mutable payment fields/status | SA/O/M scoped |
+| `/payments/{payment}/proof` | Submit one private PDF payment proof without posting money | T own non-void payment |
+| `/payments/{payment}/proof/{document}/review` | Accept or reject a pending proof with an optional/required review note | SA/O/M scoped reviewer |
 
 ### Maintenance and expenses
 
@@ -571,12 +573,12 @@ Follow-ups are append-only. Derived states include untracked, due, promised, bro
 
 **List columns:** payment reference/type/method/status; tenant/lease/asset; received date; amount/currency; allocation and unallocated balance; actions.  
 **Filters:** status, type, method, received dates, portfolio, property, search, pagination, sort.  
-**Detail:** receipt priority, payment identity, tenant/lease/property, amount/method/reference/date, allocation rows, related documents, workflow, audit history.  
-**Actions:** create, edit pending data, download PDF receipt for posted payment, void/reverse.
+**Detail:** focused Overview, Allocations, Evidence, and History tabs; receipt priority; payment identity; tenant/lease/property; amount/method/reference/date; allocation rows; private proof history; related documents; workflow; audit history.
+**Actions:** create, edit pending data, download PDF receipt for posted payment, void/reverse; tenant submits/replaces a genuine PDF proof; scoped owner/manager accepts or rejects pending proof.
 
 **Fields/rules:** required lease; type rent/deposit/fee; method bank transfer/cash/card; status posted/pending; optional unique reference; required received date; amount 0.01..999,999,999,999.99 with two decimals; optional notes max 5,000. Currency, portfolio, and tenant derive from the lease.
 
-**Workflow:** pending -> posted or void; posted -> void; void is terminal. Allocation and reversal use transactions and row locks. Posted money is allocated to open installments in sequence.
+**Workflow:** pending -> posted or void; posted -> void; void is terminal. Allocation and reversal use transactions and row locks. Posted money is allocated to open installments in sequence. Payment proof is a separate private document state machine: pending -> accepted or rejected, with rejected/pending evidence superseded by a tenant replacement. Proof review never changes payment status or allocations, and an accepted proof blocks duplicate submission.
 
 ### 9.8 Expenses
 
@@ -990,8 +992,10 @@ This section is the operator-facing page catalog. Field-level form rules remain 
 | `/rent-collection/{installment}/follow-up` · `rent-collection.follow-up` | Append-only collection case. | Balance snapshot, contact timeline, promise state, assignee and next action. | Record contact/outcome/promise/next follow-up. | SA/O/M scoped. |
 | `/payments` · `payments.index` | Payment register. | Reference/type/method/status, tenant/lease/property, received date, amount, allocation, filters, XLSX. | Open, create, edit pending data, receipt, void. | SA/O/M scoped. |
 | `/payments/create` · `payments.create` | Post or stage manual payment. | Lease, type, method, status, reference, date, amount, notes; identity/currency derive from lease. | Save/cancel. | SA/O/M scoped. |
-| `/payments/{payment}` · `payments.show` | Payment source of truth. | Receipt priority, identity, parties/property, amount/method/date, allocations, documents, workflow, history. | Receipt PDF for posted payment, edit, void/reverse. | SA/O/M scoped; T own posted payment. |
+| `/payments/{payment}` · `payments.show` | Payment source of truth. | Overview, allocations, evidence, and history; receipt priority; identity; parties/property; amount/method/date; proof status; documents; workflow. | Receipt PDF for posted payment, edit, void/reverse; tenant proof submission; scoped proof review. | SA/O/M scoped; T own payment with internal data removed. |
 | `/payments/{payment}/edit` · `payments.edit` | Edit mutable payment data. | Transition-safe status and permitted metadata. | Update/cancel. | SA/O/M scoped. |
+| `/payments/{payment}/proof` · `payments.proof.store` | Tenant payment evidence intake. | Genuine PDF, optional submission note, private storage, pending-review status. | Submit or replace rejected evidence; no payment posting. | T own non-void payment only. |
+| `/payments/{payment}/proof/{document}/review` · `payments.proof.review` | Payment evidence decision. | Pending proof, submitter, file metadata, prior review context. | Accept or reject; rejection requires a note. | SA/O/M within portfolio and assigned-property scope. |
 
 ### 19.6 Expenses, maintenance, work orders, contractors, documents, and media
 

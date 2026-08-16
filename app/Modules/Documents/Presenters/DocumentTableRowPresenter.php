@@ -35,6 +35,9 @@ final class DocumentTableRowPresenter
             'expiry_status' => $this->expiry->code($document->expires_on),
             'expiry_days' => $this->expiry->daysRemaining($document->expires_on),
             'created_at' => $document->created_at?->toDateTimeString(),
+            'review_status' => $document->type === 'payment_proof'
+                ? data_get($document->meta_json, 'review_status', 'pending')
+                : null,
             'download_url' => route('documents.download', $document),
             'attachment' => $attachment ?? [
                 'type' => $this->attachments->aliasForDocument($document) ?? 'record',

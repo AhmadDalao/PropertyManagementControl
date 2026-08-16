@@ -31,4 +31,30 @@ final class DocumentInputGuard
             attributes: DocumentRules::attributes(),
         )->validate();
     }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function validatePaymentProof(array $data): array
+    {
+        return Validator::make(
+            $data,
+            DocumentRules::paymentProof(),
+            attributes: DocumentRules::attributes(),
+        )->validate();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function validatePaymentProofReview(array $data): array
+    {
+        return Validator::make(
+            $data,
+            DocumentRules::paymentProofReview(),
+            attributes: DocumentRules::attributes(),
+        )->validate();
+    }
 }

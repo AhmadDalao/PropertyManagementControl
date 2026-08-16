@@ -13,7 +13,7 @@ final class DocumentRules
         return [
             'documentable_type' => ['required', 'string', Rule::in(DocumentOptions::ATTACHMENTS)],
             'documentable_id' => ['required', 'integer', 'min:1'],
-            ...self::metadata(),
+            ...self::metadata(DocumentOptions::UPLOAD_TYPES),
             'file' => [
                 'required',
                 'file',
@@ -29,7 +29,38 @@ final class DocumentRules
     /** @return array<string, array<int, mixed>> */
     public static function update(): array
     {
-        return self::metadata();
+        return self::metadata(DocumentOptions::TYPES);
+    }
+
+    /** @return array<string, array<int, mixed>> */
+    public static function paymentProof(): array
+    {
+        return [
+            'proof' => [
+                'required',
+                'file',
+                'extensions:pdf',
+                'mimes:pdf',
+                'mimetypes:application/pdf',
+                'max:10240',
+                new ValidPdf,
+            ],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /** @return array<string, array<int, mixed>> */
+    public static function paymentProofReview(): array
+    {
+        return [
+            'status' => ['required', Rule::in(['accepted', 'rejected'])],
+            'review_note' => [
+                'nullable',
+                'string',
+                'max:1000',
+                'required_if:status,rejected',
+            ],
+        ];
     }
 
     /** @return array<string, string> */
@@ -45,6 +76,9 @@ final class DocumentRules
             'expires_on' => trans('app.documents.expires_on'),
             'is_public' => trans('app.documents.tenant_portal'),
             'file' => trans('app.documents.pdf_file'),
+            'proof' => trans('app.payments.payment_proof_pdf'),
+            'note' => trans('app.payments.submission_note'),
+            'review_note' => trans('app.payments.review_note'),
         ];
     }
 
@@ -67,11 +101,14 @@ final class DocumentRules
         return $data;
     }
 
-    /** @return array<string, array<int, mixed>> */
-    private static function metadata(): array
+    /**
+     * @param  array<int, string>  $types
+     * @return array<string, array<int, mixed>>
+     */
+    private static function metadata(array $types): array
     {
         return [
-            'type' => ['required', 'string', Rule::in(DocumentOptions::TYPES)],
+            'type' => ['required', 'string', Rule::in($types)],
             'title_en' => ['required', 'string', 'max:255'],
             'title_ar' => ['required', 'string', 'max:255'],
             'issued_on' => ['nullable', 'date_format:Y-m-d'],

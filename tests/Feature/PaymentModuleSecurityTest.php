@@ -7,10 +7,12 @@ use App\Models\Payment;
 use App\Models\Portfolio;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Documents\Actions\CreateDocument;
 use App\Modules\Payments\Actions\ManagePayments;
 use App\Modules\Payments\Actions\PaymentAllocator;
 use App\Modules\Portfolios\Support\PortfolioModules;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -284,6 +286,8 @@ class PaymentModuleSecurityTest extends TestCase
         );
         $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id, [
             'status' => 'posted',
+            'received_on' => '2026-05-01',
+            'amount' => 500,
         ]);
         $this->createPaymentDocument(
             $payment,
@@ -550,6 +554,15 @@ class PaymentModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->where('detailPage.sections.0.title', 'سجل الدفعة')
                 ->where('detailPage.sections.0.tab', 'overview')
+                ->where('detailPage.stats.0.value', fn (string $value): bool => str_contains($value, '٥٠٠٫٠٠')
+                    && ! str_contains($value, '500.00 SAR'))
+                ->where('detailPage.sections.0.items', function ($items): bool {
+                    $receivedOn = collect($items)->firstWhere('label', 'تاريخ الاستلام');
+                    $value = (string) data_get($receivedOn, 'value');
+
+                    return str_contains($value, '٢٠٢٦')
+                        && ! str_contains($value, '2026-05-01');
+                })
                 ->where('detailPage.related.0.title', 'التوزيعات'));
     }
 
@@ -688,6 +701,201 @@ class PaymentModuleSecurityTest extends TestCase
         $this->assertNotSame($firstPath, $replacementPath);
         Storage::disk('local')->assertMissing($firstPath);
         Storage::disk('local')->assertExists($replacementPath);
+    }
+
+    public function test_tenant_can_submit_and_download_private_pdf_payment_proof_without_posting_money(): void
+    {
+        Storage::fake('local');
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+
+        $this->actingAs($tenantUser)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => $this->fakePdf('bank-transfer.pdf'),
+                'note' => 'Transfer submitted from the tenant portal.',
+            ])
+            ->assertRedirect(route('payments.show', ['payment' => $payment, 'tab' => 'evidence']))
+            ->assertSessionHas('success');
+
+        $proof = Document::query()->where('type', 'payment_proof')->firstOrFail();
+        $this->assertSame($payment->id, $proof->documentable_id);
+        $this->assertSame($tenantUser->id, $proof->uploaded_by_user_id);
+        $this->assertFalse($proof->is_public);
+        $this->assertSame('pending', data_get($proof->meta_json, 'review_status'));
+        $this->assertSame('pending', $payment->fresh()->status);
+        $this->assertDatabaseCount('payment_allocations', 0);
+        Storage::disk('local')->assertExists($proof->file_path);
+
+        $this->actingAs($tenantUser)
+            ->get(route('documents.download', $proof))
+            ->assertOk()
+            ->assertDownload('bank-transfer.pdf');
+
+        $this->actingAs($tenantUser)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/payments/show')
+                ->where('detailPage.evidence.can_submit', true)
+                ->where('detailPage.evidence.proofs.0.status', 'pending')
+                ->where('detailPage.evidence.proofs.0.review_url', null)
+                ->where('detailPage.evidence.proofs.0.download_url', route('documents.download', $proof)));
+
+        $this->actingAs($tenantUser)
+            ->get(route('tenant-portal.documents'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('documents.total', 1)
+                ->where('documents.data.0.type', 'payment_proof')
+                ->where('documents.data.0.review_status', 'pending'));
+    }
+
+    public function test_manager_can_reject_replacement_and_accept_payment_proof_without_posting_payment(): void
+    {
+        Storage::fake('local');
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+
+        $this->actingAs($tenantUser)->post(route('payments.proof.store', $payment), [
+            'proof' => $this->fakePdf('first-proof.pdf'),
+        ]);
+        $first = Document::query()->where('type', 'payment_proof')->firstOrFail();
+
+        $this->actingAs($owner)
+            ->get(route('payments.show', $payment))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.evidence.proofs.0.review_url', route('payments.proof.review', [$payment, $first])));
+
+        $this->actingAs($owner)
+            ->put(route('payments.proof.review', [$payment, $first]), [
+                'status' => 'rejected',
+            ])
+            ->assertSessionHasErrors('review_note');
+        $this->assertSame('pending', data_get($first->fresh()->meta_json, 'review_status'));
+
+        $this->actingAs($owner)
+            ->put(route('payments.proof.review', [$payment, $first]), [
+                'status' => 'rejected',
+                'review_note' => 'The transfer reference is unreadable.',
+            ])
+            ->assertRedirect();
+        $this->assertSame('rejected', data_get($first->fresh()->meta_json, 'review_status'));
+
+        $this->actingAs($tenantUser)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => $this->fakePdf('replacement-proof.pdf'),
+                'note' => 'Clear replacement copy.',
+            ])
+            ->assertRedirect();
+        $replacement = Document::query()->where('type', 'payment_proof')->latest('id')->firstOrFail();
+        $this->assertSame('superseded', data_get($first->fresh()->meta_json, 'review_status'));
+        $this->assertSame('pending', data_get($replacement->meta_json, 'review_status'));
+
+        $this->actingAs($owner)
+            ->put(route('payments.proof.review', [$payment, $replacement]), [
+                'status' => 'accepted',
+            ])
+            ->assertRedirect();
+        $this->assertSame('accepted', data_get($replacement->fresh()->meta_json, 'review_status'));
+        $this->assertSame('pending', $payment->fresh()->status);
+
+        $this->actingAs($tenantUser)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => $this->fakePdf('duplicate-proof.pdf'),
+            ])
+            ->assertStatus(422);
+        $this->assertDatabaseCount('documents', 2);
+    }
+
+    public function test_payment_proof_authorization_blocks_other_tenants_and_cross_payment_review(): void
+    {
+        Storage::fake('local');
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $otherTenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $otherTenant = $this->createTenantProfile($portfolio, $otherTenantUser);
+        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $otherLease = $this->createLease($portfolio, $otherTenant, $this->createAsset($portfolio), $owner);
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+        $otherPayment = $this->createPayment($portfolio, $otherTenant, $owner, $otherLease->id);
+
+        $this->actingAs($tenantUser)->post(route('payments.proof.store', $payment), [
+            'proof' => $this->fakePdf('private-proof.pdf'),
+        ]);
+        $proof = Document::query()->where('type', 'payment_proof')->firstOrFail();
+
+        $this->actingAs($otherTenantUser)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => $this->fakePdf('stolen-proof.pdf'),
+            ])
+            ->assertForbidden();
+        $this->actingAs($otherTenantUser)
+            ->get(route('documents.download', $proof))
+            ->assertForbidden();
+        $this->actingAs($otherTenantUser)
+            ->get(route('tenant-portal.documents'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->where('documents.total', 0));
+        $this->actingAs($owner)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => $this->fakePdf('management-proof.pdf'),
+            ])
+            ->assertForbidden();
+        $this->actingAs($owner)
+            ->put(route('payments.proof.review', [$otherPayment, $proof]), [
+                'status' => 'accepted',
+            ])
+            ->assertForbidden();
+        $this->assertSame('pending', data_get($proof->fresh()->meta_json, 'review_status'));
+    }
+
+    public function test_payment_proof_requires_a_real_pdf_in_http_and_direct_action_paths(): void
+    {
+        Storage::fake('local');
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $payment = $this->createPayment($portfolio, $tenant, $owner, $lease->id);
+
+        $this->actingAs($tenantUser)
+            ->post(route('payments.proof.store', $payment), [
+                'proof' => UploadedFile::fake()->createWithContent('fake.pdf', 'not a PDF'),
+            ])
+            ->assertSessionHasErrors('proof');
+        $this->assertDatabaseMissing('documents', ['type' => 'payment_proof']);
+
+        $this->actingAs($owner)
+            ->post(route('documents.store'), [
+                'documentable_type' => 'payment',
+                'documentable_id' => $payment->id,
+                'type' => 'payment_proof',
+                'title_en' => 'Bypassed proof',
+                'title_ar' => 'إثبات متجاوز',
+                'file' => $this->fakePdf('bypassed-proof.pdf'),
+            ])
+            ->assertSessionHasErrors('type');
+        $this->assertDatabaseMissing('documents', ['title_en' => 'Bypassed proof']);
+
+        $this->assertValidationError(
+            fn () => app(CreateDocument::class)->paymentProof($tenantUser, $payment, [
+                'proof' => UploadedFile::fake()->createWithContent('direct.pdf', 'still not a PDF'),
+            ]),
+            'proof',
+        );
+        $this->assertDatabaseMissing('documents', ['type' => 'payment_proof']);
     }
 
     /** @param array<string, mixed> $attributes */

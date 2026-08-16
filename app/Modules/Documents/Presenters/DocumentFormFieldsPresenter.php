@@ -25,7 +25,7 @@ final class DocumentFormFieldsPresenter
 
         return $this->resources->sectionFields([
             ...$targetFields,
-            ...$this->metadata(),
+            ...$this->metadata(DocumentOptions::UPLOAD_TYPES),
             ['name' => 'file', 'label' => trans('app.documents.pdf_file'), 'type' => 'file', 'required' => true, 'accept' => '.pdf,application/pdf', 'help' => trans('app.documents.pdf_help')],
         ], [
             trans('app.documents.attachment') => ['description' => trans('app.documents.attachment_help'), 'fields' => ['documentable_type', 'documentable_id']],
@@ -36,9 +36,13 @@ final class DocumentFormFieldsPresenter
     }
 
     /** @return array<int, array<string, mixed>> */
-    public function edit(): array
+    public function edit(DocumentFormData $data): array
     {
-        return $this->resources->sectionFields($this->metadata(), [
+        $types = $data->document?->type === 'payment_proof'
+            ? ['payment_proof']
+            : DocumentOptions::UPLOAD_TYPES;
+
+        return $this->resources->sectionFields($this->metadata($types), [
             trans('app.documents.document_identity') => [
                 'description' => trans('app.documents.edit_identity_help'),
                 'fields' => ['type', 'title_en', 'title_ar', 'is_public'],
@@ -50,11 +54,14 @@ final class DocumentFormFieldsPresenter
         ]);
     }
 
-    /** @return array<int, array<string, mixed>> */
-    private function metadata(): array
+    /**
+     * @param  array<int, string>  $types
+     * @return array<int, array<string, mixed>>
+     */
+    private function metadata(array $types): array
     {
         return [
-            ['name' => 'type', 'label' => trans('app.documents.document_type'), 'type' => 'select', 'required' => true, 'options' => $this->options(DocumentOptions::TYPES)],
+            ['name' => 'type', 'label' => trans('app.documents.document_type'), 'type' => 'select', 'required' => true, 'options' => $this->options($types)],
             ['name' => 'title_en', 'label' => trans('app.documents.english_title'), 'required' => true, 'max' => 255],
             ['name' => 'title_ar', 'label' => trans('app.documents.arabic_title'), 'required' => true, 'max' => 255],
             ['name' => 'issued_on', 'label' => trans('app.documents.issued_on'), 'type' => 'date'],

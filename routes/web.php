@@ -204,6 +204,8 @@ Route::middleware(['auth', 'account.active', 'password.changed', 'property.conte
         ->middleware('portfolio.module:payments');
     Route::resource('payments', PaymentController::class)->only(['index', 'create', 'store', 'show', 'edit', 'update', 'destroy'])->middleware('portfolio.module:payments')->middlewareFor(['create', 'store'], 'property.assigned');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt')->middleware('portfolio.module:payments');
+    Route::post('/payments/{payment}/proof', [PaymentController::class, 'storeProof'])->name('payments.proof.store')->middleware(['portfolio.module:payments', 'throttle:5,10']);
+    Route::put('/payments/{payment}/proof/{document}/review', [PaymentController::class, 'reviewProof'])->name('payments.proof.review')->middleware(['portfolio.module:payments', 'throttle:10,10']);
 
     Route::get(
         '/maintenance-requests/{maintenanceRequest}/attachments/create',

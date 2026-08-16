@@ -2,6 +2,7 @@
 
 namespace App\Modules\Payments\Support;
 
+use App\Models\Document;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Shared\Authorization\AssignedPropertyScope;
@@ -31,6 +32,53 @@ final class PaymentAccess
         return $this->canManageSection($actor)
             && ($actor->hasRole('superadmin') || $actor->portfolio_id === $payment->portfolio_id)
             && $this->assignments->allowsPayment($actor, $payment);
+    }
+
+    public function canSubmitProof(User $actor, Payment $payment): bool
+    {
+        if (! $actor->hasRole('tenant')
+            || $payment->status === 'void'
+            || ! $this->canAccess($actor, $payment)) {
+            return false;
+        }
+
+        return ! $payment->documents()
+            ->where('type', 'payment_proof')
+            ->where('meta_json->review_status', 'accepted')
+            ->exists();
+    }
+
+    public function canReviewProof(User $actor, Payment $payment, Document $document): bool
+    {
+        return $this->canManage($actor, $payment)
+            && $document->documentable_type === $payment->getMorphClass()
+            && (int) $document->documentable_id === (int) $payment->id
+            && $document->type === 'payment_proof'
+            && data_get($document->meta_json, 'review_status', 'pending') === 'pending';
+    }
+
+    public function ensureCanSubmitProof(User $actor, Payment $payment): void
+    {
+        abort_unless(
+            $actor->hasRole('tenant'),
+            403,
+            trans('app.errors.section_access_denied'),
+        );
+        $this->ensureCanAccess($actor, $payment);
+        abort_unless(
+            $this->canSubmitProof($actor, $payment),
+            422,
+            trans('app.errors.payment_proof_submission_unavailable'),
+        );
+    }
+
+    public function ensureCanReviewProof(User $actor, Payment $payment, Document $document): void
+    {
+        abort_unless(
+            $this->canReviewProof($actor, $payment, $document),
+            403,
+            trans('app.errors.payment_proof_review_denied'),
+        );
     }
 
     public function ensureCanAccess(User $actor, Payment $payment): void

@@ -25,7 +25,7 @@ final class PaymentDetailQuery
                 ->with('leaseInstallment')
                 ->orderBy('id')
                 ->limit(50),
-            'documents',
+            'documents.uploadedBy',
         ])->loadCount('allocations')->loadSum('allocations', 'amount');
         $asset = $payment->lease?->leaseable instanceof Asset
             ? $payment->lease->leaseable

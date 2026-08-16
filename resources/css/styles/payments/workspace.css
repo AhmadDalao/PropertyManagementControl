@@ -1,0 +1,588 @@
+.pmc-payment-form-layout,
+.pmc-payment-overview-grid,
+.pmc-payment-evidence-layout {
+    display: grid;
+    min-width: 0;
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.pmc-payment-form-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.28fr);
+}
+
+.pmc-payment-overview-grid,
+.pmc-payment-evidence-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.3fr);
+}
+
+.pmc-payment-form-layout > form,
+.pmc-payment-overview-grid > main,
+.pmc-payment-overview-grid > aside,
+.pmc-payment-evidence-layout > main,
+.pmc-payment-evidence-layout > aside {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-payment-form-guide,
+.pmc-payment-overview-grid > aside,
+.pmc-payment-evidence-layout > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 0.75rem);
+}
+
+.pmc-payment-form-section,
+.pmc-payment-form-guide,
+.pmc-payment-proof-upload,
+.pmc-payment-proof-list,
+.pmc-payment-receipt-card,
+.pmc-payment-proof-locked {
+    min-width: 0;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: var(--pmc-surface);
+}
+
+.pmc-payment-form-section > header,
+.pmc-payment-proof-upload > header,
+.pmc-payment-proof-list > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.pmc-payment-form-section h2,
+.pmc-payment-form-guide h2,
+.pmc-payment-proof-upload h2,
+.pmc-payment-proof-list h2,
+.pmc-payment-receipt-card h2 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.pmc-payment-form-section p,
+.pmc-payment-form-guide p,
+.pmc-payment-proof-upload header p,
+.pmc-payment-receipt-card p {
+    margin: 0.18rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.6rem;
+    line-height: 1.5;
+}
+
+.pmc-payment-field-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-payment-field-grid > .pmc-resource-field:has(textarea) {
+    grid-column: 1 / -1;
+}
+
+.pmc-payment-form-guide {
+    display: grid;
+    gap: 0.65rem;
+    background: linear-gradient(145deg, #fff 0%, var(--pmc-surface-green) 100%);
+}
+
+.pmc-payment-form-guide > span,
+.pmc-payment-proof-list > header span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.54rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-payment-guide-icon,
+.pmc-payment-evidence-icon {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 1rem;
+}
+
+.pmc-payment-guide-progress {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(18, 129, 60, 0.14);
+}
+
+.pmc-payment-guide-progress > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.58rem;
+}
+
+.pmc-payment-guide-progress progress {
+    width: 100%;
+    height: 0.4rem;
+    accent-color: var(--pmc-primary);
+}
+
+.pmc-payment-guide-next,
+.pmc-payment-posting-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.6rem;
+    border-radius: 0.48rem;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    line-height: 1.45;
+}
+
+.pmc-payment-guide-next i,
+.pmc-payment-posting-note i {
+    color: var(--pmc-primary);
+}
+
+.pmc-payment-posting-note.is-pending {
+    background: #fff8e8;
+}
+
+.pmc-payment-detail-metrics {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.pmc-payment-detail-metrics article {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.5rem;
+    background: #fff;
+}
+
+.pmc-payment-detail-metrics article.is-primary,
+.pmc-payment-detail-metrics article.is-teal {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-payment-detail-metrics article.is-danger {
+    border-color: rgba(196, 48, 48, 0.24);
+    background: #fff5f5;
+}
+
+.pmc-payment-detail-metrics span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-payment-detail-metrics strong {
+    overflow-wrap: anywhere;
+    font-size: 0.82rem;
+}
+
+.pmc-payment-detail-tabs {
+    position: sticky;
+    z-index: 15;
+    top: calc(var(--pmc-topbar-height) + 0.5rem);
+    display: flex;
+    max-width: 100%;
+    gap: 0.3rem;
+    margin-bottom: 0.65rem;
+    padding: 0.3rem;
+    overflow-x: auto;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    background: rgba(255, 255, 255, 0.96);
+    scrollbar-width: none;
+}
+
+.pmc-payment-detail-tabs button {
+    display: inline-flex;
+    min-height: 2.3rem;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.62rem;
+    border: 0;
+    border-radius: 0.38rem;
+    background: transparent;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 750;
+}
+
+.pmc-payment-detail-tabs button strong,
+.pmc-payment-proof-list > header > strong {
+    min-width: 1.25rem;
+    padding: 0.1rem 0.28rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    font-size: 0.48rem;
+    text-align: center;
+}
+
+.pmc-payment-detail-tabs button.is-active {
+    background: var(--pmc-primary);
+    color: #fff;
+}
+
+.pmc-payment-detail-tabs button.is-active strong {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pmc-payment-detail-panel {
+    min-width: 0;
+}
+
+.pmc-payment-overview-grid .pmc-resource-workflow {
+    margin: 0;
+    border-radius: 0.62rem;
+    box-shadow: none;
+}
+
+.pmc-payment-proof-upload {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-payment-proof-upload > header {
+    justify-content: flex-start;
+    margin: 0;
+}
+
+.pmc-payment-proof-upload > label,
+.pmc-payment-reject-form label {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.58rem;
+    font-weight: 750;
+}
+
+.pmc-payment-proof-upload label small {
+    color: var(--pmc-muted);
+    font-size: 0.52rem;
+    font-weight: 500;
+}
+
+.pmc-payment-proof-upload > .btn,
+.pmc-payment-receipt-card .btn {
+    justify-self: start;
+}
+
+.pmc-payment-proof-errors {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.55rem;
+    border-radius: 0.45rem;
+    background: #fff1f2;
+    color: #a10f2b;
+    font-size: 0.56rem;
+}
+
+.pmc-payment-proof-list {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.pmc-payment-proof-list > header {
+    margin: 0;
+}
+
+.pmc-payment-proof-list > header h2 {
+    margin-top: 0.15rem;
+}
+
+.pmc-payment-proof-card {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.75rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.52rem;
+    background: #fff;
+}
+
+.pmc-payment-proof-card.is-accepted {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-payment-proof-card.is-rejected {
+    border-color: rgba(196, 48, 48, 0.24);
+    background: #fff8f8;
+}
+
+.pmc-payment-proof-card.is-superseded {
+    opacity: 0.68;
+}
+
+.pmc-payment-proof-file {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.pmc-payment-proof-file > i {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.45rem;
+    background: #fff0f0;
+    color: #c43030;
+}
+
+.pmc-payment-proof-file h3,
+.pmc-payment-proof-file p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.pmc-payment-proof-file h3 {
+    font-size: 0.65rem;
+}
+
+.pmc-payment-proof-file p {
+    margin-top: 0.12rem;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+}
+
+.pmc-payment-proof-file > span {
+    padding: 0.22rem 0.4rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    font-size: 0.48rem;
+    font-weight: 800;
+}
+
+.pmc-payment-proof-card dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin: 0;
+}
+
+.pmc-payment-proof-card dt {
+    color: var(--pmc-muted);
+    font-size: 0.48rem;
+    font-weight: 700;
+}
+
+.pmc-payment-proof-card dd {
+    margin: 0.12rem 0 0;
+    font-size: 0.56rem;
+    font-weight: 750;
+}
+
+.pmc-payment-proof-card > p,
+.pmc-payment-review-note {
+    margin: 0;
+    padding: 0.55rem;
+    border-radius: 0.42rem;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.55rem;
+    line-height: 1.5;
+}
+
+.pmc-payment-review-note {
+    display: grid;
+    gap: 0.2rem;
+}
+
+.pmc-payment-review-note strong {
+    color: var(--pmc-ink);
+}
+
+.pmc-payment-proof-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.pmc-payment-proof-actions .btn,
+.pmc-payment-reject-form .btn {
+    min-height: 2.35rem;
+    font-size: 0.55rem;
+}
+
+.pmc-payment-reject-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 0.5rem;
+    padding-top: 0.6rem;
+    border-top: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-payment-reject-form em {
+    grid-column: 1 / -1;
+    color: #b42318;
+    font-size: 0.5rem;
+}
+
+.pmc-payment-receipt-card {
+    display: grid;
+    gap: 0.65rem;
+    background: linear-gradient(145deg, #fff 0%, var(--pmc-surface-green) 100%);
+}
+
+.pmc-payment-receipt-card > span {
+    padding: 0.5rem;
+    border-radius: 0.42rem;
+    background: #fff8e8;
+    color: var(--pmc-muted);
+    font-size: 0.54rem;
+}
+
+.pmc-payment-proof-locked,
+.pmc-payment-proof-empty {
+    display: grid;
+    min-height: 7rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.5rem;
+    color: var(--pmc-muted);
+    text-align: center;
+}
+
+.pmc-payment-proof-locked i,
+.pmc-payment-proof-empty i {
+    color: var(--pmc-primary);
+    font-size: 1.35rem;
+}
+
+.pmc-payment-proof-locked p,
+.pmc-payment-proof-empty p {
+    max-width: 30rem;
+    margin: 0;
+    font-size: 0.58rem;
+    line-height: 1.5;
+}
+
+.pmc-payment-mobile-actions {
+    display: none;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-payment-form-layout,
+    .pmc-payment-overview-grid,
+    .pmc-payment-evidence-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-payment-form-guide,
+    .pmc-payment-overview-grid > aside,
+    .pmc-payment-evidence-layout > aside {
+        position: static;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-payment-form-page > .pmc-resource-header .pmc-resource-actions {
+        display: none;
+    }
+
+    .pmc-payment-form-section,
+    .pmc-payment-form-guide,
+    .pmc-payment-proof-upload,
+    .pmc-payment-proof-list,
+    .pmc-payment-receipt-card {
+        padding: 0.75rem;
+    }
+
+    .pmc-payment-field-grid,
+    .pmc-payment-reject-form {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-payment-field-grid > * {
+        grid-column: 1 !important;
+    }
+
+    .pmc-payment-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-payment-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-payment-detail-tabs button {
+        min-height: 2.75rem;
+    }
+
+    .pmc-payment-proof-file {
+        grid-template-columns: 2rem minmax(0, 1fr);
+    }
+
+    .pmc-payment-proof-file > span {
+        grid-column: 2;
+        justify-self: start;
+    }
+
+    .pmc-payment-proof-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-payment-proof-actions .btn,
+    .pmc-payment-reject-form .btn,
+    .pmc-payment-proof-upload > .btn,
+    .pmc-payment-receipt-card .btn {
+        width: 100%;
+        min-height: 2.75rem;
+        justify-content: center;
+    }
+
+    .pmc-payment-mobile-actions {
+        position: sticky;
+        z-index: 25;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 0.5rem;
+        margin-inline: -0.25rem;
+        padding: 0.6rem;
+        border: 1px solid var(--pmc-line);
+        border-bottom: 0;
+        border-radius: 0.65rem 0.65rem 0 0;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 -10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .pmc-payment-mobile-actions .btn {
+        min-height: 2.75rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .pmc-payment-proof-card dl {
+        grid-template-columns: 1fr;
+    }
+}

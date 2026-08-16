@@ -28,7 +28,7 @@ final class PaymentDetailPresenter
 
         if (PortfolioModules::enabledForUser($actor, 'documents')) {
             $documents = $data->adminMode
-                ? $payment->documents
+                ? $payment->documents->where('type', '!=', 'payment_proof')
                 : $payment->documents
                     ->where('is_public', true)
                     ->whereIn('type', PaymentOptions::TENANT_DOCUMENT_TYPES);
@@ -41,6 +41,7 @@ final class PaymentDetailPresenter
             'sections' => $this->overview->sections($data),
             'related' => $this->related->present($data),
             'documents' => $this->resources->documentStrip($documents),
+            'evidence' => $this->related->evidence($data),
             'timeline' => $data->adminMode ? $this->resources->activityTimeline($payment) : [],
         ];
     }

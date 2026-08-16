@@ -12,6 +12,20 @@ final class DocumentOptions
         'lease_contract',
         'signed_contract',
         'receipt',
+        'payment_proof',
+        'owner_report',
+        'tenant_statement',
+        'termination_notice',
+        'move_out_inspection',
+        'identity_document',
+        'other',
+    ];
+
+    /** @var array<int, string> */
+    public const UPLOAD_TYPES = [
+        'lease_contract',
+        'signed_contract',
+        'receipt',
         'owner_report',
         'tenant_statement',
         'termination_notice',
@@ -45,6 +59,11 @@ final class DocumentOptions
     public static function portalTypes(string $attachment): array
     {
         return self::PORTAL_TYPES[$attachment] ?? [];
+    }
+
+    public static function isPaymentProof(string $type): bool
+    {
+        return $type === 'payment_proof';
     }
 
     public static function label(string $value): string

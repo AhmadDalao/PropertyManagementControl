@@ -25,7 +25,7 @@ final class DocumentEditFormPresenter
             'action' => route('documents.update', $document),
             'method' => 'put',
             'submitLabel' => trans('app.documents.update_document'),
-            'fields' => $this->fields->edit(),
+            'fields' => $this->fields->edit($data),
             'initialValues' => [
                 'type' => $document->type,
                 'title_en' => $document->title_en,

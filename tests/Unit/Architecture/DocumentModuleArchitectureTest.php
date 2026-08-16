@@ -84,6 +84,7 @@ class DocumentModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('DocumentAttachmentResolver', $create);
         $this->assertStringContainsString('DocumentFileStorage', $create);
         $this->assertStringContainsString('lock: true', $create);
+        $this->assertStringContainsString('paymentProof(', $create);
 
         $attachments = $this->source($this->path('app/Modules/Documents/Support/DocumentAttachments.php'));
         $this->assertStringNotContainsString('public function resolve(', $attachments);

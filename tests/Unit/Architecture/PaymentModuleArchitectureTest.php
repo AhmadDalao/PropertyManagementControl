@@ -18,6 +18,10 @@ class PaymentModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('PaymentDetailPresenter', $source);
         $this->assertStringContainsString('ManagePayments', $source);
         $this->assertStringContainsString('PaymentReceipts', $source);
+        $this->assertStringContainsString("'admin/payments/form'", $source);
+        $this->assertStringContainsString("'admin/payments/show'", $source);
+        $this->assertStringNotContainsString("'admin/resource-form'", $source);
+        $this->assertStringNotContainsString("'admin/resource-show'", $source);
         $this->assertStringNotContainsString('Payment::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
@@ -68,12 +72,23 @@ class PaymentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Payments/Requests/UpdatePaymentRequest.php'),
             $this->path('app/Modules/Payments/Support/PaymentAccess.php'),
             $this->path('app/Modules/Payments/Support/PaymentAttributes.php'),
+            $this->path('app/Modules/Payments/Support/PaymentDisplayFormatter.php'),
             $this->path('app/Modules/Payments/Support/PaymentInputGuard.php'),
             $this->path('app/Modules/Payments/Support/PaymentLeaseGuard.php'),
             $this->path('app/Modules/Payments/Support/PaymentOptions.php'),
             $this->path('app/Modules/Payments/Support/PaymentTransitionGuard.php'),
             $this->path('resources/js/modules/payments/payment-filters.ts'),
+            $this->path('resources/js/modules/payments/payment-detail-page.tsx'),
+            $this->path('resources/js/modules/payments/payment-detail-tabs.tsx'),
+            $this->path('resources/js/modules/payments/payment-detail-workspace.tsx'),
+            $this->path('resources/js/modules/payments/payment-evidence-panel.tsx'),
+            $this->path('resources/js/modules/payments/payment-form-guide.tsx'),
+            $this->path('resources/js/modules/payments/payment-form-page.tsx'),
+            $this->path('resources/js/modules/payments/payment-form-section.tsx'),
+            $this->path('resources/js/modules/payments/payment-form-workspace.tsx'),
             $this->path('resources/js/modules/payments/payment-metrics.tsx'),
+            $this->path('resources/js/modules/payments/payment-proof-card.tsx'),
+            $this->path('resources/js/modules/payments/payment-proof-upload.tsx'),
             $this->path('resources/js/modules/payments/payment-table.tsx'),
             $this->path('resources/js/modules/payments/payment-table-config.tsx'),
             $this->path('resources/js/modules/payments/types.ts'),
@@ -92,6 +107,11 @@ class PaymentModuleArchitectureTest extends TestCase
             'app/Modules/Payments/Presenters/PaymentDetailPresenter.php' => 55,
             'app/Modules/Payments/Presenters/PaymentFormPresenter.php' => 50,
             'app/Modules/Payments/Queries/PaymentIndexQuery.php' => 90,
+            'resources/js/modules/payments/payment-detail-workspace.tsx' => 100,
+            'resources/js/modules/payments/payment-evidence-panel.tsx' => 140,
+            'resources/js/modules/payments/payment-form-workspace.tsx' => 130,
+            'resources/js/modules/payments/payment-proof-card.tsx' => 180,
+            'resources/js/modules/payments/payment-proof-upload.tsx' => 100,
             'resources/js/modules/payments/payment-table.tsx' => 65,
         ] as $path => $maximum) {
             $source = $this->source($this->path($path));
