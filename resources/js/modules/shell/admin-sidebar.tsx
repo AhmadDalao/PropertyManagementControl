@@ -10,6 +10,7 @@ import {
     navigationHref,
     visibleNavigationGroups,
 } from './navigation-access';
+import { PropertyContextSwitcher } from './property-context-switcher';
 
 type AdminSidebarProps = {
     currentUrl: string;
@@ -86,6 +87,15 @@ export function AdminSidebar({
                         <i className="bi bi-x-lg" />
                     </button>
                 </div>
+
+                {propertyContext ? (
+                    <PropertyContextSwitcher
+                        context={propertyContext}
+                        currentUrl={currentUrl}
+                        collapsed={sidebarCollapsed && !drawerViewport}
+                        onExpand={toggleNavigation}
+                    />
+                ) : null}
 
                 <nav
                     className="pmc-console-nav"

@@ -82,33 +82,37 @@ export function OperationsDashboardGroups({
                 onSelect={select}
             />
 
-            <div
-                id="dashboard-panel-today"
-                className={`pmc-dashboard-view-panel ${selected === 'today' ? 'is-active' : ''}`}
-                data-dashboard-group="today"
-                role="region"
-                aria-labelledby="dashboard-view-today"
-            >
-                <OperationsTodayWorkspace props={props} />
-            </div>
+            {selected === 'today' ? (
+                <div
+                    id="dashboard-panel-today"
+                    className="pmc-dashboard-view-panel"
+                    data-dashboard-group="today"
+                    role="tabpanel"
+                    aria-labelledby="dashboard-view-today"
+                >
+                    <OperationsTodayWorkspace props={props} />
+                </div>
+            ) : null}
 
-            <div
-                id="dashboard-panel-portfolio"
-                className={`pmc-dashboard-view-panel ${selected === 'portfolio' ? 'is-active' : ''}`}
-                data-dashboard-group="portfolio"
-                role="region"
-                aria-labelledby="dashboard-view-portfolio"
-            >
-                <PropertyPerformanceGrid props={props} />
-                <OperationsInsightPanels props={props} />
-            </div>
+            {selected === 'portfolio' ? (
+                <div
+                    id="dashboard-panel-portfolio"
+                    className="pmc-dashboard-view-panel"
+                    data-dashboard-group="portfolio"
+                    role="tabpanel"
+                    aria-labelledby="dashboard-view-portfolio"
+                >
+                    <PropertyPerformanceGrid props={props} />
+                    <OperationsInsightPanels props={props} />
+                </div>
+            ) : null}
 
-            {props.mode === 'superadmin' ? (
+            {selected === 'system' && props.mode === 'superadmin' ? (
                 <div
                     id="dashboard-panel-system"
-                    className={`pmc-dashboard-view-panel ${selected === 'system' ? 'is-active' : ''}`}
+                    className="pmc-dashboard-view-panel"
                     data-dashboard-group="system"
-                    role="region"
+                    role="tabpanel"
                     aria-labelledby="dashboard-view-system"
                 >
                     <OperationsSystemWorkspace props={props} />

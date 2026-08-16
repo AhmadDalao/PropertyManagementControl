@@ -32,7 +32,7 @@ export function PropertyPerformanceGrid({
             }}
         >
             <div className="pmc-property-performance-grid">
-                {props.propertyPerformance.map((property) => (
+                {props.propertyPerformance.slice(0, 4).map((property) => (
                     <article
                         key={property.id}
                         className={`pmc-property-performance-card is-${property.attention}`}

@@ -5,12 +5,7 @@
 }
 
 .pmc-dashboard-work-panel {
-    display: none;
     min-width: 0;
-}
-
-.pmc-dashboard-work-panel.is-active {
-    display: block;
 }
 
 .pmc-dashboard-today-workspace {
@@ -66,37 +61,6 @@
 
 .pmc-dashboard-today-workspace > .pmc-command-grid {
     display: block;
-}
-
-@media (min-width: 992px) {
-    .pmc-dashboard-today-tabs {
-        display: none;
-    }
-
-    .pmc-dashboard-today-workspace {
-        display: grid;
-        grid-template-columns: repeat(12, minmax(0, 1fr));
-        gap: 1rem;
-    }
-
-    .pmc-dashboard-today-workspace > [data-dashboard-work-panel] {
-        display: block !important;
-        min-width: 0;
-    }
-
-    .pmc-dashboard-today-workspace > .pmc-command-grid {
-        display: contents;
-    }
-
-    .pmc-dashboard-today-workspace > [data-dashboard-work-panel='actions'] {
-        grid-column: 1 / -1;
-    }
-
-    .pmc-dashboard-today-workspace
-        > .pmc-command-grid
-        > [data-dashboard-work-panel] {
-        grid-column: span 4;
-    }
 }
 
 .pmc-dashboard-today-workspace .pmc-action-queue,

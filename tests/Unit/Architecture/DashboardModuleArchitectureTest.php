@@ -87,6 +87,19 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(45, substr_count($tenant, "\n") + 1);
         $this->assertStringContainsString("from '../operations/", $operations);
         $this->assertStringContainsString("from '../tenant/", $tenant);
+        foreach ([
+            'OperationsHeader',
+            'PropertyFocus',
+            'PortfolioSetupPanel',
+            'OperationsMetrics',
+            'OperationsDashboardGroups',
+        ] as $component) {
+            $this->assertStringContainsString($component, $operations);
+        }
+        $this->assertStringNotContainsString('ManagementCommandCenter', $operations);
+        $this->assertFileDoesNotExist($this->path(
+            'resources/js/modules/dashboard/operations/management-command-center.tsx',
+        ));
         $this->assertStringNotContainsString('MetricGrid', $operations.$tenant);
         $this->assertStringNotContainsString('WorkspacePanel', $operations.$tenant);
     }
@@ -151,7 +164,31 @@ class DashboardModuleArchitectureTest extends TestCase
         $platformStyles = $this->source('resources/css/styles/dashboard/platform.css');
         $this->assertStringContainsString('./platform-composition.css', $platformStyles);
         $this->assertStringContainsString('./platform-activity.css', $platformStyles);
+        $this->assertStringNotContainsString('../reference/dashboard.css', $platformStyles);
+        $this->assertFileDoesNotExist($this->path(
+            'resources/css/styles/reference/dashboard.css',
+        ));
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
+
+        $groups = $this->source(
+            'resources/js/modules/dashboard/operations/operations-dashboard-groups.tsx',
+        );
+        $viewTabs = $this->source(
+            'resources/js/modules/dashboard/operations/operations-view-tabs.tsx',
+        );
+        $today = $this->source(
+            'resources/js/modules/dashboard/operations/operations-today-workspace.tsx',
+        );
+
+        $this->assertStringContainsString("selected === 'today'", $groups);
+        $this->assertStringContainsString("selected === 'portfolio'", $groups);
+        $this->assertStringContainsString("selected === 'system'", $groups);
+        $this->assertStringContainsString('role="tabpanel"', $groups);
+        $this->assertStringContainsString('role="tablist"', $viewTabs);
+        $this->assertStringContainsString('aria-selected', $viewTabs);
+        $this->assertStringContainsString('onKeyDown', $viewTabs);
+        $this->assertStringContainsString('role="tablist"', $today);
+        $this->assertStringContainsString('role="tabpanel"', $today);
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');
         $appStyles = $this->source('resources/css/app.css');

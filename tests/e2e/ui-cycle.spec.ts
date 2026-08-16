@@ -1102,9 +1102,7 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/dashboard?locale=en');
-        await expect(
-            page.locator('[data-dashboard-view-tab="portfolio"]'),
-        ).toBeHidden();
+        await page.locator('[data-dashboard-view-tab="portfolio"]').click();
         await expect(
             page.locator('a[href="/lease-renewals?queue=all"]'),
         ).toBeVisible();
@@ -1165,6 +1163,7 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/dashboard?locale=en');
+        await page.locator('[data-dashboard-work-tab="move_outs"]').click();
         await expect(
             page.locator('a[href^="/lease-move-outs"]').first(),
         ).toBeVisible();
@@ -1543,16 +1542,21 @@ test.describe('authenticated administration', () => {
         await expect(
             page.locator('.pmc-console-nav').getByText('لوحة التحكم'),
         ).toBeVisible();
+        await page.locator('[data-dashboard-view-tab="portfolio"]').click();
         await expect(
-            page.getByRole('heading', { name: 'حالة النظام' }),
+            page.locator('.pmc-property-performance-grid'),
         ).toBeVisible();
+        await page.locator('[data-dashboard-view-tab="system"]').click();
+        await page.locator('[data-dashboard-system-tab="activity"]').click();
         await expect(
-            page.getByRole('heading', { name: 'النشاط الأخير' }),
+            page.getByRole('heading', {
+                name: 'آخر التغييرات عبر العملاء',
+            }),
         ).toBeVisible();
-        await expect(
-            page.locator('.pmc-property-performance-table'),
-        ).toBeVisible();
-        await expect(page.locator('.pmc-system-status-list')).toBeVisible();
+        await expect(page.locator('[data-dashboard-group]')).toHaveCount(1);
+        await expect(page.locator('body')).not.toContainText(
+            'Portfolio performance',
+        );
         await expectNoHorizontalOverflow(page);
     });
 
@@ -3752,6 +3756,7 @@ test.describe('local role dashboards', () => {
         await page.goto('/dashboard?locale=en');
 
         await expect(page.locator('#dashboard-property-focus')).toHaveCount(0);
+        await page.locator('.pmc-menu-trigger').click();
         const trigger = page.locator('[data-property-scope-trigger]');
         await expect(trigger).toBeVisible();
         await trigger.click();
@@ -3773,12 +3778,15 @@ test.describe('local role dashboards', () => {
         await expectMinimumTouchHeight(page, '[data-property-scope-trigger]');
         await expectNoHorizontalOverflow(page);
 
+        await page.keyboard.press('Escape');
+        await page.locator('.pmc-menu-trigger').click();
         await trigger.click();
         await page.locator('[data-property-scope-clear]').click();
         await expect(trigger).toHaveAttribute('data-selected-property', 'all');
 
         await page.goto('/dashboard?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await page.locator('.pmc-menu-trigger').click();
         await trigger.click();
         await expect(
             page.locator('[data-property-scope-clear] strong'),
@@ -3787,11 +3795,40 @@ test.describe('local role dashboards', () => {
         await expect(
             page.locator('[data-property-scope-dialog]'),
         ).not.toBeVisible();
+        await page.keyboard.press('Escape');
+        const dashboardTabs = page.getByRole('tablist', {
+            name: 'مساحات عمل لوحة التحكم',
+        });
+        await expect(dashboardTabs).toBeVisible();
         await expect(
-            page.getByRole('heading', { name: 'حالة النظام' }),
+            dashboardTabs.getByRole('tab', { name: /^عمل اليوم/ }),
+        ).toHaveAttribute('aria-selected', 'true');
+        const systemTab = dashboardTabs.getByRole('tab', {
+            name: /^ضوابط النظام/,
+        });
+        await systemTab.click();
+        await expect(page).toHaveURL(/[?&]panel=system(?:&|$)/);
+        await expect(
+            page.locator('[data-dashboard-group="system"]'),
         ).toBeVisible();
+        await expect(page.locator('[data-dashboard-group]')).toHaveCount(1);
+        await expect(page.locator('body')).not.toContainText('System controls');
+        await systemTab.press('Home');
         await expect(
-            page.getByRole('heading', { name: 'النشاط الأخير' }),
+            dashboardTabs.getByRole('tab', { name: /^عمل اليوم/ }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-group="today"]'),
+        ).toBeVisible();
+        const activeWorkTab = page.locator(
+            '[data-dashboard-work-tab][aria-selected="true"]',
+        );
+        await activeWorkTab.press('End');
+        await expect(
+            page.locator('[data-dashboard-work-tab="move_outs"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-work-panel="move_outs"]'),
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
     });
@@ -3811,6 +3848,10 @@ test.describe('local role dashboards', () => {
 
             await expect(page.locator('.pmc-console-main')).toBeVisible();
 
+            await page.locator('.pmc-menu-trigger').click();
+
+            const navigation = page.locator('.pmc-console-nav');
+
             if (account.role === 'tenant') {
                 await expect(
                     page.locator('[data-property-scope-trigger]'),
@@ -3820,10 +3861,6 @@ test.describe('local role dashboards', () => {
                     page.locator('[data-property-scope-trigger]'),
                 ).toBeVisible();
             }
-
-            await page.locator('.pmc-menu-trigger').click();
-
-            const navigation = page.locator('.pmc-console-nav');
 
             for (const href of roleNavigation[account.role].visible) {
                 await expect(
@@ -3845,15 +3882,54 @@ test.describe('local role dashboards', () => {
 
             if (account.role !== 'tenant') {
                 await expect(page.locator('.pmc-metric-grid')).toBeVisible();
+                const workspaceTabs = page.locator('[data-dashboard-view-tab]');
+                await expect(workspaceTabs.first()).toBeVisible();
+                await expectMinimumTouchHeight(
+                    page,
+                    '[data-dashboard-view-tab]',
+                );
                 await expect(
-                    page.locator('.pmc-property-performance-table'),
+                    page.locator('[data-dashboard-group]'),
+                ).toHaveCount(1);
+
+                const portfolioTab = page.locator(
+                    '[data-dashboard-view-tab="portfolio"]',
+                );
+                await portfolioTab.click();
+                await expect(page).toHaveURL(/[?&]panel=portfolio(?:&|$)/);
+                await expect(
+                    page.locator('[data-dashboard-group="portfolio"]'),
                 ).toBeVisible();
                 await expect(
-                    page.locator('.pmc-dashboard-quick-actions'),
-                ).toBeVisible();
-                await expect(
-                    page.locator('.pmc-system-status-list'),
-                ).toBeVisible();
+                    page.locator('[data-dashboard-group]'),
+                ).toHaveCount(1);
+
+                const systemTab = page.locator(
+                    '[data-dashboard-view-tab="system"]',
+                );
+
+                if (account.role === 'superadmin') {
+                    await expect(systemTab).toBeVisible();
+                    await systemTab.click();
+                    await expect(
+                        page.locator('[data-dashboard-group="system"]'),
+                    ).toBeVisible();
+                    await expect(
+                        page.locator('[data-dashboard-system-tab]'),
+                    ).not.toHaveCount(0);
+                    await page
+                        .locator(
+                            '.pmc-dashboard-period a[href*="period=quarter"]',
+                        )
+                        .click();
+                    await expect(page).toHaveURL(/[?&]panel=system(?:&|$)/);
+                    await expect(page).toHaveURL(/[?&]period=quarter(?:&|$)/);
+                    await expect(
+                        page.locator('[data-dashboard-group="system"]'),
+                    ).toBeVisible();
+                } else {
+                    await expect(systemTab).toHaveCount(0);
+                }
             } else {
                 await expect(
                     page.locator('.pmc-tenant-home-metrics'),

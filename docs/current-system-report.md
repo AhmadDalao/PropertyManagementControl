@@ -9,7 +9,7 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,865 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,887 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
 The verified payment-evidence release is deployed to Hostinger and its Vite manifest hash matches the local build. The live site responds successfully at `/up`; authenticated EN/AR payment index, guided create form, tabbed detail, PDF evidence controls, localized Arabic money/date presentation, and mobile overflow checks pass against production. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
@@ -93,8 +93,8 @@ Implementation labels used in this report:
 - `resources/js/components/data-table/*`: responsive list system.
 - `resources/js/components/resource-cycle/*`: create, edit, detail, document, related-record, and history primitives.
 - `resources/js/modules/shell/*`: sidebar, topbar, account, global search, and property context.
-- `resources/css/styles/*`: modular visual layers; 20,923 source CSS lines across route and component styles.
-- `routes/web.php`: 237 registered non-vendor endpoints.
+- `resources/css/styles/*`: modular visual layers; 25,495 source CSS lines across route and component styles.
+- `routes/web.php`: 239 registered non-vendor endpoints.
 - `routes/console.php`: lifecycle synchronization, queue, reports, heartbeat, and backup schedules.
 
 ## 4. Roles, Scope, And Permissions
@@ -826,7 +826,7 @@ Key components that define the current UI:
 - CMS: builder canvas, section selection/library, inspector/editor, media picker, preview, navigation forms, and optimistic reorder hooks.
 - Reports: `ReportLibrary`, `CurrencyPositionGrid`, `ReportComparison`, `ReportPulse`, `BreakdownCards`, `ReportJournal`, and report-specific record sections.
 
-The production CSS is route-split. The main built CSS is 311.43KB on disk. The visual stack is white/gray with green primary actions, restrained status colors, responsive cards, Manrope for English, and IBM Plex Sans Arabic.
+The production CSS is route-split. The main built CSS is 320.22KB on disk and the focused dashboard stylesheet is 28.91KB. The visual stack is white/gray with green primary actions, restrained status colors, responsive cards, Manrope for English, and IBM Plex Sans Arabic.
 
 ## 15. Detected Problems And Unfinished Work
 
@@ -852,7 +852,7 @@ The production CSS is route-split. The main built CSS is 311.43KB on disk. The v
 1. **Authorization has multiple sources of truth.** Spatie permissions, access classes, portfolio module toggles, portfolio scope, and manager assignments are all valid but difficult to reason about. The access classes are authoritative; this should be stated in developer documentation and enforced through architecture tests.
 2. **Route policy is not obvious from `route:list`.** Most routes show only authentication/module middleware while role enforcement happens inside requests/controllers/access classes. A generated access catalog would reduce audit effort.
 3. **Property terminology is mixed.** Database and older UI concepts say “asset”; business navigation says “property.” The model can stay `Asset`, but user-facing naming should consistently use Property, Building, Floor, Unit, and Space.
-4. **CSS remains large.** It is modular, not one giant file anymore, but 20,923 source lines and a 316KB main bundle still require a style-budget gate and dead-style review.
+4. **CSS remains large.** It is modular, not one giant file anymore, but 25,495 source lines and a 320.22KB main bundle still require the existing 325KB style-budget gate and continued dead-style review. This release removed the inactive dashboard implementation and reduced its route stylesheet to 28.91KB.
 5. **Generated route/action TypeScript dominates file-size reports.** These files are machine-generated and not a maintainability problem, but they obscure human-module size metrics unless excluded from architecture reports.
 6. **Generic shared resource labels still use source-text translation in a few primitives.** Examples include “Overview,” “Financial,” and form framing. They resolve through the wording layer, but typed translation keys would be clearer and safer.
 7. **No bulk workflow exists.** This is correct for money and contracts, but a future real pilot may justify narrow bulk actions such as assign manager, export selected, or maintenance reassignment. Do not add generic bulk delete.
@@ -894,8 +894,8 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 653 passed, 38,172 assertions |
-| Route inventory | 237 application endpoints |
+| Fresh PHPUnit run | 657 passed, 38,887 assertions |
+| Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 70 scenarios |
 | Recorded responsive widths | 390, 768, 1024, 1440 |
@@ -1150,7 +1150,7 @@ The August 2026 design archives are now the active layout contract rather than a
 | Screen family | Implemented composition |
 |---|---|
 | Authenticated shell | Fixed light sidebar with compact grouped navigation, persisted collapse state, mobile drawer, 64px topbar, role-aware quick actions, search sheet, language control, notifications, and account menu. |
-| Management dashboard | Six operational KPIs followed by financial, occupancy, lease/move-out, action-center, rent collection, maintenance, property performance, quick-action, collection, activity, and system-status panels. |
+| Management dashboard | Six operational KPIs followed by one URL-backed workspace at a time: Today, Portfolio performance, or superadmin-only System controls. Today further mounts one action, collection, service, or handover queue at a time; Portfolio limits its dashboard preview to four property cards and links to the complete control workspace. |
 | Tenant portal | Dedicated Home, My Lease, Payments, Maintenance, Documents, and Profile navigation with the supplied compact welcome, KPI, activity, contract, payment, document, and request patterns. |
 | Directories | Compact page header, real create action, count chips, filters, 10/25/50/100 pagination, XLSX export, desktop table, mobile record cards, and one ellipsis action menu. |
 | Create/edit forms | Dedicated pages with grouped sections, responsive one/two-column fields, contextual summary rail, validation summary, and mobile Save/Cancel treatment. |
@@ -1159,4 +1159,4 @@ The August 2026 design archives are now the active layout contract rather than a
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, and tenant modules under `resources/css/styles/`. The shared production CSS bundle is 320.02KB, below the 325KB release ceiling; the dedicated maintenance workspace is an 8.49KB lazy CSS chunk. The August 16 maintenance correction removes its dependency on generic create/show pages, normalizes legacy category values, and keeps one header action surface on desktop and one sticky Save/Cancel surface on mobile. All 70 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
+The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, and tenant modules under `resources/css/styles/`. The shared production CSS bundle is 320.22KB, below the 325KB release ceiling; the dashboard is a 28.91KB lazy CSS chunk and the dedicated maintenance workspace is an 8.49KB lazy CSS chunk. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center, its desktop and mobile workspaces share keyboard-accessible tabs, the global property picker is available from the expanded sidebar and mobile drawer, and mobile KPI cards use a readable two-column grid. All 70 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.

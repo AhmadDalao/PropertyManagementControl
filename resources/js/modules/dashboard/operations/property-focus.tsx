@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 
 import { useTranslator } from '@/lib/i18n';
 import { localizedNumber } from '@/lib/utils';
@@ -13,6 +13,7 @@ export function PropertyFocus({
     period: OperationsDashboardProps['period'];
 }) {
     const { locale, t } = useTranslator();
+    const { url } = usePage();
     const selectedTitle = focus.selected
         ? propertyTitle(focus.selected, locale)
         : focus.assignment_restricted
@@ -88,9 +89,10 @@ export function PropertyFocus({
                 {(['month', 'quarter', 'year'] as const).map((value) => (
                     <Link
                         key={value}
-                        href={periodHref(value, focus.selected?.id)}
+                        href={periodHref(value, focus.selected?.id, url)}
                         className={period === value ? 'active' : ''}
                         preserveScroll
+                        preserveState
                     >
                         {t(`dashboard.period_${value}`, value)}
                     </Link>
@@ -100,11 +102,19 @@ export function PropertyFocus({
     );
 }
 
-function periodHref(period: string, propertyId?: number): string {
-    const query = new URLSearchParams({ period });
+function periodHref(
+    period: string,
+    propertyId: number | undefined,
+    currentUrl: string,
+): string {
+    const query = new URLSearchParams(currentUrl.split('?')[1] ?? '');
+
+    query.set('period', period);
 
     if (propertyId) {
         query.set('property_id', String(propertyId));
+    } else {
+        query.delete('property_id');
     }
 
     return `/dashboard?${query.toString()}`;

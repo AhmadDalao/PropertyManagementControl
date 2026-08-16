@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { KeyboardEvent } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
 import { localizedNumber } from '@/lib/utils';
@@ -47,21 +48,50 @@ export function OperationsTodayWorkspace({
         url.searchParams.set('work', section);
         window.history.replaceState({}, '', url);
     };
+    const selectFromKeyboard = (
+        event: KeyboardEvent<HTMLButtonElement>,
+        index: number,
+    ) => {
+        let nextIndex = index;
+
+        if (event.key === 'ArrowRight') {
+            nextIndex = (index + 1) % sectionOrder.length;
+        } else if (event.key === 'ArrowLeft') {
+            nextIndex = (index - 1 + sectionOrder.length) % sectionOrder.length;
+        } else if (event.key === 'Home') {
+            nextIndex = 0;
+        } else if (event.key === 'End') {
+            nextIndex = sectionOrder.length - 1;
+        } else {
+            return;
+        }
+
+        event.preventDefault();
+        const next = sectionOrder[nextIndex];
+        select(next);
+        document.getElementById(`dashboard-work-tab-${next}`)?.focus();
+    };
 
     return (
         <div className="pmc-dashboard-today-workspace">
-            <nav
+            <div
                 className="pmc-dashboard-today-tabs"
+                role="tablist"
                 aria-label={t('dashboard.mobile_today_title')}
             >
-                {sectionOrder.map((section) => (
+                {sectionOrder.map((section, index) => (
                     <button
                         key={section}
+                        id={`dashboard-work-tab-${section}`}
                         type="button"
+                        role="tab"
                         data-dashboard-work-tab={section}
-                        aria-pressed={active === section}
+                        aria-selected={active === section}
+                        aria-controls={`dashboard-work-panel-${section}`}
+                        tabIndex={active === section ? 0 : -1}
                         className={active === section ? 'is-active' : ''}
                         onClick={() => select(section)}
+                        onKeyDown={(event) => selectFromKeyboard(event, index)}
                     >
                         <span>{labels[section]}</span>
                         <strong>
@@ -69,14 +99,19 @@ export function OperationsTodayWorkspace({
                         </strong>
                     </button>
                 ))}
-            </nav>
-
-            <div
-                className={workPanelClass('actions', active)}
-                data-dashboard-work-panel="actions"
-            >
-                <OperationsActionQueue actions={props.nextActions} />
             </div>
+
+            {active === 'actions' ? (
+                <div
+                    id="dashboard-work-panel-actions"
+                    className={workPanelClass('actions', active)}
+                    data-dashboard-work-panel="actions"
+                    role="tabpanel"
+                    aria-labelledby="dashboard-work-tab-actions"
+                >
+                    <OperationsActionQueue actions={props.nextActions} />
+                </div>
+            ) : null}
             <OperationsPriorityPanels active={active} props={props} />
         </div>
     );
