@@ -1,15 +1,15 @@
 # Property Control System Status
 
-Updated: August 16, 2026
+Updated: August 17, 2026
 
 ## Current position
 
 The application is an operational MVP release candidate. Core property, tenant, lease, payment, maintenance, document, reporting, CMS, localization, map, permission, and audit workflows are implemented. The remaining launch work is operational configuration and business approval, not another UI rewrite.
 
-## August 16 activation checkpoint
+## August 17 activation checkpoint
 
 - Local release gates pass for the current release candidate: 657 PHP tests with 38,865 assertions, zero PHPStan errors against the accepted baseline, 70 Playwright/axe scenarios, PHP syntax, Pint, TypeScript, ESLint, Prettier, migrations, route discovery, Vite production build, Composer audit, and pnpm audit.
-- The authenticated production smoke cycle passes the EN/AR maintenance queue, guided request form, tabbed case detail, and triage workspace at mobile width without horizontal overflow. `/up` returns HTTP 200, and the production Vite manifest SHA-256 matches the verified local build.
+- Hostinger runs revision `c7d070667e6f29c6cffa88fddd03aa9bf1c3bb6d`. The authenticated production smoke cycle passes the EN/AR payment register, guided payment form, tabbed payment detail, PDF evidence workspace, localized Arabic money/date values, and mobile overflow checks. `/up` returns HTTP 200, warm payment pages respond below 1.4 seconds, and the production Vite manifest SHA-256 matches the verified local build.
 - The August 16 category-normalization migration is uploaded but awaits `php artisan migrate --force` through Hostinger PHP 8.4. It is data-only; legacy translation aliases keep existing electrical, HVAC, and appliance records readable until the command runs.
 - Production Launch Readiness is 9 of 12 ready. Mail remains blocked because the live mailer is `log`; the scheduler remains blocked because no heartbeat exists. Queue health is clean with zero pending and zero failed jobs.
 - Production contains 12 showcase portfolios and zero live portfolios. Real onboarding and the 30-day four-role pilot are intentionally not started without an approved opening-data workbook and named real participants.

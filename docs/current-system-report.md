@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
-**Report date:** August 16, 2026
-**Application build revision verified in production:** `c60e1f632a4ac5efd9940398279121900fec5d0f`
+**Report date:** August 17, 2026
+**Application build revision verified in production:** `c7d070667e6f29c6cffa88fddd03aa9bf1c3bb6d`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -11,7 +11,7 @@ The repository contains a broad, working property-operations platform rather tha
 
 The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,865 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
-The verified maintenance release is deployed to Hostinger and its Vite manifest hash matches the local build. The live site responds successfully at `/up`; authenticated EN/AR maintenance index, guided create form, tabbed detail, and triage pages pass at mobile width. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The verified payment-evidence release is deployed to Hostinger and its Vite manifest hash matches the local build. The live site responds successfully at `/up`; authenticated EN/AR payment index, guided create form, tabbed detail, PDF evidence controls, localized Arabic money/date presentation, and mobile overflow checks pass against production. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
