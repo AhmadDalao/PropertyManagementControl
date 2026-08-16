@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `27f3db2c04b54b41d7eded958e2d43ef355e050f`
+**Application build revision verified in production:** `5fb920a953c7444afe49c09e4cf3a931757a298d`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,916 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,921 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
-The focused Action Center release is deployed to Hostinger and its Vite manifest SHA-256, `e9e9e39e83942ce20ecb81eeb854447e5e67a4fa4d9e1a17b1bc82eaf42bfb70`, matches the local build. The live site responds successfully at `/up`; authenticated mobile smoke checks pass for login, property scope, the six-record decision queue, work-type-specific English/Arabic headings, responsive filters, pagination, direct actions, and horizontal overflow. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The focused Maintenance case release is deployed to Hostinger and its Vite manifest SHA-256, `d9cd59c17e4087df97b8bde684c03f7388e8e78aa061757277c72fed06b61c35`, matches the local build. The live site responds successfully at `/up`; authenticated English/Arabic smoke checks pass for login and a seeded maintenance record at desktop and 390px. Its Next Step card stays bounded inside the 320px desktop rail, all six sections remain visible in a three-by-two mobile tab grid, keyboard navigation persists the active `?tab=`, Arabic is translated and RTL, and neither viewport overflows. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -598,6 +598,8 @@ Follow-ups are append-only. Derived states include untracked, due, promised, bro
 **Detail:** issue and tenancy context, progress, workflow, public/internal updates, private evidence, work orders, expenses, service reports, resolution summary, tenant response, history.  
 **Actions:** assign, reprioritize, comment public/internal, create work order, add expense/evidence, resolve, cancel, reopen, download PDF/DOCX service report, tenant confirm/reopen.
 
+**Case workspace:** overview keeps request and service context beside a five-step lifecycle and a maintenance-owned compact Next Step card. Desktop actions stack inside the 320px context rail instead of squeezing a wide shared banner. Mobile exposes overview, work orders, updates, expenses, evidence, and history as a visible three-by-two grid. Arrow keys plus Home/End move focus and selection with RTL-aware direction, while the active section persists in `?tab=`.
+
 **Management create fields:** portfolio, required asset and tenant, optional assignee, category, priority, status, title, description, internal notes, resolution summary required when resolved, optional evidence images.  
 **Tenant create fields:** own rented asset, category, priority, title, description, optional evidence; lease/tenant/portfolio derive from the signed-in user.  
 **Triage fields:** assignee, priority, allowed status, internal notes, required resolution summary on resolve, comment, public-comment switch. Tenant update accepts only a comment.
@@ -894,7 +896,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 657 passed, 38,916 assertions |
+| Fresh PHPUnit run | 657 passed, 38,921 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 70 scenarios |
