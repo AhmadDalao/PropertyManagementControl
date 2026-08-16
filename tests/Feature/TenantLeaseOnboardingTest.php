@@ -209,6 +209,8 @@ class TenantLeaseOnboardingTest extends TestCase
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/leases/show')
+                ->where('detailPage.mode', 'admin')
                 ->where('detailPage.progress.title', 'Prepare this tenancy for handover')
                 ->where('detailPage.header.actions', fn ($actions) => collect($actions)->contains(
                     fn (array $action): bool => $action['label'] === 'Contract PDF'
@@ -230,6 +232,7 @@ class TenantLeaseOnboardingTest extends TestCase
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.mode', 'tenant')
                 ->where('detailPage.progress', null));
 
         Storage::disk('local')->put('documents/signed-checklist.pdf', '%PDF-1.4 signed');
@@ -269,6 +272,9 @@ class TenantLeaseOnboardingTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.progress.completed', 6)
                 ->where('detailPage.progress.summary', '6 of 6 ready')
+                ->where('detailPage.progress.collapseWhenComplete', true)
+                ->where('detailPage.progress.expandLabel', 'Show checklist')
+                ->where('detailPage.progress.collapseLabel', 'Hide checklist')
                 ->where('detailPage.progress.steps', fn ($steps) => collect($steps)
                     ->every(fn (array $step): bool => $step['state'] === 'complete')));
     }

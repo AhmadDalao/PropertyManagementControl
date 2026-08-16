@@ -1,4 +1,14 @@
 import type {
+    DetailItem,
+    DetailSection,
+    RelatedTable,
+    ResourceDocument,
+    ResourceHeaderProps,
+    ResourceProgress,
+    ResourceTimelineEntry,
+    ResourceWorkflow,
+} from '@/components/resource-cycle';
+import type {
     PaginatedData,
     SharedProps,
     TableCount,
@@ -53,4 +63,24 @@ export type LeaseIndexPageProps = SharedProps & {
     propertyOptions: PropertyOption[];
     statusOptions: string[];
     frequencyOptions: string[];
+};
+
+export type LeaseRelatedTable = RelatedTable & {
+    key: 'installments' | 'payments';
+};
+
+export type LeaseDetailPage = {
+    mode: 'admin' | 'tenant';
+    header: ResourceHeaderProps;
+    workflow: ResourceWorkflow;
+    progress?: ResourceProgress | null;
+    stats: DetailItem[];
+    sections: DetailSection[];
+    related: LeaseRelatedTable[];
+    documents: ResourceDocument[];
+    timeline: ResourceTimelineEntry[];
+};
+
+export type LeaseDetailPageProps = SharedProps & {
+    detailPage: LeaseDetailPage;
 };

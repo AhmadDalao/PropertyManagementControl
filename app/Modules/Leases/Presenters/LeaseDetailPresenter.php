@@ -39,6 +39,7 @@ final class LeaseDetailPresenter
         }
 
         return [
+            'mode' => $data->adminMode ? 'admin' : 'tenant',
             'header' => $this->header->present($data),
             'workflow' => $this->workflow->present($data),
             'progress' => $this->moveOutProgress->present($data)

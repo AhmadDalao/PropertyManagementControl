@@ -99,6 +99,10 @@ class LeaseLifecycleWorkspaceTest extends TestCase
             ->get(route('leases.show', $lease))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/leases/show')
+                ->where('detailPage.mode', 'admin')
+                ->where('detailPage.related.0.key', 'installments')
+                ->where('detailPage.related.1.key', 'payments')
                 ->has('detailPage.related.0.rows', 4)
                 ->where('detailPage.documents.0.href', route('documents.download', $document)));
     }

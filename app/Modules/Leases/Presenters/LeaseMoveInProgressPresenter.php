@@ -123,6 +123,9 @@ final class LeaseMoveInProgressPresenter
             ]),
             'completed' => $completed,
             'total' => count($steps),
+            'collapseWhenComplete' => true,
+            'expandLabel' => trans('app.leases.progress_show_steps'),
+            'collapseLabel' => trans('app.leases.progress_hide_steps'),
             'steps' => $steps,
         ];
     }

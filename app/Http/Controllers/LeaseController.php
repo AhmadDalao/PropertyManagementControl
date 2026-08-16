@@ -56,7 +56,7 @@ class LeaseController extends Controller
 
     public function show(Request $request, Lease $lease): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/leases/show', [
             'detailPage' => $this->detailPresenter->present($lease, $this->actor($request)),
         ]);
     }

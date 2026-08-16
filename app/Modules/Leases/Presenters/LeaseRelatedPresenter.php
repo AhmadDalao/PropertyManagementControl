@@ -31,6 +31,7 @@ final class LeaseRelatedPresenter
         }
 
         $related = [[
+            'key' => 'installments',
             'title' => trans('app.leases.installments'),
             'description' => trans('app.leases.installments_help'),
             'columns' => $installmentColumns,
@@ -62,6 +63,7 @@ final class LeaseRelatedPresenter
 
         if ($paymentsEnabled) {
             $related[] = [
+                'key' => 'payments',
                 'title' => trans('app.leases.payments'),
                 'description' => trans('app.leases.payments_help'),
                 'columns' => [

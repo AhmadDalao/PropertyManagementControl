@@ -19,6 +19,8 @@ class LeaseModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('ManageLeases', $source);
         $this->assertStringContainsString('LeaseDocuments', $source);
         $this->assertStringContainsString('LeaseContractWordExport', $source);
+        $this->assertStringContainsString("Inertia::render('admin/leases/show'", $source);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $source);
         $this->assertStringNotContainsString('Lease::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('Storage::', $source);
@@ -70,6 +72,12 @@ class LeaseModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/leases/lease-metrics.tsx'),
             $this->path('resources/js/modules/leases/lease-table.tsx'),
             $this->path('resources/js/modules/leases/lease-table-config.tsx'),
+            $this->path('resources/js/modules/leases/detail-page.tsx'),
+            $this->path('resources/js/modules/leases/lease-detail-card.tsx'),
+            $this->path('resources/js/modules/leases/lease-detail-tabs.tsx'),
+            $this->path('resources/js/modules/leases/lease-detail-workspace.tsx'),
+            $this->path('resources/js/modules/leases/lease-next-step-panel.tsx'),
+            $this->path('resources/js/pages/admin/leases/show.tsx'),
             $this->path('resources/js/modules/leases/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);

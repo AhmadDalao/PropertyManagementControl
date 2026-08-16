@@ -152,6 +152,7 @@ class ResourceCycleRouteTest extends TestCase
 
         foreach ($detailRoutes as [$routeName, $model]) {
             $component = match ($routeName) {
+                'leases.show' => 'admin/leases/show',
                 'maintenance-requests.show' => 'admin/maintenance/show',
                 'payments.show' => 'admin/payments/show',
                 default => 'admin/resource-show',

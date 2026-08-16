@@ -1629,8 +1629,8 @@ test.describe('authenticated administration', () => {
         for (const record of [
             {
                 path: '/leases/1',
-                selector: '.pmc-resource-workflow',
-                title: '#pmc-resource-workflow-title',
+                selector: '.pmc-lease-next-step',
+                title: '#pmc-lease-next-step-title',
             },
             {
                 path: '/payments/1',
@@ -1743,19 +1743,19 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases/1?locale=en');
+        await expect(page.locator('.pmc-lease-detail-tabs')).toBeVisible();
+        await expect(
+            page.locator('.pmc-lease-detail-tabs [role="tab"]'),
+        ).toHaveCount(6);
         const progress = page.locator('.pmc-resource-progress');
         await expect(progress).toBeVisible();
+        await expect(progress).toHaveAttribute(
+            'data-progress-complete',
+            'true',
+        );
+        await expect(progress.locator('ol')).toBeHidden();
+        await progress.getByRole('button', { name: 'Show checklist' }).click();
         await expect(progress.locator('li')).toHaveCount(6);
-        expect(
-            await progress
-                .locator('ol')
-                .evaluate(
-                    (node) =>
-                        window
-                            .getComputedStyle(node)
-                            .gridTemplateColumns.split(' ').length,
-                ),
-        ).toBe(1);
         const contractDownload = page.waitForEvent('download');
         await progress.getByRole('link', { name: 'Download contract' }).click();
         expect((await contractDownload).suggestedFilename()).toMatch(/\.pdf$/i);
@@ -1815,6 +1815,18 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByText('الأيام المتبقية', { exact: true }),
         ).toBeVisible();
+        const leaseTabs = page.locator('.pmc-lease-detail-tabs');
+        await expect(leaseTabs.getByRole('tab')).toHaveCount(6);
+        expect(
+            await leaseTabs.evaluate(
+                (node) =>
+                    window.getComputedStyle(node).gridTemplateColumns.split(' ')
+                        .length,
+            ),
+        ).toBe(3);
+        await leaseTabs.getByRole('tab').first().press('End');
+        await expect(leaseTabs.getByRole('tab').last()).toBeFocused();
+        await expect(page).toHaveURL(/tab=history/);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/leases/create?locale=ar');
