@@ -6,7 +6,6 @@ use App\Models\MaintenanceRequest;
 use App\Modules\Maintenance\Actions\ManageMaintenance;
 use App\Modules\Maintenance\Presenters\MaintenanceDetailPresenter;
 use App\Modules\Maintenance\Presenters\MaintenanceFormPresenter;
-use App\Modules\Maintenance\Presenters\MaintenanceTriagePagePresenter;
 use App\Modules\Maintenance\Queries\MaintenanceIndexQuery;
 use App\Modules\Maintenance\Requests\StoreMaintenanceRequest;
 use App\Modules\Maintenance\Requests\UpdateMaintenanceRequest;
@@ -22,7 +21,6 @@ class MaintenanceRequestController extends Controller
         private readonly MaintenanceIndexQuery $indexQuery,
         private readonly MaintenanceFormPresenter $formPresenter,
         private readonly MaintenanceDetailPresenter $detailPresenter,
-        private readonly MaintenanceTriagePagePresenter $triagePresenter,
         private readonly ManageMaintenance $maintenance,
         private readonly MaintenanceAccess $access,
     ) {}
@@ -61,10 +59,10 @@ class MaintenanceRequestController extends Controller
         $actor = $this->actor($request);
         $this->access->ensureCanAccess($actor, $maintenanceRequest);
 
-        return Inertia::render(
-            'admin/maintenance/triage',
-            $this->triagePresenter->present($actor, $maintenanceRequest),
-        );
+        return Inertia::render('admin/maintenance/triage', [
+            'formPage' => $this->formPresenter->present($actor, $maintenanceRequest),
+            'detailPage' => $this->detailPresenter->present($maintenanceRequest, $actor),
+        ]);
     }
 
     public function store(StoreMaintenanceRequest $request): RedirectResponse
