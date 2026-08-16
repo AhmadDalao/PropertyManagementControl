@@ -45,13 +45,13 @@ class MaintenanceTriageFormPresenter
 
         return [
             'layout' => 'maintenance',
-            'title' => trans('app.maintenance.triage_request', ['id' => $request->id]),
-            'description' => trans('app.maintenance.triage_request_help'),
+            'title' => trans('app.maintenance.triage_workspace_title'),
+            'description' => trans('app.maintenance.triage_workspace_description'),
             'backHref' => route('maintenance-requests.show', $request),
             'backLabel' => trans('app.maintenance.request_detail'),
             'action' => route('maintenance-requests.update', $request),
             'method' => 'put',
-            'submitLabel' => trans('app.maintenance.update_request'),
+            'submitLabel' => trans('app.maintenance.save_triage'),
             'fields' => [
                 ['name' => 'assigned_to_user_id', 'label' => trans('app.maintenance.assignee'), 'type' => 'select', 'options' => $this->presentOptions->managers($this->options->managers($actor))],
                 ['name' => 'priority', 'label' => trans('app.maintenance.priority'), 'type' => 'select', 'options' => $this->presentOptions->values(MaintenanceOptions::PRIORITIES)],

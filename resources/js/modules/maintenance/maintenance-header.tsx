@@ -6,9 +6,8 @@ import type { MaintenanceIndexPageProps } from './types';
 
 export function MaintenanceHeader({
     auth,
-    financialsEnabled,
     mode,
-}: Pick<MaintenanceIndexPageProps, 'auth' | 'financialsEnabled' | 'mode'>) {
+}: Pick<MaintenanceIndexPageProps, 'auth' | 'mode'>) {
     const { t } = useTranslator();
     const canCreate = canCreateOperationalRecord(auth.user);
 
@@ -30,22 +29,6 @@ export function MaintenanceHeader({
                               ),
                               href: '/maintenance-work-orders',
                               icon: 'bi-clipboard2-check',
-                              tone: 'quiet' as const,
-                          },
-                          {
-                              label: t('maintenance.vendor_directory_action'),
-                              href: '/maintenance-vendors',
-                              icon: 'bi-building-check',
-                              tone: 'quiet' as const,
-                          },
-                      ]
-                    : []),
-                ...(mode === 'manager' && financialsEnabled
-                    ? [
-                          {
-                              label: t('maintenance.expenses_action'),
-                              href: '/expenses',
-                              icon: 'bi-receipt',
                               tone: 'quiet' as const,
                           },
                       ]

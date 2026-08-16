@@ -17,6 +17,7 @@ use App\Models\Portfolio;
 use App\Models\ShowcaseDataset;
 use App\Models\TenantProfile;
 use App\Models\User;
+use App\Modules\Maintenance\Support\MaintenanceOptions;
 use App\Modules\ShowcaseData\Actions\BuildShowcaseProperty;
 use App\Modules\ShowcaseData\Actions\PurgeShowcaseDataset;
 use App\Modules\ShowcaseData\Actions\RetryShowcaseDataset;
@@ -213,6 +214,10 @@ class ShowcaseDatasetTest extends TestCase
         $this->assertSame(120, CollectionFollowUp::query()->whereIn('lease_id', $leaseIds)->count());
         $this->assertSame(1600, Payment::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(320, MaintenanceRequest::query()->whereIn('portfolio_id', $portfolioIds)->count());
+        $this->assertSame(0, MaintenanceRequest::query()
+            ->whereIn('portfolio_id', $portfolioIds)
+            ->whereNotIn('category', MaintenanceOptions::CATEGORIES)
+            ->count());
         $this->assertSame(20, MaintenanceVendor::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(320, MaintenanceWorkOrder::query()->whereIn('portfolio_id', $portfolioIds)->count());
         $this->assertSame(240, ExpenseEntry::query()->whereIn('portfolio_id', $portfolioIds)->count());

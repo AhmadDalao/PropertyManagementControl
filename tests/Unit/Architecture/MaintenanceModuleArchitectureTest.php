@@ -77,6 +77,27 @@ class MaintenanceModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('<RecordActions', $table);
         $this->assertStringNotContainsString('columns={[', $table);
         $this->assertStringNotContainsString('text(', $entry.$table.$config.$cells);
+
+        foreach ([
+            'resources/js/modules/maintenance/request-form-page.tsx',
+            'resources/js/modules/maintenance/request-form-workspace.tsx',
+            'resources/js/modules/maintenance/triage-page.tsx',
+            'resources/js/modules/maintenance/triage-workspace.tsx',
+            'resources/js/modules/maintenance/detail-page.tsx',
+            'resources/js/modules/maintenance/maintenance-detail-workspace.tsx',
+            'resources/js/modules/maintenance/maintenance-detail-tabs.tsx',
+        ] as $path) {
+            $this->assertFileExists($this->path($path));
+        }
+
+        $this->assertStringNotContainsString(
+            'admin/resource-form',
+            $this->source('app/Http/Controllers/MaintenanceRequestController.php'),
+        );
+        $this->assertStringNotContainsString(
+            'admin/resource-show',
+            $this->source('app/Http/Controllers/MaintenanceRequestController.php'),
+        );
     }
 
     #[Test]
@@ -133,6 +154,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Presenters/MaintenanceResolutionFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceTableRowPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceTriageFormPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceTriagePagePresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkflowPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceVendorDetailPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceVendorFormPresenter.php',

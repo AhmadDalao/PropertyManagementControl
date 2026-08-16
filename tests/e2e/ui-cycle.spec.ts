@@ -2131,6 +2131,37 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         const addPhotosHref = await addPhotos.getAttribute('href');
         expect(addPhotosHref).toBeTruthy();
+
+        const detailPath = new URL(detailHref!, page.url()).pathname;
+        await page.goto(`${detailPath}/edit?locale=ar`);
+        await expect(
+            page.getByRole('heading', {
+                level: 1,
+                name: 'فرز طلب الصيانة وحله',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'الفرز', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'الحل', exact: true }),
+        ).toBeVisible();
+        const lifecycleStates = await page
+            .locator('.pmc-maintenance-lifecycle em')
+            .allTextContents();
+        expect(lifecycleStates).not.toContain('complete');
+        expect(lifecycleStates).not.toContain('current');
+        expect(lifecycleStates).not.toContain('pending');
+        await expect(
+            page
+                .locator('#pmc-maintenance-triage-form')
+                .getByRole('button', { name: 'حفظ الفرز' }),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-resource-header .pmc-resource-actions'),
+        ).toBeHidden();
+        await expectNoHorizontalOverflow(page);
+
         await page.goto(`${addPhotosHref}?locale=ar`);
         const evidenceInput = page.getByLabel(/^صور توثيق العطل/);
         await expect(evidenceInput).toHaveAttribute('multiple', '');
@@ -2151,6 +2182,7 @@ test.describe('authenticated administration', () => {
             'multiple',
             '',
         );
+        expect(await page.locator('[required]').count()).toBeGreaterThan(0);
         await expectNoHorizontalOverflow(page);
     });
 

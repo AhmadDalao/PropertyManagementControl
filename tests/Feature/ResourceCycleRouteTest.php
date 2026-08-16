@@ -124,11 +124,15 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($createRoutes as $routeName) {
+            $component = $routeName === 'maintenance-requests.create'
+                ? 'admin/maintenance/create'
+                : 'admin/resource-form';
+
             $this->actingAs($owner)
                 ->get(route($routeName))
                 ->assertOk()
                 ->assertInertia(fn (Assert $page) => $page
-                    ->component('admin/resource-form')
+                    ->component($component)
                     ->where('formPage.layout', $expectedLayouts[$routeName]));
         }
 
@@ -145,10 +149,14 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($detailRoutes as [$routeName, $model]) {
+            $component = $routeName === 'maintenance-requests.show'
+                ? 'admin/maintenance/show'
+                : 'admin/resource-show';
+
             $this->actingAs($owner)
                 ->get(route($routeName, $model))
                 ->assertOk()
-                ->assertInertia(fn (Assert $page) => $page->component('admin/resource-show'));
+                ->assertInertia(fn (Assert $page) => $page->component($component));
         }
 
         $this->actingAs($owner)
@@ -183,11 +191,15 @@ class ResourceCycleRouteTest extends TestCase
         ];
 
         foreach ($editRoutes as [$routeName, $model]) {
+            $component = $routeName === 'maintenance-requests.edit'
+                ? 'admin/maintenance/triage'
+                : 'admin/resource-form';
+
             $this->actingAs($owner)
                 ->get(route($routeName, $model))
                 ->assertOk()
                 ->assertInertia(fn (Assert $page) => $page
-                    ->component('admin/resource-form')
+                    ->component($component)
                     ->where('formPage.layout', $expectedEditLayouts[$routeName]));
         }
     }

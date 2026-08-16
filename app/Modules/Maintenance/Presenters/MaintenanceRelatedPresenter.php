@@ -38,6 +38,7 @@ class MaintenanceRelatedPresenter
         $access = trans('app.work_orders.access');
 
         return [
+            'key' => 'work-orders',
             'title' => trans($data->tenantMode
                 ? 'app.work_orders.service_visits'
                 : 'app.maintenance.work_orders'),
@@ -91,6 +92,7 @@ class MaintenanceRelatedPresenter
         $comment = trans('app.maintenance.comment');
 
         return [
+            'key' => 'updates',
             'title' => trans('app.maintenance.updates'),
             'description' => trans($data->tenantMode
                 ? 'app.maintenance.updates_help_tenant'
@@ -115,6 +117,7 @@ class MaintenanceRelatedPresenter
         $status = trans('app.maintenance.status');
 
         return [
+            'key' => 'expenses',
             'title' => trans('app.maintenance.expenses'),
             'description' => trans('app.maintenance.expenses_help'),
             'columns' => [$expense, $vendor, $amount, $status],

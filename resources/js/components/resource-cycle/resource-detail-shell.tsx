@@ -6,7 +6,6 @@ import { DecisionCardGrid } from './decision-card-grid';
 import { DetailCard } from './detail-card';
 import { DocumentStrip } from './document-strip';
 import { HistoryTimeline } from './history-timeline';
-import { MaintenanceTriageLayout } from './maintenance-triage-layout';
 import { RelatedRecordsTable } from './related-records-table';
 import { buildAvailableTabs, requestedTab } from './resource-detail-tab-state';
 import { ResourceDetailTabs } from './resource-detail-tabs';
@@ -21,7 +20,6 @@ import type {
 import { WorkflowActionPanel } from './workflow-action-panel';
 
 export function ResourceDetailShell({
-    layout = 'default',
     header,
     spotlight,
     workflow,
@@ -51,22 +49,6 @@ export function ResourceDetailShell({
     const [activeTab, setActiveTab] = useState<ResourceDetailTab>(() =>
         requestedTab(availableTabs),
     );
-
-    if (layout === 'maintenance-triage') {
-        return (
-            <MaintenanceTriageLayout
-                header={header}
-                spotlight={spotlight}
-                workflow={workflow}
-                progress={progress}
-                stats={stats}
-                sections={visibleSections}
-                related={related}
-                documents={documents}
-                timeline={timeline}
-            />
-        );
-    }
 
     const selectTab = (tab: ResourceDetailTab) => {
         setActiveTab(tab);

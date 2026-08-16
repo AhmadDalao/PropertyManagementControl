@@ -105,6 +105,7 @@ class MaintenanceCreateFormPresenter
                 ['name' => 'status', 'label' => trans('app.maintenance.status'), 'type' => 'select', 'options' => $this->presentOptions->values(MaintenanceOptions::STATUSES)],
                 ['name' => 'title', 'label' => trans('app.maintenance.issue_title'), 'required' => true],
                 ['name' => 'description', 'label' => trans('app.maintenance.issue_description'), 'type' => 'textarea', 'required' => true],
+                $this->photoField(),
                 [
                     'name' => 'resolution_summary',
                     'label' => trans('app.maintenance.resolution_summary'),
@@ -112,7 +113,6 @@ class MaintenanceCreateFormPresenter
                     'help' => trans('app.maintenance.resolution_summary_help'),
                 ],
                 ['name' => 'internal_notes', 'label' => trans('app.maintenance.internal_notes'), 'type' => 'textarea'],
-                $this->photoField(),
             ]),
             'initialValues' => [
                 'portfolio_id' => (string) $portfolioId,

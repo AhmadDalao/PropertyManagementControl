@@ -70,12 +70,63 @@ class MaintenanceDetailOverviewPresenter
                 'actions' => $this->actions($data),
             ],
             'stats' => $this->resources->detailItems($stats),
+            'requestContext' => $this->requestContext($data),
+            'serviceContext' => $this->serviceContext($data),
             'sections' => [[
                 'title' => trans('app.maintenance.request_context'),
                 'description' => trans('app.maintenance.request_context_help'),
                 'items' => $this->context($data),
             ]],
         ];
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function requestContext(MaintenanceDetailData $data): array
+    {
+        $request = $data->request;
+
+        return $this->resources->detailItems([
+            ['label' => trans('app.maintenance.request_number'), 'value' => '#'.$request->id],
+            ['label' => trans('app.maintenance.issue_title'), 'value' => $request->title],
+            ['label' => trans('app.maintenance.tenant'), 'value' => $request->tenantProfile?->user?->name],
+            [
+                'label' => trans('app.maintenance.property_unit'),
+                'value' => $this->resources->localized(
+                    $request->asset?->title_en,
+                    $request->asset?->title_ar,
+                ),
+            ],
+            ['label' => trans('app.maintenance.reported'), 'value' => $request->requested_at?->toDateTimeString()],
+            ['label' => trans('app.maintenance.category'), 'value' => trans("app.status.{$request->category}")],
+        ]);
+    }
+
+    /** @return array<int, array<string, mixed>> */
+    private function serviceContext(MaintenanceDetailData $data): array
+    {
+        $request = $data->request;
+
+        return $this->resources->detailItems([
+            ['label' => trans('app.maintenance.assigned_to'), 'value' => $request->assignedTo?->name],
+            ['label' => trans('app.maintenance.due_at'), 'value' => $request->due_at?->toDateTimeString()],
+            ['label' => trans('app.maintenance.issue_description'), 'value' => $request->description],
+            ['label' => trans('app.maintenance.resolution_summary'), 'value' => $request->resolution_summary],
+            [
+                'label' => trans('app.maintenance.tenant_confirmation'),
+                'value' => $request->tenant_confirmed_at
+                    ? trans('app.maintenance.confirmed_at', [
+                        'date' => $request->tenant_confirmed_at->toDateTimeString(),
+                    ])
+                    : ($request->status === 'resolved'
+                        ? trans('app.maintenance.pending_confirmation')
+                        : null),
+            ],
+            ['label' => trans('app.maintenance.tenant_response_note'), 'value' => $request->tenant_confirmation_note],
+            [
+                'label' => trans('app.maintenance.internal_notes'),
+                'value' => $data->tenantMode ? null : $request->internal_notes,
+            ],
+        ]);
     }
 
     /** @return array<int, array<string, mixed>> */

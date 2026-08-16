@@ -16,5 +16,6 @@ export type {
     ResourceProgress,
     ResourceProgressStep,
     ResourceSpotlight,
+    ResourceTimelineEntry,
     ResourceWorkflow,
 } from './types';

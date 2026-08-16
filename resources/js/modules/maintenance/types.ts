@@ -1,9 +1,20 @@
 import type {
+    DetailItem,
+    DetailSection,
+    RelatedTable,
+    ResourceDocument,
+    ResourceFormShellProps,
+    ResourceHeaderProps,
+    ResourceProgress,
+    ResourceTimelineEntry,
+    ResourceWorkflow,
+} from '@/components/resource-cycle';
+import type {
     PaginatedData,
+    PropertyOption,
     SharedProps,
     TableCount,
     TableFilters,
-    PropertyOption,
 } from '@/types';
 
 export type MaintenanceRecord = {
@@ -72,3 +83,34 @@ export type MaintenanceTableProps = Pick<
     | 'auth'
     | 'app'
 >;
+
+export type MaintenanceRelatedTable = RelatedTable & {
+    key: 'work-orders' | 'updates' | 'expenses';
+};
+
+export type MaintenanceDetailPage = {
+    mode: 'tenant' | 'manager';
+    header: ResourceHeaderProps;
+    requestContext: DetailItem[];
+    serviceContext: DetailItem[];
+    stats: DetailItem[];
+    sections: DetailSection[];
+    progress: ResourceProgress;
+    workflow: ResourceWorkflow;
+    related: MaintenanceRelatedTable[];
+    documents: ResourceDocument[];
+    timeline: ResourceTimelineEntry[];
+};
+
+export type MaintenanceRequestFormPageProps = SharedProps & {
+    formPage: ResourceFormShellProps;
+};
+
+export type MaintenanceDetailPageProps = SharedProps & {
+    detailPage: MaintenanceDetailPage;
+};
+
+export type MaintenanceTriagePageProps = SharedProps & {
+    formPage: ResourceFormShellProps;
+    detailPage: MaintenanceDetailPage;
+};

@@ -121,6 +121,7 @@ export type ResourceProgress = {
 export type RelatedCell = ReactNode | { label: string; href: string };
 
 export type RelatedTable = {
+    key?: string;
     title: string;
     description?: string;
     columns: string[];
@@ -185,7 +186,6 @@ export type ResourceFormShellProps = {
 };
 
 export type ResourceDetailShellProps = {
-    layout?: 'default' | 'maintenance-triage';
     header: ResourceHeaderProps;
     spotlight?: ResourceSpotlight;
     workflow?: ResourceWorkflow;

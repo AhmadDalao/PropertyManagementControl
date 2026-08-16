@@ -22,7 +22,7 @@ class ShowcaseMaintenanceBuilder
         int $buildingIndex,
     ): array {
         $items = [];
-        $categories = ['electrical', 'plumbing', 'hvac', 'appliance'];
+        $categories = ['electricity', 'plumbing', 'ac', 'general'];
         $statuses = ['open', 'in_progress', 'resolved', 'open'];
         $priorities = ['low', 'medium', 'high', 'urgent'];
 

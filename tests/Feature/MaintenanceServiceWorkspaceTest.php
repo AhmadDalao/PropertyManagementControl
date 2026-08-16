@@ -369,7 +369,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.show', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/maintenance/show')
                 ->where('detailPage.stats', fn ($stats) => ! collect($stats)->contains('label', 'Cost'))
                 ->where('detailPage.related', fn ($related) => collect($related)->count() === 2
                     && collect($related)[0]['title'] === 'Service visits'
@@ -655,6 +655,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance/create')
                 ->where('app.locale', 'ar')
                 ->where('formPage.title', 'إنشاء طلب')
                 ->where('formPage.fields', fn ($fields) => collect($fields)->pluck('label')->contains('الأصل')
@@ -666,6 +667,7 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.show', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance/show')
                 ->where('detailPage.header.eyebrow', 'طلب صيانة')
                 ->where('detailPage.header.description', 'التكييف والتهوية · متوسط · مفتوح')
                 ->where('detailPage.header.backLabel', 'قائمة الصيانة')
@@ -723,6 +725,10 @@ class MaintenanceServiceWorkspaceTest extends TestCase
             ->get(route('maintenance-requests.edit', $requestItem))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance/triage')
+                ->where('formPage.title', 'Maintenance triage & resolution')
+                ->where('detailPage.requestContext.0.value', '#'.$requestItem->id)
+                ->where('detailPage.mode', 'manager')
                 ->where('formPage.fields', function ($fields): bool {
                     $status = collect($fields)->firstWhere('name', 'status');
 

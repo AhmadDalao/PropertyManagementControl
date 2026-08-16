@@ -1,0 +1,490 @@
+.pmc-maintenance-form-layout,
+.pmc-maintenance-triage-workspace,
+.pmc-maintenance-overview-grid {
+    display: grid;
+    min-width: 0;
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.pmc-maintenance-form-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.28fr);
+}
+
+.pmc-maintenance-triage-workspace,
+.pmc-maintenance-overview-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.32fr);
+}
+
+.pmc-maintenance-form-layout > form,
+.pmc-maintenance-triage-workspace > form,
+.pmc-maintenance-triage-workspace > aside,
+.pmc-maintenance-overview-grid > main,
+.pmc-maintenance-overview-grid > aside {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-maintenance-form-guide,
+.pmc-maintenance-triage-workspace > aside,
+.pmc-maintenance-overview-grid > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 0.75rem);
+}
+
+.pmc-maintenance-form-section,
+.pmc-maintenance-form-guide,
+.pmc-maintenance-panel,
+.pmc-maintenance-detail-panel {
+    min-width: 0;
+    margin: 0;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: var(--pmc-surface);
+}
+
+.pmc-maintenance-form-section > header,
+.pmc-maintenance-panel > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.pmc-maintenance-form-section h2,
+.pmc-maintenance-panel h2,
+.pmc-maintenance-form-guide h2 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.pmc-maintenance-form-section p,
+.pmc-maintenance-panel header p,
+.pmc-maintenance-form-guide p {
+    margin: 0.18rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.6rem;
+    line-height: 1.5;
+}
+
+.pmc-maintenance-field-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-maintenance-field-grid > .pmc-resource-field:has(textarea),
+.pmc-maintenance-field-grid > .pmc-resource-field:has(input[type='file']),
+.pmc-maintenance-field-grid > .pmc-resource-check {
+    grid-column: 1 / -1;
+}
+
+.pmc-maintenance-form-guide {
+    display: grid;
+    gap: 0.65rem;
+    background: linear-gradient(145deg, #fff 0%, var(--pmc-surface-green) 100%);
+}
+
+.pmc-maintenance-form-guide > span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.54rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-maintenance-guide-icon {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 1rem;
+}
+
+.pmc-maintenance-guide-progress {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(18, 129, 60, 0.14);
+}
+
+.pmc-maintenance-guide-progress > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.58rem;
+}
+
+.pmc-maintenance-guide-progress progress {
+    width: 100%;
+    height: 0.4rem;
+    accent-color: var(--pmc-primary);
+}
+
+.pmc-maintenance-guide-next {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.6rem;
+    border-radius: 0.48rem;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    line-height: 1.45;
+}
+
+.pmc-maintenance-guide-next i {
+    color: var(--pmc-primary);
+}
+
+.pmc-maintenance-context dl {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.65rem;
+    margin: 0;
+}
+
+.pmc-maintenance-context dl > div {
+    min-width: 0;
+}
+
+.pmc-maintenance-context dt {
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-maintenance-context dd {
+    min-width: 0;
+    margin: 0.2rem 0 0;
+    overflow-wrap: anywhere;
+    font-size: 0.65rem;
+    font-weight: 720;
+}
+
+.pmc-maintenance-context dd a {
+    color: var(--pmc-primary-strong);
+    text-decoration: none;
+}
+
+.pmc-maintenance-lifecycle > header strong {
+    flex: 0 0 auto;
+    padding: 0.25rem 0.42rem;
+    border-radius: 999px;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 0.52rem;
+}
+
+.pmc-maintenance-lifecycle ol {
+    display: grid;
+    gap: 0.38rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-maintenance-lifecycle li {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: 1.7rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.55rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.48rem;
+}
+
+.pmc-maintenance-lifecycle li > span {
+    display: grid;
+    width: 1.7rem;
+    height: 1.7rem;
+    place-items: center;
+    border-radius: 0.42rem;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-maintenance-lifecycle li.is-complete > span,
+.pmc-maintenance-lifecycle li.is-current > span {
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-maintenance-lifecycle li > div {
+    min-width: 0;
+}
+
+.pmc-maintenance-lifecycle li strong,
+.pmc-maintenance-lifecycle li p {
+    display: block;
+    margin: 0;
+}
+
+.pmc-maintenance-lifecycle li strong {
+    font-size: 0.58rem;
+}
+
+.pmc-maintenance-lifecycle li p {
+    margin-top: 0.12rem;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.49rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-maintenance-lifecycle li > em {
+    padding: 0.18rem 0.35rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.46rem;
+    font-style: normal;
+    font-weight: 800;
+    text-transform: capitalize;
+}
+
+.pmc-maintenance-lifecycle li.is-complete > em {
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-maintenance-lifecycle li > a {
+    grid-column: 2 / -1;
+    color: var(--pmc-primary-strong);
+    font-size: 0.5rem;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.pmc-maintenance-actions-panel > div {
+    display: grid;
+    gap: 0.38rem;
+}
+
+.pmc-maintenance-actions-panel .btn {
+    min-height: 2.25rem;
+    justify-content: center;
+    font-size: 0.58rem;
+}
+
+.pmc-maintenance-detail-metrics {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.pmc-maintenance-detail-metrics article {
+    display: grid;
+    min-width: 0;
+    gap: 0.25rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.5rem;
+    background: #fff;
+}
+
+.pmc-maintenance-detail-metrics article.is-primary {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-maintenance-detail-metrics article.is-danger {
+    border-color: rgba(196, 48, 48, 0.24);
+    background: #fff5f5;
+}
+
+.pmc-maintenance-detail-metrics span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-maintenance-detail-metrics strong {
+    overflow-wrap: anywhere;
+    font-size: 0.82rem;
+}
+
+.pmc-maintenance-detail-tabs {
+    position: sticky;
+    z-index: 15;
+    top: calc(var(--pmc-topbar-height) + 0.5rem);
+    display: flex;
+    max-width: 100%;
+    gap: 0.3rem;
+    margin-bottom: 0.65rem;
+    padding: 0.3rem;
+    overflow-x: auto;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.55rem;
+    background: rgba(255, 255, 255, 0.96);
+    scrollbar-width: none;
+}
+
+.pmc-maintenance-detail-tabs button {
+    display: inline-flex;
+    min-height: 2.3rem;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.38rem 0.62rem;
+    border: 0;
+    border-radius: 0.38rem;
+    background: transparent;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 750;
+}
+
+.pmc-maintenance-detail-tabs button strong {
+    min-width: 1.25rem;
+    padding: 0.1rem 0.28rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    font-size: 0.48rem;
+}
+
+.pmc-maintenance-detail-tabs button.is-active {
+    background: var(--pmc-primary);
+    color: #fff;
+}
+
+.pmc-maintenance-detail-tabs button.is-active strong {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.pmc-maintenance-detail-panel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.pmc-maintenance-overview-grid .pmc-resource-workflow {
+    margin: 0;
+    border-radius: 0.62rem;
+    box-shadow: none;
+}
+
+.pmc-maintenance-empty-panel {
+    display: grid;
+    min-height: 14rem;
+    place-items: center;
+    align-content: center;
+    gap: 0.65rem;
+    padding: 1rem;
+    border: 1px dashed var(--pmc-line-strong);
+    border-radius: 0.62rem;
+    background: #fff;
+    color: var(--pmc-muted);
+    text-align: center;
+}
+
+.pmc-maintenance-empty-panel i {
+    color: var(--pmc-primary);
+    font-size: 1.6rem;
+}
+
+.pmc-maintenance-empty-panel p {
+    margin: 0;
+    font-size: 0.68rem;
+}
+
+.pmc-maintenance-mobile-actions {
+    display: none;
+}
+
+@media (max-width: 1199.98px) {
+    .pmc-maintenance-form-layout,
+    .pmc-maintenance-triage-workspace,
+    .pmc-maintenance-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-maintenance-form-guide,
+    .pmc-maintenance-triage-workspace > aside,
+    .pmc-maintenance-overview-grid > aside {
+        position: static;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-maintenance-form-page > .pmc-resource-header .pmc-resource-actions {
+        display: none;
+    }
+
+    .pmc-maintenance-form-section,
+    .pmc-maintenance-form-guide,
+    .pmc-maintenance-panel {
+        padding: 0.75rem;
+    }
+
+    .pmc-maintenance-field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-maintenance-field-grid > * {
+        grid-column: 1 !important;
+    }
+
+    .pmc-maintenance-context dl {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .pmc-maintenance-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-maintenance-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-maintenance-detail-tabs button {
+        min-height: 2.75rem;
+    }
+
+    .pmc-maintenance-mobile-actions {
+        position: sticky;
+        z-index: 25;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 0.5rem;
+        margin-inline: -0.25rem;
+        padding: 0.6rem;
+        border: 1px solid var(--pmc-line);
+        border-bottom: 0;
+        border-radius: 0.65rem 0.65rem 0 0;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 -10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .pmc-maintenance-mobile-actions .btn {
+        min-height: 2.75rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .pmc-maintenance-context dl {
+        grid-template-columns: 1fr;
+    }
+}

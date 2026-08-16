@@ -64,6 +64,7 @@ export function ResourceInput({
                     name={field.name}
                     className="form-control"
                     rows={field.rows ?? 4}
+                    required={field.required}
                     value={String(value ?? '')}
                     placeholder={
                         field.placeholder ? text(field.placeholder) : undefined
@@ -78,6 +79,7 @@ export function ResourceInput({
                     name={field.name}
                     className="form-select"
                     value={String(value ?? '')}
+                    required={field.required}
                     onChange={(event) => onChange(event.currentTarget.value)}
                     aria-describedby={describedBy}
                     aria-invalid={Boolean(error)}
@@ -99,6 +101,7 @@ export function ResourceInput({
                     type="file"
                     accept={field.accept}
                     multiple={field.multiple}
+                    required={field.required}
                     onChange={(event) =>
                         onChange(
                             field.multiple
@@ -122,6 +125,7 @@ export function ResourceInput({
                     step={field.step}
                     min={field.min}
                     max={field.max}
+                    required={field.required}
                     onChange={(event) =>
                         onChange(
                             field.type === 'number'
