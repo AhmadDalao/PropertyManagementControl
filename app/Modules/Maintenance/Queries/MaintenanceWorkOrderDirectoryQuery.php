@@ -2,7 +2,6 @@
 
 namespace App\Modules\Maintenance\Queries;
 
-use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceVendor;
 use App\Models\MaintenanceWorkOrder;
 use App\Models\User;
@@ -64,14 +63,7 @@ final class MaintenanceWorkOrderDirectoryQuery
         $this->access->ensureManager($actor);
         $query = $this->portfolios->apply(MaintenanceWorkOrder::query(), $actor);
 
-        return $this->assignments->restricts($actor)
-            ? $query->whereIn(
-                'maintenance_request_id',
-                MaintenanceRequest::query()
-                    ->whereIn('asset_id', $this->assignments->assetIds($actor) ?? [])
-                    ->select('id'),
-            )
-            : $query;
+        return $this->assignments->workOrders($query, $actor);
     }
 
     /**

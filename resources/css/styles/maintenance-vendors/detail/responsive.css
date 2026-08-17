@@ -1,0 +1,69 @@
+@media (max-width: 1199.98px) {
+    .pmc-vendor-overview-grid,
+    .pmc-vendor-section-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-vendor-overview-grid > aside,
+    .pmc-vendor-section-layout > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-vendor-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-vendor-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-vendor-detail-tabs button span {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+
+    .pmc-vendor-job-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-vendor-detail-metrics article {
+        min-height: 4.1rem;
+        padding: 0.6rem;
+    }
+
+    .pmc-vendor-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-vendor-detail-panel .pmc-resource-detail-card,
+    .pmc-vendor-detail-panel .pmc-side-panel,
+    .pmc-vendor-detail-panel .pmc-resource-workflow,
+    .pmc-vendor-summary,
+    .pmc-vendor-guidance,
+    .pmc-vendor-job-section {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-vendor-summary {
+        align-items: start;
+    }
+
+    .pmc-vendor-job-section > header {
+        display: grid;
+    }
+
+    .pmc-vendor-job-section > header .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

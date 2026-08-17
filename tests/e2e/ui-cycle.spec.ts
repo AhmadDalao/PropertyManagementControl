@@ -2427,6 +2427,43 @@ test.describe('authenticated administration', () => {
         ).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
+        const contractorDetailLink = page
+            .locator(
+                '.pmc-mobile-record-card a.pmc-mobile-record-title-link[href^="/maintenance-vendors/"]',
+            )
+            .first();
+        await expect(contractorDetailLink).toBeVisible();
+        const contractorHref = await contractorDetailLink.getAttribute('href');
+        expect(contractorHref).toBeTruthy();
+
+        await page.goto(`${contractorHref}?locale=ar`);
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        const contractorTabs = page
+            .getByTestId('vendor-detail-tabs')
+            .getByRole('tab');
+        await expect(contractorTabs).toHaveCount(5);
+        await expect(page.getByTestId('vendor-detail-panel')).toHaveCount(1);
+        await expect(page.locator('.pmc-resource-tab-select select')).toHaveCount(
+            0,
+        );
+        expect((await contractorTabs.first().boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(
+            44,
+        );
+
+        await page.getByRole('tab', { name: 'حجم العمل' }).click();
+        await expect(page).toHaveURL(/tab=workload/);
+        expect(await page.locator('.pmc-vendor-job-card').count()).toBeLessThanOrEqual(
+            16,
+        );
+        await page.getByRole('tab', { name: 'المواعيد' }).click();
+        await expect(page).toHaveURL(/tab=schedule/);
+        await expect(page.getByText('موقف المواعيد', { exact: true })).toBeVisible();
+        await page.getByRole('tab', { name: 'المالية' }).click();
+        await expect(page).toHaveURL(/tab=financial/);
+        await expect(page.getByText('موقف التكلفة', { exact: true })).toBeVisible();
+        await expect(page.getByTestId('vendor-detail-panel')).toHaveCount(1);
+        await expectNoHorizontalOverflow(page);
+
         await page.goto('/maintenance-vendors/create?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expect(

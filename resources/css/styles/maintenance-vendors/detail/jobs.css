@@ -1,0 +1,223 @@
+.pmc-vendor-job-section {
+    display: grid;
+    min-width: 0;
+    gap: 0.65rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: #fff;
+}
+
+.pmc-vendor-job-section > header {
+    display: flex;
+    min-width: 0;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-vendor-job-section h2,
+.pmc-vendor-job-section p {
+    margin: 0;
+}
+
+.pmc-vendor-job-section h2 {
+    font-size: 0.82rem;
+    font-weight: 820;
+}
+
+.pmc-vendor-job-section > header p {
+    margin-top: 0.2rem;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    line-height: 1.5;
+}
+
+.pmc-vendor-job-section > header .btn {
+    min-height: 2.5rem;
+    flex: 0 0 auto;
+    font-size: 0.61rem;
+}
+
+.pmc-vendor-job-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-vendor-job-card {
+    display: grid;
+    min-width: 0;
+    align-content: start;
+    gap: 0.65rem;
+    padding: 0.78rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.55rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-vendor-job-card > header {
+    display: flex;
+    min-width: 0;
+    align-items: start;
+    justify-content: space-between;
+    gap: 0.55rem;
+}
+
+.pmc-vendor-job-card > header > div {
+    min-width: 0;
+}
+
+.pmc-vendor-job-card > header small {
+    display: block;
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-vendor-job-card h3 {
+    margin: 0.12rem 0 0;
+    font-size: 0.76rem;
+    font-weight: 820;
+}
+
+.pmc-vendor-job-card h3 a {
+    color: var(--pmc-ink);
+    text-decoration: none;
+}
+
+.pmc-vendor-job-card > header > span,
+.pmc-vendor-job-card dd[class^='is-'] {
+    color: var(--pmc-muted);
+}
+
+.pmc-vendor-job-card > header > span {
+    flex: 0 0 auto;
+    padding: 0.22rem 0.42rem;
+    border-radius: 999px;
+    background: #fff;
+    font-size: 0.53rem;
+    font-weight: 800;
+}
+
+.pmc-vendor-job-card > header > span.is-primary,
+.pmc-vendor-job-card dd.is-primary {
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-vendor-job-card > header > span.is-teal,
+.pmc-vendor-job-card dd.is-teal {
+    color: #0f766e;
+}
+
+.pmc-vendor-job-card > header > span.is-danger,
+.pmc-vendor-job-card dd.is-danger {
+    color: #b42318;
+}
+
+.pmc-vendor-job-property {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pmc-vendor-job-property > span {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    place-items: center;
+    border-radius: 0.42rem;
+    background: #fff;
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-vendor-job-property strong,
+.pmc-vendor-job-property small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-vendor-job-property strong {
+    font-size: 0.65rem;
+}
+
+.pmc-vendor-job-property small {
+    color: var(--pmc-muted);
+    font-size: 0.55rem;
+}
+
+.pmc-vendor-job-card dl {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    border-top: 1px solid var(--pmc-line-soft);
+    border-inline-start: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-vendor-job-card dl > div {
+    min-width: 0;
+    padding: 0.48rem;
+    border-inline-end: 1px solid var(--pmc-line-soft);
+    border-bottom: 1px solid var(--pmc-line-soft);
+    background: #fff;
+}
+
+.pmc-vendor-job-card dt {
+    color: var(--pmc-muted);
+    font-size: 0.52rem;
+    font-weight: 700;
+}
+
+.pmc-vendor-job-card dd {
+    margin: 0.12rem 0 0;
+    overflow-wrap: anywhere;
+    font-size: 0.59rem;
+    font-weight: 750;
+}
+
+.pmc-vendor-job-card dd small {
+    display: block;
+    margin-top: 0.12rem;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 600;
+}
+
+.pmc-vendor-job-card > p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.59rem;
+    line-height: 1.5;
+    -webkit-line-clamp: 2;
+}
+
+.pmc-vendor-job-card footer {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.pmc-vendor-job-card footer .btn {
+    min-height: 2.5rem;
+    gap: 0.35rem;
+    font-size: 0.58rem;
+}
+
+.pmc-vendor-job-empty {
+    padding: 1rem;
+    border: 1px dashed var(--pmc-line);
+    border-radius: 0.5rem;
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    text-align: center;
+}

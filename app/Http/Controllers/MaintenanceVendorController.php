@@ -51,7 +51,7 @@ final class MaintenanceVendorController extends Controller
 
     public function show(Request $request, MaintenanceVendor $maintenanceVendor): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/maintenance-vendors/show', [
             'detailPage' => $this->details->present(
                 $maintenanceVendor,
                 $this->actor($request),

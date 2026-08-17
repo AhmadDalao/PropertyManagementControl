@@ -7,6 +7,7 @@ use App\Models\Document;
 use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
+use App\Models\MaintenanceWorkOrder;
 use App\Models\Payment;
 use App\Models\TenantProfile;
 use App\Models\User;
@@ -130,6 +131,17 @@ final class AssignedPropertyScope
     {
         return $this->restricts($actor)
             ? $query->whereIn('asset_id', $this->assetIds($actor) ?? [])
+            : $query;
+    }
+
+    /**
+     * @param  Builder<MaintenanceWorkOrder>  $query
+     * @return Builder<MaintenanceWorkOrder>
+     */
+    public function workOrders(Builder $query, User $actor): Builder
+    {
+        return $this->restricts($actor)
+            ? $query->whereIn('maintenance_request_id', $this->maintenanceIds($actor))
             : $query;
     }
 
@@ -262,6 +274,10 @@ final class AssignedPropertyScope
 
         if ($model instanceof MaintenanceRequest) {
             return $query->whereIn('asset_id', $this->assetIds($actor) ?? []);
+        }
+
+        if ($model instanceof MaintenanceWorkOrder) {
+            return $query->whereIn('maintenance_request_id', $this->maintenanceIds($actor));
         }
 
         if ($model instanceof Document) {

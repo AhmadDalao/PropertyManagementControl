@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Modules\Maintenance\Support\MaintenanceOptions;
 use App\Modules\Maintenance\Support\MaintenanceVendorAccess;
 use App\Modules\Maintenance\Support\MaintenanceVendorOptions;
+use App\Modules\Shared\Authorization\AssignedPropertyScope;
 use App\Modules\Shared\PortfolioScope;
 use App\Modules\Shared\TableQuery;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,7 @@ final class MaintenanceVendorIndexQuery
     public function __construct(
         private readonly MaintenanceVendorAccess $access,
         private readonly PortfolioScope $portfolios,
+        private readonly AssignedPropertyScope $assignments,
         private readonly TableQuery $tables,
     ) {}
 
@@ -70,8 +72,10 @@ final class MaintenanceVendorIndexQuery
             ])
             ->with('portfolio:id,name_en,name_ar')
             ->withCount([
-                'workOrders',
-                'workOrders as active_work_orders_count' => fn (Builder $query) => $query
+                'workOrders' => fn (Builder $query) => $this->assignments
+                    ->workOrders($query, $actor),
+                'workOrders as active_work_orders_count' => fn (Builder $query) => $this->assignments
+                    ->workOrders($query, $actor)
                     ->whereIn('status', ['scheduled', 'in_progress']),
             ]);
 
@@ -85,7 +89,7 @@ final class MaintenanceVendorIndexQuery
             'vendors' => $this->tables
                 ->paginate($listing, $filters, ['created_at', 'name', 'status', 'service_category'], 'name')
                 ->through(fn (MaintenanceVendor $vendor): array => $this->row($vendor)),
-            'vendorInsights' => $this->insights($summary),
+            'vendorInsights' => $this->insights($summary, $actor),
             'filters' => $filters,
             'counts' => collect($counts)->map(function (array $count): array {
                 $status = (string) data_get($count, 'filter.status', 'all');
@@ -127,14 +131,14 @@ final class MaintenanceVendorIndexQuery
      * @param  Builder<MaintenanceVendor>  $query
      * @return array<string, int>
      */
-    private function insights(Builder $query): array
+    private function insights(Builder $query, User $actor): array
     {
         $row = (clone $query)
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) as active")
             ->selectRaw("SUM(CASE WHEN status = 'inactive' THEN 1 ELSE 0 END) as inactive")
             ->first();
-        $activeJobs = MaintenanceWorkOrder::query()
+        $activeJobs = $this->assignments->workOrders(MaintenanceWorkOrder::query(), $actor)
             ->whereIn('vendor_id', (clone $query)->select('id'))
             ->whereIn('status', ['scheduled', 'in_progress'])
             ->count();

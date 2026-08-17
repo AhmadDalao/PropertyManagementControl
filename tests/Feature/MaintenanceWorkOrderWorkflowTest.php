@@ -76,6 +76,86 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
         ]);
     }
 
+    public function test_contractor_detail_is_a_scoped_bilingual_decision_workspace(): void
+    {
+        [$portfolio, $owner, $manager, $tenantUser, $request] = $this->fixture();
+        $vendor = $this->vendor($portfolio->id);
+
+        $this->travelTo('2026-08-17 10:00:00');
+        $overdue = $this->workOrder(
+            $portfolio,
+            $request,
+            $owner,
+            $manager,
+            $vendor,
+            'WO-VENDOR-OVERDUE',
+            'scheduled',
+            now()->subDay(),
+        );
+        $this->workOrder(
+            $portfolio,
+            $request,
+            $owner,
+            $manager,
+            $vendor,
+            'WO-VENDOR-FUTURE',
+            'in_progress',
+            now()->addDay(),
+        );
+
+        foreach (range(1, 9) as $index) {
+            $this->workOrder(
+                $portfolio,
+                $request,
+                $owner,
+                $manager,
+                $vendor,
+                sprintf('WO-VENDOR-DONE-%02d', $index),
+                'completed',
+                now()->subDays($index),
+            );
+        }
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'en'])
+            ->get(route('maintenance-vendors.show', $vendor))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance-vendors/show')
+                ->where('detailPage.header.title', $vendor->name)
+                ->where('detailPage.availableTabs', ['overview', 'workload', 'schedule', 'financial', 'history'])
+                ->where('detailPage.sections.0.key', 'identity')
+                ->where('detailPage.sections.1.key', 'contact')
+                ->where('detailPage.sections.2.key', 'schedule')
+                ->where('detailPage.sections.3.key', 'financial')
+                ->where('detailPage.stats.1.value', 2)
+                ->where('detailPage.stats.2.value', 1)
+                ->where('detailPage.stats.3.value', 9)
+                ->where('detailPage.workflow.title', 'Recover overdue contractor visits')
+                ->where('detailPage.workflow.actions.0.href', route('maintenance-work-orders.show', $overdue))
+                ->where('detailPage.workload.open', fn ($orders): bool => count($orders) === 2
+                    && $orders[0]['reference'] === $overdue->reference_code)
+                ->where('detailPage.workload.history', fn ($orders): bool => count($orders) === 8)
+                ->where('detailPage.notices.schedule.title', 'Overdue contractor visits: 1')
+                ->missing('detailPage.related')
+                ->missing('detailPage.documents'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-vendors.show', $vendor))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance-vendors/show')
+                ->where('app.locale', 'ar')
+                ->where('app.translations.maintenance_vendors.tabs.workload', 'حجم العمل')
+                ->where('detailPage.workflow.title', 'معالجة زيارات المقاول المتأخرة')
+                ->where('detailPage.sections.2.title', 'موقف المواعيد'));
+
+        $this->actingAs($tenantUser)
+            ->get(route('maintenance-vendors.show', $vendor))
+            ->assertForbidden();
+    }
+
     public function test_owner_schedules_work_and_tenant_sees_only_service_visit_data(): void
     {
         [$portfolio, $owner, $manager, $tenantUser, $request] = $this->fixture();
@@ -498,6 +578,8 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             $manager,
             $vendor,
             'WO-VISIBLE-001',
+            'scheduled',
+            now()->addDay(),
         );
         $hiddenAsset = $this->createAsset($portfolio, ['title_en' => 'Hidden Building']);
         $hiddenRequest = MaintenanceRequest::query()->create([
@@ -519,6 +601,8 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             $manager,
             $vendor,
             'WO-HIDDEN-001',
+            'in_progress',
+            now()->addDay(),
         );
 
         $this->actingAs($manager)
@@ -535,8 +619,41 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page->where('workOrders.total', 0));
 
+        $this->actingAs($manager)
+            ->get(route('maintenance-vendors.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('vendors.data.0.id', $vendor->id)
+                ->where('vendors.data.0.work_orders_count', 1)
+                ->where('vendors.data.0.active_work_orders_count', 1)
+                ->where('vendorInsights.active_work_orders', 1));
+
+        $this->actingAs($manager)
+            ->get(route('maintenance-vendors.show', $vendor))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance-vendors/show')
+                ->where('detailPage.stats.1.value', 1)
+                ->where('detailPage.workload.open.0.reference', $visible->reference_code)
+                ->where('detailPage.workload.open', fn ($orders): bool => ! collect($orders)
+                    ->pluck('reference')
+                    ->contains($hidden->reference_code)));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-vendors.show', $vendor))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.stats.1.value', 2)
+                ->where('detailPage.workload.open', fn ($orders): bool => collect($orders)
+                    ->pluck('reference')
+                    ->contains($hidden->reference_code)));
+
         $this->actingAs($tenantUser)
             ->get(route('maintenance-work-orders.index'))
+            ->assertForbidden();
+
+        $this->actingAs($tenantUser)
+            ->get(route('maintenance-vendors.show', $vendor))
             ->assertForbidden();
     }
 

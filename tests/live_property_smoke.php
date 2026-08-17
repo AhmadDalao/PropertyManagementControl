@@ -720,6 +720,48 @@ if (is_array($workOrderRows) && isset($workOrderRows[0]['id'])) {
     smoke_note('No work order available for the non-destructive detail check.');
 }
 
+$contractorIndex = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/maintenance-vendors?locale=en&per_page=10',
+);
+$contractorPayload = smoke_page_payload($contractorIndex['body']);
+$contractorRows = $contractorPayload['props']['vendors']['data'] ?? [];
+
+if (is_array($contractorRows) && isset($contractorRows[0]['id'])) {
+    $contractorId = (int) $contractorRows[0]['id'];
+    $contractorDetail = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/maintenance-vendors/{$contractorId}?locale=ar",
+    );
+    $contractorDetailPayload = smoke_page_payload($contractorDetail['body']);
+    $contractorPage = $contractorDetailPayload['props']['detailPage'] ?? [];
+
+    if ($contractorDetail['status'] !== 200
+        || smoke_component($contractorDetail['body']) !== 'admin/maintenance-vendors/show') {
+        smoke_fail("Contractor {$contractorId} detail did not load.");
+    }
+
+    if (($contractorPage['availableTabs'] ?? []) !== [
+        'overview',
+        'workload',
+        'schedule',
+        'financial',
+        'history',
+    ] || array_key_exists('related', $contractorPage)
+        || ! is_array($contractorPage['workload']['open'] ?? null)
+        || ! is_array($contractorPage['workload']['history'] ?? null)) {
+        smoke_fail("Contractor {$contractorId} did not expose the focused workload workspace.");
+    }
+
+    smoke_note("/maintenance-vendors/{$contractorId} custom contractor workspace");
+} else {
+    smoke_note('No contractor available for the non-destructive detail check.');
+}
+
 if (is_array($maintenanceRows) && isset($maintenanceRows[0]['id'])) {
     $maintenanceId = (int) $maintenanceRows[0]['id'];
 
