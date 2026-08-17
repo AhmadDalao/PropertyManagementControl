@@ -2470,6 +2470,25 @@ test.describe('authenticated administration', () => {
         expect(detailHref).toBeTruthy();
         await page.goto(`${detailHref}?locale=ar`);
         await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        const detailTabs = page.locator(
+            '.pmc-work-order-detail-tabs [role="tab"]',
+        );
+        await expect(detailTabs).toHaveCount(6);
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
+        await expect(
+            page.locator('.pmc-resource-tab-select select'),
+        ).toHaveCount(0);
+        await page.getByRole('tab', { name: 'الموعد' }).click();
+        await expect(page).toHaveURL(/tab=schedule/);
+        await expect(
+            page.getByText('الزيارة والدخول', { exact: true }),
+        ).toBeVisible();
+        await page.getByRole('tab', { name: 'التكلفة' }).click();
+        await expect(page).toHaveURL(/tab=cost/);
+        await expect(
+            page.getByText('ضبط التكلفة', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
         await expectNoHorizontalOverflow(page);
 
         await page.setViewportSize(viewports.desktop);

@@ -679,6 +679,47 @@ if ($workOrderWorkbook['status'] !== 200
 
 smoke_note('/maintenance-work-orders register and XLSX export valid');
 
+$workOrderIndex = smoke_request(
+    $baseUrl,
+    $cookieFile,
+    'GET',
+    '/maintenance-work-orders?locale=en&per_page=10',
+);
+$workOrderPayload = smoke_page_payload($workOrderIndex['body']);
+$workOrderRows = $workOrderPayload['props']['workOrders']['data'] ?? [];
+
+if (is_array($workOrderRows) && isset($workOrderRows[0]['id'])) {
+    $workOrderId = (int) $workOrderRows[0]['id'];
+    $workOrderDetail = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/maintenance-work-orders/{$workOrderId}?locale=ar",
+    );
+    $workOrderDetailPayload = smoke_page_payload($workOrderDetail['body']);
+    $workOrderPage = $workOrderDetailPayload['props']['detailPage'] ?? [];
+
+    if ($workOrderDetail['status'] !== 200
+        || smoke_component($workOrderDetail['body']) !== 'admin/maintenance-work-orders/show') {
+        smoke_fail("Work order {$workOrderId} detail did not load.");
+    }
+
+    if (($workOrderPage['availableTabs'] ?? []) !== [
+        'overview',
+        'assignment',
+        'schedule',
+        'cost',
+        'completion',
+        'history',
+    ] || array_key_exists('related', $workOrderPage)) {
+        smoke_fail("Work order {$workOrderId} did not expose the focused job workspace.");
+    }
+
+    smoke_note("/maintenance-work-orders/{$workOrderId} custom job workspace");
+} else {
+    smoke_note('No work order available for the non-destructive detail check.');
+}
+
 if (is_array($maintenanceRows) && isset($maintenanceRows[0]['id'])) {
     $maintenanceId = (int) $maintenanceRows[0]['id'];
 

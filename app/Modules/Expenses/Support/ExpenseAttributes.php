@@ -9,7 +9,7 @@ final class ExpenseAttributes
 {
     /**
      * @param  array<string, mixed>  $data
-     * @param  array{asset_id:int|null,maintenance_request_id:int|null}  $references
+     * @param  array{asset_id:int|null,maintenance_request_id:int|null,maintenance_work_order_id:int|null}  $references
      * @return array<string, mixed>
      */
     public function forCreate(User $actor, Portfolio $portfolio, array $data, array $references): array
@@ -20,13 +20,16 @@ final class ExpenseAttributes
             'maintenance_request_id' => $references['maintenance_request_id'],
             'created_by_user_id' => $actor->id,
             'currency' => strtoupper($portfolio->default_currency ?: 'SAR'),
+            'meta_json' => $references['maintenance_work_order_id'] ? [
+                'maintenance_work_order_id' => $references['maintenance_work_order_id'],
+            ] : null,
             ...$this->mutable($data),
         ];
     }
 
     /**
      * @param  array<string, mixed>  $data
-     * @param  array{asset_id:int|null,maintenance_request_id:int|null}  $references
+     * @param  array{asset_id:int|null,maintenance_request_id:int|null,maintenance_work_order_id:int|null}  $references
      * @return array<string, mixed>
      */
     public function forUpdate(array $data, array $references): array

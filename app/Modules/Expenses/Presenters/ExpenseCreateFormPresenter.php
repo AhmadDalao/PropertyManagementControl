@@ -25,6 +25,7 @@ final class ExpenseCreateFormPresenter
                 'portfolio_id' => (string) ($data->portfolioId ?? ''),
                 'asset_id' => (string) $this->selected($data->defaults['asset_id'] ?? null, $data->assets),
                 'maintenance_request_id' => (string) $this->selected($data->defaults['maintenance_request_id'] ?? null, $data->maintenanceRequests),
+                'maintenance_work_order_id' => (string) ($this->id($data->defaults['maintenance_work_order_id'] ?? null) ?? ''),
                 'category' => 'maintenance',
                 'title' => $this->text($data->defaults['title'] ?? null, 255),
                 'description' => $this->text($data->defaults['description'] ?? null, 5000),
@@ -59,5 +60,12 @@ final class ExpenseCreateFormPresenter
         $amount = round((float) $value, 2);
 
         return $amount >= 0.01 && $amount <= 999999999999.99 ? $amount : '';
+    }
+
+    private function id(mixed $value): ?int
+    {
+        $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+
+        return $id ? (int) $id : null;
     }
 }

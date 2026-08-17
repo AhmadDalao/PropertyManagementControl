@@ -60,7 +60,7 @@ final class MaintenanceWorkOrderController extends Controller
         Request $request,
         MaintenanceWorkOrder $maintenanceWorkOrder,
     ): Response {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/maintenance-work-orders/show', [
             'detailPage' => $this->details->present(
                 $maintenanceWorkOrder,
                 $this->actor($request),

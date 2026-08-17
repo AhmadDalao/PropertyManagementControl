@@ -129,6 +129,21 @@ class MaintenanceModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('::query()', $controller);
         $this->assertStringNotContainsString('columns={[', $table);
         $this->assertStringNotContainsString('text(', $entry.$table.$config.$cells);
+
+        $detail = $this->source('app/Modules/Maintenance/Presenters/MaintenanceWorkOrderDetailPresenter.php');
+        $detailQuery = $this->source('app/Modules/Maintenance/Queries/MaintenanceWorkOrderDetailQuery.php');
+        $detailEntry = $this->source('resources/js/modules/maintenance-work-orders/detail-page.tsx');
+        $detailWorkspace = $this->source('resources/js/modules/maintenance-work-orders/detail/work-order-detail-workspace.tsx');
+
+        $this->assertLinesAtMost($detail, 45);
+        $this->assertLinesAtMost($detailQuery, 125);
+        $this->assertLinesAtMost($detailEntry, 30);
+        $this->assertLinesAtMost($detailWorkspace, 95);
+        $this->assertStringContainsString('MaintenanceWorkOrderDetailQuery', $detail);
+        $this->assertStringContainsString('WorkOrderDetailTabs', $detailWorkspace);
+        $this->assertStringContainsString('WorkOrderSectionPanel', $detailWorkspace);
+        $this->assertStringNotContainsString('ResourceDetailShell', $detailEntry.$detailWorkspace);
+        $this->assertStringNotContainsString('admin/resource-show', $controller);
     }
 
     #[Test]
@@ -147,6 +162,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Actions/ManageMaintenanceWorkOrders.php',
             'app/Modules/Maintenance/Actions/MaintenanceWorkOrderWorkbookExport.php',
             'app/Modules/Maintenance/Data/MaintenanceDetailData.php',
+            'app/Modules/Maintenance/Data/MaintenanceWorkOrderDetailData.php',
             'app/Modules/Maintenance/Data/StoredMaintenancePhoto.php',
             'app/Modules/Maintenance/Presenters/MaintenanceAttachmentFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceAttachmentPresenter.php',
@@ -164,6 +180,10 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Presenters/MaintenanceVendorDetailPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceVendorFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderDetailPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderHeaderPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderNoticesPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderOverviewPresenter.php',
+            'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderWorkflowPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderFormPresenter.php',
             'app/Modules/Maintenance/Presenters/MaintenanceWorkOrderRowPresenter.php',
             'app/Modules/Maintenance/Queries/MaintenanceDetailQuery.php',
@@ -174,6 +194,7 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Queries/MaintenanceOperationsSearch.php',
             'app/Modules/Maintenance/Queries/MaintenanceVendorIndexQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceWorkOrderDirectoryQuery.php',
+            'app/Modules/Maintenance/Queries/MaintenanceWorkOrderDetailQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceWorkOrderIndexQuery.php',
             'app/Modules/Maintenance/Queries/MaintenanceWorkOrderInsightsQuery.php',
             'app/Modules/Maintenance/Requests/RespondToMaintenanceResolutionRequest.php',
@@ -185,11 +206,20 @@ class MaintenanceModuleArchitectureTest extends TestCase
             'app/Modules/Maintenance/Support/MaintenanceVendorAccess.php',
             'app/Modules/Maintenance/Support/MaintenanceVendorOptions.php',
             'app/Modules/Maintenance/Support/MaintenanceWorkOrderAccess.php',
+            'app/Modules/Maintenance/Support/MaintenanceWorkOrderExpenseLinks.php',
             'app/Modules/Maintenance/Support/MaintenanceWorkOrderOptions.php',
             'resources/js/modules/maintenance-vendors/index-page.tsx',
             'resources/js/modules/maintenance-vendors/types.ts',
             'resources/js/modules/maintenance-vendors/vendor-table.tsx',
             'resources/js/modules/maintenance-work-orders/index-page.tsx',
+            'resources/js/modules/maintenance-work-orders/detail-page.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/types.ts',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-detail-metrics.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-detail-tabs.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-detail-workspace.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-guidance-card.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-overview-panel.tsx',
+            'resources/js/modules/maintenance-work-orders/detail/work-order-section-panel.tsx',
             'resources/js/modules/maintenance-work-orders/types.ts',
             'resources/js/modules/maintenance-work-orders/work-order-cells.tsx',
             'resources/js/modules/maintenance-work-orders/work-order-filters.ts',

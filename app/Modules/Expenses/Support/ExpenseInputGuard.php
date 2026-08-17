@@ -26,6 +26,7 @@ final class ExpenseInputGuard
         $this->optionalId($errors, $data, 'portfolio_id');
         $this->optionalId($errors, $data, 'asset_id');
         $this->optionalId($errors, $data, 'maintenance_request_id');
+        $this->optionalId($errors, $data, 'maintenance_work_order_id');
         $this->option($errors, $data, 'category', ExpenseOptions::CATEGORIES);
         $this->requiredText($errors, $data, 'title', 255);
         $this->optionalText($errors, $data, 'description', 5000);
@@ -177,6 +178,7 @@ final class ExpenseInputGuard
             'portfolio_id' => 'portfolio',
             'asset_id' => 'asset',
             'maintenance_request_id' => 'maintenance_request',
+            'maintenance_work_order_id' => 'maintenance_work_order',
             'title' => 'expense_title',
             default => $field,
         };

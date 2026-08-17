@@ -1,0 +1,55 @@
+@media (max-width: 1199.98px) {
+    .pmc-work-order-overview-grid,
+    .pmc-work-order-section-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-work-order-overview-grid > aside,
+    .pmc-work-order-section-layout > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-work-order-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-work-order-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-work-order-detail-tabs button span {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-work-order-detail-metrics article {
+        min-height: 4.1rem;
+        padding: 0.6rem;
+    }
+
+    .pmc-work-order-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-work-order-detail-panel .pmc-resource-detail-card,
+    .pmc-work-order-detail-panel .pmc-side-panel,
+    .pmc-work-order-detail-panel .pmc-resource-workflow,
+    .pmc-work-order-summary,
+    .pmc-work-order-guidance {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-work-order-summary {
+        align-items: start;
+    }
+}

@@ -10,11 +10,14 @@ use Illuminate\Validation\ValidationException;
 
 final class ExpenseReferenceGuard
 {
-    public function __construct(private readonly AssignedPropertyScope $assignments) {}
+    public function __construct(
+        private readonly AssignedPropertyScope $assignments,
+        private readonly ExpenseWorkOrderGuard $workOrders,
+    ) {}
 
     /**
      * @param  array<string, mixed>  $data
-     * @return array{asset_id:int|null,maintenance_request_id:int|null}
+     * @return array{asset_id:int|null,maintenance_request_id:int|null,maintenance_work_order_id:int|null}
      */
     public function withinPortfolio(User $actor, array $data, int $portfolioId): array
     {
@@ -81,6 +84,12 @@ final class ExpenseReferenceGuard
         return [
             'asset_id' => $assetId,
             'maintenance_request_id' => $maintenance?->id,
+            'maintenance_work_order_id' => $this->workOrders->validate(
+                $data,
+                $portfolioId,
+                $maintenance?->id,
+                $assetId,
+            ),
         ];
     }
 

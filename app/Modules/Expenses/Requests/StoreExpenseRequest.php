@@ -33,6 +33,7 @@ final class StoreExpenseRequest extends FormRequest
             ],
             'asset_id' => ['nullable', 'integer', 'exists:assets,id'],
             'maintenance_request_id' => ['nullable', 'integer', 'exists:maintenance_requests,id'],
+            'maintenance_work_order_id' => ['nullable', 'integer', 'exists:maintenance_work_orders,id'],
             'category' => ['required', Rule::in(ExpenseOptions::CATEGORIES)],
             'title' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],

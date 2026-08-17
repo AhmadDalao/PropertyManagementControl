@@ -40,6 +40,7 @@ class ExpenseEntryController extends Controller
                     'portfolio_id',
                     'asset_id',
                     'maintenance_request_id',
+                    'maintenance_work_order_id',
                     'vendor_name',
                     'amount',
                     'title',

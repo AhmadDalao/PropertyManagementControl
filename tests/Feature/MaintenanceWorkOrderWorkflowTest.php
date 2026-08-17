@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ExpenseEntry;
 use App\Models\MaintenanceRequest;
 use App\Models\MaintenanceVendor;
 use App\Models\MaintenanceWorkOrder;
@@ -139,15 +140,37 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             ->get(route('maintenance-work-orders.show', $workOrder))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/maintenance-work-orders/show')
                 ->where('detailPage.header.title', $workOrder->reference_code)
                 ->where('detailPage.header.backHref', route('maintenance-work-orders.index'))
                 ->where('detailPage.header.actions.0.label', "Edit {$workOrder->reference_code}")
-                ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
+                ->where('detailPage.availableTabs', ['overview', 'assignment', 'schedule', 'cost', 'completion', 'history'])
+                ->where('detailPage.sections.0.key', 'context')
+                ->where('detailPage.sections.1.key', 'scope')
+                ->where('detailPage.sections.2.key', 'assignment')
+                ->where('detailPage.sections.3.key', 'schedule')
+                ->where('detailPage.sections.4.key', 'cost')
+                ->where('detailPage.sections.5.key', 'completion')
+                ->where('detailPage.sections.2.items', fn ($items): bool => collect($items)
                     ->contains(fn ($item): bool => $item['label'] === 'Phone'
-                        && $item['value'] === '+966500000002')));
+                        && $item['value'] === '+966500000002'))
+                ->where('detailPage.notices.assignment.title', 'Responsibility is clear')
+                ->where('detailPage.notices.schedule.title', 'Prepare the upcoming visit')
+                ->missing('detailPage.related')
+                ->missing('detailPage.documents'));
+
+        $this->actingAs($owner)
+            ->withSession(['locale' => 'ar'])
+            ->get(route('maintenance-work-orders.show', $workOrder))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/maintenance-work-orders/show')
+                ->where('app.locale', 'ar')
+                ->where('app.translations.work_orders.tabs.assignment', 'الإسناد')
+                ->where('detailPage.notices.schedule.title', 'استعد للزيارة القادمة'));
 
         $this->actingAs($tenantUser)
+            ->withSession(['locale' => 'en'])
             ->get(route('maintenance-requests.show', $request))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -233,7 +256,68 @@ class MaintenanceWorkOrderWorkflowTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)
                     ->pluck('label')
-                    ->contains('Record final expense')));
+                    ->contains('Record final expense'))
+                ->where('detailPage.stats.3.value', '525.75 SAR')
+                ->where('detailPage.sections.4.items', fn ($items): bool => collect($items)
+                    ->contains(fn (array $item): bool => $item['label'] === 'Quote variance'
+                        && $item['value'] === '+25.75 SAR'))
+                ->where('detailPage.notices.cost.title', 'Final cost is recorded')
+                ->where('detailPage.notices.cost.actions.0.label', 'Record final expense')
+                ->where('detailPage.notices.completion.title', 'Completion record is available'));
+
+        $this->actingAs($owner)
+            ->get(route('expenses.create', [
+                'maintenance_work_order_id' => $workOrder->id,
+                'maintenance_request_id' => $request->id,
+                'asset_id' => $request->asset_id,
+                'amount' => $workOrder->final_amount,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.maintenance_work_order_id', (string) $workOrder->id)
+                ->where('formPage.initialValues.maintenance_request_id', (string) $request->id)
+                ->where('formPage.initialValues.amount', 525.75));
+
+        $expensePayload = [
+            'asset_id' => $request->asset_id,
+            'maintenance_request_id' => $request->id,
+            'maintenance_work_order_id' => $workOrder->id,
+            'category' => 'maintenance',
+            'title' => 'Final valve repair',
+            'description' => 'Created from completed work order.',
+            'incurred_on' => now()->toDateString(),
+            'amount' => '525.75',
+            'currency' => 'SAR',
+            'vendor_name' => $vendor->name,
+            'status' => 'posted',
+        ];
+
+        $this->actingAs($owner)
+            ->post(route('expenses.store'), $expensePayload)
+            ->assertRedirect();
+
+        $expense = ExpenseEntry::query()->where('title', 'Final valve repair')->firstOrFail();
+        $this->assertSame($workOrder->id, (int) data_get(
+            $expense->meta_json,
+            'maintenance_work_order_id',
+        ));
+
+        $this->actingAs($owner)
+            ->get(route('maintenance-work-orders.show', $workOrder))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->contains('Open recorded expense')
+                    && ! collect($actions)->pluck('label')->contains('Record final expense'))
+                ->where('detailPage.notices.cost.title', 'Final expense is linked')
+                ->where('detailPage.notices.cost.actions.0.href', route('expenses.show', $expense)));
+
+        $this->actingAs($owner)
+            ->post(route('expenses.store'), [...$expensePayload, 'title' => 'Duplicate final cost'])
+            ->assertSessionHasErrors('maintenance_work_order_id');
+
+        $this->assertDatabaseCount('expense_entries', 1);
 
         $this->actingAs($owner)
             ->getJson(route('global-search', ['q' => $workOrder->reference_code]))
