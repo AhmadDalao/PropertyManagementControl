@@ -23,6 +23,22 @@ export default function PaymentsIndexPage() {
                 title={t('payments.title')}
                 description={t('payments.workspace_description')}
                 actions={[
+                    ...(props.paymentInsights.pending_proof_count > 0
+                        ? [
+                              {
+                                  label: t(
+                                      'payments.review_proofs',
+                                      undefined,
+                                      {
+                                          count: props.paymentInsights
+                                              .pending_proof_count,
+                                      },
+                                  ),
+                                  href: '/payments?proof_status=pending',
+                                  icon: 'bi-file-earmark-check',
+                              },
+                          ]
+                        : []),
                     {
                         label: t('payments.reports'),
                         href: '/reports',

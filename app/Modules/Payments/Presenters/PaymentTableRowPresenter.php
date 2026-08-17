@@ -14,6 +14,10 @@ final class PaymentTableRowPresenter
         $asset = $payment->lease?->leaseable instanceof Asset
             ? $payment->lease->leaseable
             : null;
+        $latestProof = $payment->documents->first();
+        $proofStatus = $latestProof
+            ? (string) data_get($latestProof->meta_json, 'review_status', 'pending')
+            : 'none';
 
         return [
             'id' => $payment->id,
@@ -27,6 +31,8 @@ final class PaymentTableRowPresenter
             'allocated_amount' => $allocatedAmount,
             'unallocated_amount' => max(0, (float) $payment->amount - $allocatedAmount),
             'allocation_count' => (int) ($payment->getAttribute('allocations_count') ?? 0),
+            'proof_count' => $payment->documents->count(),
+            'proof_status' => $proofStatus,
             'receipt_url' => route('payments.receipt', $payment),
             'tenant_profile' => $payment->tenantProfile ? [
                 'user' => ['name' => $payment->tenantProfile->user?->name],

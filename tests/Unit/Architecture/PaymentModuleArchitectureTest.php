@@ -83,6 +83,7 @@ class PaymentModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/payments/payment-detail-workspace.tsx'),
             $this->path('resources/js/modules/payments/payment-evidence-panel.tsx'),
             $this->path('resources/js/modules/payments/payment-form-guide.tsx'),
+            $this->path('resources/js/modules/payments/payment-lease-field.tsx'),
             $this->path('resources/js/modules/payments/payment-form-page.tsx'),
             $this->path('resources/js/modules/payments/payment-form-section.tsx'),
             $this->path('resources/js/modules/payments/payment-form-workspace.tsx'),

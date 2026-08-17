@@ -21,7 +21,10 @@ final class PaymentFormFieldsPresenter
                 'label' => trans('app.payments.portfolio'),
                 'type' => 'select',
                 'required' => true,
-                'options' => $data->portfolios,
+                'options' => [
+                    ['value' => '', 'label' => trans('app.payments.choose_portfolio')],
+                    ...$data->portfolios,
+                ],
                 'reloadOnChange' => ['queryKey' => 'portfolio_id'],
             ];
         }
@@ -72,7 +75,10 @@ final class PaymentFormFieldsPresenter
     private function availableLeases(array $leases): array
     {
         return $leases !== []
-            ? $leases
+            ? [
+                ['value' => '', 'label' => trans('app.payments.choose_lease')],
+                ...$leases,
+            ]
             : [['value' => '', 'label' => trans('app.payments.no_payable_leases')]];
     }
 

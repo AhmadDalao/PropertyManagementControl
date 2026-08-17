@@ -263,6 +263,9 @@
 .bi-file-earmark::before {
     content: '\f392';
 }
+.bi-file-earmark-check::before {
+    content: '\f360';
+}
 .bi-file-earmark-arrow-down::before {
     content: '\f356';
 }

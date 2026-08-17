@@ -156,9 +156,13 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('app.locale', 'ar')
-                ->where('formPage.fields', function ($fields): bool {
+                ->where('formPage.initialValues.lease_id', (string) $lease->id)
+                ->where('formPage.fields', function ($fields) use ($lease): bool {
                     $leaseField = collect($fields)->firstWhere('name', 'lease_id');
-                    $label = (string) data_get($leaseField, 'options.0.label');
+                    $label = (string) data_get(
+                        collect($leaseField['options'] ?? [])->firstWhere('value', $lease->id),
+                        'label',
+                    );
 
                     return str_contains($label, 'نشط')
                         && str_contains($label, 'متبقي')
@@ -209,7 +213,8 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertDontSee('second-private@example.test')
             ->assertInertia(fn (Assert $page) => $page
                 ->where('formPage.initialValues.portfolio_id', (string) $secondPortfolio->id)
-                ->where('formPage.initialValues.lease_id', (string) $secondLease->id)
+                ->where('formPage.initialValues.lease_id', '')
+                ->where('formPage.initialValues.amount', '')
                 ->where('formPage.fields', function ($fields) use ($firstLease, $secondLease): bool {
                     $fields = collect($fields);
                     $portfolio = $fields->firstWhere('name', 'portfolio_id');
@@ -220,6 +225,14 @@ class PaymentModuleSecurityTest extends TestCase
                         && ! $leaseOptions->contains('value', $firstLease->id)
                         && $leaseOptions->every(fn (array $option): bool => array_keys($option) === ['value', 'label']);
                 }));
+
+        $this->actingAs($superadmin)
+            ->get(route('payments.create'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.portfolio_id', '')
+                ->where('formPage.initialValues.lease_id', '')
+                ->where('formPage.initialValues.amount', ''));
     }
 
     public function test_tenant_payment_detail_hides_internal_notes_documents_and_history(): void
@@ -770,6 +783,18 @@ class PaymentModuleSecurityTest extends TestCase
         $first = Document::query()->where('type', 'payment_proof')->firstOrFail();
 
         $this->actingAs($owner)
+            ->get(route('payments.index', ['proof_status' => 'pending']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('filters.proof_status', 'pending')
+                ->where('payments.total', 1)
+                ->where('payments.data.0.id', $payment->id)
+                ->where('payments.data.0.proof_count', 1)
+                ->where('payments.data.0.proof_status', 'pending')
+                ->where('paymentInsights.pending_proof_count', 1)
+                ->where('proofStatusOptions', ['none', 'pending', 'accepted', 'rejected', 'superseded']));
+
+        $this->actingAs($owner)
             ->get(route('payments.show', $payment))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
@@ -807,6 +832,13 @@ class PaymentModuleSecurityTest extends TestCase
             ->assertRedirect();
         $this->assertSame('accepted', data_get($replacement->fresh()->meta_json, 'review_status'));
         $this->assertSame('pending', $payment->fresh()->status);
+
+        $this->actingAs($owner)
+            ->get(route('payments.index', ['proof_status' => 'pending']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('payments.total', 0)
+                ->where('paymentInsights.pending_proof_count', 0));
 
         $this->actingAs($tenantUser)
             ->post(route('payments.proof.store', $payment), [

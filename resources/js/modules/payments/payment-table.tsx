@@ -15,6 +15,7 @@ type PaymentTableProps = Pick<
     | 'statusOptions'
     | 'typeOptions'
     | 'methodOptions'
+    | 'proofStatusOptions'
     | 'auth'
     | 'app'
 >;
@@ -27,6 +28,7 @@ export function PaymentTable(props: PaymentTableProps) {
             statuses: props.statusOptions,
             types: props.typeOptions,
             methods: props.methodOptions,
+            proofStatuses: props.proofStatusOptions,
             portfolios: props.portfolioOptions,
             properties: props.propertyOptions,
             includePortfolio:

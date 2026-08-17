@@ -1,0 +1,77 @@
+.pmc-payment-lease-field {
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.55rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-payment-lease-label {
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-payment-lease-label strong {
+    margin-inline-start: 0.2rem;
+    color: var(--pmc-danger);
+}
+
+.pmc-payment-lease-search {
+    position: relative;
+    display: block;
+}
+
+.pmc-payment-lease-search i {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0.7rem;
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.pmc-payment-lease-search input {
+    width: 100%;
+    min-height: 2.65rem;
+    padding: 0.55rem 0.7rem;
+    padding-inline-start: 2rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.48rem;
+    outline: none;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.64rem;
+}
+
+.pmc-payment-lease-search input:focus {
+    border-color: var(--pmc-primary);
+    box-shadow: 0 0 0 0.18rem rgba(18, 129, 60, 0.12);
+}
+
+.pmc-payment-lease-field .form-select {
+    background-color: #fff;
+}
+
+.pmc-payment-lease-result {
+    display: block;
+    overflow: hidden;
+    color: var(--pmc-primary-strong) !important;
+    font-weight: 700 !important;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-payment-lease-field {
+        padding: 0.55rem;
+    }
+
+    .pmc-payment-lease-search input,
+    .pmc-payment-lease-field .form-select {
+        min-height: 2.75rem;
+        font-size: 0.72rem;
+    }
+}

@@ -23,25 +23,25 @@ final class PaymentCreateFormPresenter
             'fields' => $this->fields->create($data),
             'initialValues' => [
                 'portfolio_id' => (string) ($data->portfolioId ?? ''),
-                'lease_id' => (string) $this->selected($data->defaults['lease_id'] ?? null, $data->leases),
+                'lease_id' => (string) $this->requestedLease($data->defaults['lease_id'] ?? null, $data->leases),
                 'type' => 'rent',
                 'method' => 'bank_transfer',
                 'status' => 'posted',
                 'reference' => '',
                 'received_on' => now()->toDateString(),
-                'amount' => 0,
+                'amount' => '',
                 'notes' => '',
             ],
         ];
     }
 
     /** @param array<int, array{value:int,label:string}> $options */
-    private function selected(mixed $requested, array $options): int|string
+    private function requestedLease(mixed $requested, array $options): int|string
     {
         $id = filter_var($requested, FILTER_VALIDATE_INT);
 
         return $id && collect($options)->contains('value', (int) $id)
             ? (int) $id
-            : ($options[0]['value'] ?? '');
+            : '';
     }
 }

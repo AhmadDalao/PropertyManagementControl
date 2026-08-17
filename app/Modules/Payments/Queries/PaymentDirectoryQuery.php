@@ -3,6 +3,7 @@
 namespace App\Modules\Payments\Queries;
 
 use App\Models\Asset;
+use App\Models\Document;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
@@ -37,6 +38,7 @@ final class PaymentDirectoryQuery
             'date_from' => '',
             'date_to' => '',
             'property_id' => 'all',
+            'proof_status' => 'all',
         ]);
 
         foreach ([
@@ -53,6 +55,12 @@ final class PaymentDirectoryQuery
             if (! $this->validDate((string) $filters[$field])) {
                 $filters[$field] = '';
             }
+        }
+
+        if (! in_array($filters['proof_status'], [
+            'all', 'none', 'pending', 'accepted', 'rejected', 'superseded',
+        ], true)) {
+            $filters['proof_status'] = 'all';
         }
 
         return $filters;
@@ -95,6 +103,9 @@ final class PaymentDirectoryQuery
                 'lease.leaseable',
                 'tenantProfile:id,user_id',
                 'tenantProfile.user:id,name',
+                'documents' => fn ($documents) => $documents
+                    ->where('type', 'payment_proof')
+                    ->latest('id'),
             ])
             ->withCount('allocations')
             ->withSum('allocations', 'amount');
@@ -112,6 +123,7 @@ final class PaymentDirectoryQuery
 
         $this->tables->dateRange($query, $filters, 'received_on');
         $this->applyProperty($query, $filters, $actor);
+        $this->applyProofStatus($query, (string) $filters['proof_status']);
         $this->tables->search($query, (string) $filters['search'], [
             'reference',
             'notes',
@@ -140,6 +152,30 @@ final class PaymentDirectoryQuery
                 }),
             ),
         ]);
+    }
+
+    /** @param Builder<Payment> $query */
+    private function applyProofStatus(Builder $query, string $status): void
+    {
+        if ($status === 'all') {
+            return;
+        }
+
+        $proofs = Document::query()
+            ->select('documentable_id')
+            ->whereIn('documentable_type', $this->morphTypes->for(new Payment))
+            ->where('type', 'payment_proof');
+
+        if ($status === 'none') {
+            $query->whereNotIn('payments.id', $proofs);
+
+            return;
+        }
+
+        $query->whereIn(
+            'payments.id',
+            $proofs->where('meta_json->review_status', $status),
+        );
     }
 
     /**

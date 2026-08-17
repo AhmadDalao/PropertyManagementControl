@@ -28,6 +28,8 @@ export type PaymentRecord = {
     allocated_amount: number;
     unallocated_amount: number;
     allocation_count: number;
+    proof_count: number;
+    proof_status: 'none' | 'pending' | 'accepted' | 'rejected' | 'superseded';
     receipt_url: string;
     tenant_profile?: {
         user?: { name?: string | null };
@@ -53,6 +55,7 @@ export type PaymentInsights = {
     allocated_amount: number;
     unallocated_amount: number;
     received_this_month: number;
+    pending_proof_count: number;
     currency?: string | null;
     mixed_currencies: boolean;
 };
@@ -67,6 +70,7 @@ export type PaymentIndexPageProps = SharedProps & {
     statusOptions: string[];
     typeOptions: string[];
     methodOptions: string[];
+    proofStatusOptions: string[];
 };
 
 export type PaymentProof = {

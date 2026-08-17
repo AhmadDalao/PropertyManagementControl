@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
 import '../../../css/styles/payments/workspace.css';
+import '../../../css/styles/payments/lease-picker.css';
 
 import { AdminLayout } from '@/layouts/admin-layout';
 

@@ -49,6 +49,7 @@ final class PaymentIndexQuery
             'statusOptions' => PaymentOptions::STATUSES,
             'typeOptions' => PaymentOptions::TYPES,
             'methodOptions' => PaymentOptions::METHODS,
+            'proofStatusOptions' => ['none', 'pending', 'accepted', 'rejected', 'superseded'],
         ];
     }
 

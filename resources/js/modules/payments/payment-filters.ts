@@ -7,6 +7,7 @@ type PaymentFilterOptions = {
     statuses: string[];
     types: string[];
     methods: string[];
+    proofStatuses: string[];
     portfolios: Array<{ id: number; name: string }>;
     includePortfolio: boolean;
     properties: PropertyOption[];
@@ -17,6 +18,7 @@ export function paymentFilterFields(
         statuses,
         types,
         methods,
+        proofStatuses,
         portfolios,
         properties,
         includePortfolio,
@@ -27,6 +29,19 @@ export function paymentFilterFields(
         selectField('status', t('payments.status'), statuses, 'status', t),
         selectField('type', t('payments.type'), types, 'type', t),
         selectField('method', t('payments.method'), methods, 'method', t),
+        {
+            name: 'proof_status',
+            label: t('payments.proof_status'),
+            options: [
+                { label: t('payments.all'), value: 'all' },
+                ...proofStatuses.map((status) => ({
+                    label: t(
+                        `payments.proof_status_${status}` as UiTranslationKey,
+                    ),
+                    value: status,
+                })),
+            ],
+        },
         { name: 'date_from', label: t('payments.from'), type: 'date' },
         { name: 'date_to', label: t('payments.to'), type: 'date' },
     ];

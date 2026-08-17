@@ -95,27 +95,6 @@ export function usePaymentTableConfig(locale: string): {
                         {currency(payment.amount, locale, payment.currency)}
                     </strong>
                     <span>
-                        {currency(
-                            payment.allocated_amount,
-                            locale,
-                            payment.currency,
-                        )}{' '}
-                        {t('payments.allocated_label')}
-                    </span>
-                </div>
-            ),
-        },
-        {
-            key: 'allocation',
-            label: t('payments.allocation'),
-            render: (payment) => (
-                <div className="pmc-stacked-cell">
-                    <strong>
-                        {t('payments.installments', undefined, {
-                            count: payment.allocation_count,
-                        })}
-                    </strong>
-                    <span>
                         {payment.unallocated_amount > 0
                             ? t('payments.unallocated_amount', undefined, {
                                   amount: currency(
@@ -126,6 +105,25 @@ export function usePaymentTableConfig(locale: string): {
                               })
                             : t('payments.fully_allocated')}
                     </span>
+                </div>
+            ),
+        },
+        {
+            key: 'evidence',
+            label: t('payments.payment_proof'),
+            render: (payment) => (
+                <div className="pmc-stacked-cell">
+                    <StatusBadge
+                        value={payment.proof_status}
+                        label={proofStatusLabel(payment.proof_status, t)}
+                    />
+                    {payment.proof_count > 0 ? (
+                        <span>
+                            {t('payments.proof_file_count', undefined, {
+                                count: payment.proof_count,
+                            })}
+                        </span>
+                    ) : null}
                 </div>
             ),
         },
@@ -157,21 +155,41 @@ export function usePaymentTableConfig(locale: string): {
                 },
                 {
                     label: t('payments.amount'),
-                    value: (payment) =>
-                        currency(payment.amount, locale, payment.currency),
+                    value: (payment) => (
+                        <div className="pmc-stacked-cell">
+                            <strong>
+                                {currency(
+                                    payment.amount,
+                                    locale,
+                                    payment.currency,
+                                )}
+                            </strong>
+                            <span>
+                                {payment.unallocated_amount > 0
+                                    ? t(
+                                          'payments.unallocated_amount',
+                                          undefined,
+                                          {
+                                              amount: currency(
+                                                  payment.unallocated_amount,
+                                                  locale,
+                                                  payment.currency,
+                                              ),
+                                          },
+                                      )
+                                    : t('payments.fully_allocated')}
+                            </span>
+                        </div>
+                    ),
                 },
                 {
-                    label: t('payments.allocation'),
-                    value: (payment) =>
-                        payment.unallocated_amount > 0
-                            ? t('payments.unallocated_amount', undefined, {
-                                  amount: currency(
-                                      payment.unallocated_amount,
-                                      locale,
-                                      payment.currency,
-                                  ),
-                              })
-                            : t('payments.fully_allocated'),
+                    label: t('payments.payment_proof'),
+                    value: (payment) => (
+                        <StatusBadge
+                            value={payment.proof_status}
+                            label={proofStatusLabel(payment.proof_status, t)}
+                        />
+                    ),
                 },
             ],
             actions,
@@ -197,4 +215,11 @@ function typeLabel(type: string, t: ReturnType<typeof useTranslator>['t']) {
 
 function methodLabel(method: string, t: ReturnType<typeof useTranslator>['t']) {
     return t(`payments.method_${method}` as UiTranslationKey);
+}
+
+function proofStatusLabel(
+    status: PaymentRecord['proof_status'],
+    t: ReturnType<typeof useTranslator>['t'],
+) {
+    return t(`payments.proof_status_${status}` as UiTranslationKey);
 }

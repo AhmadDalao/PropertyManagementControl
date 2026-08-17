@@ -4,6 +4,8 @@ import { ResourceInput } from '@/components/resource-cycle/resource-input';
 import type { ResourceFormValue } from '@/components/resource-cycle/types';
 import { useTranslator } from '@/lib/i18n';
 
+import { PaymentLeaseField } from './payment-lease-field';
+
 export function PaymentFormSection({
     title,
     description,
@@ -31,15 +33,25 @@ export function PaymentFormSection({
                 </div>
             </header>
             <div className="pmc-payment-field-grid">
-                {fields.map((field) => (
-                    <ResourceInput
-                        key={field.name}
-                        field={field}
-                        value={values[field.name]}
-                        error={fieldError(errors, field.name)}
-                        onChange={(value) => onChange(field, value)}
-                    />
-                ))}
+                {fields.map((field) =>
+                    field.name === 'lease_id' ? (
+                        <PaymentLeaseField
+                            key={field.name}
+                            field={field}
+                            value={values[field.name]}
+                            error={fieldError(errors, field.name)}
+                            onChange={(value) => onChange(field, value)}
+                        />
+                    ) : (
+                        <ResourceInput
+                            key={field.name}
+                            field={field}
+                            value={values[field.name]}
+                            error={fieldError(errors, field.name)}
+                            onChange={(value) => onChange(field, value)}
+                        />
+                    ),
+                )}
             </div>
         </fieldset>
     );

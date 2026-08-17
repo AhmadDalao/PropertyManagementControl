@@ -122,6 +122,10 @@ final class PaymentFormOptionsQuery
             return (int) $actor->portfolio_id;
         }
 
+        if ($actor->hasRole('superadmin')) {
+            return null;
+        }
+
         $candidate = Portfolio::query()
             ->whereIn('id', $ids->all())
             ->whereHas('leases', fn (Builder $leases) => $leases

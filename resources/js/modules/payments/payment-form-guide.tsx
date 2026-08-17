@@ -14,8 +14,12 @@ export function PaymentFormGuide({
 }) {
     const { t, text } = useTranslator();
     const required = fields.filter((field) => field.required);
-    const complete = required.filter((field) => hasValue(values[field.name]));
-    const next = required.find((field) => !hasValue(values[field.name]));
+    const complete = required.filter((field) =>
+        validRequiredValue(field, values[field.name]),
+    );
+    const next = required.find(
+        (field) => !validRequiredValue(field, values[field.name]),
+    );
     const pending = values.status === 'pending';
 
     return (
@@ -76,6 +80,23 @@ export function PaymentFormGuide({
     );
 }
 
-function hasValue(value: ResourceFormValue): boolean {
-    return value !== null && value !== undefined && value !== '';
+function validRequiredValue(
+    field: ResourceField,
+    value: ResourceFormValue,
+): boolean {
+    if (value === null || value === undefined || value === '') {
+        return false;
+    }
+
+    if (field.type === 'number') {
+        const numeric = Number(value);
+        const minimum =
+            field.min === undefined
+                ? Number.NEGATIVE_INFINITY
+                : Number(field.min);
+
+        return Number.isFinite(numeric) && numeric >= minimum;
+    }
+
+    return true;
 }

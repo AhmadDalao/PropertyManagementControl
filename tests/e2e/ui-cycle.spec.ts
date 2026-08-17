@@ -1975,6 +1975,11 @@ test.describe('authenticated administration', () => {
         const paymentCardCount = await paymentCards.count();
         expect(paymentCardCount).toBeGreaterThan(0);
         expect(paymentCardCount).toBeLessThanOrEqual(10);
+        await expect(
+            paymentCards.first().getByText('إثبات الدفعة', { exact: true }),
+        ).toBeVisible();
+        await page.locator('.pmc-mobile-filter-trigger').click();
+        await expect(page.getByLabel('حالة الإثبات')).toBeVisible();
         await expect(page.locator('body')).not.toContainText('payments.');
         await expectNoHorizontalOverflow(page);
 
@@ -2038,13 +2043,32 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'تسجيل دفعة', exact: true }),
         ).toBeVisible();
-        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
-        await expect(page.getByLabel(/^العقد/)).toBeVisible();
+        const portfolio = page.getByLabel(/^المحفظة/);
+        await expect(portfolio).toBeVisible();
+        await expect(portfolio).toHaveValue('');
+        await portfolio.selectOption({ index: 1 });
+        await page.waitForURL(/portfolio_id=/);
+        const lease = page.getByLabel(/^العقد/);
+        await expect(lease).toBeVisible();
+        await expect(lease).toHaveValue('');
+        await expect(
+            page.getByPlaceholder(/ابحث بالعقد أو المستأجر/),
+        ).toBeVisible();
         await expect(page.getByLabel(/^طريقة الدفع/)).toBeVisible();
-        await expect(page.getByLabel(/^المبلغ/)).toBeVisible();
+        const paymentAmount = page.getByLabel(/^المبلغ/);
+        await expect(paymentAmount).toBeVisible();
+        await expect(paymentAmount).toHaveValue('');
         await expect(
             page.getByRole('heading', { name: 'قائمة تحقق الدفعة' }),
         ).toBeVisible();
+        expect(
+            await page
+                .locator('.pmc-payment-guide-progress progress')
+                .evaluate((progress: HTMLProgressElement) => ({
+                    max: progress.max,
+                    value: progress.value,
+                })),
+        ).toMatchObject({ max: 7, value: 5 });
         await expectNoHorizontalOverflow(page);
     });
 

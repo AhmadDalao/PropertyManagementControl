@@ -2,18 +2,29 @@
 
 namespace App\Modules\Payments\Queries;
 
+use App\Models\Document;
 use App\Models\Payment;
 use App\Models\PaymentAllocation;
+use App\Modules\Shared\MorphTypes;
 use Illuminate\Database\Eloquent\Builder;
 
 final class PaymentInsightsQuery
 {
+    public function __construct(private readonly MorphTypes $morphTypes) {}
+
     /**
      * @param  Builder<Payment>  $query
      * @return array<string, int|float|string|bool|null>
      */
     public function get(Builder $query): array
     {
+        $pendingProofCount = (clone $query)
+            ->whereIn('payments.id', Document::query()
+                ->select('documentable_id')
+                ->whereIn('documentable_type', $this->morphTypes->for(new Payment))
+                ->where('type', 'payment_proof')
+                ->where('meta_json->review_status', 'pending'))
+            ->count();
         $summary = (clone $query)
             ->selectRaw('COUNT(*) as total')
             ->selectRaw("SUM(CASE WHEN status = 'posted' THEN 1 ELSE 0 END) as posted_count")
@@ -50,6 +61,7 @@ final class PaymentInsightsQuery
             'allocated_amount' => $allocatedAmount,
             'unallocated_amount' => max(0, $postedAmount - $allocatedAmount),
             'received_this_month' => (float) ($summary?->getAttribute('received_this_month') ?? 0),
+            'pending_proof_count' => $pendingProofCount,
             'currency' => $currencies->count() === 1 ? (string) $currencies->first() : null,
             'mixed_currencies' => $currencies->count() > 1,
         ];
