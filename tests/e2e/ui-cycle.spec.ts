@@ -2272,6 +2272,13 @@ test.describe('authenticated administration', () => {
             page.getByText('أرفق الإثبات بعد الحفظ', { exact: true }),
         ).toBeVisible();
         await expect(page.locator('.pmc-resource-form-summary')).toHaveCount(0);
+        const optionalExpenseSection = page.locator(
+            '.pmc-expense-form-optional',
+        );
+        await expect(optionalExpenseSection).toHaveCount(1);
+        await expect(optionalExpenseSection).not.toHaveAttribute('open', '');
+        await expect(page.locator('.pmc-expense-context-summary')).toBeHidden();
+        await expect(page.locator('.pmc-expense-checklist ul')).toBeHidden();
         const expenseMobileActions = page.locator(
             '.pmc-expense-mobile-actions',
         );
@@ -2280,6 +2287,9 @@ test.describe('authenticated administration', () => {
             (await expenseMobileActions.getByRole('button').boundingBox())
                 ?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(1750);
 
         await expensePortfolio.selectOption({ index: 1 });
         await expect(page).toHaveURL(/portfolio_id=\d+/);

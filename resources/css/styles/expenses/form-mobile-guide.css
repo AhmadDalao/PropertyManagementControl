@@ -1,0 +1,47 @@
+@media (max-width: 767.98px) {
+    .pmc-expense-form-guide {
+        display: block;
+    }
+
+    .pmc-expense-form-guide > section + section {
+        border-top: 1px solid var(--pmc-line-soft);
+        border-inline-start: 0;
+    }
+
+    .pmc-expense-form-guide > section {
+        padding: 0.65rem 0.75rem;
+    }
+
+    .pmc-expense-context-summary,
+    .pmc-expense-checklist ul {
+        display: none;
+    }
+
+    .pmc-expense-posting-preview > strong {
+        margin-bottom: 0.45rem;
+        font-size: 1.08rem;
+    }
+
+    .pmc-expense-posting-state {
+        grid-template-columns: 1.5rem minmax(0, 1fr);
+        padding: 0.45rem;
+    }
+
+    .pmc-expense-posting-state > i {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .pmc-expense-posting-state p,
+    .pmc-expense-evidence-note p {
+        display: none;
+    }
+
+    .pmc-expense-checklist > p {
+        margin-top: 0.25rem;
+    }
+
+    .pmc-expense-evidence-note {
+        grid-template-columns: 1.65rem minmax(0, 1fr) auto;
+    }
+}

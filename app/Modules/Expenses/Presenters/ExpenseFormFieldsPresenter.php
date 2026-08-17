@@ -71,7 +71,8 @@ final class ExpenseFormFieldsPresenter
     {
         return [
             trans('app.expenses.context_section') => ['description' => trans('app.expenses.context_section_help'), 'fields' => ['portfolio_id', 'maintenance_work_order_id', 'asset_id', 'maintenance_request_id']],
-            trans('app.expenses.identity_section') => ['description' => trans('app.expenses.identity_section_help'), 'fields' => ['category', 'title', 'description', 'vendor_name']],
+            trans('app.expenses.identity_section') => ['description' => trans('app.expenses.identity_section_help'), 'fields' => ['category', 'title']],
+            trans('app.expenses.optional_section') => ['description' => trans('app.expenses.optional_section_help'), 'fields' => ['description', 'vendor_name']],
             trans('app.expenses.financial_section') => ['description' => trans('app.expenses.financial_section_help'), 'fields' => ['incurred_on', 'amount', 'currency', 'status']],
         ];
     }

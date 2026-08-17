@@ -89,7 +89,7 @@ export function ExpenseFormGuide({
                 </div>
             </section>
 
-            <section className="pmc-expense-guide-section">
+            <section className="pmc-expense-guide-section pmc-expense-context-summary">
                 <header>
                     <span>{t('expenses.scope_summary')}</span>
                     <small>

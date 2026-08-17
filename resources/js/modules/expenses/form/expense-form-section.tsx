@@ -25,7 +25,42 @@ export function ExpenseFormSection({
     errors,
     onChange,
 }: ExpenseFormSectionProps) {
-    const { text } = useTranslator();
+    const { t, text } = useTranslator();
+    const optional = fields.every(
+        (field) => !field.required && field.type !== 'hidden',
+    );
+    const hasValue = fields.some((field) => {
+        const value = values[field.name];
+
+        return value !== null && value !== undefined && value !== '';
+    });
+    const fieldGrid = (
+        <ExpenseFields
+            fields={fields}
+            values={values}
+            errors={errors}
+            onChange={onChange}
+        />
+    );
+
+    if (optional) {
+        return (
+            <details className="pmc-expense-form-optional" open={hasValue}>
+                <summary>
+                    <span aria-hidden="true">{number}</span>
+                    <div>
+                        <strong>{text(title)}</strong>
+                        {description ? (
+                            <small>{text(description)}</small>
+                        ) : null}
+                    </div>
+                    <em>{t('expenses.optional_section_badge')}</em>
+                    <i className="bi bi-chevron-down" aria-hidden="true" />
+                </summary>
+                {fieldGrid}
+            </details>
+        );
+    }
 
     return (
         <fieldset className="pmc-expense-form-section">
@@ -37,29 +72,38 @@ export function ExpenseFormSection({
                     {description ? <p>{text(description)}</p> : null}
                 </div>
             </header>
-            <div className="pmc-expense-field-grid">
-                {fields.map((field) =>
-                    ['asset_id', 'maintenance_request_id'].includes(
-                        field.name,
-                    ) ? (
-                        <ExpenseChoiceField
-                            key={field.name}
-                            field={field}
-                            value={values[field.name]}
-                            error={fieldError(errors, field.name)}
-                            onChange={(value) => onChange(field, value)}
-                        />
-                    ) : (
-                        <ResourceInput
-                            key={field.name}
-                            field={field}
-                            value={values[field.name]}
-                            error={fieldError(errors, field.name)}
-                            onChange={(value) => onChange(field, value)}
-                        />
-                    ),
-                )}
-            </div>
+            {fieldGrid}
         </fieldset>
+    );
+}
+
+function ExpenseFields({
+    fields,
+    values,
+    errors,
+    onChange,
+}: Pick<ExpenseFormSectionProps, 'fields' | 'values' | 'errors' | 'onChange'>) {
+    return (
+        <div className="pmc-expense-field-grid">
+            {fields.map((field) =>
+                ['asset_id', 'maintenance_request_id'].includes(field.name) ? (
+                    <ExpenseChoiceField
+                        key={field.name}
+                        field={field}
+                        value={values[field.name]}
+                        error={fieldError(errors, field.name)}
+                        onChange={(value) => onChange(field, value)}
+                    />
+                ) : (
+                    <ResourceInput
+                        key={field.name}
+                        field={field}
+                        value={values[field.name]}
+                        error={fieldError(errors, field.name)}
+                        onChange={(value) => onChange(field, value)}
+                    />
+                ),
+            )}
+        </div>
     );
 }

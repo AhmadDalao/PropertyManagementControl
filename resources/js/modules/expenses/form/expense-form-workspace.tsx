@@ -67,6 +67,13 @@ export function ExpenseFormWorkspace({ page }: { page: ExpenseFormPage }) {
             />
 
             <section className="pmc-expense-form-layout">
+                <ExpenseFormGuide
+                    mode={page.mode}
+                    context={page.context}
+                    fields={page.fields}
+                    values={form.data}
+                />
+
                 <form id={formId} onSubmit={submit}>
                     {errors.length > 0 ? (
                         <div
@@ -119,13 +126,6 @@ export function ExpenseFormWorkspace({ page }: { page: ExpenseFormPage }) {
                         </button>
                     </div>
                 </form>
-
-                <ExpenseFormGuide
-                    mode={page.mode}
-                    context={page.context}
-                    fields={page.fields}
-                    values={form.data}
-                />
             </section>
         </div>
     );

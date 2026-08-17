@@ -1,0 +1,82 @@
+.pmc-expense-form-optional {
+    min-width: 0;
+    overflow: clip;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.65rem;
+    background: var(--pmc-surface);
+}
+
+.pmc-expense-form-optional > summary {
+    display: grid;
+    grid-template-columns: 1.55rem minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 3.75rem;
+    padding: 0.75rem 0.9rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-expense-form-optional > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-expense-form-optional > summary > span {
+    display: grid;
+    width: 1.55rem;
+    height: 1.55rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--pmc-primary) 24%, white);
+    border-radius: 0.42rem;
+    background: color-mix(in srgb, var(--pmc-primary) 8%, white);
+    color: var(--pmc-primary);
+    font-size: 0.58rem;
+    font-weight: 850;
+}
+
+.pmc-expense-form-optional > summary > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-expense-form-optional > summary strong {
+    font-size: 0.7rem;
+}
+
+.pmc-expense-form-optional > summary small {
+    color: var(--pmc-muted);
+    font-size: 0.54rem;
+    line-height: 1.4;
+}
+
+.pmc-expense-form-optional > summary em {
+    padding: 0.18rem 0.38rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.46rem;
+    font-style: normal;
+    font-weight: 760;
+}
+
+.pmc-expense-form-optional > summary > i {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    transition: transform 160ms ease;
+}
+
+.pmc-expense-form-optional[open] > summary > i {
+    transform: rotate(180deg);
+}
+
+.pmc-expense-form-optional > .pmc-expense-field-grid {
+    padding: 0.85rem 0.9rem 0.9rem;
+    border-top: 1px solid var(--pmc-line-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pmc-expense-form-optional > summary > i {
+        transition: none;
+    }
+}

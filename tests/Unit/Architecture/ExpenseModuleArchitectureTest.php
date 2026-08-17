@@ -129,11 +129,13 @@ class ExpenseModuleArchitectureTest extends TestCase
             'resources/js/modules/expenses/form-page.tsx' => 30,
             'resources/js/modules/expenses/form/expense-choice-field.tsx' => 150,
             'resources/js/modules/expenses/form/expense-form-guide.tsx' => 230,
-            'resources/js/modules/expenses/form/expense-form-section.tsx' => 90,
+            'resources/js/modules/expenses/form/expense-form-section.tsx' => 120,
             'resources/js/modules/expenses/form/expense-form-workspace.tsx' => 145,
-            'resources/css/styles/expenses/form-layout.css' => 125,
+            'resources/css/styles/expenses/form-layout.css' => 130,
             'resources/css/styles/expenses/form-choice.css' => 75,
             'resources/css/styles/expenses/form-guide.css' => 190,
+            'resources/css/styles/expenses/form-mobile-guide.css' => 60,
+            'resources/css/styles/expenses/form-optional.css' => 90,
             'resources/css/styles/expenses/form-responsive.css' => 90,
         ] as $path => $maximum) {
             $source = $this->source($this->path($path));
