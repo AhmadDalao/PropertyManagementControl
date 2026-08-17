@@ -12,7 +12,10 @@ final class DocumentDetailPresenter
     public function __construct(
         private readonly DocumentDetailQuery $details,
         private readonly DocumentDetailHeaderPresenter $header,
+        private readonly DocumentWorkflowPresenter $workflow,
         private readonly DocumentDetailOverviewPresenter $overview,
+        private readonly DocumentAccessPresenter $access,
+        private readonly DocumentValidityPresenter $validity,
         private readonly ResourcePresenter $resources,
     ) {}
 
@@ -20,14 +23,19 @@ final class DocumentDetailPresenter
     public function present(Document $document, User $actor): array
     {
         $data = $this->details->get($document, $actor);
-        $overview = $this->overview->present($data);
+        $validity = $this->validity->present($data);
 
         return [
             'header' => $this->header->present($data),
-            'stats' => $overview['stats'],
-            'sections' => $overview['sections'],
-            'related' => [],
-            'documents' => $this->resources->documentStrip([$data->document]),
+            'availableTabs' => ['overview', 'access', 'validity', 'history'],
+            'workflow' => $this->workflow->present($data),
+            'stats' => $this->overview->stats($data),
+            'sections' => [
+                ...$this->overview->sections($data),
+                $this->access->section($data),
+                $validity['section'],
+            ],
+            'replacement' => $validity['replacement'],
             'timeline' => $this->resources->activityTimeline($data->document),
         ];
     }

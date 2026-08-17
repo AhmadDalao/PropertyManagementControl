@@ -1,0 +1,55 @@
+@media (max-width: 1199.98px) {
+    .pmc-document-overview-grid,
+    .pmc-document-policy-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-document-overview-grid > aside,
+    .pmc-document-policy-layout > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-document-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-document-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-document-detail-tabs button span {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-document-detail-metrics article {
+        min-height: 4.1rem;
+        padding: 0.6rem;
+    }
+
+    .pmc-document-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-document-detail-panel .pmc-resource-detail-card,
+    .pmc-document-detail-panel .pmc-side-panel,
+    .pmc-document-detail-panel .pmc-resource-workflow,
+    .pmc-document-file-summary,
+    .pmc-document-policy-card {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-document-file-summary {
+        align-items: start;
+    }
+}

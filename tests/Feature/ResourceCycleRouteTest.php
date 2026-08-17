@@ -160,6 +160,7 @@ class ResourceCycleRouteTest extends TestCase
                 'maintenance-requests.show' => 'admin/maintenance/show',
                 'payments.show' => 'admin/payments/show',
                 'expenses.show' => 'admin/expenses/show',
+                'documents.show' => 'admin/documents/show',
                 default => 'admin/resource-show',
             };
 

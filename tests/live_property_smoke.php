@@ -1364,12 +1364,20 @@ if (is_array($documentRows) && isset($documentRows[0]['id'])) {
 
     $documentId = (int) $documentRows[0]['id'];
     $documentDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/documents/'.$documentId.'?locale=en');
+    $documentDetailPayload = smoke_page_payload($documentDetail['body']);
+    $documentPage = $documentDetailPayload['props']['detailPage'] ?? [];
 
-    if ($documentDetail['status'] !== 200 || smoke_component($documentDetail['body']) !== 'admin/resource-show') {
+    if ($documentDetail['status'] !== 200 || smoke_component($documentDetail['body']) !== 'admin/documents/show') {
         smoke_fail("Document {$documentId} detail did not load.");
     }
 
-    smoke_note("/documents/{$documentId} admin/resource-show");
+    if (($documentPage['availableTabs'] ?? []) !== ['overview', 'access', 'validity', 'history']
+        || array_key_exists('decisionCards', $documentPage)
+        || array_key_exists('documents', $documentPage)) {
+        smoke_fail("Document {$documentId} did not expose the focused file workspace.");
+    }
+
+    smoke_note("/documents/{$documentId} admin/documents/show with access and validity workspace");
 
     $documentPdf = smoke_request($baseUrl, $cookieFile, 'GET', "/documents/{$documentId}/download");
     $documentPdfHeaders = strtolower((string) $documentPdf['headers']);

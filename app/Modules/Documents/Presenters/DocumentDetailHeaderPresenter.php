@@ -21,6 +21,13 @@ final class DocumentDetailHeaderPresenter
             'actions' => [
                 ['label' => trans('app.documents.download_pdf'), 'href' => route('documents.download', $document), 'variant' => 'primary', 'external' => true],
                 ['label' => trans('app.documents.edit_document'), 'href' => route('documents.edit', $document), 'variant' => 'secondary'],
+                [
+                    'label' => trans('app.documents.delete_document'),
+                    'href' => route('documents.destroy', $document),
+                    'method' => 'delete',
+                    'variant' => 'danger',
+                    'confirm' => trans('app.documents.delete_confirm', ['title' => $data->title]),
+                ],
             ],
         ];
     }

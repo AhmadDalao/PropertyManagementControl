@@ -293,6 +293,9 @@
 .bi-file-earmark-x::before {
     content: '\f38f';
 }
+.bi-files::before {
+    content: '\f3c2';
+}
 .bi-folder2-open::before {
     content: '\f3d8';
 }

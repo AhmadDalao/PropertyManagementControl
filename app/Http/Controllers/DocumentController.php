@@ -47,6 +47,7 @@ class DocumentController extends Controller
                     'title_ar',
                     'issued_on',
                     'expires_on',
+                    'is_public',
                 ]),
             ),
         ]);
@@ -54,7 +55,7 @@ class DocumentController extends Controller
 
     public function show(Request $request, Document $document): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/documents/show', [
             'detailPage' => $this->detailPresenter->present($document, $this->actor($request)),
         ]);
     }

@@ -37,6 +37,21 @@ class DocumentModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function document_detail_owns_a_focused_frontend_workspace(): void
+    {
+        $entry = $this->source($this->path('resources/js/modules/documents/document-detail-page.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/documents/detail/document-detail-workspace.tsx'));
+
+        $this->assertLessThanOrEqual(30, substr_count($entry, "\n") + 1);
+        $this->assertLessThanOrEqual(90, substr_count($workspace, "\n") + 1);
+        $this->assertStringContainsString("from './detail/document-detail-workspace'", $entry);
+        $this->assertStringContainsString('DocumentDetailTabs', $workspace);
+        $this->assertStringContainsString('DocumentAccessPanel', $workspace);
+        $this->assertStringContainsString('DocumentValidityPanel', $workspace);
+        $this->assertStringNotContainsString('ResourceDetailShell', $entry.$workspace);
+    }
+
+    #[Test]
     public function document_facades_stay_small_and_delegate_to_module_boundaries(): void
     {
         foreach ([
@@ -44,6 +59,9 @@ class DocumentModuleArchitectureTest extends TestCase
             'app/Modules/Documents/Queries/DocumentIndexQuery.php' => 90,
             'app/Modules/Documents/Presenters/DocumentFormPresenter.php' => 45,
             'app/Modules/Documents/Presenters/DocumentDetailPresenter.php' => 50,
+            'app/Modules/Documents/Presenters/DocumentAccessPresenter.php' => 50,
+            'app/Modules/Documents/Presenters/DocumentValidityPresenter.php' => 70,
+            'app/Modules/Documents/Presenters/DocumentWorkflowPresenter.php' => 60,
             'resources/js/modules/documents/document-table.tsx' => 70,
             'resources/js/modules/documents/document-table-config.tsx' => 200,
             'resources/js/modules/documents/document-validity.tsx' => 70,
@@ -105,6 +123,9 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Documents/Presenters/DocumentCreateFormPresenter.php'),
             $this->path('app/Modules/Documents/Presenters/DocumentDetailHeaderPresenter.php'),
             $this->path('app/Modules/Documents/Presenters/DocumentDetailOverviewPresenter.php'),
+            $this->path('app/Modules/Documents/Presenters/DocumentAccessPresenter.php'),
+            $this->path('app/Modules/Documents/Presenters/DocumentValidityPresenter.php'),
+            $this->path('app/Modules/Documents/Presenters/DocumentWorkflowPresenter.php'),
             $this->path('app/Modules/Documents/Presenters/DocumentEditFormPresenter.php'),
             $this->path('app/Modules/Documents/Presenters/DocumentFormFieldsPresenter.php'),
             $this->path('app/Modules/Documents/Presenters/DocumentTableRowPresenter.php'),
@@ -128,6 +149,7 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Documents/Support/DocumentExpiryState.php'),
             $this->path('app/Modules/Documents/Support/DocumentInputGuard.php'),
             $this->path('app/Modules/Documents/Support/DocumentOptions.php'),
+            $this->path('app/Modules/Documents/Support/DocumentReplacementLinks.php'),
             $this->path('app/Modules/Documents/Support/DocumentRules.php'),
             $this->path('resources/js/modules/documents/document-filters.ts'),
             $this->path('resources/js/modules/documents/document-metrics.tsx'),
@@ -135,6 +157,13 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/documents/document-table.tsx'),
             $this->path('resources/js/modules/documents/document-validity.tsx'),
             $this->path('resources/js/modules/documents/types.ts'),
+            $this->path('resources/js/modules/documents/document-detail-page.tsx'),
+            $this->path('resources/js/modules/documents/detail/document-detail-workspace.tsx'),
+            $this->path('resources/js/modules/documents/detail/document-detail-tabs.tsx'),
+            $this->path('resources/js/modules/documents/detail/document-overview-panel.tsx'),
+            $this->path('resources/js/modules/documents/detail/document-access-panel.tsx'),
+            $this->path('resources/js/modules/documents/detail/document-validity-panel.tsx'),
+            $this->path('resources/js/modules/documents/detail/types.ts'),
         ] as $path) {
             $this->assertFileExists($path);
         }

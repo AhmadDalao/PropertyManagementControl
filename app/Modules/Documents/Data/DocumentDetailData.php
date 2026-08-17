@@ -13,5 +13,10 @@ final readonly class DocumentDetailData
         public User $actor,
         public string $title,
         public ?array $attachment,
+        public string $attachmentAlias,
+        public string $expiryCode,
+        public ?int $expiryDays,
+        public bool $portalEligible,
+        public ?string $replacementUrl,
     ) {}
 }

@@ -1,0 +1,51 @@
+.pmc-document-policy-card {
+    display: grid;
+    min-width: 0;
+    gap: 0.7rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-inline-start: 0.25rem solid var(--pmc-primary);
+    border-radius: 0.62rem;
+    background: linear-gradient(145deg, var(--pmc-primary-soft), #fff 68%);
+}
+
+.pmc-document-policy-card > span {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border-radius: 0.58rem;
+    background: #fff;
+    color: var(--pmc-primary-strong);
+    font-size: 1.1rem;
+}
+
+.pmc-document-policy-card.is-validity {
+    border-inline-start-color: #0f766e;
+    background: linear-gradient(145deg, #f0fdfa, #fff 68%);
+}
+
+.pmc-document-policy-card h2 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.pmc-document-policy-card p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.6;
+}
+
+.pmc-document-policy-card .btn {
+    min-height: 2.75rem;
+    justify-content: center;
+    font-size: 0.64rem;
+}
+
+.pmc-document-policy-card small {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    line-height: 1.55;
+}

@@ -488,11 +488,22 @@ class DocumentLibraryManagementTest extends TestCase
             ->get(route('documents.show', $expired))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/documents/show')
+                ->where('detailPage.availableTabs', ['overview', 'access', 'validity', 'history'])
                 ->where('detailPage.stats.1.value', 'Expired')
-                ->where('detailPage.stats.2.value', '2026-08-01')
-                ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
+                ->where('detailPage.sections.0.key', 'identity')
+                ->where('detailPage.sections.1.key', 'ownership')
+                ->where('detailPage.sections.2.key', 'access')
+                ->where('detailPage.sections.3.key', 'validity')
+                ->where('detailPage.sections.3.items', fn ($items): bool => collect($items)
                     ->contains(fn (array $item): bool => $item['label'] === 'Issued on'
-                        && $item['value'] === '2025-08-02')));
+                        && $item['value'] === '2025-08-02'))
+                ->where('detailPage.workflow.title', 'Replace this expired document')
+                ->where('detailPage.replacement.can_upload', true)
+                ->where('detailPage.replacement.upload_url', fn (string $url): bool => str_contains($url, 'documentable_type=asset')
+                    && str_contains($url, 'documentable_id='.$asset->id))
+                ->missing('detailPage.decisionCards')
+                ->missing('detailPage.documents'));
 
         $this->actingAs($owner)
             ->get(route('reports.index', ['property_id' => $asset->id]))
@@ -764,13 +775,22 @@ class DocumentLibraryManagementTest extends TestCase
             ->get(route('documents.show', $document))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/documents/show')
+                ->where('detailPage.availableTabs', ['overview', 'access', 'validity', 'history'])
                 ->where('detailPage.header.actions.0.label', 'Download PDF')
                 ->where('detailPage.header.actions.0.href', route('documents.download', $document))
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.0.external', true)
                 ->where('detailPage.header.actions.1.label', 'Edit document')
                 ->where('detailPage.header.actions.1.href', route('documents.edit', $document))
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'Delete document')
+                ->where('detailPage.header.actions.2.method', 'delete')
+                ->where('detailPage.sections.2.items', fn ($items): bool => collect($items)
+                    ->contains(fn (array $item): bool => $item['label'] === 'Portal eligibility'
+                        && $item['value'] === 'This type is always management-only'))
+                ->where('detailPage.replacement.can_upload', true)
+                ->where('detailPage.replacement.upload_url', fn (string $url): bool => str_contains($url, 'is_public=0')));
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
@@ -780,7 +800,11 @@ class DocumentLibraryManagementTest extends TestCase
                 ->where('detailPage.header.actions.0.label', 'تنزيل PDF')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'تعديل المستند')
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.header.actions.2.label', 'حذف المستند')
+                ->where('detailPage.workflow.title', 'سجل مستند دائم')
+                ->where('app.translations.documents.tabs.access', 'الوصول')
+                ->where('app.translations.documents.tabs.validity', 'الصلاحية'));
     }
 
     public function test_internal_document_type_cannot_be_marked_portal_visible(): void
@@ -813,6 +837,92 @@ class DocumentLibraryManagementTest extends TestCase
             ->assertRedirect();
 
         $this->assertFalse(Document::query()->where('title_en', 'Internal report')->firstOrFail()->is_public);
+    }
+
+    public function test_document_detail_explains_portal_access_and_payment_proof_replacement_rules(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $lease = $this->createLease(
+            $portfolio,
+            $tenant,
+            $this->createAsset($portfolio),
+            $owner,
+        );
+        $payment = Payment::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'recorded_by_user_id' => $owner->id,
+            'reference' => 'DOC-PROOF-1',
+            'type' => 'rent',
+            'method' => 'bank_transfer',
+            'status' => 'pending',
+            'received_on' => today(),
+            'amount' => 500,
+            'currency' => 'SAR',
+        ]);
+        $contract = Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $owner->id,
+            'documentable_type' => $lease->getMorphClass(),
+            'documentable_id' => $lease->id,
+            'type' => 'signed_contract',
+            'title_en' => 'Portal contract',
+            'title_ar' => 'عقد البوابة',
+            'disk' => 'local',
+            'file_path' => 'documents/portal-contract.pdf',
+            'original_name' => 'portal-contract.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 100,
+            'is_public' => true,
+        ]);
+        $proof = Document::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'uploaded_by_user_id' => $tenantUser->id,
+            'documentable_type' => $payment->getMorphClass(),
+            'documentable_id' => $payment->id,
+            'type' => 'payment_proof',
+            'title_en' => 'Tenant bank proof',
+            'title_ar' => 'إثبات البنك للمستأجر',
+            'disk' => 'local',
+            'file_path' => 'documents/tenant-bank-proof.pdf',
+            'original_name' => 'tenant-bank-proof.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 100,
+            'is_public' => false,
+            'meta_json' => ['review_status' => 'pending'],
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('documents.show', $contract))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.sections.2.items', fn ($items): bool => collect($items)
+                    ->contains(fn (array $item): bool => $item['label'] === 'Authorized audience'
+                        && $item['value'] === 'Owning tenant and authorized management'))
+                ->where('detailPage.replacement.can_upload', true)
+                ->where('detailPage.replacement.upload_url', fn (string $url): bool => str_contains($url, 'is_public=1')));
+
+        $this->actingAs($owner)
+            ->get(route('documents.create', [
+                'documentable_type' => 'lease',
+                'documentable_id' => $lease->id,
+                'type' => 'signed_contract',
+                'is_public' => 0,
+            ]))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('formPage.initialValues.is_public', false));
+
+        $this->actingAs($owner)
+            ->get(route('documents.show', $proof))
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.replacement.can_upload', false)
+                ->where('detailPage.replacement.upload_url', null)
+                ->where('detailPage.sections.2.items', fn ($items): bool => collect($items)
+                    ->contains(fn (array $item): bool => $item['label'] === 'Payment-proof review'
+                        && $item['value'] === 'Pending')));
     }
 
     public function test_document_action_rejects_cross_portfolio_delete_when_reused_directly(): void

@@ -12,6 +12,11 @@ final class DocumentCreateFormPresenter
     /** @return array<string, mixed> */
     public function present(DocumentFormData $data): array
     {
+        $portalEligible = DocumentOptions::canShowInPortal($data->attachmentAlias, $data->type);
+        $portalRequested = array_key_exists('is_public', $data->defaults)
+            ? filter_var($data->defaults['is_public'], FILTER_VALIDATE_BOOLEAN)
+            : true;
+
         return [
             'layout' => 'document',
             'title' => trans('app.documents.upload_document'),
@@ -32,7 +37,7 @@ final class DocumentCreateFormPresenter
                 'title_ar' => (string) ($data->defaults['title_ar'] ?? ''),
                 'issued_on' => (string) ($data->defaults['issued_on'] ?? ''),
                 'expires_on' => (string) ($data->defaults['expires_on'] ?? ''),
-                'is_public' => DocumentOptions::canShowInPortal($data->attachmentAlias, $data->type),
+                'is_public' => $portalEligible && $portalRequested,
                 'file' => null,
             ],
         ];

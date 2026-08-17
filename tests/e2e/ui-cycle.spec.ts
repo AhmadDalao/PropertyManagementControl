@@ -2213,11 +2213,11 @@ test.describe('authenticated administration', () => {
 
         await cards.locator('.pmc-mobile-record-title-link').first().click();
         await expect(
-            page.getByText('سجل الملف', { exact: true }),
+            page.getByText('سجل PDF محمي', { exact: true }),
         ).toBeVisible();
-        await expect(
-            page.getByText('تاريخ الانتهاء', { exact: true }).first(),
-        ).toBeVisible();
+        const documentTabs = page.getByRole('tab');
+        await expect(documentTabs).toHaveCount(4);
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
         const downloadAction = page.getByRole('link', {
             name: 'تنزيل PDF',
         });
@@ -2229,6 +2229,22 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('link', { name: 'تعديل المستند' }),
         ).toHaveClass(/btn-outline-secondary/);
+        await page.getByRole('tab', { name: 'الوصول' }).click();
+        await expect(page).toHaveURL(/tab=access/);
+        await expect(
+            page.getByRole('heading', { name: 'خاص بشكل افتراضي' }),
+        ).toBeVisible();
+        await page.getByRole('tab', { name: 'الصلاحية' }).click();
+        await expect(page).toHaveURL(/tab=validity/);
+        await expect(
+            page.getByText('الصلاحية والتجديد', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', {
+                name: 'استبدل الملف دون فقدان السجل',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/documents/create?locale=ar');
