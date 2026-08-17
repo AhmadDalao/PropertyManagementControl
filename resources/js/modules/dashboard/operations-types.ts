@@ -17,6 +17,8 @@ export type OperationsFinancial = {
     expenses: number | null;
     net: number | null;
     arrears: number | null;
+    overdueInstallments: number;
+    overdueLeases: number;
     currency: string | null;
     currencyCount: number;
     currencyTotals: OperationsCurrencyPosition[];

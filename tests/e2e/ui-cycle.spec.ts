@@ -4274,6 +4274,24 @@ test.describe('local role dashboards', () => {
         await page.goto('/dashboard?locale=en');
 
         await expect(page.locator('#dashboard-property-focus')).toHaveCount(0);
+        const outstandingRent = page
+            .locator('.pmc-metric-card')
+            .filter({ hasText: 'Outstanding rent' });
+        await expect(outstandingRent).toContainText('overdue installments');
+        await expect(outstandingRent).toContainText('leases');
+        await expect(outstandingRent).not.toContainText('service requests');
+        await expect(
+            page.locator('.pmc-metric-card').filter({
+                hasText: 'Collected this month',
+            }),
+        ).toBeVisible();
+        await page.getByRole('link', { name: 'Quarter', exact: true }).click();
+        await expect(page).toHaveURL(/[?&]period=quarter(?:&|$)/);
+        await expect(
+            page.locator('.pmc-metric-card').filter({
+                hasText: 'Collected this quarter',
+            }),
+        ).toBeVisible();
         await page.locator('.pmc-menu-trigger').click();
         const trigger = page.locator('[data-property-scope-trigger]');
         await expect(trigger).toBeVisible();
@@ -4307,6 +4325,19 @@ test.describe('local role dashboards', () => {
         await expect(
             page.locator('[data-dashboard-source-context]'),
         ).toContainText(/تشمل الإجماليات بيانات العرض|بيانات فعلية فقط/);
+        const outstandingRentArabic = page
+            .locator('.pmc-metric-card')
+            .filter({ hasText: 'الإيجار المستحق' });
+        await expect(outstandingRentArabic).toContainText('دفعات متأخرة');
+        await expect(outstandingRentArabic).toContainText('عقود');
+        await expect(outstandingRentArabic).not.toContainText('طلبات خدمة');
+        await page.getByRole('link', { name: 'السنة', exact: true }).click();
+        await expect(page).toHaveURL(/[?&]period=year(?:&|$)/);
+        await expect(
+            page.locator('.pmc-metric-card').filter({
+                hasText: 'المحصل خلال هذه السنة',
+            }),
+        ).toBeVisible();
         await page.locator('.pmc-menu-trigger').click();
         await trigger.click();
         await expect(

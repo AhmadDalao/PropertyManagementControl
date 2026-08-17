@@ -54,6 +54,10 @@ final readonly class OperationsFinancialQuery
             $bounds['start'],
             $bounds['end'],
         );
+        $overdueInstallments = $installments->filter(
+            fn (LeaseInstallment $installment): bool => $installment->due_date?->isBefore(today()) === true
+                && (float) $installment->amount_paid < (float) $installment->amount_due,
+        );
         $singleCurrency = count($currencyTotals) === 1
             ? $currencyTotals[0]
             : null;
@@ -69,6 +73,8 @@ final readonly class OperationsFinancialQuery
             'expenses' => $singleCurrency['expenses'] ?? null,
             'net' => $singleCurrency['net'] ?? null,
             'arrears' => $singleCurrency['arrears'] ?? null,
+            'overdueInstallments' => $overdueInstallments->count(),
+            'overdueLeases' => $overdueInstallments->pluck('lease_id')->unique()->count(),
             'hasArrears' => collect($currencyTotals)->contains(
                 fn (array $total): bool => $total['arrears'] > 0,
             ),

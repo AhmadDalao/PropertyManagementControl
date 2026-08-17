@@ -44,6 +44,7 @@ export function platformMetrics(
         locale,
         t,
     );
+    const metricPeriod = t(`dashboard.metric_period_${props.period}`);
 
     return [
         {
@@ -103,7 +104,9 @@ export function platformMetrics(
             href: propertyFocusUrl('/rent-collection', propertyId),
         },
         {
-            label: t('dashboard.collected_this_month'),
+            label: t('dashboard.collected_for_period', undefined, {
+                period: metricPeriod,
+            }),
             value: revenue.value,
             detail:
                 props.financial.currencyCount === 1
@@ -126,8 +129,12 @@ export function platformMetrics(
         {
             label: t('dashboard.outstanding_rent'),
             value: arrears.value,
-            detail: t('dashboard.open_service_count', undefined, {
-                count: localizedNumber(props.stats.openRequests, locale),
+            detail: t('dashboard.overdue_rent_exposure', undefined, {
+                installments: localizedNumber(
+                    props.financial.overdueInstallments,
+                    locale,
+                ),
+                leases: localizedNumber(props.financial.overdueLeases, locale),
             }),
             icon: 'bi-exclamation-circle',
             tone: props.financial.hasArrears ? 'red' : 'amber',

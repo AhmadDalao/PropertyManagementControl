@@ -63,16 +63,19 @@ export function portfolioMetrics(
             href: propertyFocusUrl('/assets?rentable=1', propertyId),
         },
         {
-            label: t('dashboard.rent_due_month'),
+            label: t('dashboard.rent_due_for_period', undefined, {
+                period: t(`dashboard.metric_period_${props.period}`),
+            }),
             value: rentDue.value,
             detail:
                 props.financial.currencyCount === 1
-                    ? t('dashboard.rent_paid_month', undefined, {
+                    ? t('dashboard.rent_paid_for_period', undefined, {
                           amount: currency(
                               props.financial.scheduledPaid ?? 0,
                               locale,
                               props.financial.currency ?? 'SAR',
                           ),
+                          period: t(`dashboard.metric_period_${props.period}`),
                       })
                     : currencyPositionAmounts(
                           props.financial.currencyTotals,
