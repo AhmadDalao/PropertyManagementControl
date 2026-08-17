@@ -357,9 +357,25 @@
 @media (max-width: 767.98px) {
     .pmc-command-grid,
     .pmc-command-grid.is-three,
-    .pmc-dashboard-status-grid,
     .pmc-dashboard-setup-body {
         grid-template-columns: 1fr;
+    }
+
+    .pmc-dashboard-system-workspace .pmc-dashboard-status-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.5rem;
+    }
+
+    .pmc-dashboard-system-workspace .pmc-dashboard-status-grid > a {
+        min-height: 5.75rem;
+        align-content: center;
+        padding: 0.75rem;
+    }
+
+    .pmc-dashboard-system-workspace
+        .pmc-dashboard-status-grid
+        > a:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 
     .pmc-dashboard-data-context,

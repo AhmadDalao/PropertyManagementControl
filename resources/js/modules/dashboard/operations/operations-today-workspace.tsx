@@ -53,11 +53,14 @@ export function OperationsTodayWorkspace({
         index: number,
     ) => {
         let nextIndex = index;
+        const direction = locale === 'ar' ? -1 : 1;
 
         if (event.key === 'ArrowRight') {
-            nextIndex = (index + 1) % sectionOrder.length;
+            nextIndex =
+                (index + direction + sectionOrder.length) % sectionOrder.length;
         } else if (event.key === 'ArrowLeft') {
-            nextIndex = (index - 1 + sectionOrder.length) % sectionOrder.length;
+            nextIndex =
+                (index - direction + sectionOrder.length) % sectionOrder.length;
         } else if (event.key === 'Home') {
             nextIndex = 0;
         } else if (event.key === 'End') {

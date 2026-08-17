@@ -31,11 +31,12 @@ export function OperationsViewTabs({
     ) => {
         const keys = options.map((option) => option.key);
         let nextIndex = index;
+        const direction = locale === 'ar' ? -1 : 1;
 
         if (event.key === 'ArrowRight') {
-            nextIndex = (index + 1) % keys.length;
+            nextIndex = (index + direction + keys.length) % keys.length;
         } else if (event.key === 'ArrowLeft') {
-            nextIndex = (index - 1 + keys.length) % keys.length;
+            nextIndex = (index - direction + keys.length) % keys.length;
         } else if (event.key === 'Home') {
             nextIndex = 0;
         } else if (event.key === 'End') {

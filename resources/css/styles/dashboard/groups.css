@@ -156,6 +156,11 @@
     color: var(--pmc-primary-strong);
 }
 
+.pmc-dashboard-system-tabs button:focus-visible {
+    outline: 3px solid rgba(18, 129, 60, 0.28);
+    outline-offset: 2px;
+}
+
 .pmc-dashboard-system-panel {
     display: none;
     min-width: 0;

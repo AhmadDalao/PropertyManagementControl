@@ -74,12 +74,6 @@ export function PlatformCompositionPanel({
                         </div>
                     </header>
                     <nav aria-label={t('dashboard.managed_properties')}>
-                        <Link href="/portfolio-control">
-                            <span>{t('dashboard.live_properties')}</span>
-                            <strong>
-                                {count(composition.properties.live)}
-                            </strong>
-                        </Link>
                         <Link href="/system/showcase-data">
                             <span>{t('dashboard.showcase_properties')}</span>
                             <strong>

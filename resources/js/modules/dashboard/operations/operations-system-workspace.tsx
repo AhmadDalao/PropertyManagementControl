@@ -1,15 +1,14 @@
 import { useState } from 'react';
 
 import { useTranslator } from '@/lib/i18n';
-import { localizedNumber } from '@/lib/utils';
 
 import type { OperationsDashboardProps } from '../types';
 import { LaunchReadinessPanel } from './launch-readiness-panel';
 import { PlatformActivityPanel } from './platform-activity-panel';
 import { PlatformCompositionPanel } from './platform-composition-panel';
 import { PlatformStatusPanel } from './platform-status-panel';
-
-type SystemSection = 'readiness' | 'activity' | 'company' | 'website';
+import { SystemWorkspaceTabs } from './system-workspace-tabs';
+import type { SystemWorkspaceSection } from './system-workspace-tabs';
 
 export function OperationsSystemWorkspace({
     props,
@@ -17,25 +16,25 @@ export function OperationsSystemWorkspace({
     props: OperationsDashboardProps;
 }) {
     const { locale, t } = useTranslator();
-    const available: SystemSection[] = [
+    const available: SystemWorkspaceSection[] = [
         ...(props.readinessStatus ? (['readiness'] as const) : []),
         'activity',
         ...(props.platformComposition ? (['company'] as const) : []),
         ...(props.cmsStatus ? (['website'] as const) : []),
     ];
-    const [requested, setRequested] = useState<SystemSection>(() =>
+    const [requested, setRequested] = useState<SystemWorkspaceSection>(() =>
         initialSection(available, props),
     );
     const active = available.includes(requested)
         ? requested
         : (available[0] ?? 'activity');
-    const select = (section: SystemSection) => {
+    const select = (section: SystemWorkspaceSection) => {
         setRequested(section);
         const url = new URL(window.location.href);
         url.searchParams.set('control', section);
         window.history.replaceState({}, '', url);
     };
-    const counts: Record<SystemSection, number> = {
+    const counts: Record<SystemWorkspaceSection, number> = {
         readiness:
             (props.readinessStatus?.automatic_blocked ?? 0) +
             (props.readinessStatus?.evidence_remaining ?? 0),
@@ -44,7 +43,7 @@ export function OperationsSystemWorkspace({
         website:
             (props.cmsStatus?.published ?? 0) + (props.cmsStatus?.draft ?? 0),
     };
-    const labels: Record<SystemSection, string> = {
+    const labels: Record<SystemWorkspaceSection, string> = {
         readiness: t('dashboard.launch_control_title'),
         activity: t('dashboard.platform_activity_title'),
         company: t('dashboard.company_composition_title'),
@@ -53,34 +52,24 @@ export function OperationsSystemWorkspace({
 
     return (
         <div className="pmc-dashboard-system-workspace">
-            <nav
-                className="pmc-dashboard-system-tabs"
-                aria-label={t('dashboard.system_workspace_navigation')}
-            >
-                {available.map((section) => (
-                    <button
-                        key={section}
-                        id={`dashboard-system-tab-${section}`}
-                        type="button"
-                        className={active === section ? 'is-active' : ''}
-                        data-dashboard-system-tab={section}
-                        aria-pressed={active === section}
-                        onClick={() => select(section)}
-                    >
-                        <span>{labels[section]}</span>
-                        <strong>
-                            {localizedNumber(counts[section], locale)}
-                        </strong>
-                    </button>
-                ))}
-            </nav>
+            <SystemWorkspaceTabs
+                active={active}
+                label={t('dashboard.system_workspace_navigation')}
+                locale={locale}
+                options={available.map((section) => ({
+                    key: section,
+                    label: labels[section],
+                    count: counts[section],
+                }))}
+                onSelect={select}
+            />
 
             {active === 'readiness' && props.readinessStatus ? (
                 <div
                     id="dashboard-system-panel-readiness"
                     className="pmc-dashboard-system-panel is-active"
                     data-dashboard-system-panel="readiness"
-                    role="region"
+                    role="tabpanel"
                     aria-labelledby="dashboard-system-tab-readiness"
                 >
                     <LaunchReadinessPanel status={props.readinessStatus} />
@@ -91,7 +80,7 @@ export function OperationsSystemWorkspace({
                     id="dashboard-system-panel-activity"
                     className="pmc-dashboard-system-panel is-active"
                     data-dashboard-system-panel="activity"
-                    role="region"
+                    role="tabpanel"
                     aria-labelledby="dashboard-system-tab-activity"
                 >
                     <PlatformActivityPanel
@@ -104,7 +93,7 @@ export function OperationsSystemWorkspace({
                     id="dashboard-system-panel-company"
                     className="pmc-dashboard-system-panel is-active"
                     data-dashboard-system-panel="company"
-                    role="region"
+                    role="tabpanel"
                     aria-labelledby="dashboard-system-tab-company"
                 >
                     <PlatformCompositionPanel
@@ -117,7 +106,7 @@ export function OperationsSystemWorkspace({
                     id="dashboard-system-panel-website"
                     className="pmc-dashboard-system-panel is-active"
                     data-dashboard-system-panel="website"
-                    role="region"
+                    role="tabpanel"
                     aria-labelledby="dashboard-system-tab-website"
                 >
                     <PlatformStatusPanel status={props.cmsStatus} />
@@ -128,16 +117,16 @@ export function OperationsSystemWorkspace({
 }
 
 function initialSection(
-    available: SystemSection[],
+    available: SystemWorkspaceSection[],
     props: OperationsDashboardProps,
-): SystemSection {
+): SystemWorkspaceSection {
     if (typeof window !== 'undefined') {
         const requested = new URLSearchParams(window.location.search).get(
             'control',
         );
 
-        if (available.includes(requested as SystemSection)) {
-            return requested as SystemSection;
+        if (available.includes(requested as SystemWorkspaceSection)) {
+            return requested as SystemWorkspaceSection;
         }
     }
 

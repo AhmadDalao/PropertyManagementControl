@@ -133,6 +133,7 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/property-performance-card.tsx',
             'operations/property-performance-grid.tsx',
             'operations/recent-payments-panel.tsx',
+            'operations/system-workspace-tabs.tsx',
             'operations-types.ts',
             'shared-types.ts',
             'shared/health-signals.tsx',
@@ -204,6 +205,12 @@ class DashboardModuleArchitectureTest extends TestCase
         $propertyPerformance = $this->source(
             'resources/js/modules/dashboard/operations/property-performance-grid.tsx',
         );
+        $systemWorkspace = $this->source(
+            'resources/js/modules/dashboard/operations/operations-system-workspace.tsx',
+        );
+        $systemTabs = $this->source(
+            'resources/js/modules/dashboard/operations/system-workspace-tabs.tsx',
+        );
 
         $this->assertStringContainsString("selected === 'today'", $groups);
         $this->assertStringContainsString("selected === 'portfolio'", $groups);
@@ -212,14 +219,23 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('role="tablist"', $viewTabs);
         $this->assertStringContainsString('aria-selected', $viewTabs);
         $this->assertStringContainsString('onKeyDown', $viewTabs);
+        $this->assertStringContainsString("locale === 'ar'", $viewTabs);
         $this->assertStringContainsString('role="tablist"', $today);
         $this->assertStringContainsString('role="tabpanel"', $today);
+        $this->assertStringContainsString("locale === 'ar'", $today);
         $this->assertStringContainsString('portfolio_view', $portfolioWorkspace);
         $this->assertStringContainsString('role="tabpanel"', $portfolioWorkspace);
         $this->assertStringContainsString('role="tablist"', $portfolioTabs);
         $this->assertStringContainsString('aria-selected', $portfolioTabs);
         $this->assertStringContainsString('onKeyDown', $portfolioTabs);
         $this->assertStringContainsString('slice(0, 2)', $propertyPerformance);
+        $this->assertStringContainsString('control', $systemWorkspace);
+        $this->assertStringContainsString('role="tabpanel"', $systemWorkspace);
+        $this->assertStringContainsString('role="tablist"', $systemTabs);
+        $this->assertStringContainsString('aria-selected', $systemTabs);
+        $this->assertStringContainsString('onKeyDown', $systemTabs);
+        $this->assertStringContainsString("locale === 'ar'", $systemTabs);
+        $this->assertStringNotContainsString('aria-pressed', $systemTabs);
         $this->assertStringNotContainsString("href: '/action-center'", $header);
         $this->assertStringContainsString(
             'className="pmc-dashboard-metrics"',

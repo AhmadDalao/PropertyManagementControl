@@ -4355,14 +4355,16 @@ test.describe('local role dashboards', () => {
             name: 'مساحات عمل لوحة التحكم',
         });
         await expect(dashboardTabs).toBeVisible();
-        await expect(
-            dashboardTabs.getByRole('tab', { name: /^عمل اليوم/ }),
-        ).toHaveAttribute('aria-selected', 'true');
+        const todayTab = dashboardTabs.getByRole('tab', {
+            name: /^عمل اليوم/,
+        });
+        await expect(todayTab).toHaveAttribute('aria-selected', 'true');
         const portfolioTab = dashboardTabs.getByRole('tab', {
             name: /^أداء المحفظة/,
         });
-        await portfolioTab.click();
+        await todayTab.press('ArrowLeft');
         await expect(page).toHaveURL(/[?&]panel=portfolio(?:&|$)/);
+        await expect(portfolioTab).toHaveAttribute('aria-selected', 'true');
         const portfolioViews = page.getByRole('tablist', {
             name: 'عروض أداء المحفظة',
         });
@@ -4424,6 +4426,60 @@ test.describe('local role dashboards', () => {
         ).toBeVisible();
         await expect(page.locator('[data-dashboard-group]')).toHaveCount(1);
         await expect(page.locator('body')).not.toContainText('System controls');
+        const systemViews = page.getByRole('tablist', {
+            name: 'مجالات التحكم بالنظام',
+        });
+        await expect(systemViews).toBeVisible();
+        const readinessControl = page.locator(
+            '[data-dashboard-system-tab="readiness"]',
+        );
+        await expect(readinessControl).toHaveAttribute('aria-selected', 'true');
+        await expect(page.locator('[data-dashboard-system-panel]')).toHaveCount(
+            1,
+        );
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(1300);
+        expect(
+            await page
+                .locator('.pmc-dashboard-status-grid')
+                .evaluate(
+                    (element) =>
+                        getComputedStyle(element).gridTemplateColumns.split(' ')
+                            .length,
+                ),
+        ).toBe(2);
+        await readinessControl.press('ArrowLeft');
+        await expect(page).toHaveURL(/[?&]control=activity(?:&|$)/);
+        await expect(
+            page.locator('[data-dashboard-system-panel="activity"]'),
+        ).toBeVisible();
+        await page.locator('[data-dashboard-system-tab="company"]').click();
+        await expect(page).toHaveURL(/[?&]control=company(?:&|$)/);
+        await expect(
+            page.locator('.pmc-platform-composition-grid nav a'),
+        ).toHaveCount(7);
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(1850);
+        const activeSystemView = page.locator(
+            '[data-dashboard-system-tab][aria-selected="true"]',
+        );
+        await activeSystemView.press('End');
+        await expect(page).toHaveURL(/[?&]control=website(?:&|$)/);
+        await page.reload();
+        await expect(
+            page.locator('[data-dashboard-system-tab="website"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-system-panel="website"]'),
+        ).toBeVisible();
+        await activeSystemView.press('Home');
+        await expect(
+            page.locator('[data-dashboard-system-tab="readiness"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expectMinimumTouchHeight(page, '[data-dashboard-system-tab]');
+        await expectNoHorizontalOverflow(page);
         await systemTab.press('Home');
         await expect(
             dashboardTabs.getByRole('tab', { name: /^عمل اليوم/ }),
@@ -4434,6 +4490,14 @@ test.describe('local role dashboards', () => {
         const activeWorkTab = page.locator(
             '[data-dashboard-work-tab][aria-selected="true"]',
         );
+        await activeWorkTab.press('Home');
+        await expect(
+            page.locator('[data-dashboard-work-tab="actions"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await activeWorkTab.press('ArrowLeft');
+        await expect(
+            page.locator('[data-dashboard-work-tab="collections"]'),
+        ).toHaveAttribute('aria-selected', 'true');
         await activeWorkTab.press('End');
         await expect(
             page.locator('[data-dashboard-work-tab="move_outs"]'),
