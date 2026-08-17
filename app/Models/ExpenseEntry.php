@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
  * @property-read Collection<int, Document> $documents
  * @property CarbonInterface|null $incurred_on
  * @property float $amount
+ * @property array<string, mixed>|null $meta_json
  */
 class ExpenseEntry extends Model
 {

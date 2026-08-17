@@ -6,7 +6,10 @@ use App\Modules\Expenses\Data\ExpenseFormData;
 
 final class ExpenseEditFormPresenter
 {
-    public function __construct(private readonly ExpenseFormFieldsPresenter $fields) {}
+    public function __construct(
+        private readonly ExpenseFormFieldsPresenter $fields,
+        private readonly ExpenseFormContextPresenter $context,
+    ) {}
 
     /** @return array<string, mixed> */
     public function present(ExpenseFormData $data): array
@@ -19,6 +22,8 @@ final class ExpenseEditFormPresenter
 
         return [
             'layout' => 'expense',
+            'mode' => 'edit',
+            'context' => $this->context->present($data),
             'title' => trans('app.expenses.edit_expense'),
             'description' => trans('app.expenses.edit_description'),
             'backHref' => route('expenses.show', $expense),

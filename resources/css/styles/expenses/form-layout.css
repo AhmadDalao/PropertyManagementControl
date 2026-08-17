@@ -1,0 +1,119 @@
+.pmc-expense-form-page,
+.pmc-expense-form-layout,
+.pmc-expense-form-layout > form {
+    min-width: 0;
+}
+
+.pmc-expense-form-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.32fr);
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.pmc-expense-form-layout > form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.pmc-expense-form-section,
+.pmc-expense-form-guide {
+    min-width: 0;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.65rem;
+    background: var(--pmc-surface);
+}
+
+.pmc-expense-form-section {
+    padding: 0.9rem;
+}
+
+.pmc-expense-form-section > header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    margin-bottom: 0.8rem;
+}
+
+.pmc-expense-form-section > header > span {
+    display: grid;
+    width: 1.55rem;
+    height: 1.55rem;
+    flex: 0 0 1.55rem;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--pmc-primary) 24%, white);
+    border-radius: 0.42rem;
+    background: color-mix(in srgb, var(--pmc-primary) 8%, white);
+    color: var(--pmc-primary);
+    font-size: 0.58rem;
+    font-weight: 850;
+}
+
+.pmc-expense-form-section h2 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 820;
+    letter-spacing: -0.02em;
+}
+
+.pmc-expense-form-section header p {
+    max-width: 52rem;
+    margin: 0.18rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.6rem;
+    line-height: 1.5;
+}
+
+.pmc-expense-field-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+}
+
+.pmc-expense-field-grid > .pmc-resource-field:has(textarea),
+.pmc-expense-field-grid > .pmc-resource-field:has([name='portfolio_id']) {
+    grid-column: 1 / -1;
+}
+
+.pmc-expense-field-grid .pmc-resource-field,
+.pmc-expense-choice-field {
+    min-width: 0;
+    margin: 0;
+}
+
+.pmc-expense-field-grid .pmc-resource-field > span,
+.pmc-expense-choice-label {
+    margin-bottom: 0.3rem;
+    color: var(--pmc-ink);
+    font-size: 0.56rem;
+    font-weight: 760;
+    letter-spacing: 0.025em;
+    text-transform: uppercase;
+}
+
+.pmc-expense-field-grid .form-control,
+.pmc-expense-field-grid .form-select {
+    min-height: 2.55rem;
+    border-color: var(--pmc-line);
+    border-radius: 0.48rem;
+    background-color: #fff;
+    font-size: 0.68rem;
+}
+
+.pmc-expense-field-grid textarea.form-control {
+    min-height: 5rem;
+    resize: vertical;
+}
+
+.pmc-expense-field-grid .pmc-resource-field > small,
+.pmc-expense-choice-field > small:not(.pmc-expense-choice-result) {
+    margin-top: 0.28rem;
+    color: var(--pmc-muted);
+    font-size: 0.54rem;
+    line-height: 1.45;
+}
+
+.pmc-expense-mobile-actions {
+    display: none;
+}

@@ -357,19 +357,24 @@ class ExpenseModuleSecurityTest extends TestCase
             ->get(route('expenses.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-form')
+                ->component('admin/expenses/form')
+                ->where('formPage.mode', 'create')
                 ->where('formPage.fields.0.reloadOnChange.queryKey', 'portfolio_id')
                 ->has('formPage.fields.1.options', 1)
-                ->where('formPage.initialValues.portfolio_id', ''));
+                ->where('formPage.initialValues.portfolio_id', '')
+                ->where('formPage.initialValues.amount', '')
+                ->where('formPage.initialValues.status', 'pending'));
 
         $this->actingAs($superadmin)
             ->get(route('expenses.create', ['portfolio_id' => $firstPortfolio->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('formPage.initialValues.portfolio_id', (string) $firstPortfolio->id)
+                ->where('formPage.context.portfolio', $firstPortfolio->name_en)
                 ->where('formPage.fields.1.options.1.value', $firstAsset->id)
                 ->where('formPage.fields.1.options.1.label', fn (string $label) => str_contains($label, 'First scoped asset'))
-                ->has('formPage.fields.1.options', 2));
+                ->has('formPage.fields.1.options', 2)
+                ->where('formPage.fields.7.max', now()->toDateString()));
 
         $this->actingAs($superadmin)
             ->get(route('expenses.index'))
@@ -432,8 +437,10 @@ class ExpenseModuleSecurityTest extends TestCase
             ->get(route('expenses.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/expenses/form')
                 ->where('app.locale', 'ar')
                 ->where('formPage.title', 'تسجيل مصروف')
+                ->where('formPage.mode', 'create')
                 ->where('formPage.fields.0.label', 'العقار / الوحدة')
                 ->where('formPage.fields.2.options.0.label', 'الصيانة'));
 

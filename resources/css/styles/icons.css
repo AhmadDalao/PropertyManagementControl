@@ -158,6 +158,9 @@
 .bi-check-circle::before {
     content: '\f26b';
 }
+.bi-check-circle-fill::before {
+    content: '\f26a';
+}
 .bi-check2::before {
     content: '\f272';
 }
@@ -187,6 +190,9 @@
 }
 .bi-check-lg::before {
     content: '\f633';
+}
+.bi-circle::before {
+    content: '\f28a';
 }
 .bi-clock-history::before {
     content: '\f292';
@@ -310,6 +316,9 @@
 }
 .bi-globe2::before {
     content: '\f3ef';
+}
+.bi-graph-down-arrow::before {
+    content: '\f672';
 }
 .bi-graph-up-arrow::before {
     content: '\f673';

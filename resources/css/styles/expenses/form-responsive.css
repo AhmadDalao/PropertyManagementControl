@@ -1,0 +1,79 @@
+@media (max-width: 1199.98px) {
+    .pmc-expense-form-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-expense-form-guide {
+        position: static;
+        order: -1;
+    }
+
+    .pmc-expense-form-guide {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-expense-form-guide > section + section {
+        border-top: 0;
+        border-inline-start: 1px solid var(--pmc-line-soft);
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-expense-form-page .pmc-resource-header-cancel,
+    .pmc-expense-form-page .pmc-resource-header-submit {
+        display: none;
+    }
+
+    .pmc-expense-form-guide {
+        display: block;
+    }
+
+    .pmc-expense-form-guide > section + section {
+        border-top: 1px solid var(--pmc-line-soft);
+        border-inline-start: 0;
+    }
+
+    .pmc-expense-form-section {
+        padding: 0.75rem;
+    }
+
+    .pmc-expense-field-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-expense-field-grid > * {
+        grid-column: 1 !important;
+    }
+
+    .pmc-expense-field-grid .form-control,
+    .pmc-expense-field-grid .form-select,
+    .pmc-expense-choice-search input {
+        min-height: 2.75rem;
+        font-size: 0.72rem;
+    }
+
+    .pmc-expense-checklist ul {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-expense-mobile-actions {
+        position: sticky;
+        z-index: 25;
+        bottom: 0;
+        display: grid;
+        grid-template-columns: 1fr 1.35fr;
+        gap: 0.5rem;
+        margin-inline: -0.25rem;
+        padding: 0.6rem;
+        border: 1px solid var(--pmc-line);
+        border-bottom: 0;
+        border-radius: 0.65rem 0.65rem 0 0;
+        background: rgba(255, 255, 255, 0.97);
+        box-shadow: 0 -10px 25px rgba(15, 23, 42, 0.08);
+    }
+
+    .pmc-expense-mobile-actions .btn {
+        min-height: 2.75rem;
+    }
+}

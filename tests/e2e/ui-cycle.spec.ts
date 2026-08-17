@@ -47,6 +47,7 @@ const primaryAdminRoutes = [
     '/maintenance-work-orders',
     '/maintenance-vendors',
     '/expenses',
+    '/expenses/create',
     '/documents',
     '/notifications',
     '/media-files',
@@ -1966,7 +1967,9 @@ test.describe('authenticated administration', () => {
         const rent = page.locator('input[name="rent_amount"]');
         await expect(rent).toBeVisible();
         await expect(rent).toHaveValue('');
-        await expect(page.locator('select[name="status"]')).toHaveValue('draft');
+        await expect(page.locator('select[name="status"]')).toHaveValue(
+            'draft',
+        );
         await expect(
             page.getByRole('link', { name: 'إضافة مستأجر جديد' }),
         ).toHaveCount(0);
@@ -2251,8 +2254,42 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('heading', { name: 'تسجيل مصروف' }),
         ).toBeVisible();
-        await expect(page.getByLabel(/^المحفظة/)).toBeVisible();
+        const expensePortfolio = page.locator('select[name="portfolio_id"]');
+        await expect(expensePortfolio).toBeVisible();
+        await expect(expensePortfolio).toHaveValue('');
         await expect(page.getByLabel(/^عنوان المصروف/)).toBeVisible();
+        await expect(page.locator('input[name="amount"]')).toHaveValue('');
+        await expect(page.locator('select[name="status"]')).toHaveValue(
+            'pending',
+        );
+        await expect(
+            page.getByText('الأثر المحاسبي', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('مراجعة قبل الترحيل', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('أرفق الإثبات بعد الحفظ', { exact: true }),
+        ).toBeVisible();
+        await expect(page.locator('.pmc-resource-form-summary')).toHaveCount(0);
+        const expenseMobileActions = page.locator(
+            '.pmc-expense-mobile-actions',
+        );
+        await expect(expenseMobileActions).toBeVisible();
+        expect(
+            (await expenseMobileActions.getByRole('button').boundingBox())
+                ?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
+
+        await expensePortfolio.selectOption({ index: 1 });
+        await expect(page).toHaveURL(/portfolio_id=\d+/);
+        await expect(page).toHaveURL(/locale=ar/);
+        await expect(
+            page.getByRole('searchbox', {
+                name: 'البحث في العقارات والوحدات',
+            }),
+        ).toBeVisible();
+        await expect(page.locator('select[name="asset_id"]')).toHaveValue('');
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/expenses/1?locale=ar');

@@ -1,3 +1,4 @@
+import type { ResourceFormShellProps } from '@/components/resource-cycle';
 import type {
     PaginatedData,
     SharedProps,
@@ -59,4 +60,16 @@ export type ExpenseIndexPageProps = SharedProps & {
     propertyOptions: PropertyOption[];
     categoryOptions: string[];
     statusOptions: string[];
+};
+
+export type ExpenseFormPage = ResourceFormShellProps & {
+    mode: 'create' | 'edit';
+    context: {
+        portfolio?: string | null;
+        workOrderId?: number | null;
+    };
+};
+
+export type ExpenseFormPageProps = SharedProps & {
+    formPage: ExpenseFormPage;
 };

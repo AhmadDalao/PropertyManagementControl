@@ -18,7 +18,9 @@ class ExpenseModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('ExpenseDetailPresenter', $source);
         $this->assertStringContainsString('ManageExpenses', $source);
         $this->assertStringContainsString("'admin/expenses/show'", $source);
+        $this->assertStringContainsString("'admin/expenses/form'", $source);
         $this->assertStringNotContainsString("'admin/resource-show'", $source);
+        $this->assertStringNotContainsString("'admin/resource-form'", $source);
         $this->assertStringNotContainsString('ExpenseEntry::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
@@ -70,6 +72,7 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Expenses/Presenters/ExpenseEditFormPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseEvidencePresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormFieldsPresenter.php'),
+            $this->path('app/Modules/Expenses/Presenters/ExpenseFormContextPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseTableRowPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseWorkflowPresenter.php'),
@@ -98,8 +101,15 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/expenses/detail/expense-detail-tabs.tsx'),
             $this->path('resources/js/modules/expenses/detail/expense-evidence-panel.tsx'),
             $this->path('resources/js/modules/expenses/detail/types.ts'),
+            $this->path('resources/js/modules/expenses/form-page.tsx'),
+            $this->path('resources/js/modules/expenses/form/expense-choice-field.tsx'),
+            $this->path('resources/js/modules/expenses/form/expense-form-guide.tsx'),
+            $this->path('resources/js/modules/expenses/form/expense-form-section.tsx'),
+            $this->path('resources/js/modules/expenses/form/expense-form-workspace.tsx'),
             $this->path('resources/js/pages/admin/expenses/show.tsx'),
+            $this->path('resources/js/pages/admin/expenses/form.tsx'),
             $this->path('resources/css/styles/expenses/detail.css'),
+            $this->path('resources/css/styles/expenses/form.css'),
         ] as $path) {
             $this->assertFileExists($path);
         }
@@ -116,6 +126,15 @@ class ExpenseModuleArchitectureTest extends TestCase
             'app/Modules/Expenses/Presenters/ExpenseFormPresenter.php' => 50,
             'app/Modules/Expenses/Queries/ExpenseIndexQuery.php' => 90,
             'resources/js/modules/expenses/expense-table.tsx' => 65,
+            'resources/js/modules/expenses/form-page.tsx' => 30,
+            'resources/js/modules/expenses/form/expense-choice-field.tsx' => 150,
+            'resources/js/modules/expenses/form/expense-form-guide.tsx' => 230,
+            'resources/js/modules/expenses/form/expense-form-section.tsx' => 90,
+            'resources/js/modules/expenses/form/expense-form-workspace.tsx' => 145,
+            'resources/css/styles/expenses/form-layout.css' => 125,
+            'resources/css/styles/expenses/form-choice.css' => 75,
+            'resources/css/styles/expenses/form-guide.css' => 190,
+            'resources/css/styles/expenses/form-responsive.css' => 90,
         ] as $path => $maximum) {
             $source = $this->source($this->path($path));
 

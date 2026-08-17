@@ -6,13 +6,18 @@ use App\Modules\Expenses\Data\ExpenseFormData;
 
 final class ExpenseCreateFormPresenter
 {
-    public function __construct(private readonly ExpenseFormFieldsPresenter $fields) {}
+    public function __construct(
+        private readonly ExpenseFormFieldsPresenter $fields,
+        private readonly ExpenseFormContextPresenter $context,
+    ) {}
 
     /** @return array<string, mixed> */
     public function present(ExpenseFormData $data): array
     {
         return [
             'layout' => 'expense',
+            'mode' => 'create',
+            'context' => $this->context->present($data),
             'title' => trans('app.expenses.record_expense'),
             'description' => trans('app.expenses.create_description'),
             'backHref' => route('expenses.index'),
@@ -33,7 +38,7 @@ final class ExpenseCreateFormPresenter
                 'amount' => $this->amount($data->defaults['amount'] ?? null),
                 'currency' => $data->currency,
                 'vendor_name' => $this->text($data->defaults['vendor_name'] ?? null, 255),
-                'status' => 'posted',
+                'status' => 'pending',
             ],
         ];
     }

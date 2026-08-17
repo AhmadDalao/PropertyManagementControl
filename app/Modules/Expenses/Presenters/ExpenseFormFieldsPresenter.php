@@ -38,7 +38,7 @@ final class ExpenseFormFieldsPresenter
             ['name' => 'title', 'label' => trans('app.expenses.expense_title'), 'required' => true, 'max' => 255],
             ['name' => 'description', 'label' => trans('app.expenses.description'), 'type' => 'textarea', 'rows' => 3],
             ['name' => 'vendor_name', 'label' => trans('app.expenses.vendor'), 'max' => 255],
-            ['name' => 'incurred_on', 'label' => trans('app.expenses.incurred_on'), 'type' => 'date', 'required' => true],
+            ['name' => 'incurred_on', 'label' => trans('app.expenses.incurred_on'), 'type' => 'date', 'max' => now()->toDateString(), 'required' => true],
             ['name' => 'amount', 'label' => trans('app.expenses.amount'), 'type' => 'number', 'step' => '0.01', 'min' => '0.01', 'max' => 999999999999.99, 'required' => true],
             ['name' => 'currency', 'label' => trans('app.expenses.currency'), 'type' => 'select', 'required' => true, 'help' => trans('app.expenses.currency_help'), 'options' => [['value' => $data->currency, 'label' => $data->currency]]],
             ['name' => 'status', 'label' => trans('app.expenses.status'), 'type' => 'select', 'required' => true, 'help' => trans('app.expenses.status_help'), 'options' => $this->statuses()],

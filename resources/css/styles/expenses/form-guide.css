@@ -1,0 +1,186 @@
+.pmc-expense-form-guide {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 0.75rem);
+    overflow: clip;
+}
+
+.pmc-expense-form-guide > section {
+    padding: 0.85rem;
+}
+
+.pmc-expense-form-guide > section + section {
+    border-top: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-expense-posting-preview {
+    background: linear-gradient(145deg, #f8fffb 0%, #fff 72%);
+}
+
+.pmc-expense-guide-eyebrow {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 760;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-expense-posting-preview > strong {
+    display: block;
+    margin-bottom: 0.65rem;
+    color: var(--pmc-ink);
+    font-size: 1.28rem;
+    font-weight: 850;
+    letter-spacing: -0.045em;
+}
+
+.pmc-expense-posting-state {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    gap: 0.55rem;
+    padding: 0.62rem;
+    border-radius: 0.52rem;
+    background: #eef8f3;
+    color: #176b4b;
+}
+
+.pmc-expense-posting-state.is-posted {
+    background: #fff4e8;
+    color: #9a4a07;
+}
+
+.pmc-expense-posting-state > i {
+    display: grid;
+    width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    border-radius: 0.42rem;
+    background: rgba(255, 255, 255, 0.72);
+    font-size: 0.72rem;
+}
+
+.pmc-expense-posting-state b {
+    display: block;
+    font-size: 0.62rem;
+}
+
+.pmc-expense-posting-state p,
+.pmc-expense-evidence-note p {
+    margin: 0.16rem 0 0;
+    color: currentColor;
+    font-size: 0.52rem;
+    line-height: 1.45;
+    opacity: 0.82;
+}
+
+.pmc-expense-guide-section > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.55rem;
+}
+
+.pmc-expense-guide-section > header span {
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-expense-guide-section > header small {
+    color: var(--pmc-muted);
+    font-size: 0.48rem;
+}
+
+.pmc-expense-guide-section dl {
+    display: grid;
+    gap: 0.38rem;
+    margin: 0;
+}
+
+.pmc-expense-guide-section dl > div {
+    display: grid;
+    grid-template-columns: minmax(5rem, 0.38fr) minmax(0, 1fr);
+    gap: 0.45rem;
+}
+
+.pmc-expense-guide-section dt {
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 600;
+}
+
+.pmc-expense-guide-section dd {
+    overflow: hidden;
+    margin: 0;
+    font-size: 0.52rem;
+    font-weight: 700;
+    text-align: end;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-expense-checklist ul {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.32rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.pmc-expense-checklist li {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+}
+
+.pmc-expense-checklist li.is-complete {
+    color: #176b4b;
+}
+
+.pmc-expense-checklist li i {
+    font-size: 0.58rem;
+}
+
+.pmc-expense-checklist > p {
+    margin: 0.55rem 0 0;
+    color: var(--pmc-ink);
+    font-size: 0.52rem;
+    font-weight: 680;
+}
+
+.pmc-expense-evidence-note {
+    display: grid;
+    grid-template-columns: 1.8rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.55rem;
+    background: #f8fafc;
+}
+
+.pmc-expense-evidence-note > i {
+    display: grid;
+    width: 1.8rem;
+    height: 1.8rem;
+    place-items: center;
+    border-radius: 0.42rem;
+    background: #feeceb;
+    color: #b42318;
+    font-size: 0.72rem;
+}
+
+.pmc-expense-evidence-note strong {
+    display: block;
+    font-size: 0.58rem;
+}
+
+.pmc-expense-evidence-note > span {
+    padding: 0.2rem 0.35rem;
+    border-radius: 999px;
+    background: #feeceb;
+    color: #b42318;
+    font-size: 0.44rem;
+    font-weight: 820;
+}

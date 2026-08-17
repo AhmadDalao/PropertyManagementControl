@@ -33,7 +33,7 @@ class ExpenseEntryController extends Controller
 
     public function create(Request $request): Response
     {
-        return Inertia::render('admin/resource-form', [
+        return Inertia::render('admin/expenses/form', [
             'formPage' => $this->formPresenter->present(
                 $this->actor($request),
                 defaults: $request->only(
@@ -59,7 +59,7 @@ class ExpenseEntryController extends Controller
 
     public function edit(Request $request, ExpenseEntry $expense): Response
     {
-        return Inertia::render('admin/resource-form', [
+        return Inertia::render('admin/expenses/form', [
             'formPage' => $this->formPresenter->present($this->actor($request), $expense),
         ]);
     }

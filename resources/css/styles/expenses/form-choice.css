@@ -1,0 +1,55 @@
+.pmc-expense-choice-field {
+    display: grid;
+    align-content: start;
+}
+
+.pmc-expense-choice-label {
+    display: block;
+}
+
+.pmc-expense-choice-search {
+    position: relative;
+    display: block;
+    margin-bottom: 0.35rem;
+}
+
+.pmc-expense-choice-search i {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 0.7rem;
+    top: 50%;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.pmc-expense-choice-search input {
+    width: 100%;
+    min-height: 2.35rem;
+    padding-inline: 1.85rem 0.7rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.45rem;
+    outline: 0;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-ink);
+    font-size: 0.62rem;
+}
+
+.pmc-expense-choice-search input:focus {
+    border-color: color-mix(in srgb, var(--pmc-primary) 45%, white);
+    box-shadow: 0 0 0 0.16rem
+        color-mix(in srgb, var(--pmc-primary) 10%, transparent);
+}
+
+.pmc-expense-choice-result {
+    margin-top: 0.3rem;
+    color: var(--pmc-muted);
+    font-size: 0.52rem;
+    line-height: 1.4;
+}
+
+.pmc-expense-choice-field .invalid-feedback {
+    margin-top: 0.28rem;
+    font-size: 0.54rem;
+}

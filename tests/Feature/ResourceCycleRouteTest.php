@@ -128,6 +128,7 @@ class ResourceCycleRouteTest extends TestCase
                 'maintenance-requests.create' => 'admin/maintenance/create',
                 'leases.create' => 'admin/leases/form',
                 'payments.create' => 'admin/payments/form',
+                'expenses.create' => 'admin/expenses/form',
                 default => 'admin/resource-form',
             };
 
@@ -207,6 +208,7 @@ class ResourceCycleRouteTest extends TestCase
                 'maintenance-requests.edit' => 'admin/maintenance/triage',
                 'leases.edit' => 'admin/leases/form',
                 'payments.edit' => 'admin/payments/form',
+                'expenses.edit' => 'admin/expenses/form',
                 default => 'admin/resource-form',
             };
 
