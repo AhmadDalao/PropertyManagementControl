@@ -36,7 +36,7 @@ function smoke_fail(string $message): never
     exit(1);
 }
 
-function smoke_request(string $baseUrl, string $cookieFile, string $method, string $path, array $data = [], array $headers = []): array
+function smoke_request_once(string $baseUrl, string $cookieFile, string $method, string $path, array $data = [], array $headers = []): array
 {
     $url = str_starts_with($path, 'http') ? $path : $baseUrl.$path;
     $ch = curl_init($url);
@@ -70,7 +70,13 @@ function smoke_request(string $baseUrl, string $cookieFile, string $method, stri
     $raw = curl_exec($ch);
 
     if ($raw === false) {
-        smoke_fail('HTTP request failed for '.$url.': '.curl_error($ch));
+        return [
+            'status' => 0,
+            'location' => null,
+            'headers' => '',
+            'body' => '',
+            'error' => curl_error($ch),
+        ];
     }
 
     $headerSize = (int) curl_getinfo($ch, CURLINFO_HEADER_SIZE);
@@ -90,7 +96,51 @@ function smoke_request(string $baseUrl, string $cookieFile, string $method, stri
         'location' => $location,
         'headers' => $headersText,
         'body' => $body,
+        'error' => null,
     ];
+}
+
+function smoke_request(string $baseUrl, string $cookieFile, string $method, string $path, array $data = [], array $headers = []): array
+{
+    $maximumAttempts = $method === 'GET' ? 3 : 1;
+    $retryableStatuses = [429, 500, 502, 503, 504];
+    $response = [];
+
+    for ($attempt = 1; $attempt <= $maximumAttempts; $attempt++) {
+        $response = smoke_request_once(
+            $baseUrl,
+            $cookieFile,
+            $method,
+            $path,
+            $data,
+            $headers,
+        );
+        $body = (string) ($response['body'] ?? '');
+        $inertiaTagPosition = strpos($body, '<script data-page="app"');
+        $truncatedInertia = $inertiaTagPosition !== false
+            && strpos($body, '</script>', $inertiaTagPosition) === false;
+        $retryable = ($response['error'] ?? null) !== null
+            || in_array($response['status'] ?? 0, $retryableStatuses, true)
+            || $truncatedInertia;
+
+        if (! $retryable) {
+            if ($method === 'GET') {
+                usleep(100_000);
+            }
+
+            return $response;
+        }
+
+        if ($attempt < $maximumAttempts) {
+            sleep($attempt);
+        }
+    }
+
+    if (($response['error'] ?? null) !== null) {
+        smoke_fail('HTTP request failed for '.$path.': '.$response['error']);
+    }
+
+    return $response;
 }
 
 function smoke_xsrf_token(string $cookieFile): string
@@ -125,13 +175,25 @@ function smoke_component(string $html): string
 
 function smoke_page_payload(string $html): array
 {
-    if (! preg_match('/<script data-page="app" type="application\/json">(.*?)<\/script>/s', $html, $matches)) {
+    $openingTag = '<script data-page="app" type="application/json">';
+    $payloadStart = strpos($html, $openingTag);
+
+    if ($payloadStart === false) {
         smoke_fail('Could not find the Inertia page payload.');
     }
 
+    $payloadStart += strlen($openingTag);
+    $payloadEnd = strpos($html, '</script>', $payloadStart);
+
+    if ($payloadEnd === false) {
+        smoke_fail('The Inertia page payload was incomplete.');
+    }
+
+    $payloadJson = substr($html, $payloadStart, $payloadEnd - $payloadStart);
+
     try {
         $payload = json_decode(
-            $matches[1],
+            $payloadJson,
             true,
             flags: JSON_THROW_ON_ERROR,
         );
@@ -241,8 +303,8 @@ $authChecks = [
     '/rent-collection?locale=ar' => 'admin/rent-collection/index',
     '/payments?locale=en' => 'admin/payments/index',
     '/payments?locale=ar' => 'admin/payments/index',
-    '/payments/create?locale=en' => 'admin/resource-form',
-    '/payments/create?locale=ar' => 'admin/resource-form',
+    '/payments/create?locale=en' => 'admin/payments/form',
+    '/payments/create?locale=ar' => 'admin/payments/form',
     '/maintenance-requests' => 'admin/maintenance/index',
     '/maintenance-requests?confirmation=pending&locale=ar' => 'admin/maintenance/index',
     '/maintenance-work-orders?locale=en' => 'admin/maintenance-work-orders/index',
@@ -661,6 +723,17 @@ if (is_array($tenantRows) && isset($tenantRows[0]['id'])) {
 }
 
 $reportsIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/reports?locale=ar');
+
+if ($reportsIndex['status'] !== 200
+    || ! str_contains((string) $reportsIndex['body'], '<script data-page="app"')) {
+    smoke_fail(
+        '/reports?locale=ar returned status '
+        .$reportsIndex['status']
+        .' and location '.($reportsIndex['location'] ?? 'none')
+        .' after document checks.',
+    );
+}
+
 $reportsPayload = smoke_page_payload($reportsIndex['body']);
 $propertyOptions = $reportsPayload['props']['propertyOptions'] ?? [];
 $reportLibrary = [];
@@ -939,12 +1012,32 @@ $leaseRows = $leasePayload['props']['leases']['data'] ?? [];
 if (is_array($leaseRows) && isset($leaseRows[0]['id'])) {
     $leaseId = (int) $leaseRows[0]['id'];
     $leaseDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/leases/'.$leaseId);
+    $leaseDetailPayload = smoke_page_payload($leaseDetail['body']);
+    $leaseDetailProps = $leaseDetailPayload['props']['detailPage'] ?? [];
+    $leaseRelatedKeys = array_column($leaseDetailProps['related'] ?? [], 'key');
 
-    if ($leaseDetail['status'] !== 200 || smoke_component($leaseDetail['body']) !== 'admin/resource-show') {
-        smoke_fail("Lease {$leaseId} detail did not load.");
+    if ($leaseDetail['status'] !== 200
+        || smoke_component($leaseDetail['body']) !== 'admin/leases/show'
+        || ($leaseDetailProps['mode'] ?? null) !== 'admin'
+        || ! in_array('installments', $leaseRelatedKeys, true)) {
+        smoke_fail("Lease {$leaseId} modular detail did not load.");
     }
 
-    smoke_note("/leases/{$leaseId} admin/resource-show");
+    smoke_note("/leases/{$leaseId} admin/leases/show with contract sections");
+
+    $leaseDetailArabic = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/leases/{$leaseId}?locale=ar",
+    );
+
+    if ($leaseDetailArabic['status'] !== 200
+        || smoke_component($leaseDetailArabic['body']) !== 'admin/leases/show') {
+        smoke_fail("Lease {$leaseId} Arabic modular detail did not load.");
+    }
+
+    smoke_note("/leases/{$leaseId}?locale=ar admin/leases/show");
 
     foreach (['contract', 'statement'] as $document) {
         $pdf = smoke_request($baseUrl, $cookieFile, 'GET', "/leases/{$leaseId}/{$document}");
@@ -1118,11 +1211,11 @@ if (is_array($paymentRows) && isset($paymentRows[0]['id'])) {
     $paymentId = (int) $paymentRows[0]['id'];
     $paymentDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/payments/'.$paymentId.'?locale=en');
 
-    if ($paymentDetail['status'] !== 200 || smoke_component($paymentDetail['body']) !== 'admin/resource-show') {
+    if ($paymentDetail['status'] !== 200 || smoke_component($paymentDetail['body']) !== 'admin/payments/show') {
         smoke_fail("Payment {$paymentId} detail did not load.");
     }
 
-    smoke_note("/payments/{$paymentId} admin/resource-show");
+    smoke_note("/payments/{$paymentId} admin/payments/show");
 
     $receipt = smoke_request($baseUrl, $cookieFile, 'GET', "/payments/{$paymentId}/receipt");
     $receiptHeaders = strtolower((string) $receipt['headers']);
@@ -1267,11 +1360,11 @@ if (is_array($mediaRows) && isset($mediaRows[0]['id'])) {
     $mediaId = (int) $mediaRows[0]['id'];
     $mediaDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/media-files/'.$mediaId.'?locale=en');
 
-    if ($mediaDetail['status'] !== 200 || smoke_component($mediaDetail['body']) !== 'admin/resource-show') {
+    if ($mediaDetail['status'] !== 200 || smoke_component($mediaDetail['body']) !== 'admin/media/show') {
         smoke_fail("Media {$mediaId} detail did not load.");
     }
 
-    smoke_note("/media-files/{$mediaId} admin/resource-show");
+    smoke_note("/media-files/{$mediaId} admin/media/show");
 
     $image = smoke_request($baseUrl, $cookieFile, 'GET', "/media-files/{$mediaId}/file");
     $imageHeaders = strtolower((string) $image['headers']);

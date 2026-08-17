@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `5fb920a953c7444afe49c09e4cf3a931757a298d`
+**Application build revision verified in production:** `41e576c26bef19300adbfd040ef635728d4bd393`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,921 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,982 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, touched-module PHPStan, Composer audit, and pnpm audit checks.
 
-The focused Maintenance case release is deployed to Hostinger and its Vite manifest SHA-256, `d9cd59c17e4087df97b8bde684c03f7388e8e78aa061757277c72fed06b61c35`, matches the local build. The live site responds successfully at `/up`; authenticated English/Arabic smoke checks pass for login and a seeded maintenance record at desktop and 390px. Its Next Step card stays bounded inside the 320px desktop rail, all six sections remain visible in a three-by-two mobile tab grid, keyboard navigation persists the active `?tab=`, Arabic is translated and RTL, and neither viewport overflows. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The focused Lease lifecycle release is deployed to Hostinger and its Vite manifest SHA-256, `c6f6c6935a9e971e6046403c3811beedf73904913f40f43417b43c399cccd973`, matches the local build. The live site responds successfully at `/up`; 135 authenticated, non-destructive checks pass across English/Arabic administration, the modular Lease record, contract and statement PDFs, editable DOCX contracts, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. The Lease record now has direct Overview, Financial, Installments, Payments, Documents, and History sections, a bounded Next Step rail, and collapsed completed handover progress. Its seeded 390px page fell from 2,667px to 1,577px without losing actions or data and has no horizontal overflow. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -70,8 +70,8 @@ Implementation labels used in this report:
 
 | Layer | Technology and design |
 |---|---|
-| Framework | Laravel `13.17`, PHP `^8.4.1`, server-rendered Laravel entry with Inertia responses. |
-| Frontend | React `19.2`, TypeScript `5.7`, Inertia React `3`, Bootstrap `5.3.8`, Bootstrap Icons, custom modular CSS, Vite `8.1.3`. |
+| Framework | Laravel `13.19.0`, PHP `^8.4.1`, server-rendered Laravel entry with Inertia responses. |
+| Frontend | React `19.2`, TypeScript `5.9`, Inertia React `3`, Bootstrap `5.3.8`, Bootstrap Icons, custom modular CSS, Vite `8.2.1`. |
 | Production rendering | Laravel monolith. Vite builds static browser assets; no Node server is required in production. |
 | Backend organization | Thin HTTP controllers over vertical modules in `app/Modules/*`: Actions, Queries, Presenters, Requests, Support, Jobs, and Data objects. |
 | Frontend organization | Thin Inertia page entries under `resources/js/pages/*`; feature UI under `resources/js/modules/*`; shared data-table, operations, resource-cycle, shell, and translation components. |
@@ -272,7 +272,7 @@ Access abbreviations: **SA** superadmin, **O** owner, **M** property manager, **
 |---|---|---|
 | `/leases` | Lease directory | SA/O/M |
 | `/leases/create` | Create contract and installment schedule | SA/O/M scoped |
-| `/leases/{lease}` | Contract, financial, docs, related records, history | SA/O/M scoped; T own lease |
+| `/leases/{lease}` | Contract overview, financials, installments, payments, documents, history | SA/O/M scoped; T own lease |
 | `/leases/{lease}/edit` | Edit status, sign date, notice, notes, terms | SA/O/M scoped |
 | `/leases/{lease}/renew` | Prefilled renewal contract form | SA/O/M scoped |
 | `/leases/{lease}/move-out` | Move-out planning form | SA/O/M scoped |
@@ -547,7 +547,7 @@ The UI calls these properties/assets; the database uses one self-referential `as
 
 **List columns:** code/status/frequency; tenant and asset; contract period/days/signing state; paid/remaining balance; next due/overdue; actions.  
 **Filters:** status, frequency, start/end dates, portfolio, property, search, pagination, sort.  
-**Detail tabs:** Overview, Financial, Documents, Related, History for management; tenant payload removes internal/admin-only sections.  
+**Detail tabs:** Overview, Financial, Installments, Payments, Documents, History for management; unavailable modules and tenant-unsafe sections are removed from the payload.
 **Detail content:** tenant, rentable node, property, manager, dates, notice, signing, renewal chain, move-out state, rent/deposit/tax/discount/billing day, installment schedule, payment allocation, documents, move-in/move-out progress, audit timeline.  
 **Actions:** contract PDF, editable DOCX, upload signed PDF, activate/terminate, renew, move-out plan/complete, statement, post payment.
 
@@ -896,7 +896,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 657 passed, 38,921 assertions |
+| Fresh PHPUnit run | 657 passed, 38,982 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 70 scenarios |
@@ -906,6 +906,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 | Production latest-settings route | Authenticated page active; unauthenticated request correctly redirects to login |
 | Production release | Revision and Vite manifest match GitHub/local build |
 | Production documents | Maintenance PDF `%PDF-` and report XLSX `PK` signatures verified |
+| Production release cycle | 135 authenticated non-destructive checks passed, including Lease PDF/DOCX and report XLSX signatures |
 
 ## 18. Report Limitations
 
@@ -1115,7 +1116,7 @@ No canonical screenshot pack is committed to the repository, so this report name
 | Full search results | `resources/js/modules/search/results-page.tsx`; `/global-search` remains the topbar JSON contract. |
 | Property pages | `resources/js/modules/assets/*`, including list, hierarchy, detail, and map/explorer features. |
 | Tenant management/account statement | `resources/js/modules/tenants/*`. |
-| Contract/collection/payment | `resources/js/modules/leases/*`, `lease-renewals/*`, `lease-move-outs/*`, `rent-collection/*`, `payments/*`. |
+| Contract/collection/payment | `resources/js/modules/leases/*`, including the Lease-owned detail workspace and direct contract tabs; `lease-renewals/*`, `lease-move-outs/*`, `rent-collection/*`, `payments/*`. |
 | Maintenance | `resources/js/modules/maintenance/*`, `maintenance-work-orders/*`, `maintenance-vendors/*`. |
 | Reports | `resources/js/modules/reports/*`, `daily-operations-reports/*`. |
 | CMS/public website | `resources/js/modules/cms/*`, `resources/js/modules/public-site/*`. |
@@ -1157,6 +1158,7 @@ The August 2026 design archives are now the active layout contract rather than a
 | Directories | Compact page header, real create action, count chips, filters, 10/25/50/100 pagination, XLSX export, desktop table, mobile record cards, and one ellipsis action menu. |
 | Create/edit forms | Dedicated pages with grouped sections, responsive one/two-column fields, contextual summary rail, validation summary, and mobile Save/Cancel treatment. |
 | Maintenance | Queue directory plus dedicated request, triage, and tabbed case workspaces with lifecycle, service context, role-safe actions, work orders, updates, expenses, evidence, reports, and audit history. |
+| Leases | Dedicated contract decision workspace with compact financial metrics, direct Overview/Financial/Installments/Payments/Documents/History tabs, role-safe Next Step actions, and collapsible move-in/move-out progress. |
 | Reports | Card-based command center, scoped filters, saved reports, real report links, and existing PDF/DOCX/XLSX outputs only. |
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
