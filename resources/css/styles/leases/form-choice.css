@@ -1,0 +1,68 @@
+.pmc-lease-choice-field {
+    display: grid;
+    min-width: 0;
+    gap: 0.32rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.55rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-lease-choice-label {
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pmc-lease-choice-label strong {
+    margin-inline-start: 0.2rem;
+    color: var(--pmc-danger);
+}
+
+.pmc-lease-choice-search {
+    position: relative;
+    display: block;
+}
+
+.pmc-lease-choice-search i {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-start: 0.7rem;
+    color: var(--pmc-muted);
+    font-size: 0.7rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.pmc-lease-choice-search input {
+    width: 100%;
+    min-height: 2.6rem;
+    padding: 0.55rem 0.7rem;
+    padding-inline-start: 2rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.48rem;
+    outline: none;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.64rem;
+}
+
+.pmc-lease-choice-search input:focus {
+    border-color: var(--pmc-primary);
+    box-shadow: 0 0 0 0.18rem rgba(18, 129, 60, 0.12);
+}
+
+.pmc-lease-choice-field .form-select {
+    background-color: #fff;
+}
+
+.pmc-lease-choice-result {
+    overflow: hidden;
+    color: var(--pmc-primary-strong);
+    font-size: 0.52rem;
+    font-weight: 700;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+}

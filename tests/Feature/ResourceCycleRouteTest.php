@@ -126,6 +126,7 @@ class ResourceCycleRouteTest extends TestCase
         foreach ($createRoutes as $routeName) {
             $component = match ($routeName) {
                 'maintenance-requests.create' => 'admin/maintenance/create',
+                'leases.create' => 'admin/leases/form',
                 'payments.create' => 'admin/payments/form',
                 default => 'admin/resource-form',
             };
@@ -204,6 +205,7 @@ class ResourceCycleRouteTest extends TestCase
         foreach ($editRoutes as [$routeName, $model]) {
             $component = match ($routeName) {
                 'maintenance-requests.edit' => 'admin/maintenance/triage',
+                'leases.edit' => 'admin/leases/form',
                 'payments.edit' => 'admin/payments/form',
                 default => 'admin/resource-form',
             };

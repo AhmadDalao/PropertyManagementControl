@@ -21,7 +21,10 @@ final class LeaseFormFieldsPresenter
                 'label' => trans('app.leases.portfolio'),
                 'type' => 'select',
                 'required' => true,
-                'options' => $data->portfolios,
+                'options' => [
+                    ['value' => '', 'label' => trans('app.leases.choose_portfolio')],
+                    ...$data->portfolios,
+                ],
                 'reloadOnChange' => ['queryKey' => 'portfolio_id'],
             ];
         }
@@ -36,8 +39,8 @@ final class LeaseFormFieldsPresenter
 
         $fields = [
             ...$fields,
-            ['name' => 'tenant_profile_id', 'label' => trans('app.leases.tenant'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->tenants, trans('app.leases.no_active_tenants'))],
-            ['name' => 'asset_id', 'label' => trans('app.leases.rentable_asset'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->assets, trans('app.leases.no_available_assets'))],
+            ['name' => 'tenant_profile_id', 'label' => trans('app.leases.tenant'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->tenants, trans('app.leases.choose_tenant'), trans('app.leases.no_active_tenants'))],
+            ['name' => 'asset_id', 'label' => trans('app.leases.rentable_asset'), 'type' => 'select', 'required' => true, 'options' => $this->availableOptions($data->assets, trans('app.leases.choose_asset'), trans('app.leases.no_available_assets'))],
             ['name' => 'status', 'label' => trans('app.leases.status'), 'type' => 'select', 'required' => true, 'options' => $this->statusOptions(! empty($data->defaults['renewed_from_lease_id']) ? ['draft'] : LeaseOptions::CREATE_STATUSES)],
             ['name' => 'payment_frequency', 'label' => trans('app.leases.payment_frequency'), 'type' => 'select', 'required' => true, 'options' => $this->frequencyOptions()],
             ['name' => 'started_at', 'label' => trans('app.leases.start_date'), 'type' => 'date', 'required' => true],
@@ -83,9 +86,14 @@ final class LeaseFormFieldsPresenter
      * @param  array<int, array{value:int,label:string}>  $options
      * @return array<int, array{value:int|string,label:string}>
      */
-    private function availableOptions(array $options, string $emptyLabel): array
-    {
-        return $options !== [] ? $options : [['value' => '', 'label' => $emptyLabel]];
+    private function availableOptions(
+        array $options,
+        string $chooseLabel,
+        string $emptyLabel,
+    ): array {
+        return $options !== []
+            ? [['value' => '', 'label' => $chooseLabel], ...$options]
+            : [['value' => '', 'label' => $emptyLabel]];
     }
 
     /** @return array<string, array{description:string,fields:array<int, string>}> */

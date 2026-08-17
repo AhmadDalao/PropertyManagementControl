@@ -3,6 +3,7 @@ import type {
     DetailSection,
     RelatedTable,
     ResourceDocument,
+    ResourceFormShellProps,
     ResourceHeaderProps,
     ResourceProgress,
     ResourceTimelineEntry,
@@ -83,4 +84,12 @@ export type LeaseDetailPage = {
 
 export type LeaseDetailPageProps = SharedProps & {
     detailPage: LeaseDetailPage;
+};
+
+export type LeaseFormPage = ResourceFormShellProps & {
+    mode: 'create' | 'edit' | 'renew';
+};
+
+export type LeaseFormPageProps = SharedProps & {
+    formPage: LeaseFormPage;
 };

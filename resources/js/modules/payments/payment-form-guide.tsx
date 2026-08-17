@@ -1,8 +1,6 @@
 import type { ResourceField } from '@/components/resource-cycle';
-import type {
-    ResourceFormValue,
-    ResourceFormValues,
-} from '@/components/resource-cycle/types';
+import { isRequiredFieldComplete } from '@/components/resource-cycle/resource-form-helpers';
+import type { ResourceFormValues } from '@/components/resource-cycle/types';
 import { useTranslator } from '@/lib/i18n';
 
 export function PaymentFormGuide({
@@ -15,10 +13,10 @@ export function PaymentFormGuide({
     const { t, text } = useTranslator();
     const required = fields.filter((field) => field.required);
     const complete = required.filter((field) =>
-        validRequiredValue(field, values[field.name]),
+        isRequiredFieldComplete(field, values[field.name]),
     );
     const next = required.find(
-        (field) => !validRequiredValue(field, values[field.name]),
+        (field) => !isRequiredFieldComplete(field, values[field.name]),
     );
     const pending = values.status === 'pending';
 
@@ -78,25 +76,4 @@ export function PaymentFormGuide({
             ) : null}
         </aside>
     );
-}
-
-function validRequiredValue(
-    field: ResourceField,
-    value: ResourceFormValue,
-): boolean {
-    if (value === null || value === undefined || value === '') {
-        return false;
-    }
-
-    if (field.type === 'number') {
-        const numeric = Number(value);
-        const minimum =
-            field.min === undefined
-                ? Number.NEGATIVE_INFINITY
-                : Number(field.min);
-
-        return Number.isFinite(numeric) && numeric >= minimum;
-    }
-
-    return true;
 }

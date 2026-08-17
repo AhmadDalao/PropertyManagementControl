@@ -79,7 +79,7 @@ class TenantLeaseOnboardingTest extends TestCase
             ->get($leaseUrl)
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-form')
+                ->component('admin/leases/form')
                 ->where('formPage.title', 'Set up the tenancy')
                 ->where('formPage.submitLabel', 'Create draft lease')
                 ->where('formPage.initialValues.tenant_profile_id', (string) $tenant->id)
@@ -99,7 +99,7 @@ class TenantLeaseOnboardingTest extends TestCase
             ->get(route('leases.create', ['asset_id' => $selectedAsset->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-form')
+                ->component('admin/leases/form')
                 ->where('formPage.initialValues.portfolio_id', (string) $secondPortfolio->id)
                 ->where('formPage.initialValues.asset_id', (string) $selectedAsset->id)
                 ->where('formPage.headerActions.0.label', 'Add a new tenant')

@@ -1,4 +1,4 @@
-import type { ResourceField } from './types';
+import type { ResourceField, ResourceFormValue } from './types';
 
 export function sectionId(title: string, index: number): string {
     const slug = title
@@ -49,4 +49,23 @@ export function fieldError(
             ([key, value]) => key.startsWith(`${fieldName}.`) && Boolean(value),
         )?.[1] ?? ''
     );
+}
+
+export function isRequiredFieldComplete(
+    field: ResourceField,
+    value: ResourceFormValue,
+): boolean {
+    if (value === null || value === undefined || value === '') {
+        return false;
+    }
+
+    if (field.type !== 'number') {
+        return true;
+    }
+
+    const numeric = Number(value);
+    const minimum =
+        field.min === undefined ? Number.NEGATIVE_INFINITY : Number(field.min);
+
+    return Number.isFinite(numeric) && numeric >= minimum;
 }

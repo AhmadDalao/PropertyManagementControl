@@ -12,8 +12,8 @@ final class LeaseCreateFormPresenter
     /** @return array<string, mixed> */
     public function present(LeaseFormData $data): array
     {
-        $tenantId = $this->selected($data->defaults['tenant_profile_id'] ?? null, $data->tenants);
-        $assetId = $this->selected($data->defaults['asset_id'] ?? null, $data->assets);
+        $tenantId = $this->requestedSelection($data->defaults['tenant_profile_id'] ?? null, $data->tenants);
+        $assetId = $this->requestedSelection($data->defaults['asset_id'] ?? null, $data->assets);
         $onboarding = (string) ($data->defaults['onboarding'] ?? '') === '1';
         $tenantOnboardingQuery = array_filter([
             'next' => 'lease',
@@ -23,6 +23,7 @@ final class LeaseCreateFormPresenter
 
         return [
             'layout' => 'lease',
+            'mode' => ! empty($data->defaults['renewed_from_lease_id']) ? 'renew' : 'create',
             'title' => trans($onboarding
                 ? 'app.leases.start_tenancy'
                 : 'app.leases.create_lease'),
@@ -31,7 +32,8 @@ final class LeaseCreateFormPresenter
                 : 'app.leases.create_description'),
             'backHref' => route('leases.index'),
             'backLabel' => trans('app.leases.all_leases'),
-            'headerActions' => PortfolioModules::enabledForUser($data->actor, 'tenants')
+            'headerActions' => $data->portfolioId
+                && PortfolioModules::enabledForUser($data->actor, 'tenants')
                 ? [[
                     'label' => trans('app.leases.add_new_tenant'),
                     'href' => route('tenants.create', $tenantOnboardingQuery),
@@ -46,16 +48,16 @@ final class LeaseCreateFormPresenter
             'fields' => $this->fields->create($data),
             'initialValues' => [
                 'portfolio_id' => (string) ($data->portfolioId ?? ''),
-                'tenant_profile_id' => (string) $tenantId,
-                'asset_id' => (string) $assetId,
+                'tenant_profile_id' => (string) ($tenantId ?? ''),
+                'asset_id' => (string) ($assetId ?? ''),
                 'renewed_from_lease_id' => (string) ($data->defaults['renewed_from_lease_id'] ?? ''),
-                'status' => $data->defaults['status'] ?? ($onboarding ? 'draft' : 'active'),
+                'status' => $data->defaults['status'] ?? 'draft',
                 'payment_frequency' => $data->defaults['payment_frequency'] ?? 'monthly',
                 'started_at' => $data->defaults['started_at'] ?? now()->toDateString(),
                 'ends_at' => $data->defaults['ends_at'] ?? now()->addYear()->toDateString(),
                 'signed_at' => $data->defaults['signed_at'] ?? '',
                 'renewal_notice_days' => $data->defaults['renewal_notice_days'] ?? 30,
-                'rent_amount' => $data->defaults['rent_amount'] ?? 0,
+                'rent_amount' => $data->defaults['rent_amount'] ?? '',
                 'deposit_amount' => $data->defaults['deposit_amount'] ?? 0,
                 'tax_amount' => $data->defaults['tax_amount'] ?? 0,
                 'discount_amount' => $data->defaults['discount_amount'] ?? 0,
@@ -66,18 +68,6 @@ final class LeaseCreateFormPresenter
                 'notes' => $data->defaults['notes'] ?? '',
             ],
         ];
-    }
-
-    /** @param array<int, array{value:int,label:string}> $options */
-    private function selected(mixed $requested, array $options): int|string
-    {
-        $id = filter_var($requested, FILTER_VALIDATE_INT);
-
-        if ($id) {
-            return collect($options)->contains('value', $id) ? (int) $id : '';
-        }
-
-        return $options[0]['value'] ?? '';
     }
 
     /** @param array<int, array{value:int,label:string}> $options */

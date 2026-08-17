@@ -41,7 +41,7 @@ class LeaseController extends Controller
     {
         $actor = $this->actor($request);
 
-        return Inertia::render('admin/resource-form', [
+        return Inertia::render('admin/leases/form', [
             'formPage' => $this->formPresenter->present(
                 $actor,
                 defaults: $request->only([
@@ -63,14 +63,14 @@ class LeaseController extends Controller
 
     public function edit(Request $request, Lease $lease): Response
     {
-        return Inertia::render('admin/resource-form', [
+        return Inertia::render('admin/leases/form', [
             'formPage' => $this->formPresenter->present($this->actor($request), $lease),
         ]);
     }
 
     public function renew(Request $request, Lease $lease): Response
     {
-        return Inertia::render('admin/resource-form', [
+        return Inertia::render('admin/leases/form', [
             'formPage' => $this->formPresenter->renew($this->actor($request), $lease),
         ]);
     }

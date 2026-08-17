@@ -48,8 +48,13 @@ final class LeaseModuleSecurityTest extends TestCase
             ->get(route('leases.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-form')
+                ->component('admin/leases/form')
+                ->where('formPage.mode', 'create')
                 ->where('formPage.initialValues.renewal_notice_days', 30)
+                ->where('formPage.initialValues.tenant_profile_id', '')
+                ->where('formPage.initialValues.asset_id', '')
+                ->where('formPage.initialValues.status', 'draft')
+                ->where('formPage.initialValues.rent_amount', '')
                 ->where('formPage.fields', function ($fields) use (
                     $activeTenant,
                     $blockedProfile,
@@ -111,7 +116,7 @@ final class LeaseModuleSecurityTest extends TestCase
                 }));
     }
 
-    public function test_superadmin_defaults_to_a_portfolio_that_can_create_a_lease(): void
+    public function test_superadmin_must_explicitly_select_a_portfolio_and_contract_parties(): void
     {
         $fullPortfolio = $this->createPortfolio(['name_en' => 'A Full Portfolio']);
         $readyPortfolio = $this->createPortfolio(['name_en' => 'B Ready Portfolio']);
@@ -127,14 +132,40 @@ final class LeaseModuleSecurityTest extends TestCase
             $readyPortfolio,
             $this->createUserWithRole('tenant', $readyPortfolio),
         );
-        $readyAsset = $this->createAsset($readyPortfolio);
+        $this->createAsset($readyPortfolio);
 
         $this->actingAs($superadmin)
             ->get(route('leases.create'))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('formPage.initialValues.portfolio_id', (string) $readyPortfolio->id)
-                ->where('formPage.initialValues.asset_id', (string) $readyAsset->id));
+                ->component('admin/leases/form')
+                ->where('formPage.initialValues.portfolio_id', '')
+                ->where('formPage.initialValues.tenant_profile_id', '')
+                ->where('formPage.initialValues.asset_id', '')
+                ->where('formPage.initialValues.status', 'draft')
+                ->where('formPage.initialValues.rent_amount', '')
+                ->where('formPage.headerActions', [])
+                ->where('formPage.fields', function ($fields) use (
+                    $fullPortfolio,
+                    $readyPortfolio,
+                ): bool {
+                    $fields = collect($fields);
+                    $portfolioOptions = collect(
+                        $fields->firstWhere('name', 'portfolio_id')['options'] ?? [],
+                    );
+                    $tenantOptions = collect(
+                        $fields->firstWhere('name', 'tenant_profile_id')['options'] ?? [],
+                    );
+                    $assetOptions = collect(
+                        $fields->firstWhere('name', 'asset_id')['options'] ?? [],
+                    );
+
+                    return $portfolioOptions->first()['value'] === ''
+                        && $portfolioOptions->contains('value', $fullPortfolio->id)
+                        && $portfolioOptions->contains('value', $readyPortfolio->id)
+                        && $tenantOptions->pluck('value')->all() === ['']
+                        && $assetOptions->pluck('value')->all() === [''];
+                }));
     }
 
     public function test_create_form_explains_when_a_portfolio_has_no_available_asset(): void
@@ -282,6 +313,8 @@ final class LeaseModuleSecurityTest extends TestCase
             ->get(route('leases.renew', $source))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/leases/form')
+                ->where('formPage.mode', 'renew')
                 ->where('formPage.title', "Renew {$source->code}")
                 ->where('formPage.submitLabel', 'Create renewal draft')
                 ->where('formPage.initialValues.renewed_from_lease_id', (string) $source->id)
@@ -294,8 +327,8 @@ final class LeaseModuleSecurityTest extends TestCase
                 ->where('formPage.fields', function ($fields) use ($asset, $tenant): bool {
                     $fields = collect($fields);
 
-                    return collect($fields->firstWhere('name', 'asset_id')['options'] ?? [])->pluck('value')->all() === [$asset->id]
-                        && collect($fields->firstWhere('name', 'tenant_profile_id')['options'] ?? [])->pluck('value')->all() === [$tenant->id]
+                    return collect($fields->firstWhere('name', 'asset_id')['options'] ?? [])->pluck('value')->reject(fn ($value) => $value === '')->values()->all() === [$asset->id]
+                        && collect($fields->firstWhere('name', 'tenant_profile_id')['options'] ?? [])->pluck('value')->reject(fn ($value) => $value === '')->values()->all() === [$tenant->id]
                         && collect($fields->firstWhere('name', 'status')['options'] ?? [])->pluck('value')->all() === ['draft'];
                 }));
 

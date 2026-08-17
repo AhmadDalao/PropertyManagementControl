@@ -1,0 +1,116 @@
+.pmc-lease-form-layout {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 0.3fr);
+    align-items: start;
+    gap: 0.75rem;
+}
+
+.pmc-lease-form-layout > form {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-lease-form-section,
+.pmc-lease-form-optional,
+.pmc-lease-form-guide {
+    min-width: 0;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: var(--pmc-surface);
+}
+
+.pmc-lease-form-section {
+    padding: 0.9rem;
+}
+
+.pmc-lease-form-section > header {
+    margin-bottom: 0.75rem;
+}
+
+.pmc-lease-form-section h2,
+.pmc-lease-form-guide h2 {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.pmc-lease-form-section header p,
+.pmc-lease-form-guide > p {
+    margin: 0.18rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.6rem;
+    line-height: 1.5;
+}
+
+.pmc-lease-field-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.pmc-lease-field-grid > .pmc-resource-field:has(textarea) {
+    grid-column: 1 / -1;
+}
+
+.pmc-lease-form-optional {
+    overflow: clip;
+}
+
+.pmc-lease-form-optional > summary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.8rem 0.9rem;
+    cursor: pointer;
+    list-style: none;
+}
+
+.pmc-lease-form-optional > summary::-webkit-details-marker {
+    display: none;
+}
+
+.pmc-lease-form-optional > summary span {
+    display: grid;
+    min-width: 0;
+    gap: 0.15rem;
+}
+
+.pmc-lease-form-optional > summary strong {
+    font-size: 0.7rem;
+}
+
+.pmc-lease-form-optional > summary small {
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+    line-height: 1.45;
+}
+
+.pmc-lease-form-optional > summary em {
+    padding: 0.2rem 0.4rem;
+    border-radius: 999px;
+    background: var(--pmc-surface-soft);
+    color: var(--pmc-muted);
+    font-size: 0.48rem;
+    font-style: normal;
+    font-weight: 750;
+}
+
+.pmc-lease-form-optional > summary i {
+    color: var(--pmc-muted);
+    font-size: 0.65rem;
+    transition: transform 160ms ease;
+}
+
+.pmc-lease-form-optional[open] > summary i {
+    transform: rotate(180deg);
+}
+
+.pmc-lease-form-optional > .pmc-lease-field-grid {
+    padding: 0.8rem 0.9rem 0.9rem;
+    border-top: 1px solid var(--pmc-line-soft);
+}

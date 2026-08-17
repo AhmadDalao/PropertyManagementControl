@@ -165,40 +165,12 @@ final class LeaseFormOptionsQuery
             FILTER_VALIDATE_INT,
         );
 
-        return $requested && $allowedPortfolioIds->contains((int) $requested)
-            ? (int) $requested
-            : $this->defaultPortfolioId($actor, $portfolios);
-    }
-
-    /** @param array<int, array{value:int,label:string}> $portfolios */
-    private function defaultPortfolioId(User $actor, array $portfolios): ?int
-    {
-        if (! $actor->hasRole('superadmin')) {
-            return $portfolios[0]['value'] ?? null;
+        if ($requested && $allowedPortfolioIds->contains((int) $requested)) {
+            return (int) $requested;
         }
 
-        $portfolioIds = collect($portfolios)->pluck('value')->all();
-
-        if ($portfolioIds === []) {
-            return null;
-        }
-
-        $leasedAssetIds = Lease::query()
-            ->select('leaseable_id')
-            ->whereIn('leaseable_type', $this->morphTypes->for(new Asset))
-            ->where('status', 'active');
-        $candidate = Portfolio::query()
-            ->whereIn('id', $portfolioIds)
-            ->whereHas('tenantProfiles', fn (Builder $tenants) => $tenants
-                ->where('status', 'active')
-                ->whereHas('user', fn (Builder $users) => $users->where('status', 'active')))
-            ->whereHas('assets', fn (Builder $assets) => $assets
-                ->where('status', 'active')
-                ->where('rentable', true)
-                ->whereNotIn('id', $leasedAssetIds))
-            ->orderBy(app()->isLocale('ar') ? 'name_ar' : 'name_en')
-            ->value('id');
-
-        return $candidate ? (int) $candidate : ($portfolios[0]['value'] ?? null);
+        return $actor->hasRole('superadmin')
+            ? null
+            : ($portfolios[0]['value'] ?? null);
     }
 }

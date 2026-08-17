@@ -62,6 +62,7 @@ final class LeaseRenewalFormPresenter
 
         return [
             ...$form,
+            'mode' => 'renew',
             'title' => trans('app.leases.renew_lease', ['code' => $source->code]),
             'description' => trans('app.leases.renew_description'),
             'backHref' => route('leases.show', $source),

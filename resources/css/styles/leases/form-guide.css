@@ -1,0 +1,118 @@
+.pmc-lease-form-guide {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 0.75rem);
+    display: grid;
+    gap: 0.65rem;
+    padding: 0.9rem;
+    background: linear-gradient(145deg, #fff 0%, var(--pmc-surface-green) 100%);
+}
+
+.pmc-lease-guide-heading {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.pmc-lease-guide-heading > i {
+    display: grid;
+    width: 2.25rem;
+    height: 2.25rem;
+    place-items: center;
+    border-radius: 0.55rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 1rem;
+}
+
+.pmc-lease-guide-heading span,
+.pmc-lease-summary-heading span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.52rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.pmc-lease-guide-progress {
+    display: grid;
+    gap: 0.4rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(18, 129, 60, 0.14);
+}
+
+.pmc-lease-guide-progress > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    font-size: 0.58rem;
+}
+
+.pmc-lease-guide-progress progress {
+    width: 100%;
+    height: 0.4rem;
+    accent-color: var(--pmc-primary);
+}
+
+.pmc-lease-guide-next,
+.pmc-lease-status-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    padding: 0.6rem;
+    border-radius: 0.48rem;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.56rem;
+    line-height: 1.45;
+}
+
+.pmc-lease-guide-next i,
+.pmc-lease-status-note i {
+    color: var(--pmc-primary);
+}
+
+.pmc-lease-status-note.is-draft {
+    background: #fff8e8;
+}
+
+.pmc-lease-summary-heading {
+    padding-top: 0.65rem;
+    border-top: 1px solid rgba(18, 129, 60, 0.14);
+}
+
+.pmc-lease-form-summary {
+    display: grid;
+    gap: 0.38rem;
+    margin: 0;
+}
+
+.pmc-lease-form-summary > div {
+    display: grid;
+    grid-template-columns: minmax(5rem, 0.38fr) minmax(0, 1fr);
+    gap: 0.55rem;
+    padding: 0.48rem 0;
+    border-bottom: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-lease-form-summary > div:last-child {
+    border-bottom: 0;
+}
+
+.pmc-lease-form-summary dt {
+    color: var(--pmc-muted);
+    font-size: 0.5rem;
+    font-weight: 700;
+}
+
+.pmc-lease-form-summary dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.55rem;
+    font-weight: 750;
+    text-align: end;
+}
+
+.pmc-lease-mobile-actions {
+    display: none;
+}

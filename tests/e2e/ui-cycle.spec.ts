@@ -38,6 +38,7 @@ const primaryAdminRoutes = [
     '/assets/building-setup',
     '/tenants',
     '/leases',
+    '/leases/create',
     '/lease-renewals',
     '/lease-move-outs',
     '/rent-collection',
@@ -1946,14 +1947,50 @@ test.describe('authenticated administration', () => {
 
         await page.goto('/leases/create?locale=ar');
         await expect(
+            page.getByRole('heading', { name: 'إنشاء عقد', exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'قائمة مراجعة العقد' }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('ملخص العقد', { exact: true }),
+        ).toBeVisible();
+        const portfolio = page.locator('select[name="portfolio_id"]');
+        await expect(portfolio).toHaveValue('');
+        const tenant = page.locator('select[name="tenant_profile_id"]');
+        const rental = page.locator('select[name="asset_id"]');
+        await expect(tenant).toBeVisible();
+        await expect(tenant).toHaveValue('');
+        await expect(rental).toBeVisible();
+        await expect(rental).toHaveValue('');
+        const rent = page.locator('input[name="rent_amount"]');
+        await expect(rent).toBeVisible();
+        await expect(rent).toHaveValue('');
+        await expect(page.locator('select[name="status"]')).toHaveValue('draft');
+        await expect(
+            page.getByRole('link', { name: 'إضافة مستأجر جديد' }),
+        ).toHaveCount(0);
+        const optionalSections = page.locator('.pmc-lease-form-optional');
+        await expect(optionalSections).toHaveCount(2);
+        await expect(optionalSections.first()).not.toHaveAttribute('open', '');
+
+        await portfolio.selectOption({ index: 1 });
+        await expect(page).toHaveURL(/portfolio_id=\d+/);
+        await expect(
             page.getByRole('link', { name: 'إضافة مستأجر جديد' }),
         ).toBeVisible();
         await expect(
-            page.getByRole('heading', { name: 'إنشاء عقد', exact: true }),
+            page.getByRole('searchbox', { name: 'البحث في المستأجرين' }),
         ).toBeVisible();
-        await expect(page.getByLabel('المستأجر')).toBeVisible();
-        await expect(page.getByLabel('أصل متاح للتأجير')).toBeVisible();
-        await expect(page.getByLabel('قيمة الإيجار')).toBeVisible();
+        await expect(
+            page.getByRole('searchbox', {
+                name: 'البحث في العقارات المتاحة',
+            }),
+        ).toBeVisible();
+        await expect(
+            page.locator('select[name="tenant_profile_id"]'),
+        ).toHaveValue('');
+        await expect(page.locator('select[name="asset_id"]')).toHaveValue('');
         await expectNoHorizontalOverflow(page);
     });
 

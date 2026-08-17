@@ -19,7 +19,9 @@ class LeaseModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('ManageLeases', $source);
         $this->assertStringContainsString('LeaseDocuments', $source);
         $this->assertStringContainsString('LeaseContractWordExport', $source);
+        $this->assertStringContainsString("Inertia::render('admin/leases/form'", $source);
         $this->assertStringContainsString("Inertia::render('admin/leases/show'", $source);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-form'", $source);
         $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $source);
         $this->assertStringNotContainsString('Lease::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
@@ -77,6 +79,18 @@ class LeaseModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/leases/lease-detail-tabs.tsx'),
             $this->path('resources/js/modules/leases/lease-detail-workspace.tsx'),
             $this->path('resources/js/modules/leases/lease-next-step-panel.tsx'),
+            $this->path('resources/js/modules/leases/lease-choice-field.tsx'),
+            $this->path('resources/js/modules/leases/lease-form-guide.tsx'),
+            $this->path('resources/js/modules/leases/lease-form-page.tsx'),
+            $this->path('resources/js/modules/leases/lease-form-section.tsx'),
+            $this->path('resources/js/modules/leases/lease-form-summary.tsx'),
+            $this->path('resources/js/modules/leases/lease-form-workspace.tsx'),
+            $this->path('resources/css/styles/leases/form.css'),
+            $this->path('resources/css/styles/leases/form-layout.css'),
+            $this->path('resources/css/styles/leases/form-choice.css'),
+            $this->path('resources/css/styles/leases/form-guide.css'),
+            $this->path('resources/css/styles/leases/form-responsive.css'),
+            $this->path('resources/js/pages/admin/leases/form.tsx'),
             $this->path('resources/js/pages/admin/leases/show.tsx'),
             $this->path('resources/js/modules/leases/types.ts'),
         ] as $path) {
@@ -95,6 +109,17 @@ class LeaseModuleArchitectureTest extends TestCase
             'app/Modules/Leases/Presenters/LeaseFormPresenter.php' => 55,
             'app/Modules/Leases/Queries/LeaseIndexQuery.php' => 90,
             'resources/js/modules/leases/lease-table.tsx' => 70,
+            'resources/js/modules/leases/lease-form-page.tsx' => 30,
+            'resources/js/modules/leases/lease-form-workspace.tsx' => 130,
+            'resources/js/modules/leases/lease-form-guide.tsx' => 110,
+            'resources/js/modules/leases/lease-form-section.tsx' => 100,
+            'resources/js/modules/leases/lease-form-summary.tsx' => 140,
+            'resources/js/modules/leases/lease-choice-field.tsx' => 120,
+            'resources/css/styles/leases/form.css' => 10,
+            'resources/css/styles/leases/form-layout.css' => 120,
+            'resources/css/styles/leases/form-choice.css' => 90,
+            'resources/css/styles/leases/form-guide.css' => 130,
+            'resources/css/styles/leases/form-responsive.css' => 100,
         ] as $path => $maximum) {
             $source = $this->source($this->path($path));
 
