@@ -110,9 +110,10 @@ class DashboardModuleArchitectureTest extends TestCase
         foreach ([
             'operations/action-queue.tsx',
             'operations/launch-readiness-panel.tsx',
+            'operations/lease-expiry-panel.tsx',
             'operations/operations-header.tsx',
             'operations/operations-dashboard-groups.tsx',
-            'operations/operations-insight-panels.tsx',
+            'operations/operations-portfolio-workspace.tsx',
             'operations/operations-metrics.tsx',
             'operations/operations-priority-panels.tsx',
             'operations/operations-system-workspace.tsx',
@@ -123,11 +124,15 @@ class DashboardModuleArchitectureTest extends TestCase
             'operations/platform-status-panel.tsx',
             'operations/platform-composition-panel.tsx',
             'operations/platform-metrics.ts',
+            'operations/portfolio-health-panel.tsx',
             'operations/portfolio-setup-panel.tsx',
             'operations/portfolio-metrics.ts',
+            'operations/portfolio-workspace-tabs.tsx',
             'operations/property-focus-url.ts',
             'operations/property-focus.tsx',
+            'operations/property-performance-card.tsx',
             'operations/property-performance-grid.tsx',
+            'operations/recent-payments-panel.tsx',
             'operations-types.ts',
             'shared-types.ts',
             'shared/health-signals.tsx',
@@ -160,6 +165,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('./dashboard/panels.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/tenant.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/groups.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/portfolio.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/today-workspace.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/platform.css', $stylesheet);
         $platformStyles = $this->source('resources/css/styles/dashboard/platform.css');
@@ -170,6 +176,9 @@ class DashboardModuleArchitectureTest extends TestCase
             'resources/css/styles/reference/dashboard.css',
         ));
         $this->assertFileDoesNotExist($this->path('resources/js/modules/dashboard/widgets.tsx'));
+        $this->assertFileDoesNotExist($this->path(
+            'resources/js/modules/dashboard/operations/operations-insight-panels.tsx',
+        ));
 
         $groups = $this->source(
             'resources/js/modules/dashboard/operations/operations-dashboard-groups.tsx',
@@ -186,6 +195,15 @@ class DashboardModuleArchitectureTest extends TestCase
         $metrics = $this->source(
             'resources/js/modules/dashboard/operations/operations-metrics.tsx',
         );
+        $portfolioWorkspace = $this->source(
+            'resources/js/modules/dashboard/operations/operations-portfolio-workspace.tsx',
+        );
+        $portfolioTabs = $this->source(
+            'resources/js/modules/dashboard/operations/portfolio-workspace-tabs.tsx',
+        );
+        $propertyPerformance = $this->source(
+            'resources/js/modules/dashboard/operations/property-performance-grid.tsx',
+        );
 
         $this->assertStringContainsString("selected === 'today'", $groups);
         $this->assertStringContainsString("selected === 'portfolio'", $groups);
@@ -196,6 +214,12 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('onKeyDown', $viewTabs);
         $this->assertStringContainsString('role="tablist"', $today);
         $this->assertStringContainsString('role="tabpanel"', $today);
+        $this->assertStringContainsString('portfolio_view', $portfolioWorkspace);
+        $this->assertStringContainsString('role="tabpanel"', $portfolioWorkspace);
+        $this->assertStringContainsString('role="tablist"', $portfolioTabs);
+        $this->assertStringContainsString('aria-selected', $portfolioTabs);
+        $this->assertStringContainsString('onKeyDown', $portfolioTabs);
+        $this->assertStringContainsString('slice(0, 2)', $propertyPerformance);
         $this->assertStringNotContainsString("href: '/action-center'", $header);
         $this->assertStringContainsString(
             'className="pmc-dashboard-metrics"',
@@ -223,6 +247,8 @@ class DashboardModuleArchitectureTest extends TestCase
         );
         $this->assertStringContainsString('pmc-dashboard-command-flow', $operationsView);
         $this->assertStringContainsString('pmc-dashboard-command-work', $operationsView);
+        $this->assertStringContainsString('OperationsPortfolioWorkspace', $groups);
+        $this->assertStringNotContainsString('OperationsInsightPanels', $groups);
         $commandFlow = $this->source(
             'resources/css/styles/dashboard/command-flow.css',
         );
@@ -232,6 +258,10 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(
             180,
             substr_count($this->source('resources/css/styles/dashboard/focus.css'), "\n") + 1,
+        );
+        $this->assertLessThanOrEqual(
+            100,
+            substr_count($this->source('resources/css/styles/dashboard/portfolio-workspace.css'), "\n") + 1,
         );
     }
 

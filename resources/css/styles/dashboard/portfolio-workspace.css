@@ -1,0 +1,88 @@
+.pmc-dashboard-portfolio-workspace {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-dashboard-portfolio-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+    padding: 0.45rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-dashboard-portfolio-tabs > button {
+    display: flex;
+    min-width: 0;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.6rem 0.7rem;
+    border: 1px solid transparent;
+    border-radius: 0.65rem;
+    background: transparent;
+    color: #5f5b54;
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-align: start;
+}
+
+.pmc-dashboard-portfolio-tabs > button:hover {
+    border-color: var(--pmc-line);
+    background: var(--pmc-sand-soft);
+}
+
+.pmc-dashboard-portfolio-tabs > button > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-dashboard-portfolio-tabs > button > strong {
+    display: grid;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    place-items: center;
+    flex: 0 0 auto;
+    padding-inline: 0.3rem;
+    border-radius: 999px;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 0.66rem;
+}
+
+.pmc-dashboard-portfolio-tabs > button.is-active {
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
+    color: #fff;
+}
+
+.pmc-dashboard-portfolio-tabs > button.is-active > strong {
+    background: #fff;
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-dashboard-portfolio-panel {
+    min-width: 0;
+}
+
+.pmc-dashboard-portfolio-panel .pmc-property-performance {
+    margin-bottom: 0;
+}
+
+@media (max-width: 767.98px) {
+    .pmc-dashboard-portfolio-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.35rem;
+        padding: 0.35rem;
+    }
+
+    .pmc-dashboard-portfolio-tabs > button {
+        min-height: 3.25rem;
+        padding: 0.55rem 0.6rem;
+    }
+}

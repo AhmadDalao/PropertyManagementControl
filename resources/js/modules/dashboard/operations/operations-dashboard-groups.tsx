@@ -3,12 +3,11 @@ import { useState } from 'react';
 import { useTranslator } from '@/lib/i18n';
 
 import type { OperationsDashboardProps } from '../types';
-import { OperationsInsightPanels } from './operations-insight-panels';
+import { OperationsPortfolioWorkspace } from './operations-portfolio-workspace';
 import { OperationsSystemWorkspace } from './operations-system-workspace';
 import { OperationsTodayWorkspace } from './operations-today-workspace';
 import { OperationsViewTabs } from './operations-view-tabs';
 import type { OperationsDashboardView } from './operations-view-tabs';
-import { PropertyPerformanceGrid } from './property-performance-grid';
 
 export function OperationsDashboardGroups({
     props,
@@ -102,8 +101,7 @@ export function OperationsDashboardGroups({
                     role="tabpanel"
                     aria-labelledby="dashboard-view-portfolio"
                 >
-                    <PropertyPerformanceGrid props={props} />
-                    <OperationsInsightPanels props={props} />
+                    <OperationsPortfolioWorkspace props={props} />
                 </div>
             ) : null}
 

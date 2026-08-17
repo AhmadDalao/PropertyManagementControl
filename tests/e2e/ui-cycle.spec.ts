@@ -1242,6 +1242,9 @@ test.describe('authenticated administration', () => {
 
         await page.goto('/dashboard?locale=en');
         await page.locator('[data-dashboard-view-tab="portfolio"]').click();
+        await page
+            .locator('[data-dashboard-portfolio-tab="contracts"]')
+            .click();
         await expect(
             page.locator('a[href="/lease-renewals?queue=all"]'),
         ).toBeVisible();
@@ -4355,6 +4358,62 @@ test.describe('local role dashboards', () => {
         await expect(
             dashboardTabs.getByRole('tab', { name: /^عمل اليوم/ }),
         ).toHaveAttribute('aria-selected', 'true');
+        const portfolioTab = dashboardTabs.getByRole('tab', {
+            name: /^أداء المحفظة/,
+        });
+        await portfolioTab.click();
+        await expect(page).toHaveURL(/[?&]panel=portfolio(?:&|$)/);
+        const portfolioViews = page.getByRole('tablist', {
+            name: 'عروض أداء المحفظة',
+        });
+        await expect(portfolioViews).toBeVisible();
+        await expect(
+            portfolioViews.getByRole('tab', { name: /^العقارات/ }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('.pmc-property-performance-card'),
+        ).toHaveCount(2);
+        await expect(
+            page.locator('[data-dashboard-portfolio-panel]'),
+        ).toHaveCount(1);
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(2300);
+        const activePortfolioView = page.locator(
+            '[data-dashboard-portfolio-tab][aria-selected="true"]',
+        );
+        await activePortfolioView.press('ArrowLeft');
+        await expect(page).toHaveURL(/[?&]portfolio_view=health(?:&|$)/);
+        await expect(
+            page.locator('[data-dashboard-portfolio-tab="health"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-portfolio-panel="health"]'),
+        ).toBeVisible();
+        await activePortfolioView.press('Home');
+        await expect(
+            page.locator('[data-dashboard-portfolio-tab="properties"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await activePortfolioView.press('End');
+        await expect(page).toHaveURL(/[?&]portfolio_view=activity(?:&|$)/);
+        await expect(
+            page.locator('[data-dashboard-portfolio-tab="activity"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-portfolio-panel="activity"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator('.pmc-property-performance-card'),
+        ).toHaveCount(0);
+        await page.reload();
+        await expect(
+            page.locator('[data-dashboard-portfolio-tab="activity"]'),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('[data-dashboard-portfolio-panel]'),
+        ).toHaveCount(1);
+        await expectMinimumTouchHeight(page, '[data-dashboard-portfolio-tab]');
+        await expectNoHorizontalOverflow(page);
         const systemTab = dashboardTabs.getByRole('tab', {
             name: /^ضوابط النظام/,
         });
