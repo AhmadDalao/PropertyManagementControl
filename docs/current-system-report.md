@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `17b6b77687ccd062fea2b0de2fbf9bfd14523f8a`
+**Application build revision verified in production:** `28ab30648d476efd9bd58d4240f3e541efdf4657`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **657 tests and 38,989 assertions passed**. The release baseline also includes **70 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, PHPStan baseline, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **658 tests and 39,045 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, PHPStan baseline, Composer audit, and pnpm audit checks.
 
-The action-first Dashboard release is deployed to Hostinger and its Vite manifest SHA-256, `b02efd1b45dcbae8fa59b4406d2378d706e5ad62ac7dcdbe6b990e108af142ca`, matches the local build. The live site responds successfully at `/up`; 135 authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. At 390px, the property context is 123px tall instead of 227px, all three dashboard workspaces fit one row, all four daily queues fit one row, actionable work starts at 601px, KPIs follow at 1,066px, and the page has no horizontal overflow. At 768px, work starts at 485px and KPIs follow at 787px. Desktop preserves scope, KPI, then workspace order. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The Property detail release is deployed to Hostinger and its Vite manifest SHA-256, `d7a94041b976cfe23eaddacf8d97fea758e67b8373c0c9ffc56e71911a157f83`, matches the local build. The live site responds successfully at `/up`; 135 authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. The live Arabic property record was separately verified at 390px with seven direct query-backed tabs, one mounted panel, and zero horizontal overflow; its mobile Overview is 1,423px instead of the former 3,460px generic detail page. The release also reconfirmed that new production PHP classes require the documented `--no-dev --classmap-authoritative` Composer refresh as one complete generated autoload set. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -20,6 +20,7 @@ The action-first Dashboard release is deployed to Hostinger and its Vite manifes
 | Core domain workflows | Ready for pilot | Property through payment and maintenance workflows exist and are tested. |
 | Authorization | Strong, complex | Role, portfolio, module, and assigned-property scopes are enforced and heavily tested. |
 | Responsive UI | Release baseline passes | Desktop tables and mobile cards are implemented; automated widths cover 390/768/1024/1440. |
+| Resource detail consistency | Mixed | Property, lease, payment, and maintenance records are custom; tenant, portfolio, user, expense, document, contractor, work-order, and saved-report details still use generic shared composition. |
 | English/Arabic | Implemented | UI dictionaries, RTL, bilingual records, PDFs, DOCX, XLSX, CMS, and wording overrides exist. |
 | Reporting | Operational | Real `.xlsx`, PDF, and DOCX outputs exist; unlike currencies remain separated. |
 | Email | Blocked in production | Live mailer was last recorded as `log`; SMTP receipt is unproven. |
@@ -27,6 +28,7 @@ The action-first Dashboard release is deployed to Hostinger and its Vite manifes
 | Real portfolio data | Not started | Production has showcase data but no approved live portfolio import. |
 | Legal/compliance approval | Owner action required | Lease wording, billing rules, retention, and opening balances need business/legal sign-off. |
 | Production migration | Pending operator command | Run the uploaded August 16 category-normalization migration through Hostinger PHP 8.4; it changes data values only, not schema. |
+| Deployment process | Must be automated | The release is healthy, but authoritative Composer autoload refresh and atomic build switching still depend on a careful manual runbook. |
 | Latest deployment | Current | GitHub and Hostinger run the verified release; the production manifest matches the local build. |
 
 ## 2. Audit Scope And Method
@@ -896,10 +898,10 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 657 passed, 38,989 assertions |
+| Fresh PHPUnit run | 658 passed, 39,045 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
-| Recorded Playwright/axe baseline | 70 scenarios |
+| Recorded Playwright/axe baseline | 71 scenarios |
 | Recorded responsive widths | 390, 768, 1024, 1440 |
 | Recorded PHPStan state | Zero current errors with 13 accepted legacy baseline entries |
 | Production health on report date | `/up` HTTP 200 |
@@ -911,7 +913,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 ## 18. Report Limitations
 
 - The report does not include tenant PII, production credentials, SMTP secrets, or private file contents.
-- The current source was fully inspected and PHP-tested; the complete 70-scenario browser and accessibility suite was rerun for this UI release.
+- The current source was fully inspected and PHP-tested; the complete 71-scenario browser and accessibility suite was rerun for this UI release.
 - Production authenticated internals were smoke-tested after deployment without modifying operational records.
 - Legal compliance is a business/legal approval, not something source inspection can certify.
 
@@ -1163,4 +1165,4 @@ The August 2026 design archives are now the active layout contract rather than a
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, and tenant modules under `resources/css/styles/`. The shared production CSS bundle is 320.21KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk and Action Center is a 10.72KB lazy CSS chunk. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. All 70 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
+The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, tenant, and property-detail modules under `resources/css/styles/`. The shared production CSS bundle is 320.21KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk, Action Center is a 10.72KB lazy CSS chunk, and the Property detail workspace adds a 7.28KB route-loaded stylesheet. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. The custom Property record reduces its 390px Overview from 3,460px to 1,423px and renders only the selected Overview, Structure & map, Leasing & rent, Financial, Service, Documents, or History panel. All 71 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
