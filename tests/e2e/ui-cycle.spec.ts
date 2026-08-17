@@ -429,7 +429,7 @@ test.describe('authenticated administration', () => {
         await expect(
             page
                 .locator('.pmc-global-search-mobile .pmc-global-search-group')
-                .filter({ hasText: 'Assets' })
+                .filter({ hasText: 'Properties & units' })
                 .locator('a')
                 .first(),
         ).toBeVisible();
@@ -445,7 +445,7 @@ test.describe('authenticated administration', () => {
         await expect(
             page
                 .locator('.pmc-global-search-mobile')
-                .getByText('الأصول', { exact: true }),
+                .getByText('العقارات والوحدات', { exact: true }),
         ).toBeVisible();
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
         await expectNoHorizontalOverflow(page);
@@ -717,6 +717,74 @@ test.describe('authenticated administration', () => {
         await search.fill('');
         await expect(page).not.toHaveURL(/search=/);
         await expectNoHorizontalOverflow(page);
+    });
+
+    test('property detail uses direct bounded sections on mobile in English and Arabic', async ({
+        page,
+    }) => {
+        await page.setViewportSize(viewports.mobile);
+        await page.goto('/assets?search=CORAL&locale=en');
+
+        const openRecord = page.locator('.pmc-record-open').first();
+        const href = await openRecord.getAttribute('href');
+        expect(href).toMatch(/^\/assets\/\d+$/);
+        await page.goto(`${href}?locale=en`);
+
+        const tabs = page.getByTestId('asset-detail-tabs');
+        await expect(tabs.getByRole('tab')).toHaveCount(7);
+        await expect(
+            tabs.getByRole('tab', { name: 'Overview' }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expect(
+            page.locator('.pmc-asset-detail-metrics article'),
+        ).toHaveCount(6);
+        await expect(page.locator('.pmc-asset-next-step')).toBeVisible();
+        await expect(page.locator('.pmc-resource-tab-select')).toHaveCount(0);
+        await expect(page.locator('.pmc-resource-decision-grid')).toHaveCount(
+            0,
+        );
+        const accessibility = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(accessibility.violations).toEqual([]);
+        expect(
+            await page.evaluate(() => document.documentElement.scrollHeight),
+        ).toBeLessThan(2200);
+
+        const structure = tabs.getByRole('tab', { name: /Structure & map/ });
+        await structure.click();
+        await expect(page).toHaveURL(/tab=structure/);
+        await expect(page.locator('.pmc-asset-location-panel')).toBeVisible();
+        await expect(page.locator('.pmc-related-table-card')).toHaveCount(2);
+        await structure.press('End');
+        await expect(
+            tabs.getByRole('tab', { name: /History/ }),
+        ).toHaveAttribute('aria-selected', 'true');
+        await expectMinimumTouchHeight(page, '.pmc-asset-detail-tabs button');
+        await expectNoHorizontalOverflow(page);
+
+        await page.goto(`${href}?locale=ar`);
+        await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        await expect(
+            page
+                .getByTestId('asset-detail-tabs')
+                .getByRole('tab', { name: 'الهيكل والخريطة' }),
+        ).toBeVisible();
+        await expectNoHorizontalOverflow(page);
+
+        for (const viewport of [
+            viewports.tablet,
+            viewports.compactDesktop,
+            viewports.desktop,
+        ]) {
+            await page.setViewportSize(viewport);
+            await page.goto(`${href}?locale=en`);
+            await expect(
+                page.getByTestId('asset-detail-tabs').getByRole('tab'),
+            ).toHaveCount(7);
+            await expectNoHorizontalOverflow(page);
+        }
     });
 
     test('property explorer keeps hierarchy, tenant search, and Arabic context clear', async ({

@@ -38,6 +38,7 @@ final readonly class AssetStructureRelatedPresenter
         $columns[] = $open;
 
         return [
+            'key' => 'rentable_spaces',
             'title' => trans('app.assets.rentable_spaces'),
             'description' => trans('app.assets.rentable_spaces_help'),
             'columns' => $columns,
@@ -83,6 +84,7 @@ final readonly class AssetStructureRelatedPresenter
         $open = trans('app.assets.open');
 
         return [
+            'key' => 'children',
             'title' => trans('app.assets.child_assets'),
             'description' => trans('app.assets.child_assets_help'),
             'columns' => [$assetLabel, $type, $occupancy, $open],

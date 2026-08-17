@@ -297,9 +297,13 @@ class AssetModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->has('detailPage.header.actions', 2)
                 ->has('detailPage.stats', 3)
-                ->has('detailPage.decisionCards', 1)
-                ->has('detailPage.sections', 3)
+                ->has('detailPage.sections', 2)
                 ->has('detailPage.related', 2)
+                ->where('detailPage.availableTabs', [
+                    'overview',
+                    'structure',
+                    'history',
+                ])
                 ->where('detailPage.related.0.columns', [
                     'Unit / space',
                     'Type',
@@ -330,10 +334,10 @@ class AssetModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('app.locale', 'ar')
                 ->where('app.direction', 'rtl')
-                ->where('detailPage.header.eyebrow', 'تفاصيل الأصل')
+                ->where('detailPage.header.eyebrow', 'السجل العقاري')
                 ->where('detailPage.header.title', 'أصل التفاصيل العربية')
-                ->where('detailPage.decisionCards.0.title', 'صحة الإشغال')
-                ->where('detailPage.related.0.title', 'المساحات القابلة للتأجير'));
+                ->where('detailPage.related.0.title', 'المساحات القابلة للتأجير')
+                ->where('detailPage.availableTabs.1', 'structure'));
     }
 
     /** @param array<string, mixed> $overrides @return array<string, mixed> */

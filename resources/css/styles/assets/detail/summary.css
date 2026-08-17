@@ -1,0 +1,162 @@
+.pmc-asset-next-step,
+.pmc-asset-location-panel {
+    display: grid;
+    min-width: 0;
+    gap: 0.7rem;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: #fff;
+}
+
+.pmc-asset-next-step {
+    border-inline-start: 0.25rem solid var(--pmc-primary);
+    background: linear-gradient(145deg, var(--pmc-primary-soft) 0%, #fff 62%);
+}
+
+.pmc-asset-next-step.is-teal {
+    border-inline-start-color: var(--pmc-teal);
+    background: linear-gradient(145deg, #f1fbf8 0%, #fff 62%);
+}
+
+.pmc-asset-next-step.is-danger {
+    border-inline-start-color: var(--pmc-red);
+    background: linear-gradient(145deg, #fff6f3 0%, #fff 62%);
+}
+
+.pmc-asset-next-step > header {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.6rem;
+}
+
+.pmc-asset-next-step > header > span {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.52rem;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.85rem;
+}
+
+.pmc-asset-next-step header div,
+.pmc-asset-location-panel header div {
+    min-width: 0;
+}
+
+.pmc-asset-next-step header small,
+.pmc-asset-location-panel header small {
+    display: block;
+    margin-bottom: 0.16rem;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-asset-next-step h2,
+.pmc-asset-location-panel h2 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.pmc-asset-next-step header em,
+.pmc-asset-location-panel header em {
+    padding: 0.2rem 0.38rem;
+    border-radius: 999px;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.54rem;
+    font-style: normal;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pmc-asset-next-step > p,
+.pmc-asset-location-panel header p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    line-height: 1.55;
+}
+
+.pmc-asset-next-step > div:last-child {
+    display: grid;
+    gap: 0.38rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-asset-next-step .btn {
+    min-height: 2.4rem;
+    justify-content: center;
+    font-size: 0.62rem;
+}
+
+.pmc-asset-location-panel > header {
+    display: flex;
+    min-width: 0;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-asset-location-panel header strong {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--pmc-primary-strong);
+    font-size: 0.64rem;
+}
+
+.pmc-asset-location-panel header p {
+    margin-top: 0.25rem;
+}
+
+.pmc-asset-location-panel dl {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    margin: 0;
+    border-top: 1px solid var(--pmc-line-soft);
+    border-inline-start: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-asset-location-panel dl > div {
+    min-width: 0;
+    padding: 0.62rem;
+    border-inline-end: 1px solid var(--pmc-line-soft);
+    border-bottom: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-asset-location-panel dt {
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 750;
+    text-transform: uppercase;
+}
+
+.pmc-asset-location-panel dd {
+    margin: 0.18rem 0 0;
+    overflow-wrap: anywhere;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.pmc-asset-location-panel footer {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.pmc-asset-location-panel footer .btn {
+    min-height: 2.35rem;
+    font-size: 0.62rem;
+}

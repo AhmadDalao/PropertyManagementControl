@@ -39,6 +39,7 @@ final readonly class AssetServiceRelatedPresenter
         $open = trans('app.assets.open');
 
         return [
+            'key' => 'maintenance',
             'title' => trans('app.assets.maintenance'),
             'description' => trans('app.assets.property_maintenance_help'),
             'columns' => [$request, $asset, $status, $priority, $open],
@@ -75,6 +76,7 @@ final readonly class AssetServiceRelatedPresenter
         $open = trans('app.assets.open');
 
         return [
+            'key' => 'expenses',
             'title' => trans('app.assets.expenses'),
             'description' => trans('app.assets.property_expenses_help'),
             'columns' => [$expense, $asset, $category, $amount, $open],

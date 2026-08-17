@@ -771,8 +771,6 @@ class DashboardModuleTest extends TestCase
             ->get(route('assets.show', $property))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.decisionCards.1.value', '2 currencies')
-                ->where('detailPage.decisionCards.2.value', '600.00 SAR · 150.00 USD')
                 ->where('detailPage.workflow.status', '600.00 SAR · 150.00 USD'));
 
         $this->actingAs($owner)

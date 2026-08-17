@@ -17,6 +17,8 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('AssetFormPresenter', $source);
         $this->assertStringContainsString('AssetDetailPresenter', $source);
         $this->assertStringContainsString('ManageAssets', $source);
+        $this->assertStringContainsString("Inertia::render('admin/assets/show'", $source);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $source);
         $this->assertStringNotContainsString('Asset::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
@@ -31,6 +33,7 @@ class AssetModuleArchitectureTest extends TestCase
         $index = $this->source($this->path('app/Modules/Assets/Queries/AssetIndexQuery.php'));
         $form = $this->source($this->path('app/Modules/Assets/Presenters/AssetFormPresenter.php'));
         $detail = $this->source($this->path('app/Modules/Assets/Presenters/AssetDetailPresenter.php'));
+        $detailTabs = $this->source($this->path('app/Modules/Assets/Presenters/AssetDetailTabPresenter.php'));
         $operations = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsQuery.php'));
         $operationRecords = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsRecordsQuery.php'));
         $operationDocuments = $this->source($this->path('app/Modules/Assets/Queries/AssetOperationsDocumentsQuery.php'));
@@ -40,6 +43,7 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertLinesAtMost($index, 90);
         $this->assertLinesAtMost($form, 35);
         $this->assertLinesAtMost($detail, 40);
+        $this->assertLinesAtMost($detailTabs, 45);
         $this->assertLinesAtMost($operations, 160);
         $this->assertLinesAtMost($operationRecords, 210);
         $this->assertLinesAtMost($operationDocuments, 60);
@@ -54,6 +58,8 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('AssetEditFormPresenter', $form);
         $this->assertStringContainsString('AssetDetailQuery', $detail);
         $this->assertStringContainsString('AssetRelatedPresenter', $detail);
+        $this->assertStringContainsString('AssetDetailTabPresenter', $detail);
+        $this->assertStringContainsString('PortfolioModules::enabledForUser', $detailTabs);
     }
 
     #[Test]
@@ -83,6 +89,29 @@ class AssetModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('<RecordActions', $table);
         $this->assertStringNotContainsString('columns={[', $table);
         $this->assertStringNotContainsString('text(', $table.$config.$cells);
+    }
+
+    #[Test]
+    public function asset_detail_is_a_bounded_module_owned_workspace(): void
+    {
+        $entry = $this->source($this->path('resources/js/modules/assets/detail-page.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/assets/detail/asset-detail-workspace.tsx'));
+        $tabs = $this->source($this->path('resources/js/modules/assets/detail/asset-detail-tabs.tsx'));
+        $summary = $this->source($this->path('resources/js/modules/assets/detail/asset-location-panel.tsx'));
+        $facade = $this->source($this->path('resources/css/styles/assets/detail.css'));
+
+        $this->assertLinesAtMost($entry, 30);
+        $this->assertLinesAtMost($workspace, 100);
+        $this->assertLinesAtMost($tabs, 140);
+        $this->assertLinesAtMost($summary, 80);
+        $this->assertStringContainsString('AssetDetailWorkspace', $entry);
+        $this->assertStringContainsString('AssetDetailTabs', $workspace);
+        $this->assertStringContainsString("relatedKeys={['rentable_spaces', 'children']}", $workspace);
+        $this->assertStringNotContainsString('ResourceDetailShell', $workspace);
+        $this->assertStringContainsString("@import './detail/layout.css';", $facade);
+        $this->assertStringContainsString("@import './detail/tabs.css';", $facade);
+        $this->assertStringContainsString("@import './detail/summary.css';", $facade);
+        $this->assertStringContainsString("@import './detail/responsive.css';", $facade);
     }
 
     #[Test]
@@ -199,8 +228,8 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Assets/Data/AssetOperationsRecordsData.php'),
             $this->path('app/Modules/Assets/Data/AssetFormData.php'),
             $this->path('app/Modules/Assets/Presenters/AssetCreateFormPresenter.php'),
-            $this->path('app/Modules/Assets/Presenters/AssetDecisionCardsPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetDetailPresenter.php'),
+            $this->path('app/Modules/Assets/Presenters/AssetDetailTabPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetDetailOverviewPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetEditFormPresenter.php'),
             $this->path('app/Modules/Assets/Presenters/AssetFormDefinitionPresenter.php'),
@@ -255,6 +284,15 @@ class AssetModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/assets/asset-table-cells.tsx'),
             $this->path('resources/js/modules/assets/asset-table-config.tsx'),
             $this->path('resources/js/modules/assets/asset-table.tsx'),
+            $this->path('resources/js/modules/assets/detail-page.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-detail-metrics.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-detail-tabs.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-detail-workspace.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-location-panel.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-next-step-panel.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-overview-panel.tsx'),
+            $this->path('resources/js/modules/assets/detail/asset-record-panel.tsx'),
+            $this->path('resources/js/modules/assets/detail/types.ts'),
             $this->path('resources/js/modules/assets/building-setup/index-page.tsx'),
             $this->path('resources/js/modules/assets/building-setup/types.ts'),
             $this->path('resources/js/modules/assets/explorer/index-page.tsx'),

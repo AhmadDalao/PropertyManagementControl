@@ -143,7 +143,7 @@ class PropertyOperationsWorkflowTest extends TestCase
             ->get(route('assets.show', $property))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/assets/show')
                 ->where(
                     'detailPage.header.actions.2.href',
                     route('reports.properties.show', $property),
@@ -156,9 +156,8 @@ class PropertyOperationsWorkflowTest extends TestCase
                 ->where('detailPage.stats.3.value', 1)
                 ->where('detailPage.stats.4.value', '1,500.00 SAR')
                 ->where('detailPage.stats.5.value', '400.00 SAR')
-                ->where('detailPage.decisionCards.1.value', '25.0%')
                 ->where('detailPage.related.0.rows.0.Unit / space', 'Unit 101')
-                ->where('detailPage.related.1.rows.0.Asset', 'Floor 01')
+                ->where('detailPage.related.1.rows.0.Property record', 'Floor 01')
                 ->where('detailPage.related.2.rows.0.Lease', 'OPS-LEASE')
                 ->where('detailPage.related.3.rows.0.Remaining', '1,500.00 SAR')
                 ->where('detailPage.related.4.rows.0.Request', '#'.$maintenance->id.' Kitchen leak')

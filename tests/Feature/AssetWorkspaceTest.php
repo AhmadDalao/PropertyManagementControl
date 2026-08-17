@@ -284,34 +284,36 @@ class AssetWorkspaceTest extends TestCase
             ->get(route('assets.show', $asset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
-                ->where('detailPage.spotlight.eyebrow', 'Clicked land record')
+                ->component('admin/assets/show')
+                ->where('detailPage.spotlight.eyebrow', 'Location and land')
                 ->where('detailPage.spotlight.title', 'RP-77')
                 ->where('detailPage.spotlight.subtitle', 'Riyadh Prime')
                 ->where('detailPage.spotlight.description', 'King Fahd Road')
                 ->where('detailPage.spotlight.status', 'Occupied')
-                ->where('detailPage.spotlight.items.2.value', 'Land Owner')
-                ->where('detailPage.spotlight.items.3.value', 'Land Manager')
-                ->where('detailPage.spotlight.items.4.value', '24.7136, 46.6753')
-                ->where('detailPage.spotlight.items.5.value', '31, 36')
+                ->where('detailPage.spotlight.items.0.value', '24.7136, 46.6753')
+                ->where('detailPage.spotlight.items.1.value', '31, 36')
                 ->where('detailPage.spotlight.actions.0.href', route('property-map.index'))
                 ->where('detailPage.spotlight.actions.1.href', route('assets.edit', $asset))
-                ->where('detailPage.decisionCards.0.title', 'Occupancy health')
-                ->where('detailPage.decisionCards.0.value', '100.0%')
-                ->where('detailPage.decisionCards.0.detail', '1 of 1 occupied · 0 vacant')
-                ->where('detailPage.decisionCards.0.href', route('assets.index', [
-                    'property_id' => $asset->id,
-                    'rentable' => 'yes',
-                ]))
-                ->where('detailPage.decisionCards.0.tone', 'teal')
-                ->where('detailPage.decisionCards.1.title', 'Collection health')
                 ->where('detailPage.header.actions.0.label', 'Start tenancy')
                 ->where('detailPage.header.actions.0.href', route('leases.create', [
                     'asset_id' => $asset->id,
                 ]))
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'Edit asset')
+                ->where('detailPage.header.actions.1.label', 'Edit property record')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
+                ->where('detailPage.availableTabs', [
+                    'overview',
+                    'structure',
+                    'leasing',
+                    'financial',
+                    'service',
+                    'documents',
+                    'history',
+                ])
+                ->where('detailPage.sections.0.key', 'profile')
+                ->where('detailPage.sections.1.key', 'ownership')
+                ->where('detailPage.related.0.key', 'rentable_spaces')
+                ->where('detailPage.related.1.key', 'children')
             );
     }
 
@@ -329,7 +331,7 @@ class AssetWorkspaceTest extends TestCase
             ->get(route('assets.show', $asset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/assets/show')
                 ->where('detailPage.spotlight.actions.0.href', route('property-map.index', ['portfolio_id' => $portfolio->id]))
             );
     }
@@ -376,19 +378,12 @@ class AssetWorkspaceTest extends TestCase
             ->get(route('assets.show', $asset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/assets/show')
                 ->where('detailPage.stats.3.value', 1)
                 ->where('detailPage.stats.4.value', '3,000.00 SAR')
                 ->where('detailPage.stats.5.value', '-350.00 SAR')
                 ->where('detailPage.workflow.title', 'Collect overdue rent first')
-                ->where('detailPage.decisionCards.1.title', 'Collection health')
-                ->where('detailPage.decisionCards.1.value', '0.0%')
-                ->where('detailPage.decisionCards.2.title', 'Arrears')
-                ->where('detailPage.decisionCards.2.value', '3,000.00 SAR')
-                ->where('detailPage.decisionCards.2.tone', 'danger')
-                ->where('detailPage.decisionCards.3.title', 'Service health')
-                ->where('detailPage.decisionCards.3.value', 1)
-                ->where('detailPage.header.actions.0.label', 'Edit asset')
+                ->where('detailPage.header.actions.0.label', 'Edit property record')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions', fn ($actions): bool => ! collect($actions)->contains(
                     fn (array $action): bool => $action['label'] === 'Start tenancy',

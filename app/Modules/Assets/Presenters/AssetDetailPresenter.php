@@ -12,9 +12,9 @@ class AssetDetailPresenter
 {
     public function __construct(
         private readonly AssetDetailQuery $details,
+        private readonly AssetDetailTabPresenter $tabs,
         private readonly AssetDetailOverviewPresenter $overview,
         private readonly AssetWorkflowPresenter $workflow,
-        private readonly AssetDecisionCardsPresenter $decisions,
         private readonly AssetRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
     ) {}
@@ -26,8 +26,8 @@ class AssetDetailPresenter
 
         return [
             ...$this->overview->present($data),
+            'availableTabs' => $this->tabs->present($actor),
             'workflow' => $this->workflow->present($data),
-            'decisionCards' => $this->decisions->present($data),
             'related' => $this->related->present($data),
             'documents' => PortfolioModules::enabledForUser($actor, 'documents')
                 ? $this->resources->documentStrip($data->operations->documents)

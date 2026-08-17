@@ -1,0 +1,90 @@
+@media (max-width: 1199.98px) {
+    .pmc-asset-overview-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-asset-overview-grid > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pmc-asset-detail-metrics {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-asset-detail-tabs {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-asset-detail-tabs button {
+        min-height: 2.75rem;
+        padding-inline: 0.25rem;
+    }
+
+    .pmc-asset-detail-tabs button span {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-asset-detail-metrics article {
+        min-height: 4rem;
+        padding: 0.55rem;
+    }
+
+    .pmc-asset-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-asset-detail-panel .pmc-resource-detail-card,
+    .pmc-asset-next-step,
+    .pmc-asset-location-panel {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-asset-next-step > header {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-asset-next-step header em {
+        grid-column: 2;
+        width: fit-content;
+        white-space: normal;
+    }
+
+    .pmc-asset-location-panel > header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .pmc-asset-location-panel footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-asset-location-panel footer .btn {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 420px) {
+    .pmc-asset-detail-tabs button {
+        font-size: 0.58rem;
+    }
+
+    .pmc-asset-detail-tabs button strong {
+        display: none;
+    }
+
+    .pmc-asset-location-panel dl {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

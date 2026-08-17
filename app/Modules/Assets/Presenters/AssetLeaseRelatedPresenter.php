@@ -36,6 +36,7 @@ final readonly class AssetLeaseRelatedPresenter
         $open = trans('app.assets.open');
 
         return [
+            'key' => 'leases',
             'title' => trans('app.assets.leases'),
             'description' => trans('app.assets.property_leases_help'),
             'columns' => [$leaseLabel, $assetLabel, $tenant, $status, $balance, $open],
@@ -67,6 +68,7 @@ final readonly class AssetLeaseRelatedPresenter
         $open = trans('app.assets.open');
 
         return [
+            'key' => 'collections',
             'title' => trans('app.assets.collection_queue'),
             'description' => trans('app.assets.collection_queue_help'),
             'columns' => [$leaseLabel, $tenant, $dueDate, $remaining, $timing, $open],

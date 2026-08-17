@@ -33,8 +33,6 @@ class AssetDetailOverviewPresenter
             $this->metadata->get($asset, 'zone_en') ?: $this->metadata->get($asset, 'zone'),
             $this->metadata->get($asset, 'zone_ar'),
         );
-        $owner = $asset->currentStakeholders->firstWhere('relationship_type', 'owner');
-        $manager = $asset->currentStakeholders->firstWhere('relationship_type', 'manager');
         $mapHref = route('property-map.index', $data->actor->hasRole('superadmin')
             ? ['portfolio_id' => $asset->portfolio_id]
             : []);
@@ -91,6 +89,7 @@ class AssetDetailOverviewPresenter
 
         $sections = [
             [
+                'key' => 'profile',
                 'title' => trans('app.assets.profile_section'),
                 'description' => trans('app.assets.profile_section_help'),
                 'items' => $this->resources->detailItems([
@@ -102,21 +101,10 @@ class AssetDetailOverviewPresenter
                     ['label' => trans('app.assets.structure_records'), 'value' => $operations->descendantCount],
                     ['label' => trans('app.assets.status'), 'value' => trans("app.status.{$asset->status}")],
                     ['label' => trans('app.assets.area'), 'value' => $asset->area ? trans('app.assets.area_sqm', ['area' => $asset->area]) : null],
-                    ['label' => trans('app.assets.address'), 'value' => $address],
                 ]),
             ],
             [
-                'title' => trans('app.assets.map_land_section'),
-                'description' => trans('app.assets.map_land_section_help'),
-                'items' => $this->resources->detailItems([
-                    ['label' => trans('app.assets.zone'), 'value' => $zone],
-                    ['label' => trans('app.assets.land_number'), 'value' => $this->metadata->get($asset, 'land_number')],
-                    ['label' => trans('app.assets.latitude'), 'value' => $this->metadata->get($asset, 'latitude')],
-                    ['label' => trans('app.assets.longitude'), 'value' => $this->metadata->get($asset, 'longitude')],
-                    ['label' => trans('app.assets.map_position'), 'value' => $this->metadata->canvasPositionLabel($asset)],
-                ]),
-            ],
-            [
+                'key' => 'ownership',
                 'title' => trans('app.assets.ownership_section'),
                 'description' => trans('app.assets.ownership_section_help'),
                 'items' => $asset->currentStakeholders->map(fn ($stakeholder): array => [
@@ -130,6 +118,7 @@ class AssetDetailOverviewPresenter
 
         if ($reportsEnabled) {
             $sections[] = [
+                'key' => 'financial',
                 'title' => trans('app.assets.property_financial_section'),
                 'description' => trans('app.assets.property_financial_section_help'),
                 'tab' => 'financial',
@@ -148,6 +137,7 @@ class AssetDetailOverviewPresenter
 
         if ($leasesEnabled) {
             $sections[] = [
+                'key' => 'active_rental',
                 'title' => trans('app.assets.active_rental_section'),
                 'description' => trans('app.assets.active_rental_section_help'),
                 'tab' => 'financial',
@@ -179,10 +169,6 @@ class AssetDetailOverviewPresenter
                 'description' => $address ?: trans('app.assets.no_address_recorded'),
                 'status' => trans("app.status.{$asset->occupancy_status}"),
                 'items' => $this->resources->detailItems([
-                    ['label' => trans('app.assets.property'), 'value' => $title],
-                    ['label' => trans('app.assets.portfolio'), 'value' => $portfolio],
-                    ['label' => trans('app.assets.owner'), 'value' => data_get($owner, 'user.name', trans('app.assets.not_assigned'))],
-                    ['label' => trans('app.assets.manager'), 'value' => data_get($manager, 'user.name', trans('app.assets.not_assigned'))],
                     ['label' => trans('app.assets.coordinates'), 'value' => $this->metadata->coordinateLabel($asset)],
                     ['label' => trans('app.assets.map_position'), 'value' => $this->metadata->canvasPositionLabel($asset)],
                 ]),

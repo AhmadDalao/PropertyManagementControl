@@ -43,7 +43,7 @@ class AssetController extends Controller
     {
         $actor = $this->actor($request);
 
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/assets/show', [
             'detailPage' => $this->detailPresenter->present($asset, $actor),
         ]);
     }
