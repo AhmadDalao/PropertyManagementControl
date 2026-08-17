@@ -215,6 +215,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $commandFlow = $this->source(
             'resources/css/styles/dashboard/command-flow.css',
         );
+        $this->assertStringContainsString('@media (max-width: 1199.98px)', $commandFlow);
         $this->assertStringContainsString('order: 2', $commandFlow);
         $this->assertStringContainsString('order: 4', $commandFlow);
         $this->assertLessThanOrEqual(

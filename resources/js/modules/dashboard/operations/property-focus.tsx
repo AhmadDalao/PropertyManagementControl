@@ -8,9 +8,11 @@ import type { OperationsDashboardProps, PropertyFocusOption } from '../types';
 export function PropertyFocus({
     focus,
     period,
+    dataContext,
 }: {
     focus: OperationsDashboardProps['propertyFocus'];
     period: OperationsDashboardProps['period'];
+    dataContext: OperationsDashboardProps['readinessStatus'];
 }) {
     const { locale, t } = useTranslator();
     const { url } = usePage();
@@ -48,7 +50,32 @@ export function PropertyFocus({
                 <i className="bi bi-building-check" aria-hidden="true" />
             </span>
             <div className="pmc-dashboard-focus-copy">
-                <span>{t('dashboard.property_focus_eyebrow')}</span>
+                <div className="pmc-dashboard-focus-meta">
+                    <span className="pmc-dashboard-focus-eyebrow">
+                        {t('dashboard.property_focus_eyebrow')}
+                    </span>
+                    {dataContext ? (
+                        <span
+                            className="pmc-dashboard-focus-source"
+                            data-dashboard-source-context
+                            role="note"
+                        >
+                            <i className="bi bi-database" aria-hidden="true" />
+                            {dataContext.showcase_portfolios > 0
+                                ? t(
+                                      'dashboard.showcase_scope_badge',
+                                      undefined,
+                                      {
+                                          count: localizedNumber(
+                                              dataContext.showcase_portfolios,
+                                              locale,
+                                          ),
+                                      },
+                                  )
+                                : t('dashboard.live_scope_badge')}
+                        </span>
+                    ) : null}
+                </div>
                 <strong id="dashboard-property-focus-title">
                     {selectedTitle}
                 </strong>

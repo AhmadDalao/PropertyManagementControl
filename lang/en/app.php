@@ -4403,6 +4403,8 @@ return [
         'automatic_attention' => 'Automatic attention',
         'evidence_remaining' => 'Evidence remaining',
         'showcase_totals_title' => 'Showcase data is included in every total',
+        'showcase_scope_badge' => 'Showcase totals included · :count portfolios',
+        'live_scope_badge' => 'Live data only',
         'showcase_totals_description' => ':portfolios showcase portfolios, :assets assets, and :users users are included in dashboard KPIs. Purge them before using totals for live decisions.',
         'operational_portfolio_count' => ':count operational portfolios outside showcase data',
         'review_showcase_data' => 'Review Data Lab',

@@ -29,6 +29,7 @@ export function OperationsDashboard({
                     <PropertyFocus
                         focus={props.propertyFocus}
                         period={props.period}
+                        dataContext={props.readinessStatus}
                     />
                 </div>
                 <div className="pmc-dashboard-command-setup">

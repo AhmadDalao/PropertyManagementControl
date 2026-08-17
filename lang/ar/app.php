@@ -4403,6 +4403,8 @@ return [
         'automatic_attention' => 'تنبيهات تلقائية',
         'evidence_remaining' => 'الأدلة المتبقية',
         'showcase_totals_title' => 'بيانات العرض مشمولة في جميع الإجماليات',
+        'showcase_scope_badge' => 'تشمل الإجماليات بيانات العرض · :count محفظة',
+        'live_scope_badge' => 'بيانات فعلية فقط',
         'showcase_totals_description' => 'تشمل مؤشرات لوحة التحكم :portfolios محافظ عرض و:assets أصول و:users مستخدمين. احذفها قبل الاعتماد على الإجماليات في القرارات الفعلية.',
         'operational_portfolio_count' => ':count محافظ تشغيلية خارج بيانات العرض',
         'review_showcase_data' => 'مراجعة مختبر البيانات',

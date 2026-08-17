@@ -4129,6 +4129,9 @@ test.describe('local role dashboards', () => {
 
         await page.goto('/dashboard?locale=ar');
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
+        await expect(
+            page.locator('[data-dashboard-source-context]'),
+        ).toContainText(/تشمل الإجماليات بيانات العرض|بيانات فعلية فقط/);
         await page.locator('.pmc-menu-trigger').click();
         await trigger.click();
         await expect(
@@ -4247,6 +4250,22 @@ test.describe('local role dashboards', () => {
                 expect(tabletWorkspaceBox?.y ?? 0).toBeLessThan(
                     tabletMetricBox?.y ?? 0,
                 );
+
+                await page.setViewportSize(viewports.compactDesktop);
+                const compactWorkspaceBox = await page
+                    .locator('.pmc-dashboard-workspace')
+                    .boundingBox();
+                const compactMetricBox = await page
+                    .locator('.pmc-metric-grid')
+                    .boundingBox();
+                expect(compactWorkspaceBox).not.toBeNull();
+                expect(compactMetricBox).not.toBeNull();
+                expect(compactWorkspaceBox?.y ?? 0).toBeLessThan(
+                    compactMetricBox?.y ?? 0,
+                );
+                expect(compactWorkspaceBox?.y ?? Infinity).toBeLessThan(
+                    viewports.compactDesktop.height,
+                );
                 await page.setViewportSize(viewports.mobile);
 
                 const workColumns = await page
@@ -4292,6 +4311,9 @@ test.describe('local role dashboards', () => {
                 );
 
                 if (account.role === 'superadmin') {
+                    await expect(
+                        page.locator('[data-dashboard-source-context]'),
+                    ).toBeVisible();
                     await expect(systemTab).toBeVisible();
                     await systemTab.click();
                     await expect(
@@ -4311,6 +4333,9 @@ test.describe('local role dashboards', () => {
                         page.locator('[data-dashboard-group="system"]'),
                     ).toBeVisible();
                 } else {
+                    await expect(
+                        page.locator('[data-dashboard-source-context]'),
+                    ).toHaveCount(0);
                     await expect(systemTab).toHaveCount(0);
                 }
             } else {

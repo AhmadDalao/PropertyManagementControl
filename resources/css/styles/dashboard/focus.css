@@ -87,12 +87,28 @@
     gap: 0.2rem;
 }
 
-.pmc-dashboard-focus-copy > span {
+.pmc-dashboard-focus-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.pmc-dashboard-focus-eyebrow {
     color: var(--pmc-primary-strong);
     font-size: 0.68rem;
     font-weight: 900;
     letter-spacing: 0.04em;
     text-transform: uppercase;
+}
+
+.pmc-dashboard-focus-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #765500;
+    font-size: 0.68rem;
+    font-weight: 800;
 }
 
 .pmc-dashboard-focus-copy > strong {
