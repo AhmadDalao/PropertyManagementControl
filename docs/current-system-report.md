@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `752eae6086ae9e0a4974e3e7bc196b40bbce1bea`
+**Application build revision verified in production:** `a0fdd2070f555fcf93ce72af4e7476c3fc24844f`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **663 tests and 39,729 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, PHPStan baseline, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **667 tests and 39,930 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, full-application PHPStan with zero current findings, Composer audit, and pnpm audit checks.
 
-The User detail release is deployed to Hostinger and its Vite manifest SHA-256, `f60e88e75a8038bc379388030478869dcf06dbf6bfa13983d2da4f497b46855b`, matches the local build. The live site responds successfully at `/up`; 137 authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, custom Portfolio, Tenant, and User records, and the core resource cycle. The live User record was separately verified in both languages at 390px with six direct query-backed tabs, one mounted panel, no native tab selector, no horizontal overflow, a 44px primary action, and fully translated Arabic controls. Its English and Arabic Overview heights are 1,134px and 1,091px. The production release rebuilt Composer's complete `--no-dev --classmap-authoritative` autoloader under PHP 8.4, confirmed no pending migrations, rebuilt Laravel caches, synchronized operational statuses, reset OPcache, and removed the one-time activator. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The Expense detail release is deployed to Hostinger and its Vite manifest SHA-256, `56406f92abb046e2a2c0d1052bfc9bb1f140cad56d0b08778643a9cf32c677a4`, matches the local build. The live site responds successfully at `/up`; authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, custom Portfolio, Tenant, User, and Expense records, and the core resource cycle. The live Expense record was separately verified in both languages at 390px with four direct query-backed tabs, one mounted panel, no native tab selector, 44px tab targets, zero horizontal overflow, and fully translated Arabic controls. Its English and Arabic Overview heights are 1,197px and 1,149px. Private PDF expense evidence now uses the authorized document pipeline, follows portfolio/property and assigned-manager scope, and is never tenant-visible. The production release rebuilt Composer's complete `--no-dev --classmap-authoritative` autoloader under PHP 8.4, confirmed no pending migrations, rebuilt Laravel caches, synchronized operational statuses, reset OPcache, and removed the one-time activator. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -20,7 +20,7 @@ The User detail release is deployed to Hostinger and its Vite manifest SHA-256, 
 | Core domain workflows | Ready for pilot | Property through payment and maintenance workflows exist and are tested. |
 | Authorization | Strong, complex | Role, portfolio, module, and assigned-property scopes are enforced and heavily tested. |
 | Responsive UI | Release baseline passes | Desktop tables and mobile cards are implemented; automated widths cover 390/768/1024/1440. |
-| Resource detail consistency | Improving | Property, portfolio, tenant, user, lease, payment, and maintenance records are custom; expense, document, contractor, work-order, and saved-report details still use generic shared composition. |
+| Resource detail consistency | Improving | Property, portfolio, tenant, user, lease, payment, maintenance, and expense records are custom; document, contractor, work-order, and saved-report details still use generic shared composition. |
 | English/Arabic | Implemented | UI dictionaries, RTL, bilingual records, PDFs, DOCX, XLSX, CMS, and wording overrides exist. |
 | Reporting | Operational | Real `.xlsx`, PDF, and DOCX outputs exist; unlike currencies remain separated. |
 | Email | Blocked in production | Live mailer was last recorded as `log`; SMTP receipt is unproven. |
@@ -586,8 +586,8 @@ Follow-ups are append-only. Derived states include untracked, due, promised, bro
 
 **List columns:** title/category/status; linked asset or maintenance ticket; vendor; incurred date; amount/currency; actions.  
 **Filters:** status, category, dates, portfolio, property, search, pagination, sort.  
-**Detail:** source link, expense status, amount, category, vendor, date, description, property/lease/maintenance context, workflow, history.  
-**Actions:** create, edit, void/archive, open source record.
+**Detail:** direct Overview, Financial, Evidence, and History tabs; source link, expense status, amount, category, vendor, date, description, property/lease/maintenance context, workflow, private PDF evidence, and audit history. Only the selected panel is mounted.
+**Actions:** create, edit, void/archive, open source record, upload authorized PDF evidence, and download existing evidence.
 
 **Fields:** portfolio; optional asset; optional maintenance request; required category; required title; description; incurred date not after today; amount 0.01..999,999,999,999.99; required uppercase currency; vendor name; posted/pending status.
 
@@ -861,16 +861,15 @@ The production CSS is route-split. The main built CSS is 320.25KB on disk and th
 6. **Generic shared resource labels still use source-text translation in a few primitives.** Examples include “Overview,” “Financial,” and form framing. They resolve through the wording layer, but typed translation keys would be clearer and safer.
 7. **No bulk workflow exists.** This is correct for money and contracts, but a future real pilot may justify narrow bulk actions such as assign manager, export selected, or maintenance reassignment. Do not add generic bulk delete.
 8. **Production status evidence is split between repository docs and live readiness.** `/system/readiness` should remain the source of truth, and release documentation should be generated from it after every deployment.
-9. **Five record details still use generic composition.** Expense, document, maintenance contractor, work order, and saved-report details are functional and responsive, but they do not yet provide the same module-owned decision flow as Property, Portfolio, Tenant, User, Lease, Payment, and Maintenance. Refactor them one at a time; do not restart the design system.
+9. **Four record details still use generic composition.** Document, maintenance contractor, work order, and saved-report details are functional and responsive, but they do not yet provide the same module-owned decision flow as Property, Portfolio, Tenant, User, Lease, Payment, Maintenance, and Expense. Refactor them one at a time; do not restart the design system.
 
 ### Ranked improvement order
 
 1. **Activate production infrastructure.** SMTP receipt evidence, the one-minute scheduler, a fresh offsite backup, and queue heartbeats are more important than another visual feature.
-2. **Rebuild Expense detail.** Give financial state, property context, maintenance linkage, evidence, void rules, and history one direct decision workspace.
-3. **Rebuild Document detail.** Put the authorized download, linked record, visibility, issue/expiry state, replacement rules, and audit history in one file-focused record.
-4. **Rebuild Work Order and Contractor detail.** Keep assignment, schedule, cost, evidence, completion, related requests, and vendor workload visible without generic tables.
-5. **Rebuild Saved Report detail last.** It is already safe and functional; its remaining problem is consistency, not operational risk.
-6. **Generate an access catalog and reduce CSS debt.** Make route-level role policy auditable and keep removing dead styles while the 325KB bundle gate protects production.
+2. **Rebuild Document detail.** Put the authorized download, linked record, visibility, issue/expiry state, replacement rules, and audit history in one file-focused record.
+3. **Rebuild Work Order and Contractor detail.** Keep assignment, schedule, cost, evidence, completion, related requests, and vendor workload visible without generic tables.
+4. **Rebuild Saved Report detail last.** It is already safe and functional; its remaining problem is consistency, not operational risk.
+5. **Generate an access catalog and reduce CSS debt.** Make route-level role policy auditable and keep removing dead styles while the 325KB bundle gate protects production.
 
 ### UI risks to watch in the real pilot
 
@@ -908,7 +907,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 663 passed, 39,729 assertions |
+| Fresh PHPUnit run | 667 passed, 39,930 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 71 scenarios |
@@ -918,7 +917,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 | Production latest-settings route | Authenticated page active; unauthenticated request correctly redirects to login |
 | Production release | Revision and Vite manifest match GitHub/local build |
 | Production documents | Maintenance PDF `%PDF-` and report XLSX `PK` signatures verified |
-| Production release cycle | 137 authenticated non-destructive checks passed, including custom Portfolio, Tenant, and User details, Lease PDF/DOCX, maintenance closeouts, and report XLSX signatures |
+| Production release cycle | Authenticated non-destructive checks passed, including custom Portfolio, Tenant, User, and Expense details, Lease PDF/DOCX, maintenance closeouts, and report XLSX signatures |
 
 ## 18. Report Limitations
 
@@ -1018,7 +1017,7 @@ This section is the operator-facing page catalog. Field-level form rules remain 
 |---|---|---|---|---|
 | `/expenses` · `expenses.index` | Expense register. | Title/category/status, source record, vendor/date/amount/currency, filters, XLSX. | Open, create, edit, void/archive. | SA/O/M scoped. |
 | `/expenses/create` · `expenses.create` | Record operating cost. | Portfolio, property/request source, category, title/description, date, amount/currency, vendor, status. | Save/cancel. | SA/O/M scoped. |
-| `/expenses/{expense}` · `expenses.show` | Expense source of truth. | Cost, source relationships, workflow, property/lease/request context, history. | Edit, open source, void. | SA/O/M scoped. |
+| `/expenses/{expense}` · `expenses.show` | Expense source of truth. | Direct **Overview**, **Financial**, **Evidence**, and **History** tabs; cost, source relationships, workflow, property/lease/request context, private PDF evidence, and audit history. Only the selected panel renders. | Edit, open source, void, upload/download PDF evidence. | SA/O/M scoped; assigned managers remain inside their property hierarchy and tenants have no evidence access. |
 | `/maintenance-requests` · `maintenance-requests.index` | Service request queue. | ID/title/category, property/tenant/assignee, priority/status/tenant confirmation, filters, XLSX. | Open, create; management filters/actions differ from tenant. | SA/O/M scoped; T own requests only. |
 | `/maintenance-requests/create` · `maintenance-requests.create` | Open service request in a dedicated guided workspace. | Grouped request, classification, issue, evidence, and role-safe internal sections; required-field progress; management and tenant variants. | One Save/Cancel surface per breakpoint. | SA/O/M scoped or T own tenancy. |
 | `/maintenance-requests/{request}` · `maintenance-requests.show` | Service case source of truth. | Explicit **Overview**, **Work orders**, **Updates**, **Expenses**, **Evidence**, and **History** tabs; request/service context, lifecycle, and next actions. Only authorized tabs and the selected panel render. | Assign, triage, comment, attach evidence, create work order/expense, resolve/cancel/reopen, PDF/DOCX, tenant confirm/reopen. | SA/O/M scoped; T own request with internal notes, costs, expenses, and audit data removed at the server boundary. |
@@ -1170,9 +1169,10 @@ The August 2026 design archives are now the active layout contract rather than a
 | Directories | Compact page header, real create action, count chips, filters, 10/25/50/100 pagination, XLSX export, desktop table, mobile record cards, and one ellipsis action menu. |
 | Create/edit forms | Dedicated pages with grouped sections, responsive one/two-column fields, contextual summary rail, validation summary, and mobile Save/Cancel treatment. |
 | Maintenance | Queue directory plus dedicated request, triage, and tabbed case workspaces with lifecycle, service context, role-safe actions, work orders, updates, expenses, evidence, reports, and audit history. |
+| Expenses | Dedicated cost decision workspace with direct Overview/Financial/Evidence/History tabs, one workflow action, linked operational context, and private PDF evidence. |
 | Leases | Dedicated contract decision workspace with compact financial metrics, direct Overview/Financial/Installments/Payments/Documents/History tabs, role-safe Next Step actions, and collapsible move-in/move-out progress. |
 | Reports | Card-based command center, scoped filters, saved reports, real report links, and existing PDF/DOCX/XLSX outputs only. |
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, tenant, User, Portfolio, and property-detail modules under `resources/css/styles/`. The shared production CSS bundle is 320.25KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk, Action Center is a 10.72KB lazy CSS chunk, Property detail adds 7.28KB, and Tenant, User, and Portfolio detail styles load only on their routes. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. The custom Property record reduces its 390px Overview from 3,460px to 1,423px and renders only the selected Overview, Structure & map, Leasing & rent, Financial, Service, Documents, or History panel. The custom Tenant record replaces duplicated decision/KPI sections with six direct tabs and one priority action; its live 390px English and Arabic Overviews are 1,427px and 1,409px with no overflow. The custom Portfolio record replaces duplicated KPI/decision sections and disabled-module tables with seven direct tabs, one prioritized next action, compact setup state, and module-aware data; its live 390px English and Arabic Overviews are 1,419px and 1,385px with no overflow. The custom User record keeps identity, access, property responsibilities, workload, documents, and history in six direct tabs with one role-aware next action; its live 390px English and Arabic Overviews are 1,134px and 1,091px with no overflow and 44px action targets. All 71 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
+The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, expense, tenant, User, Portfolio, and property-detail modules under `resources/css/styles/`. The shared production CSS bundle is 320.25KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk, Action Center is a 10.72KB lazy CSS chunk, Property detail adds 7.28KB, and Tenant, User, Portfolio, and Expense detail styles load only on their routes. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. The custom Property record reduces its 390px Overview from 3,460px to 1,423px and renders only the selected Overview, Structure & map, Leasing & rent, Financial, Service, Documents, or History panel. The custom Tenant record replaces duplicated decision/KPI sections with six direct tabs and one priority action; its live 390px English and Arabic Overviews are 1,427px and 1,409px with no overflow. The custom Portfolio record replaces duplicated KPI/decision sections and disabled-module tables with seven direct tabs, one prioritized next action, compact setup state, and module-aware data; its live 390px English and Arabic Overviews are 1,419px and 1,385px with no overflow. The custom User record keeps identity, access, property responsibilities, workload, documents, and history in six direct tabs with one role-aware next action; its live 390px English and Arabic Overviews are 1,134px and 1,091px with no overflow and 44px action targets. The custom Expense record keeps operational context, financial state, private evidence, and audit history in four direct tabs; its live 390px English and Arabic Overviews are 1,197px and 1,149px with one mounted panel and zero horizontal overflow. All 71 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
