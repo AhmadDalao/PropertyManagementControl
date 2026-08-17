@@ -678,6 +678,30 @@ $tenantRows = $tenantPayload['props']['tenants']['data'] ?? [];
 
 if (is_array($tenantRows) && isset($tenantRows[0]['id'])) {
     $tenantId = (int) $tenantRows[0]['id'];
+    $tenantDetail = smoke_request(
+        $baseUrl,
+        $cookieFile,
+        'GET',
+        "/tenants/{$tenantId}?locale=ar",
+    );
+    $tenantDetailComponent = smoke_component($tenantDetail['body']);
+    $tenantDetailPayload = smoke_page_payload($tenantDetail['body']);
+    $tenantDetailProps = $tenantDetailPayload['props']['detailPage'] ?? [];
+    $tenantTabs = $tenantDetailProps['availableTabs'] ?? [];
+    $tenantWorkflow = $tenantDetailProps['workflow'] ?? [];
+
+    if ($tenantDetail['status'] !== 200
+        || $tenantDetailComponent !== 'admin/tenants/show'
+        || ! is_array($tenantTabs)
+        || ! in_array('overview', $tenantTabs, true)
+        || ! in_array('history', $tenantTabs, true)
+        || ! is_array($tenantWorkflow)
+        || trim((string) ($tenantWorkflow['title'] ?? '')) === '') {
+        smoke_fail("Tenant detail {$tenantId} did not expose the custom tabbed workflow.");
+    }
+
+    smoke_note("/tenants/{$tenantId}?locale=ar admin/tenants/show with workflow tabs");
+
     $tenantStatement = smoke_request(
         $baseUrl,
         $cookieFile,

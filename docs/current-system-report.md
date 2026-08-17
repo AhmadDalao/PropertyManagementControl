@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `28ab30648d476efd9bd58d4240f3e541efdf4657`
+**Application build revision verified in production:** `6ec5c4997193b343ed28d45a5d192a8ffa38b924`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **658 tests and 39,045 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, PHPStan baseline, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **658 tests and 39,252 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, PHPStan baseline, Composer audit, and pnpm audit checks.
 
-The Property detail release is deployed to Hostinger and its Vite manifest SHA-256, `d7a94041b976cfe23eaddacf8d97fea758e67b8373c0c9ffc56e71911a157f83`, matches the local build. The live site responds successfully at `/up`; 135 authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. The live Arabic property record was separately verified at 390px with seven direct query-backed tabs, one mounted panel, and zero horizontal overflow; its mobile Overview is 1,423px instead of the former 3,460px generic detail page. The release also reconfirmed that new production PHP classes require the documented `--no-dev --classmap-authoritative` Composer refresh as one complete generated autoload set. The data-only category-normalization migration is uploaded but still requires `php artisan migrate --force` from Hostinger because FTP cannot execute Artisan; legacy category aliases keep the live UI readable until then. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The Tenant detail release is deployed to Hostinger and its Vite manifest SHA-256, `22ed09a09aa66cb91df72fa22f9625771d826f18ae894c7b2c9a2710979714b0`, matches the local build. The live site responds successfully at `/up`; 136 authenticated, non-destructive checks pass across English/Arabic administration, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, the custom tenant record, and the core resource cycle. The live tenant record was separately verified in both languages at 390px with six direct query-backed tabs, one mounted panel, no native tab selector, no out-of-bounds containers, and a 44px primary action. Its English and Arabic Overview heights are 1,427px and 1,409px. The production release rebuilt Composer's complete `--no-dev --classmap-authoritative` autoloader under PHP 8.4, applied the August 16 category-normalization migration, rebuilt Laravel caches, synchronized operational statuses, reset OPcache, and removed the one-time activator. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -20,14 +20,14 @@ The Property detail release is deployed to Hostinger and its Vite manifest SHA-2
 | Core domain workflows | Ready for pilot | Property through payment and maintenance workflows exist and are tested. |
 | Authorization | Strong, complex | Role, portfolio, module, and assigned-property scopes are enforced and heavily tested. |
 | Responsive UI | Release baseline passes | Desktop tables and mobile cards are implemented; automated widths cover 390/768/1024/1440. |
-| Resource detail consistency | Mixed | Property, lease, payment, and maintenance records are custom; tenant, portfolio, user, expense, document, contractor, work-order, and saved-report details still use generic shared composition. |
+| Resource detail consistency | Mixed | Property, tenant, lease, payment, and maintenance records are custom; portfolio, user, expense, document, contractor, work-order, and saved-report details still use generic shared composition. |
 | English/Arabic | Implemented | UI dictionaries, RTL, bilingual records, PDFs, DOCX, XLSX, CMS, and wording overrides exist. |
 | Reporting | Operational | Real `.xlsx`, PDF, and DOCX outputs exist; unlike currencies remain separated. |
 | Email | Blocked in production | Live mailer was last recorded as `log`; SMTP receipt is unproven. |
 | Scheduler/queue | Blocked in production | Code is ready, but no three-heartbeat production evidence exists. |
 | Real portfolio data | Not started | Production has showcase data but no approved live portfolio import. |
 | Legal/compliance approval | Owner action required | Lease wording, billing rules, retention, and opening balances need business/legal sign-off. |
-| Production migration | Pending operator command | Run the uploaded August 16 category-normalization migration through Hostinger PHP 8.4; it changes data values only, not schema. |
+| Production migration | Current | The August 16 data-only category-normalization migration ran successfully during the August 17 release. |
 | Deployment process | Must be automated | The release is healthy, but authoritative Composer autoload refresh and atomic build switching still depend on a careful manual runbook. |
 | Latest deployment | Current | GitHub and Hostinger run the verified release; the production manifest matches the local build. |
 
@@ -861,6 +861,7 @@ The production CSS is route-split. The main built CSS is 320.22KB on disk and th
 6. **Generic shared resource labels still use source-text translation in a few primitives.** Examples include “Overview,” “Financial,” and form framing. They resolve through the wording layer, but typed translation keys would be clearer and safer.
 7. **No bulk workflow exists.** This is correct for money and contracts, but a future real pilot may justify narrow bulk actions such as assign manager, export selected, or maintenance reassignment. Do not add generic bulk delete.
 8. **Production status evidence is split between repository docs and live readiness.** `/system/readiness` should remain the source of truth, and release documentation should be generated from it after every deployment.
+9. **Seven record details still use generic composition.** Portfolio, user, expense, document, maintenance contractor, work order, and saved-report details are functional and responsive, but they do not yet provide the same module-owned decision flow as Property, Tenant, Lease, Payment, and Maintenance. Refactor them one at a time; do not restart the design system.
 
 ### UI risks to watch in the real pilot
 
@@ -898,7 +899,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 658 passed, 39,045 assertions |
+| Fresh PHPUnit run | 658 passed, 39,252 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 71 scenarios |
@@ -908,7 +909,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 | Production latest-settings route | Authenticated page active; unauthenticated request correctly redirects to login |
 | Production release | Revision and Vite manifest match GitHub/local build |
 | Production documents | Maintenance PDF `%PDF-` and report XLSX `PK` signatures verified |
-| Production release cycle | 135 authenticated non-destructive checks passed, including Lease PDF/DOCX and report XLSX signatures |
+| Production release cycle | 136 authenticated non-destructive checks passed, including custom Tenant detail, Lease PDF/DOCX, maintenance closeouts, and report XLSX signatures |
 
 ## 18. Report Limitations
 
@@ -977,7 +978,7 @@ This section is the operator-facing page catalog. Field-level form rules remain 
 | `/portal-accounts/{user}/access` · `users.portal-access.show` | Safe account handoff. | Account state, setup-link status/expiry, delivery steps. | Generate a fresh 60-minute setup link. | SA/O/M when target is manageable. |
 | `/tenants` · `tenants.index` | Tenant-profile directory. | Identity/contact, profile type, current rental, profile and portal state, filters, XLSX. | Open, create, edit, statement, portal handoff. | SA/O/M scoped. |
 | `/tenants/create` · `tenants.create` | Create tenant account and operating profile. | Account, locale/password, individual/company identity, emergency contact, address, notes, status. | Save; optional continue directly to a prefilled lease. | SA/O/M within assignment scope. |
-| `/tenants/{tenant}` · `tenants.show` | Tenant source of truth. | **Overview:** identity/contact/emergency/account. **Financial:** paid/balance/arrears. **Related:** leases, payments, service. **Documents. History.** | Edit, statement, portal link, create lease/payment/request/document where permitted. | SA/O/M scoped. |
+| `/tenants/{tenant}` · `tenants.show` | Tenant source of truth. | Direct **Overview**, **Rental**, **Payments**, **Service**, **Documents**, and **History** tabs; compact account KPIs; profile/rental/financial records; related leases/payments/requests; one prioritized Next Account Action. Disabled portfolio modules remove their tabs and payloads. | Edit tenant, open statement or portal access, create first lease, collect overdue balance, review service, prepare renewal, or record the current contract payment when permitted. | SA/O/M scoped. |
 | `/tenants/{tenant}/edit` · `tenants.edit` | Edit tenant/account state. | Same fields as create except protected relationship identity. | Update/cancel. | SA/O/M scoped. |
 | `/tenants/{tenant}/account-statement` · `tenants.statement.show` | Full tenant ledger. | Summary, contracts, installments, payments, documents, maintenance; date filters and currency-separated totals. | PDF, DOCX, XLSX. | SA/O/M scoped. |
 
@@ -1165,4 +1166,4 @@ The August 2026 design archives are now the active layout contract rather than a
 | CMS | Page directory, publishing/translation rail, reusable sections, navigation directory, and a three-pane page builder with section library, reorderable canvas, bilingual inspector, preview, and publish state. |
 | Arabic | Full RTL shell and page mirroring with translated navigation, headers, tabs, actions, filters, statuses, CMS controls, reports, forms, and tenant pages. |
 
-The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, tenant, and property-detail modules under `resources/css/styles/`. The shared production CSS bundle is 320.21KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk, Action Center is a 10.72KB lazy CSS chunk, and the Property detail workspace adds a 7.28KB route-loaded stylesheet. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. The custom Property record reduces its 390px Overview from 3,460px to 1,423px and renders only the selected Overview, Structure & map, Leasing & rent, Financial, Service, Documents, or History panel. All 71 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
+The visual CSS is split into shared foundation layers and route-owned dashboard, report, CMS, maintenance, tenant, and property-detail modules under `resources/css/styles/`. The shared production CSS bundle is 320.21KB, below the 325KB release ceiling; the dashboard is a 30.81KB lazy CSS chunk, Action Center is a 10.72KB lazy CSS chunk, Property detail adds 7.28KB, and Tenant detail adds 5.69KB only on its route. The active management dashboard delegates to focused modules instead of the removed 1,053-line command center. Below 992px its command flow is action-first: live 390px Arabic measurements place work at 419px, the first action panel at 601px, and KPIs at 1,066px; live 768px measurements place work at 315px, the first action panel at 485px, and KPIs at 787px. Both widths have zero horizontal overflow, while desktop keeps the KPI summary before the selected workspace. Action Center delegates record context and decision facts to separate components and limits its default page to six compact cards. In the seeded 390px regression dataset this reduces page height from 5,934px to 2,916px without removing operational fields or actions. The custom Property record reduces its 390px Overview from 3,460px to 1,423px and renders only the selected Overview, Structure & map, Leasing & rent, Financial, Service, Documents, or History panel. The custom Tenant record replaces duplicated decision/KPI sections with six direct tabs and one priority action; its live 390px English and Arabic Overviews are 1,427px and 1,409px with no overflow. All 71 Playwright/axe scenarios cover English and Arabic behavior from 390px through 1440px with zero primary-route horizontal overflow and a 64px-or-smaller topbar.
