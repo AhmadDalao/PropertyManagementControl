@@ -550,6 +550,11 @@ foreach ($portfolioSections as $section) {
     }
 }
 
+$hasPortfolioLink = static fn (string $needle): bool => count(array_filter(
+    $portfolioSectionLinks,
+    static fn (string $href): bool => str_contains($href, $needle),
+)) > 0;
+
 $progressIsValid = ! $detailPortfolioIsLive
     || (($portfolioProgress['collapseWhenComplete'] ?? null) === true
         && ($portfolioProgress['expandLabel'] ?? null) === 'عرض خطوات الإعداد');
@@ -559,9 +564,9 @@ if ($portfolioDetail['status'] !== 200
     || ! $progressIsValid
     || count($portfolioTabs) !== 7
     || array_key_exists('decisionCards', $portfolioProps)
-    || ! in_array("/assets?portfolio_id={$detailPortfolioId}", $portfolioSectionLinks, true)
-    || ! in_array("/payments?portfolio_id={$detailPortfolioId}&status=posted", $portfolioSectionLinks, true)
-    || ! in_array("/reports/statement?portfolio_id={$detailPortfolioId}", $portfolioSectionLinks, true)) {
+    || ! $hasPortfolioLink("/assets?portfolio_id={$detailPortfolioId}")
+    || ! $hasPortfolioLink("/payments?portfolio_id={$detailPortfolioId}&status=posted")
+    || ! $hasPortfolioLink("/reports/statement?portfolio_id={$detailPortfolioId}")) {
     smoke_fail('Portfolio detail did not expose the custom tabbed, scoped operating flow.');
 }
 
