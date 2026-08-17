@@ -1,0 +1,64 @@
+@media (max-width: 1199.98px) {
+    .pmc-tenant-overview-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-tenant-overview-grid > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pmc-tenant-detail-metrics,
+    .pmc-tenant-detail-tabs {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pmc-tenant-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-tenant-detail-tabs button {
+        min-height: 2.75rem;
+        padding-inline: 0.25rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-tenant-detail-metrics article {
+        min-height: 4rem;
+        padding: 0.55rem;
+    }
+
+    .pmc-tenant-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-tenant-detail-panel .pmc-resource-detail-card,
+    .pmc-tenant-detail-panel .pmc-related-table-card,
+    .pmc-tenant-next-step {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-tenant-next-step > header {
+        grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .pmc-tenant-next-step header em {
+        grid-column: 2;
+        width: fit-content;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 420px) {
+    .pmc-tenant-detail-tabs button {
+        font-size: 0.62rem;
+    }
+
+    .pmc-tenant-detail-tabs button strong {
+        display: none;
+    }
+}

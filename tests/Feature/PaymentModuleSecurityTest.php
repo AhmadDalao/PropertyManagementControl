@@ -125,14 +125,14 @@ class PaymentModuleSecurityTest extends TestCase
             ->get(route('tenants.show', $tenant))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions.0.label', 'Record payment')
-                ->where('detailPage.header.actions.0.href', route('payments.create', [
+                ->component('admin/tenants/show')
+                ->where('detailPage.workflow.title', 'Collect the overdue balance')
+                ->where('detailPage.workflow.actions.0.label', 'Record payment')
+                ->where('detailPage.workflow.actions.0.href', route('payments.create', [
                     'lease_id' => $lease->id,
                 ]))
-                ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'Edit tenant')
-                ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.header.actions.2.label', 'Create lease'));
+                ->where('detailPage.workflow.actions.0.variant', 'primary')
+                ->where('detailPage.header.actions.0.label', 'Edit tenant'));
     }
 
     public function test_arabic_payment_form_localizes_the_lease_status_and_balance(): void

@@ -17,6 +17,8 @@ class TenantModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('TenantFormPresenter', $source);
         $this->assertStringContainsString('TenantDetailPresenter', $source);
         $this->assertStringContainsString('ManageTenants', $source);
+        $this->assertStringContainsString("Inertia::render('admin/tenants/show'", $source);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $source);
         $this->assertStringNotContainsString('TenantProfile::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
@@ -49,8 +51,10 @@ class TenantModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Tenants/Data/TenantFormData.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantCreateFormPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantDetailPresenter.php'),
+            $this->path('app/Modules/Tenants/Presenters/TenantDetailTabPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantDetailHeaderPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantDetailOverviewPresenter.php'),
+            $this->path('app/Modules/Tenants/Presenters/TenantWorkflowPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantEditFormPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantFormDefinitionPresenter.php'),
             $this->path('app/Modules/Tenants/Presenters/TenantFormFieldsPresenter.php'),
@@ -80,6 +84,11 @@ class TenantModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/tenants/tenant-table-config.tsx'),
             $this->path('resources/js/modules/tenants/tenant-table.tsx'),
             $this->path('resources/js/modules/tenants/types.ts'),
+            $this->path('resources/js/modules/tenants/detail-page.tsx'),
+            $this->path('resources/js/modules/tenants/detail/tenant-detail-workspace.tsx'),
+            $this->path('resources/js/modules/tenants/detail/tenant-detail-tabs.tsx'),
+            $this->path('resources/js/modules/tenants/detail/types.ts'),
+            $this->path('resources/js/pages/admin/tenants/show.tsx'),
         ] as $path) {
             $this->assertFileExists($path);
         }
@@ -99,6 +108,8 @@ class TenantModuleArchitectureTest extends TestCase
             'resources/js/modules/tenants/tenant-table.tsx' => 65,
             'resources/js/modules/tenants/tenant-table-config.tsx' => 110,
             'resources/js/modules/tenants/tenant-table-cells.tsx' => 140,
+            'resources/js/modules/tenants/detail-page.tsx' => 30,
+            'resources/js/modules/tenants/detail/tenant-detail-workspace.tsx' => 100,
         ] as $path => $maximumLines) {
             $source = $this->source($this->path($path));
 
@@ -121,6 +132,8 @@ class TenantModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('TenantTableRowPresenter', $index);
         $this->assertStringContainsString('TenantDetailQuery', $detail);
         $this->assertStringContainsString('TenantRelatedPresenter', $detail);
+        $this->assertStringContainsString('TenantWorkflowPresenter', $detail);
+        $this->assertStringContainsString('TenantDetailTabPresenter', $detail);
         $this->assertStringContainsString('TenantCreateFormPresenter', $form);
         $this->assertStringContainsString('TenantEditFormPresenter', $form);
         $this->assertStringContainsString("from './tenant-table-config'", $table);

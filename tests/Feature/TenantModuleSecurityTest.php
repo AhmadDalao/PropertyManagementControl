@@ -168,13 +168,15 @@ class TenantModuleSecurityTest extends TestCase
         $response
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/tenants/show')
                 ->where('detailPage.header.actions.0.label', 'Edit tenant')
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Portal access')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
                 ->has('detailPage.header.actions', 2)
-                ->has('detailPage.decisionCards', 1)
-                ->has('detailPage.stats', 1)
+                ->missing('detailPage.decisionCards')
+                ->where('detailPage.availableTabs', ['overview', 'history'])
+                ->has('detailPage.stats', 2)
                 ->has('detailPage.sections', 1)
                 ->has('detailPage.related', 0)
                 ->has('detailPage.documents', 0));
@@ -433,7 +435,7 @@ class TenantModuleSecurityTest extends TestCase
             ->get(route('tenants.show', $tenant))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/tenants/show')
                 ->has('detailPage.related.0.rows', 8));
     }
 
@@ -483,9 +485,9 @@ class TenantModuleSecurityTest extends TestCase
             ->get(route('tenants.show', $tenant))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.decisionCards.2.detail', '500.00 SAR allocated to the current contract')
-                ->where('detailPage.stats.2.value', '500.00 SAR')
-                ->where('detailPage.sections.1.items.2.value', '500.00 SAR'));
+                ->where('detailPage.stats.3.value', '500.00 SAR')
+                ->where('detailPage.sections.2.key', 'financial')
+                ->where('detailPage.sections.2.items.0.value', '500.00 SAR'));
     }
 
     public function test_arabic_tenant_forms_and_details_are_translated(): void
@@ -513,13 +515,15 @@ class TenantModuleSecurityTest extends TestCase
             ->get(route('tenants.show', $tenant))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/tenants/show')
                 ->where('detailPage.header.eyebrow', 'سجل المستأجر')
-                ->where('detailPage.header.actions.0.label', 'إنشاء عقد')
+                ->where('detailPage.header.actions.0.label', 'تعديل المستأجر')
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'تعديل المستأجر')
+                ->where('detailPage.workflow.title', 'ربط أول إيجار')
                 ->where('detailPage.sections.0.title', 'الملف وبيانات الاتصال')
-                ->where('detailPage.sections.1.tab', 'financial'));
+                ->where('detailPage.sections.1.key', 'rental')
+                ->where('detailPage.sections.2.key', 'financial')
+                ->where('detailPage.availableTabs.1', 'rental'));
     }
 
     /** @return array<string, mixed> */

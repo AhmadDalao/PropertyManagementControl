@@ -51,11 +51,12 @@ final class TenantRelatedPresenter
         bool $canCreateLease,
     ): array {
         return [
+            'key' => 'leases',
             'title' => trans('app.tenants.leases'),
             'description' => trans('app.tenants.leases_help'),
             'columns' => [
                 trans('app.tenants.lease'),
-                trans('app.tenants.asset'),
+                trans('app.tenants.property_unit'),
                 trans('app.tenants.status'),
                 trans('app.tenants.balance'),
             ],
@@ -64,7 +65,7 @@ final class TenantRelatedPresenter
                     'label' => $lease->code,
                     'href' => route('leases.show', $lease),
                 ],
-                trans('app.tenants.asset') => $lease->leaseable && $assetsEnabled
+                trans('app.tenants.property_unit') => $lease->leaseable && $assetsEnabled
                     ? [
                         'label' => $this->resources->localized(
                             $lease->leaseable->getAttribute('title_en'),
@@ -94,6 +95,7 @@ final class TenantRelatedPresenter
     private function payments(Collection $payments): array
     {
         return [
+            'key' => 'payments',
             'title' => trans('app.tenants.payments'),
             'description' => trans('app.tenants.payments_help'),
             'columns' => [
@@ -122,11 +124,12 @@ final class TenantRelatedPresenter
     private function maintenance(Collection $requests, bool $assetsEnabled): array
     {
         return [
+            'key' => 'maintenance',
             'title' => trans('app.tenants.maintenance'),
             'description' => trans('app.tenants.maintenance_help'),
             'columns' => [
                 trans('app.tenants.request'),
-                trans('app.tenants.asset'),
+                trans('app.tenants.property_unit'),
                 trans('app.tenants.status'),
                 trans('app.tenants.priority'),
             ],
@@ -135,7 +138,7 @@ final class TenantRelatedPresenter
                     'label' => '#'.$request->id.' '.$request->title,
                     'href' => route('maintenance-requests.show', $request),
                 ],
-                trans('app.tenants.asset') => $request->asset && $assetsEnabled
+                trans('app.tenants.property_unit') => $request->asset && $assetsEnabled
                     ? [
                         'label' => $this->resources->localized(
                             $request->asset->title_en,

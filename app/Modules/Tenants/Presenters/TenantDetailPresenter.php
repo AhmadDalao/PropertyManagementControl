@@ -14,6 +14,8 @@ final class TenantDetailPresenter
         private readonly TenantDetailQuery $details,
         private readonly TenantDetailHeaderPresenter $header,
         private readonly TenantDetailOverviewPresenter $overview,
+        private readonly TenantWorkflowPresenter $workflow,
+        private readonly TenantDetailTabPresenter $tabs,
         private readonly TenantRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
     ) {}
@@ -25,6 +27,8 @@ final class TenantDetailPresenter
 
         return [
             'header' => $this->header->present($data),
+            'availableTabs' => $this->tabs->present($data),
+            'workflow' => $this->workflow->present($data),
             ...$this->overview->present($data),
             'related' => $this->related->present($data),
             'documents' => $data->activeLease

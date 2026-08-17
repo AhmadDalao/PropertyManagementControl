@@ -43,7 +43,7 @@ class TenantController extends Controller
 
     public function show(Request $request, TenantProfile $tenant): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/tenants/show', [
             'detailPage' => $this->detailPresenter->present($tenant, $this->actor($request)),
         ]);
     }

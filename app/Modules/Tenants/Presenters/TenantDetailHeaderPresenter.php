@@ -11,36 +11,19 @@ final class TenantDetailHeaderPresenter
     public function present(TenantDetailData $data): array
     {
         $tenant = $data->tenant;
-        $leasesEnabled = PortfolioModules::enabledForUser($data->actor, 'leases');
-        $paymentsEnabled = PortfolioModules::enabledForUser($data->actor, 'payments');
-        $canCreateLease = $leasesEnabled && $tenant->status === 'active';
-        $canRecordPayment = $paymentsEnabled && $data->payableLease !== null;
-        $actions = [];
-
-        if ($canRecordPayment) {
-            $actions[] = [
-                'label' => trans('app.tenants.record_payment'),
-                'href' => route('payments.create', ['lease_id' => $data->payableLease->id]),
-                'variant' => 'primary',
-            ];
-        } elseif ($canCreateLease) {
-            $actions[] = [
-                'label' => trans('app.tenants.create_lease'),
-                'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
-                'variant' => 'primary',
-            ];
-        }
-
-        $actions[] = [
+        $actions = [[
             'label' => trans('app.tenants.edit_tenant'),
             'href' => route('tenants.edit', $tenant),
-            'variant' => ($canRecordPayment || $canCreateLease) ? 'secondary' : 'primary',
-        ];
+            'variant' => 'primary',
+        ]];
 
-        if ($canRecordPayment && $canCreateLease) {
+        if (PortfolioModules::enabledForUser($data->actor, 'reports')
+            && collect(['leases', 'payments', 'maintenance', 'documents'])->contains(
+                fn (string $module): bool => PortfolioModules::enabledForUser($data->actor, $module),
+            )) {
             $actions[] = [
-                'label' => trans('app.tenants.create_lease'),
-                'href' => route('leases.create', ['tenant_profile_id' => $tenant->id]),
+                'label' => trans('app.tenants.account_statement'),
+                'href' => route('tenants.statement.show', $tenant),
                 'variant' => 'secondary',
             ];
         }
@@ -52,17 +35,6 @@ final class TenantDetailHeaderPresenter
                     'user' => $tenant->user,
                     'origin' => 'tenant',
                 ]),
-                'variant' => 'secondary',
-            ];
-        }
-
-        if (PortfolioModules::enabledForUser($data->actor, 'reports')
-            && collect(['leases', 'payments', 'maintenance', 'documents'])->contains(
-                fn (string $module): bool => PortfolioModules::enabledForUser($data->actor, $module),
-            )) {
-            $actions[] = [
-                'label' => trans('app.tenants.account_statement'),
-                'href' => route('tenants.statement.show', $tenant),
                 'variant' => 'secondary',
             ];
         }

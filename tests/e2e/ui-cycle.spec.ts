@@ -2097,15 +2097,19 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/tenants/1?locale=ar');
-        await page.locator('.pmc-resource-tab-select select').selectOption({
-            value: 'financial',
-        });
-        await expect(page).toHaveURL(/tab=financial/);
+        const tenantTabs = page.locator('.pmc-tenant-detail-tabs [role="tab"]');
+        await expect(tenantTabs).toHaveCount(6);
+        await expect(
+            page.locator('.pmc-resource-tab-select select'),
+        ).toHaveCount(0);
+        await page.getByRole('tab', { name: 'الدفعات', exact: false }).click();
+        await expect(page).toHaveURL(/tab=payments/);
         await expect(
             page
                 .locator('.pmc-resource-detail-card')
                 .getByText('الموقف المالي'),
         ).toBeVisible();
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
         await expectNoHorizontalOverflow(page);
     });
 

@@ -60,13 +60,14 @@ class TenantManagementWorkspaceTest extends TestCase
             ->get(route('tenants.show', $tenant))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions.0.label', 'Create lease')
-                ->where('detailPage.header.actions.0.href', route('leases.create', [
+                ->component('admin/tenants/show')
+                ->where('detailPage.header.actions.0.label', 'Edit tenant')
+                ->where('detailPage.header.actions.0.variant', 'primary')
+                ->where('detailPage.workflow.title', 'Connect the first rental')
+                ->where('detailPage.workflow.actions.0.href', route('leases.create', [
                     'tenant_profile_id' => $tenant->id,
                 ]))
-                ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'Edit tenant')
-                ->where('detailPage.header.actions.1.variant', 'secondary'));
+                ->where('detailPage.workflow.actions.0.variant', 'primary'));
 
         $this->assertSame('active', $tenant->fresh()->status);
     }
