@@ -37,12 +37,6 @@ export function OperationsHeader({
                               href: '/users/create',
                               icon: 'bi-person-plus',
                           },
-                          {
-                              label: t('nav.action_center'),
-                              href: '/action-center',
-                              icon: 'bi-collection',
-                              tone: 'quiet',
-                          },
                       ]
                     : managerNeedsAssignment
                       ? [
@@ -66,12 +60,6 @@ export function OperationsHeader({
                                 label: t('dashboard.post_payment'),
                                 href: '/payments/create',
                                 icon: 'bi-cash-stack',
-                            },
-                            {
-                                label: t('nav.action_center'),
-                                href: '/action-center',
-                                icon: 'bi-collection',
-                                tone: 'quiet',
                             },
                         ]
             }

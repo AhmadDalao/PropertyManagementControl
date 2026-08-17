@@ -74,6 +74,10 @@ class MaintenanceModuleArchitectureTest extends TestCase
         $this->assertLinesAtMost($cells, 150);
         $this->assertStringContainsString("from './maintenance-table-config'", $table);
         $this->assertStringContainsString("from './maintenance-table-cells'", $config);
+        $this->assertStringContainsString(
+            'maintenance/index.css',
+            $entry,
+        );
         $this->assertStringNotContainsString('<RecordActions', $table);
         $this->assertStringNotContainsString('columns={[', $table);
         $this->assertStringNotContainsString('text(', $entry.$table.$config.$cells);
@@ -93,6 +97,17 @@ class MaintenanceModuleArchitectureTest extends TestCase
         }
 
         $detailWorkspace = $this->source('resources/js/modules/maintenance/maintenance-detail-workspace.tsx');
+        $detailPage = $this->source('resources/js/modules/maintenance/detail-page.tsx');
+        $indexStyles = $this->source('resources/css/styles/maintenance/index.css');
+        $detailStyles = $this->source(
+            'resources/css/styles/maintenance/detail-responsive.css',
+        );
+        $this->assertLinesAtMost($indexStyles, 80);
+        $this->assertLinesAtMost($detailStyles, 60);
+        $this->assertStringContainsString(
+            'maintenance/detail-responsive.css',
+            $detailPage,
+        );
         $this->assertStringContainsString('MaintenanceNextStepPanel', $detailWorkspace);
         $this->assertStringNotContainsString('WorkflowActionPanel', $detailWorkspace);
 

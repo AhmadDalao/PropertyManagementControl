@@ -212,6 +212,20 @@ test.describe('authenticated administration', () => {
         await expect(page.locator('.pmc-console-shell')).toHaveClass(/is-open/);
         await expect(sidebar).not.toHaveAttribute('inert');
         await expect(sidebar.locator('.pmc-sidebar-collapse')).toBeHidden();
+        await expect(
+            sidebar.locator('[data-navigation-group-items]:not([hidden])'),
+        ).toHaveCount(1);
+
+        const portfolioGroup = sidebar.locator(
+            '[data-navigation-group-trigger="nav.group_portfolio"]',
+        );
+        await portfolioGroup.click();
+        await expect(portfolioGroup).toHaveAttribute('aria-expanded', 'true');
+        await expect(
+            sidebar.locator(
+                '[data-navigation-group-items="nav.group_portfolio"]',
+            ),
+        ).toBeVisible();
 
         await page.keyboard.press('Escape');
         await expect(page.locator('body')).not.toHaveClass(/pmc-drawer-open/);
@@ -236,10 +250,13 @@ test.describe('authenticated administration', () => {
         await page.reload();
 
         const shell = page.locator('.pmc-console-shell');
+        const sidebar = page.locator('.pmc-console-sidebar');
         const navigationTrigger = page.locator('.pmc-menu-trigger');
         await expect(shell).not.toHaveClass(/is-collapsed/);
+        expect((await sidebar.boundingBox())?.width).toBe(272);
         await navigationTrigger.click();
         await expect(shell).toHaveClass(/is-collapsed/);
+        expect((await sidebar.boundingBox())?.width).toBe(76);
         expect(
             await page.evaluate(() =>
                 window.localStorage.getItem('property-sidebar-collapsed'),
@@ -247,6 +264,33 @@ test.describe('authenticated administration', () => {
         ).toBe('1');
 
         await page.reload();
+        await expect(shell).toHaveClass(/is-collapsed/);
+        await expect(
+            page.locator('.pmc-console-nav [data-navigation-group-trigger]'),
+        ).toHaveCount(6);
+        await expect(
+            page.locator('[data-navigation-group-items]:not([hidden])'),
+        ).toHaveCount(0);
+
+        const maintenanceGroup = page.locator(
+            '[data-navigation-group-trigger="nav.group_maintenance"]',
+        );
+        await maintenanceGroup.click();
+        await expect(shell).not.toHaveClass(/is-collapsed/);
+        expect((await sidebar.boundingBox())?.width).toBe(272);
+        await expect(maintenanceGroup).toHaveAttribute('aria-expanded', 'true');
+        await expect(
+            page.locator(
+                '[data-navigation-group-items="nav.group_maintenance"]',
+            ),
+        ).toBeVisible();
+        expect(
+            await page.evaluate(() =>
+                window.localStorage.getItem('property-sidebar-group'),
+            ),
+        ).toBe('nav.group_maintenance');
+
+        await navigationTrigger.click();
         await expect(shell).toHaveClass(/is-collapsed/);
         await navigationTrigger.click();
         await expect(shell).not.toHaveClass(/is-collapsed/);
@@ -284,6 +328,9 @@ test.describe('authenticated administration', () => {
             propertyId,
         );
 
+        await page
+            .locator('[data-navigation-group-trigger="nav.group_portfolio"]')
+            .click();
         const explorerLink = page.locator(
             `.pmc-nav-link[href="/property-explorer?property_id=${propertyId}"]`,
         );
@@ -1255,7 +1302,7 @@ test.describe('authenticated administration', () => {
         await page.goto('/dashboard?locale=en');
         await page.locator('[data-dashboard-work-tab="move_outs"]').click();
         await expect(
-            page.locator('a[href^="/lease-move-outs"]').first(),
+            page.locator('main a[href^="/lease-move-outs"]').first(),
         ).toBeVisible();
 
         await page.setViewportSize(viewports.mobile);
@@ -2276,6 +2323,20 @@ test.describe('authenticated administration', () => {
         const cardCount = await cards.count();
         expect(cardCount).toBeGreaterThan(0);
         expect(cardCount).toBeLessThanOrEqual(10);
+        const maintenanceMetrics = page.locator('.pmc-maintenance-metrics');
+        expect(
+            (await maintenanceMetrics.boundingBox())?.height ?? Infinity,
+        ).toBeLessThan(165);
+        const maintenanceCardHeights = await cards.evaluateAll((records) =>
+            records.map((record) => record.getBoundingClientRect().height),
+        );
+        expect(Math.max(...maintenanceCardHeights)).toBeLessThan(170);
+        expect(
+            await cards
+                .first()
+                .locator('.pmc-maintenance-mobile-state .pmc-status-badge')
+                .count(),
+        ).toBeGreaterThanOrEqual(2);
         const pendingSignoff = page.getByRole('button', {
             name: /بانتظار اعتماد المستأجر/,
         });
@@ -2299,15 +2360,21 @@ test.describe('authenticated administration', () => {
         const detailTabs = page.locator('.pmc-maintenance-detail-tabs');
         const mobileTabLayout = await detailTabs.evaluate((tabList) => ({
             display: getComputedStyle(tabList).display,
-            columns:
-                getComputedStyle(tabList).gridTemplateColumns.split(' ').length,
+            height: tabList.getBoundingClientRect().height,
             overflow: tabList.scrollWidth > tabList.clientWidth,
         }));
-        expect(mobileTabLayout).toEqual({
-            display: 'grid',
-            columns: 3,
-            overflow: false,
-        });
+        expect(mobileTabLayout.display).toBe('flex');
+        expect(mobileTabLayout.height).toBeLessThan(60);
+        expect(mobileTabLayout.overflow).toBe(true);
+        const detailMetrics = page.locator('.pmc-maintenance-detail-metrics');
+        const detailMetricGeometry = await detailMetrics.evaluate(
+            (summary) => ({
+                height: summary.getBoundingClientRect().height,
+                overflow: summary.scrollWidth > summary.clientWidth,
+            }),
+        );
+        expect(detailMetricGeometry.height).toBeLessThan(90);
+        expect(detailMetricGeometry.overflow).toBe(true);
         const overviewTab = page.getByRole('tab', {
             name: 'نظرة عامة',
             exact: true,
@@ -4211,7 +4278,7 @@ test.describe('local role dashboards', () => {
             for (const href of roleNavigation[account.role].visible) {
                 await expect(
                     navigation.locator(`a[href="${href}"]`),
-                ).toBeVisible();
+                ).toHaveCount(1);
             }
 
             for (const href of roleNavigation[account.role].hidden) {
@@ -4232,18 +4299,31 @@ test.describe('local role dashboards', () => {
                     .locator('.pmc-dashboard-workspace')
                     .boundingBox();
                 const metricBox = await page
-                    .locator('.pmc-metric-grid')
+                    .locator('.pmc-dashboard-metrics')
+                    .boundingBox();
+                const dashboardHeaderBox = await page
+                    .locator('.pmc-workspace-header')
                     .boundingBox();
                 expect(workspaceBox).not.toBeNull();
                 expect(metricBox).not.toBeNull();
+                expect(dashboardHeaderBox).not.toBeNull();
                 expect(workspaceBox?.y ?? 0).toBeLessThan(metricBox?.y ?? 0);
+                expect(metricBox?.height ?? Infinity).toBeLessThan(320);
+                expect(dashboardHeaderBox?.height ?? Infinity).toBeLessThan(
+                    205,
+                );
+                await expect(
+                    page
+                        .locator('.pmc-workspace-header')
+                        .locator('a[href="/action-center"]'),
+                ).toHaveCount(0);
 
                 await page.setViewportSize(viewports.tablet);
                 const tabletWorkspaceBox = await page
                     .locator('.pmc-dashboard-workspace')
                     .boundingBox();
                 const tabletMetricBox = await page
-                    .locator('.pmc-metric-grid')
+                    .locator('.pmc-dashboard-metrics')
                     .boundingBox();
                 expect(tabletWorkspaceBox).not.toBeNull();
                 expect(tabletMetricBox).not.toBeNull();
@@ -4256,7 +4336,7 @@ test.describe('local role dashboards', () => {
                     .locator('.pmc-dashboard-workspace')
                     .boundingBox();
                 const compactMetricBox = await page
-                    .locator('.pmc-metric-grid')
+                    .locator('.pmc-dashboard-metrics')
                     .boundingBox();
                 expect(compactWorkspaceBox).not.toBeNull();
                 expect(compactMetricBox).not.toBeNull();

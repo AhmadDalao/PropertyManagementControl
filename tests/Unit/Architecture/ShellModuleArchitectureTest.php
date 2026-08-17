@@ -35,9 +35,11 @@ class ShellModuleArchitectureTest extends TestCase
             'property-context-picker.tsx',
             'property-context-results.tsx',
             'property-context-switcher.tsx',
+            'sidebar-navigation.tsx',
             'temporary-password-notice.tsx',
             'use-admin-shell.ts',
             'use-property-context-switcher.ts',
+            'use-sidebar-navigation.ts',
         ] as $file) {
             $path = "resources/js/modules/shell/{$file}";
             $source = $this->source($path);
@@ -52,6 +54,8 @@ class ShellModuleArchitectureTest extends TestCase
         $state = $this->source('resources/js/modules/shell/use-admin-shell.ts');
         $access = $this->source('resources/js/modules/shell/navigation-access.ts');
         $sidebar = $this->source('resources/js/modules/shell/admin-sidebar.tsx');
+        $sidebarNavigation = $this->source('resources/js/modules/shell/sidebar-navigation.tsx');
+        $sidebarState = $this->source('resources/js/modules/shell/use-sidebar-navigation.ts');
         $account = $this->source('resources/js/modules/shell/account-menu.tsx');
         $propertyContext = $this->source('resources/js/modules/shell/property-context-switcher.tsx');
         $propertyPicker = $this->source('resources/js/modules/shell/property-context-picker.tsx');
@@ -64,9 +68,15 @@ class ShellModuleArchitectureTest extends TestCase
         $this->assertStringNotContainsString('MODULE_NAV_GROUPS', $state);
         $this->assertStringContainsString('MODULE_NAV_GROUPS', $access);
         $this->assertStringContainsString('module_settings', $access);
-        $this->assertStringContainsString('aria-current', $sidebar);
+        $this->assertStringContainsString('aria-current', $sidebarNavigation);
         $this->assertStringContainsString('inert={drawerHidden}', $sidebar);
         $this->assertStringContainsString('PropertyContextSwitcher', $sidebar);
+        $this->assertStringContainsString('SidebarNavigation', $sidebar);
+        $this->assertStringContainsString('aria-expanded={open}', $sidebarNavigation);
+        $this->assertStringContainsString('hidden={!open}', $sidebarNavigation);
+        $this->assertStringContainsString('data-navigation-group-trigger', $sidebarNavigation);
+        $this->assertStringContainsString('property-sidebar-group', $sidebarState);
+        $this->assertStringContainsString('localStorage', $sidebarState);
         $this->assertStringContainsString(
             'collapsed={sidebarCollapsed && !drawerViewport}',
             $sidebar,
@@ -91,6 +101,7 @@ class ShellModuleArchitectureTest extends TestCase
         foreach ([
             'layout.css',
             'sidebar.css',
+            'navigation-groups.css',
             'property-context.css',
             'property-context-collapsed.css',
             'topbar.css',
@@ -109,11 +120,14 @@ class ShellModuleArchitectureTest extends TestCase
         }
 
         $account = $this->source('resources/css/styles/shell/account.css');
+        $referenceShell = $this->source('resources/css/styles/reference/foundation/shell.css');
         $picker = $this->source(
             'resources/js/modules/shell/property-context-picker.tsx',
         );
         $this->assertStringContainsString('.pmc-account-trigger', $account);
         $this->assertStringNotContainsString('.pmc-account-menu > summary', $account);
+        $this->assertStringNotContainsString('--pmc-sidebar-width:', $referenceShell);
+        $this->assertStringNotContainsString('--pmc-sidebar-collapsed:', $referenceShell);
 
         foreach ([
             'property-context-picker.css',

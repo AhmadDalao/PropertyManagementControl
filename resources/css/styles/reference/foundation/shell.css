@@ -1,6 +1,4 @@
 :root {
-    --pmc-sidebar-width: 13.25rem;
-    --pmc-sidebar-collapsed: 4rem;
     --pmc-topbar-height: 4rem;
     --pmc-canvas: #f7f9fb;
     --pmc-line: #e3e8ee;
@@ -41,17 +39,6 @@
     gap: 0.48rem;
     margin-top: 0.5rem;
     padding: 0 0.05rem 0.75rem;
-}
-
-.pmc-console-nav section {
-    gap: 0.08rem;
-}
-
-.pmc-console-nav section > p {
-    margin: 0.15rem 0 0.14rem;
-    padding-inline: 0.55rem;
-    font-size: 0.52rem;
-    letter-spacing: 0.06em;
 }
 
 .pmc-nav-link {

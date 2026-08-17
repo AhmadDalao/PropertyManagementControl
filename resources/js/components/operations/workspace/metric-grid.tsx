@@ -4,12 +4,18 @@ import { useTranslator } from '@/lib/i18n';
 
 import type { WorkspaceMetric } from './types';
 
-export function MetricGrid({ metrics }: { metrics: WorkspaceMetric[] }) {
+export function MetricGrid({
+    metrics,
+    className,
+}: {
+    metrics: WorkspaceMetric[];
+    className?: string;
+}) {
     const { text } = useTranslator();
 
     return (
         <section
-            className="pmc-metric-grid"
+            className={`pmc-metric-grid ${className ?? ''}`.trim()}
             aria-label={text('Workspace summary')}
         >
             {metrics.map((metric) => {

@@ -1,0 +1,83 @@
+@media (max-width: 767.98px) {
+    .pmc-console-content
+        > .pmc-metric-grid.pmc-maintenance-metrics
+        .pmc-metric-card {
+        min-height: 4.45rem;
+        grid-template-columns: 1.75rem minmax(0, 1fr);
+        column-gap: 0.45rem;
+        padding: 0.48rem 0.52rem;
+    }
+
+    .pmc-console-content
+        > .pmc-metric-grid.pmc-maintenance-metrics
+        .pmc-metric-icon {
+        width: 1.75rem;
+        height: 1.75rem;
+        font-size: 0.7rem;
+    }
+
+    .pmc-console-content
+        > .pmc-metric-grid.pmc-maintenance-metrics
+        .pmc-metric-card
+        > strong {
+        font-size: 1rem;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-list {
+        gap: 0.45rem;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-card {
+        gap: 0.42rem;
+        padding: 0.62rem;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-head {
+        gap: 0.5rem;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-title-link {
+        line-height: 1.25;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-subtitle {
+        width: 100%;
+        overflow: visible;
+        white-space: normal;
+    }
+
+    .pmc-maintenance-mobile-summary {
+        display: grid;
+        min-width: 0;
+        gap: 0.25rem;
+    }
+
+    .pmc-maintenance-mobile-summary > span {
+        overflow: hidden;
+        color: var(--pmc-muted);
+        font-size: 0.62rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-meta {
+        gap: 0.25rem;
+    }
+
+    .pmc-maintenance-directory .pmc-mobile-record-card dl > div {
+        padding: 0.35rem;
+    }
+
+    .pmc-maintenance-mobile-state {
+        display: flex;
+        min-width: 0;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.18rem;
+    }
+
+    .pmc-maintenance-mobile-state .pmc-status-badge {
+        padding: 0.16rem 0.34rem;
+        font-size: 0.5rem;
+    }
+}

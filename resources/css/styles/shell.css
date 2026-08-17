@@ -1,5 +1,6 @@
 @import './shell/layout.css';
 @import './shell/sidebar.css';
+@import './shell/navigation-groups.css';
 @import './shell/property-context.css';
 @import './shell/property-context-collapsed.css';
 @import './shell/topbar.css';

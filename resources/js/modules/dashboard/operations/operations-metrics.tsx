@@ -14,6 +14,7 @@ export function OperationsMetrics({
 
     return (
         <MetricGrid
+            className="pmc-dashboard-metrics"
             metrics={
                 props.mode === 'portfolio'
                     ? portfolioMetrics(props, locale, t)

@@ -157,11 +157,9 @@ class SharedFrontendArchitectureTest extends TestCase
         ], 300);
 
         $this->assertStylesheetFacade('workspaces', [
-            'shell.css',
             'header.css',
             'metrics.css',
             'records.css',
-            'sidebar.css',
             'responsive.css',
         ], 160);
     }

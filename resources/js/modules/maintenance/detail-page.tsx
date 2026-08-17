@@ -1,6 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
 import '../../../css/styles/maintenance/workspace.css';
+import '../../../css/styles/maintenance/detail-responsive.css';
 
 import { AdminLayout } from '@/layouts/admin-layout';
 

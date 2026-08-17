@@ -21,6 +21,7 @@ export function MaintenanceMetrics({
 
     return (
         <MetricGrid
+            className="pmc-maintenance-metrics"
             metrics={[
                 {
                     label: t('maintenance.active_requests'),

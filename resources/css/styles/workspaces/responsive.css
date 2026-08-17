@@ -2,11 +2,6 @@
     .pmc-metric-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-
-    .pmc-console-sidebar {
-        gap: 0.85rem;
-        padding: 0.8rem;
-    }
 }
 
 @media (max-width: 767.98px) {
@@ -105,11 +100,5 @@
     .pmc-table-page-size,
     .pmc-table-actions {
         flex: 0 0 auto;
-    }
-}
-
-@media (max-width: 1199.98px) {
-    .pmc-sidebar-collapse {
-        display: none;
     }
 }

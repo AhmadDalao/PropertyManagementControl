@@ -9,12 +9,14 @@ export type ModuleNavItem = {
 
 export type ModuleNavGroup = {
     labelKey: `nav.${string}`;
+    icon: string;
     items: ModuleNavItem[];
 };
 
 export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     {
         labelKey: 'nav.group_tenant_portal',
+        icon: 'bi-house-door',
         items: [
             {
                 labelKey: 'nav.home',
@@ -57,6 +59,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_overview',
+        icon: 'bi-grid-1x2',
         items: [
             {
                 labelKey: 'nav.dashboard',
@@ -75,6 +78,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_portfolio',
+        icon: 'bi-buildings',
         items: [
             {
                 labelKey: 'nav.company_control',
@@ -129,6 +133,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_operations',
+        icon: 'bi-collection',
         items: [
             {
                 labelKey: 'nav.leases',
@@ -204,6 +209,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_maintenance',
+        icon: 'bi-tools',
         items: [
             {
                 labelKey: 'nav.maintenance',
@@ -233,6 +239,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_documents_reports',
+        icon: 'bi-folder2-open',
         items: [
             {
                 labelKey: 'nav.documents',
@@ -261,6 +268,7 @@ export const MODULE_NAV_GROUPS: ModuleNavGroup[] = [
     },
     {
         labelKey: 'nav.group_system',
+        icon: 'bi-sliders2',
         items: [
             {
                 labelKey: 'nav.cms',

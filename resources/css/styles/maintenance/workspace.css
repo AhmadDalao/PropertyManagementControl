@@ -443,26 +443,6 @@
         grid-template-columns: 1fr 1fr;
     }
 
-    .pmc-maintenance-detail-metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .pmc-maintenance-detail-tabs {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        top: calc(var(--pmc-topbar-height) + 0.25rem);
-        margin-inline: -0.25rem;
-        overflow: visible;
-    }
-
-    .pmc-maintenance-detail-tabs button {
-        min-height: 2.75rem;
-        justify-content: center;
-        padding-inline: 0.35rem;
-        text-align: center;
-        white-space: normal;
-    }
-
     .pmc-maintenance-mobile-actions {
         position: sticky;
         z-index: 25;

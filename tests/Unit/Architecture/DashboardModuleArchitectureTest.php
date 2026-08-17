@@ -180,6 +180,12 @@ class DashboardModuleArchitectureTest extends TestCase
         $today = $this->source(
             'resources/js/modules/dashboard/operations/operations-today-workspace.tsx',
         );
+        $header = $this->source(
+            'resources/js/modules/dashboard/operations/operations-header.tsx',
+        );
+        $metrics = $this->source(
+            'resources/js/modules/dashboard/operations/operations-metrics.tsx',
+        );
 
         $this->assertStringContainsString("selected === 'today'", $groups);
         $this->assertStringContainsString("selected === 'portfolio'", $groups);
@@ -190,6 +196,11 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('onKeyDown', $viewTabs);
         $this->assertStringContainsString('role="tablist"', $today);
         $this->assertStringContainsString('role="tabpanel"', $today);
+        $this->assertStringNotContainsString("href: '/action-center'", $header);
+        $this->assertStringContainsString(
+            'className="pmc-dashboard-metrics"',
+            $metrics,
+        );
 
         $entry = $this->source('resources/js/modules/dashboard/dashboard-page.tsx');
         $appStyles = $this->source('resources/css/app.css');

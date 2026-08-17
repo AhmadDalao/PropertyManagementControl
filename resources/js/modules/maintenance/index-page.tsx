@@ -1,5 +1,7 @@
 import { Head, usePage } from '@inertiajs/react';
 
+import '../../../css/styles/maintenance/index.css';
+
 import { AdminLayout } from '@/layouts/admin-layout';
 import { useTranslator } from '@/lib/i18n';
 

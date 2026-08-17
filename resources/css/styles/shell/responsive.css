@@ -30,7 +30,6 @@
     }
 
     .pmc-console-shell.is-collapsed .pmc-console-brand > div,
-    .pmc-console-shell.is-collapsed .pmc-console-nav section > p,
     .pmc-console-shell.is-collapsed .pmc-nav-link > span {
         display: grid;
     }

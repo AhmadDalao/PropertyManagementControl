@@ -20,23 +20,28 @@ export function MaintenanceTable(props: MaintenanceTableProps) {
     const table = useMaintenanceTableConfig(props);
 
     return (
-        <DataTable
-            title={t('maintenance.queue_title')}
-            description={t('maintenance.queue_description')}
-            data={props.requests}
-            filters={props.filters}
-            counts={props.counts}
-            basePath="/maintenance-requests"
-            rowHref={(request) => `/maintenance-requests/${request.id}`}
-            exportHref={
-                props.mode === 'manager'
-                    ? exportUrl('/exports/maintenance-requests', props.filters)
-                    : undefined
-            }
-            filterFields={filterFields}
-            emptyText={t('maintenance.empty')}
-            mobileCard={table.mobileCard}
-            columns={table.columns}
-        />
+        <div className="pmc-maintenance-directory">
+            <DataTable
+                title={t('maintenance.queue_title')}
+                description={t('maintenance.queue_description')}
+                data={props.requests}
+                filters={props.filters}
+                counts={props.counts}
+                basePath="/maintenance-requests"
+                rowHref={(request) => `/maintenance-requests/${request.id}`}
+                exportHref={
+                    props.mode === 'manager'
+                        ? exportUrl(
+                              '/exports/maintenance-requests',
+                              props.filters,
+                          )
+                        : undefined
+                }
+                filterFields={filterFields}
+                emptyText={t('maintenance.empty')}
+                mobileCard={table.mobileCard}
+                columns={table.columns}
+            />
+        </div>
     );
 }

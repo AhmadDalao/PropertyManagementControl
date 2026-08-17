@@ -5,12 +5,9 @@ import { useTranslator } from '@/lib/i18n';
 import type { PropertyContext } from '@/types';
 import type { AppUser } from '@/types/auth';
 
-import {
-    isActivePath,
-    navigationHref,
-    visibleNavigationGroups,
-} from './navigation-access';
+import { visibleNavigationGroups } from './navigation-access';
 import { PropertyContextSwitcher } from './property-context-switcher';
+import { SidebarNavigation } from './sidebar-navigation';
 
 type AdminSidebarProps = {
     currentUrl: string;
@@ -97,42 +94,15 @@ export function AdminSidebar({
                     />
                 ) : null}
 
-                <nav
-                    className="pmc-console-nav"
-                    aria-label={t('shell.navigation', 'Main navigation')}
-                >
-                    {groups.map((group) => (
-                        <section key={group.labelKey}>
-                            <p>{t(group.labelKey)}</p>
-                            {group.items.map((item) => {
-                                const active = isActivePath(
-                                    currentUrl,
-                                    item.href,
-                                );
-                                const href = navigationHref(
-                                    item,
-                                    propertyContext?.selected?.id,
-                                );
-
-                                return (
-                                    <Link
-                                        key={item.href}
-                                        href={href}
-                                        onClick={closeDrawer}
-                                        className={`pmc-nav-link ${active ? 'active' : ''}`}
-                                        title={t(item.labelKey)}
-                                        aria-current={
-                                            active ? 'page' : undefined
-                                        }
-                                    >
-                                        <i className={`bi ${item.icon}`} />
-                                        <span>{t(item.labelKey)}</span>
-                                    </Link>
-                                );
-                            })}
-                        </section>
-                    ))}
-                </nav>
+                <SidebarNavigation
+                    key={currentUrl.split('?')[0]}
+                    groups={groups}
+                    currentUrl={currentUrl}
+                    propertyId={propertyContext?.selected?.id}
+                    compact={sidebarCollapsed && !drawerViewport}
+                    onExpand={toggleNavigation}
+                    onNavigate={closeDrawer}
+                />
 
                 <button
                     type="button"
