@@ -1,7 +1,7 @@
 # SYSTEM REPORT: Property Management Control Functional Specification
 
 **Report date:** August 17, 2026
-**Application build revision verified in production:** `04069706bb989e51f1a5dd756cb6a7462127f130`
+**Application build revision verified in production:** `a59e33da43a5e955b1631c9f8e1fb16f17edfe2b`
 **Production URL:** `https://property.ahmaddalao.com`  
 **Assessment:** Operational MVP release candidate; not yet approved for an unattended real-property launch.
 
@@ -9,9 +9,9 @@
 
 The repository contains a broad, working property-operations platform rather than a prototype. It covers portfolio and property setup, a hierarchical property/unit model, owner and manager assignments, tenant onboarding, leases, installment schedules, manual payment allocation, collection follow-up, expenses, maintenance requests, contractors and work orders, PDF records, reporting, CMS, bilingual wording, audit history, backups, and launch-readiness controls.
 
-The application code is healthy. The release reran the complete PHP suite: **669 tests and 40,266 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, full-application PHPStan with zero current findings, Composer audit, and pnpm audit checks.
+The application code is healthy. The release reran the complete PHP suite: **669 tests and 40,723 assertions passed**. The release baseline also includes **71 passing Playwright/axe scenarios**, TypeScript, ESLint, Prettier, Pint, Vite, route, migration, full-application PHPStan with zero current findings, Composer audit, and pnpm audit checks.
 
-The Document detail release is deployed to Hostinger and its Vite manifest SHA-256, `12bd9eec4fdd6f049592ddb7df4ce097808ecf26ea4ed2a04e7d57136c814e26`, matches the local build. The live site responds successfully at `/up`; the authenticated non-destructive cycle passes English/Arabic administration, custom Portfolio, Tenant, User, Expense, and Document records, private PDF downloads, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. The Document record now owns direct Overview, Access, Validity, and History tabs, one mounted panel, a protected-file summary, authorization policy, expiry workflow, linked-record context, and immutable replacement rules. Local English/Arabic verification at 390px confirms 44px tab targets, RTL-aware keyboard navigation, and zero horizontal overflow. Production separately returned the custom Inertia contract and a valid `%PDF-` download under the existing role, portfolio, assigned-property, and tenancy authorization rules. The release rebuilt Composer's complete `--no-dev --classmap-authoritative` autoloader under PHP 8.4, confirmed no pending migrations, rebuilt Laravel caches, synchronized operational statuses, reset OPcache, and removed the one-time activator. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
+The Work Order detail release is deployed to Hostinger and its Vite manifest SHA-256, `0cc70c1459c7105716bef43ea250893743c0c47c632341d486267be008ae29c9`, matches the local build. The live site responds successfully at `/up`; the authenticated non-destructive cycle passes English/Arabic administration, custom Portfolio, Tenant, User, Expense, Document, and Work Order records, private PDF downloads, contracts, statements, editable DOCX files, report XLSX files, maintenance closeouts, security headers, and the core resource cycle. The Work Order record now owns direct Overview, Assignment, Schedule, Cost, Completion, and History tabs, one mounted panel, clear responsibility and visit guidance, quote variance, completion context, and exact final-expense linkage. A completed work order can create one same-portfolio expense for its exact final amount; the backend stores the originating work-order ID, rejects mismatched or duplicate postings, and replaces the create action with a link to the recorded expense. Local English/Arabic verification at 390px confirms 44px tab targets, RTL-aware keyboard navigation, and zero horizontal overflow. Production returned the custom Inertia contract and valid maintenance PDF/DOCX outputs under the existing role, portfolio, assigned-property, and tenancy authorization rules. The release rebuilt Composer's complete `--no-dev --classmap-authoritative` autoloader under PHP 8.4, confirmed no pending migrations, rebuilt Laravel caches, synchronized operational statuses, reset OPcache, and removed both one-time activators. SMTP, the one-minute Hostinger scheduler, a reconciled real opening-data import, approved legal wording, and the four-role pilot remain launch blockers.
 
 ### Current verdict
 
@@ -20,7 +20,7 @@ The Document detail release is deployed to Hostinger and its Vite manifest SHA-2
 | Core domain workflows | Ready for pilot | Property through payment and maintenance workflows exist and are tested. |
 | Authorization | Strong, complex | Role, portfolio, module, and assigned-property scopes are enforced and heavily tested. |
 | Responsive UI | Release baseline passes | Desktop tables and mobile cards are implemented; automated widths cover 390/768/1024/1440. |
-| Resource detail consistency | Improving | Property, portfolio, tenant, user, lease, payment, maintenance, expense, and document records are custom; contractor, work-order, and saved-report details still use generic shared composition. |
+| Resource detail consistency | Improving | Property, portfolio, tenant, user, lease, payment, maintenance, expense, document, and work-order records are custom; contractor and saved-report details still use generic shared composition. |
 | English/Arabic | Implemented | UI dictionaries, RTL, bilingual records, PDFs, DOCX, XLSX, CMS, and wording overrides exist. |
 | Reporting | Operational | Real `.xlsx`, PDF, and DOCX outputs exist; unlike currencies remain separated. |
 | Email | Blocked in production | Live mailer was last recorded as `log`; SMTP receipt is unproven. |
@@ -618,7 +618,7 @@ Follow-ups are append-only. Derived states include untracked, due, promised, bro
 
 **Work-order list columns:** order/request/status; property/tenant; vendor/internal owner; schedule/tenant access; estimated/final costs; actions.  
 **Filters:** status, schedule state, tenant-access requirement, vendor, internal assignee, dates, portfolio, property, search, pagination, sort.  
-**Detail:** assignment, request, scope, schedule, access requirement, estimate/final cost, completion time/notes, workflow, expense action.  
+**Detail:** direct Overview, Assignment, Schedule, Cost, Completion, and History tabs; request/property/tenant context, responsibility, scope, visit/access state, quote/final/variance, completion record, and one prioritized workflow. Only the selected panel renders.
 **Create fields:** vendor required, internal assignee, draft/scheduled status, schedule, estimate, required scope, tenant access.  
 **Edit additions:** all statuses, final amount, completion notes.
 
@@ -862,12 +862,12 @@ The production CSS is route-split. The main built CSS is 320.25KB on disk and th
 6. **Generic shared resource labels still use source-text translation in a few primitives.** Examples include “Overview,” “Financial,” and form framing. They resolve through the wording layer, but typed translation keys would be clearer and safer.
 7. **No bulk workflow exists.** This is correct for money and contracts, but a future real pilot may justify narrow bulk actions such as assign manager, export selected, or maintenance reassignment. Do not add generic bulk delete.
 8. **Production status evidence is split between repository docs and live readiness.** `/system/readiness` should remain the source of truth, and release documentation should be generated from it after every deployment.
-9. **Three record details still use generic composition.** Maintenance contractor, work order, and saved-report details are functional and responsive, but they do not yet provide the same module-owned decision flow as Property, Portfolio, Tenant, User, Lease, Payment, Maintenance, Expense, and Document. Refactor them one at a time; do not restart the design system.
+9. **Two record details still use generic composition.** Maintenance contractor and saved-report details are functional and responsive, but they do not yet provide the same module-owned decision flow as Property, Portfolio, Tenant, User, Lease, Payment, Maintenance, Expense, Document, and Work Order. Refactor them one at a time; do not restart the design system.
 
 ### Ranked improvement order
 
 1. **Activate production infrastructure.** SMTP receipt evidence, the one-minute scheduler, a fresh offsite backup, and queue heartbeats are more important than another visual feature.
-2. **Rebuild Work Order and Contractor detail.** Keep assignment, schedule, cost, evidence, completion, related requests, and vendor workload visible without generic tables.
+2. **Rebuild Contractor detail.** Keep contact ownership, workload, schedule pressure, cost, related requests, and contractor performance visible without generic tables.
 3. **Rebuild Saved Report detail last.** It is already safe and functional; its remaining problem is consistency, not operational risk.
 4. **Generate an access catalog and reduce CSS debt.** Make route-level role policy auditable and keep removing dead styles while the 325KB bundle gate protects production.
 
@@ -907,7 +907,7 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 
 | Check | Result |
 |---|---|
-| Fresh PHPUnit run | 669 passed, 40,266 assertions |
+| Fresh PHPUnit run | 669 passed, 40,723 assertions |
 | Route inventory | 239 application endpoints |
 | Application models | 31 |
 | Recorded Playwright/axe baseline | 71 scenarios |
@@ -916,8 +916,8 @@ The goal should be **a trustworthy 30-day pilot for one reconciled real portfoli
 | Production health on report date | `/up` HTTP 200 |
 | Production latest-settings route | Authenticated page active; unauthenticated request correctly redirects to login |
 | Production release | Revision and Vite manifest match GitHub/local build |
-| Production documents | Custom Document detail and authorized PDF `%PDF-`; maintenance PDF `%PDF-`; report XLSX `PK` signatures verified |
-| Production release cycle | Authenticated non-destructive checks passed, including custom Portfolio, Tenant, User, Expense, and Document details, Lease PDF/DOCX, maintenance closeouts, and report XLSX signatures |
+| Production documents | Custom Document detail and authorized PDF `%PDF-`; maintenance PDF/DOCX; report XLSX `PK` signatures verified |
+| Production release cycle | Authenticated non-destructive checks passed, including custom Portfolio, Tenant, User, Expense, Document, and Work Order details, Lease PDF/DOCX, maintenance closeouts, and report XLSX signatures |
 
 ## 18. Report Limitations
 
@@ -1026,7 +1026,7 @@ This section is the operator-facing page catalog. Field-level form rules remain 
 | `/maintenance-requests/{request}/resolution-response` | Tenant closeout decision. | Resolution summary, completed work, response choice, tenant comment. | Confirm resolution or reopen. | Owning T only. |
 | `/maintenance-work-orders` · `maintenance-work-orders.index` | Contractor work register. | Order/request/status, property/tenant, vendor/owner, schedule/access, estimate/final amount. | Open/edit, filter/export. | SA/O/M scoped. |
 | `/maintenance-requests/{request}/work-orders/create` | Create one work order. | Vendor, internal owner, status, schedule, access, scope, estimate. | Save/cancel. | SA/O/M scoped; request must be open and have no active order. |
-| `/maintenance-work-orders/{order}` · `maintenance-work-orders.show` | Work-order source of truth. | Assignment, request, scope, schedule/access, costs, completion, workflow/history. | Edit, open request/vendor, create linked expense after work. | SA/O/M scoped. |
+| `/maintenance-work-orders/{order}` · `maintenance-work-orders.show` | Work-order source of truth. | Direct **Overview**, **Assignment**, **Schedule**, **Cost**, **Completion**, and **History** tabs; request/property/tenant context, responsibility, scope, visit/access state, quote/final/variance, completion record, and one prioritized workflow. Only the selected panel renders. | Edit, open request/vendor, record one exact linked final expense, or open the existing expense without duplicate posting. | SA/O/M scoped. |
 | `/maintenance-vendors` · `maintenance-vendors.index` | Contractor directory. | Vendor/category/contact/status, work-order counts, filters. | Open, create, edit, deactivate. | SA/O/M scoped. |
 | `/maintenance-vendors/{vendor}` · `maintenance-vendors.show` | Contractor source of truth. | Contact/category/status/notes, related work and cost history. | Edit, open work orders, deactivate. | SA/O/M scoped. |
 | `/documents` · `documents.index` | Private document register. | Title/type/file, attached record, validity, tenant access, filters, XLSX. | Open, upload, edit metadata, download, archive. | SA/O/M scoped. |
