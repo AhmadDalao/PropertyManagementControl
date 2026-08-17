@@ -51,6 +51,8 @@ class ReportModuleArchitectureTest extends TestCase
         $presetDetail = $this->source($this->path('app/Http/Controllers/ReportPresetDetailController.php'));
         $this->assertLessThanOrEqual(35, substr_count($presetDetail, "\n") + 1);
         $this->assertStringContainsString('ReportPresetDetailPresenter', $presetDetail);
+        $this->assertStringContainsString('admin/reports/saved-show', $presetDetail);
+        $this->assertStringNotContainsString('admin/resource-show', $presetDetail);
         $this->assertStringNotContainsString('ReportPreset::query()', $presetDetail);
 
         $aging = $this->source($this->path('app/Http/Controllers/ArrearsAgingController.php'));
@@ -77,6 +79,22 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString("from './saved-report-identity-section'", $savedForm);
         $this->assertStringContainsString("from './saved-report-scope-section'", $savedForm);
         $this->assertStringContainsString("from './saved-report-form-actions'", $savedForm);
+
+        $detailPage = $this->source($this->path('resources/js/modules/reports/saved-report-detail-page.tsx'));
+        $detailWorkspace = $this->source($this->path('resources/js/modules/reports/saved-report-detail/saved-report-detail-workspace.tsx'));
+        $detailTabs = $this->source($this->path('resources/js/modules/reports/saved-report-detail/saved-report-detail-tabs.tsx'));
+        $routeEntry = $this->source($this->path('resources/js/pages/admin/reports/saved-show.tsx'));
+
+        $this->assertLessThanOrEqual(30, substr_count($detailPage, "\n") + 1);
+        $this->assertLessThanOrEqual(90, substr_count($detailWorkspace, "\n") + 1);
+        $this->assertLessThanOrEqual(115, substr_count($detailTabs, "\n") + 1);
+        $this->assertLessThanOrEqual(3, substr_count($routeEntry, "\n") + 1);
+        $this->assertStringContainsString('SavedReportDetailWorkspace', $detailPage);
+        $this->assertStringContainsString('SavedReportDetailTabs', $detailWorkspace);
+        $this->assertStringNotContainsString('ResourceDetailShell', $detailWorkspace);
+        $this->assertStringContainsString('SavedReportNextStepCard', $this->source($this->path('resources/js/modules/reports/saved-report-detail/saved-report-overview-panel.tsx')));
+        $this->assertStringNotContainsString('WorkflowActionPanel', $this->source($this->path('resources/js/modules/reports/saved-report-detail/saved-report-overview-panel.tsx')));
+        $this->assertStringContainsString('ArrowRight', $detailTabs);
     }
 
     #[Test]
@@ -87,6 +105,8 @@ class ReportModuleArchitectureTest extends TestCase
         $aging = $this->source($this->path('app/Modules/Reports/Queries/ArrearsAgingQuery.php'));
         $agingMetrics = $this->source($this->path('app/Modules/Reports/Queries/ArrearsAgingMetricsQuery.php'));
         $presets = $this->source($this->path('resources/js/modules/reports/saved-reports-page.tsx'));
+        $presetDetail = $this->source($this->path('app/Modules/Reports/Presenters/ReportPresetDetailPresenter.php'));
+        $presetDetailQuery = $this->source($this->path('app/Modules/Reports/Queries/ReportPresetDetailQuery.php'));
 
         $this->assertLessThanOrEqual(70, substr_count($query, "\n") + 1);
         $this->assertStringContainsString('PortfolioReportDatasetQuery', $query);
@@ -106,6 +126,12 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString("from './report-preset-list'", $presets);
         $this->assertStringNotContainsString('useForm(', $presets);
         $this->assertStringNotContainsString('router.delete(', $presets);
+        $this->assertLessThanOrEqual(45, substr_count($presetDetail, "\n") + 1);
+        $this->assertStringContainsString('ReportPresetDetailQuery', $presetDetail);
+        $this->assertStringContainsString('ReportPresetDetailOverviewPresenter', $presetDetail);
+        $this->assertStringNotContainsString('CarbonImmutable', $presetDetail);
+        $this->assertLessThanOrEqual(80, substr_count($presetDetailQuery, "\n") + 1);
+        $this->assertStringContainsString('ReportPresetDetailData', $presetDetailQuery);
     }
 
     #[Test]
@@ -117,6 +143,8 @@ class ReportModuleArchitectureTest extends TestCase
         $statement = $this->source($this->path('resources/js/modules/reports/owner-statement-page.tsx'));
         $statementFilters = $this->source($this->path('resources/js/modules/reports/owner-statement-filters.tsx'));
         $property = $this->source($this->path('resources/js/modules/reports/property-report-page.tsx'));
+        $savedDetail = $this->source($this->path('resources/js/modules/reports/saved-report-detail-page.tsx'));
+        $savedDetailStyles = $this->source($this->path('resources/css/styles/reports/saved-detail.css'));
 
         $this->assertLessThanOrEqual(13, substr_count($facade, "\n") + 1);
         $this->assertStringNotContainsString("styles/reports.css';", $global);
@@ -124,6 +152,17 @@ class ReportModuleArchitectureTest extends TestCase
         $this->assertStringContainsString("css/styles/reports.css';", $statement);
         $this->assertStringContainsString("from './report-filters'", $statementFilters);
         $this->assertStringContainsString("css/styles/reports.css';", $property);
+        $this->assertStringContainsString("css/styles/reports/saved-detail.css';", $savedDetail);
+        $this->assertLessThanOrEqual(9, substr_count($savedDetailStyles, "\n") + 1);
+
+        foreach (['metrics', 'layout', 'context', 'next-step', 'tabs', 'outputs', 'responsive'] as $layer) {
+            $this->assertStringContainsString("@import './saved-detail/{$layer}.css';", $savedDetailStyles);
+            $this->assertFileExists($this->path("resources/css/styles/reports/saved-detail/{$layer}.css"));
+            $this->assertLessThanOrEqual(
+                180,
+                substr_count($this->source($this->path("resources/css/styles/reports/saved-detail/{$layer}.css")), "\n") + 1,
+            );
+        }
 
         foreach (['filters', 'library', 'metrics', 'comparison', 'journal', 'records', 'presets', 'statement', 'property', 'rent-roll', 'arrears-aging', 'responsive'] as $layer) {
             $this->assertStringContainsString("@import './reports/{$layer}.css';", $facade);
@@ -151,9 +190,14 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Actions/ReportWorkbookExport.php',
             'app/Modules/Reports/Data/LeaseReportSnapshot.php',
             'app/Modules/Reports/Data/PortfolioReportData.php',
+            'app/Modules/Reports/Data/ReportPresetDetailData.php',
             'app/Modules/Reports/Presenters/ReportPagePresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetDetailActionPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailHeaderPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailNoticePresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailOverviewPresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetDetailPresenter.php',
+            'app/Modules/Reports/Presenters/ReportPresetDetailWorkflowPresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetOutputPresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetPagePresenter.php',
             'app/Modules/Reports/Presenters/ReportPresetPresenter.php',
@@ -176,6 +220,7 @@ class ReportModuleArchitectureTest extends TestCase
             'app/Modules/Reports/Queries/PropertyReportContextQuery.php',
             'app/Modules/Reports/Queries/ReportComparisonQuery.php',
             'app/Modules/Reports/Queries/ReportPresetQuery.php',
+            'app/Modules/Reports/Queries/ReportPresetDetailQuery.php',
             'app/Modules/Reports/Queries/RentRollQuery.php',
             'app/Modules/Reports/Requests/ReportIndexRequest.php',
             'app/Modules/Reports/Requests/RentRollRequest.php',
@@ -209,6 +254,17 @@ class ReportModuleArchitectureTest extends TestCase
             'resources/js/modules/reports/report-overview.tsx',
             'resources/js/modules/reports/report-preset-list.tsx',
             'resources/js/modules/reports/saved-report-form-actions.tsx',
+            'resources/js/modules/reports/saved-report-detail-page.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-detail-metrics.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-detail-tabs.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-detail-workspace.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-guidance-card.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-next-step-card.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-output-card.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-output-panel.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-overview-panel.tsx',
+            'resources/js/modules/reports/saved-report-detail/saved-report-section-panel.tsx',
+            'resources/js/modules/reports/saved-report-detail/types.ts',
             'resources/js/modules/reports/saved-report-form-page.tsx',
             'resources/js/modules/reports/saved-report-identity-section.tsx',
             'resources/js/modules/reports/saved-report-period-fields.tsx',

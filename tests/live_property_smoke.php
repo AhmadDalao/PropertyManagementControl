@@ -384,15 +384,18 @@ if (is_array($savedPresets) && isset($savedPresets[0]['show_url'])) {
         (string) $savedPresets[0]['show_url'].'?locale=ar',
     );
     $savedReportPayload = smoke_page_payload($savedReportDetail['body']);
-    $documents = $savedReportPayload['props']['detailPage']['documents'] ?? [];
-    $badges = is_array($documents)
-        ? array_column($documents, 'badge')
+    $outputs = $savedReportPayload['props']['detailPage']['outputs'] ?? [];
+    $formats = is_array($outputs)
+        ? array_column($outputs, 'format')
         : [];
+    $tabs = $savedReportPayload['props']['detailPage']['availableTabs'] ?? [];
 
     if ($savedReportDetail['status'] !== 200
-        || smoke_component($savedReportDetail['body']) !== 'admin/resource-show'
-        || $badges !== ['PDF', 'DOCX', 'XLSX']) {
-        smoke_fail('Saved report detail did not expose the expected PDF, DOCX, and XLSX outputs.');
+        || smoke_component($savedReportDetail['body']) !== 'admin/reports/saved-show'
+        || $tabs !== ['overview', 'scope', 'outputs', 'access', 'history']
+        || $formats !== ['PDF', 'DOCX', 'XLSX']
+        || array_key_exists('documents', $savedReportPayload['props']['detailPage'] ?? [])) {
+        smoke_fail('Saved report detail did not expose the focused tabs and PDF, DOCX, XLSX outputs.');
     }
 
     smoke_note($savedPresets[0]['show_url'].' saved report detail and outputs');

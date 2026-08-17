@@ -44,7 +44,14 @@ final readonly class ReportPresetOutputPresenter
                     : 'app.reports.owner_statement',
             ),
             'subtitle' => $scope,
-            'badge' => $format,
+            'format' => $format,
+            'description' => trans('app.reports.saved_report_output_'.strtolower($format)),
+            'label' => trans('app.reports.saved_report_download', ['format' => $format]),
+            'icon' => match ($format) {
+                'PDF' => 'bi-file-earmark-pdf',
+                'DOCX' => 'bi-file-earmark-word',
+                default => 'bi-file-earmark-spreadsheet',
+            },
             'href' => $href,
         ])->values()->map(fn (array $document, int $index): array => [
             'id' => $index + 1,

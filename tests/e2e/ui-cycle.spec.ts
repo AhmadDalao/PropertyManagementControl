@@ -2443,24 +2443,28 @@ test.describe('authenticated administration', () => {
             .getByRole('tab');
         await expect(contractorTabs).toHaveCount(5);
         await expect(page.getByTestId('vendor-detail-panel')).toHaveCount(1);
-        await expect(page.locator('.pmc-resource-tab-select select')).toHaveCount(
-            0,
-        );
-        expect((await contractorTabs.first().boundingBox())?.height ?? 0).toBeGreaterThanOrEqual(
-            44,
-        );
+        await expect(
+            page.locator('.pmc-resource-tab-select select'),
+        ).toHaveCount(0);
+        expect(
+            (await contractorTabs.first().boundingBox())?.height ?? 0,
+        ).toBeGreaterThanOrEqual(44);
 
         await page.getByRole('tab', { name: 'حجم العمل' }).click();
         await expect(page).toHaveURL(/tab=workload/);
-        expect(await page.locator('.pmc-vendor-job-card').count()).toBeLessThanOrEqual(
-            16,
-        );
+        expect(
+            await page.locator('.pmc-vendor-job-card').count(),
+        ).toBeLessThanOrEqual(16);
         await page.getByRole('tab', { name: 'المواعيد' }).click();
         await expect(page).toHaveURL(/tab=schedule/);
-        await expect(page.getByText('موقف المواعيد', { exact: true })).toBeVisible();
+        await expect(
+            page.getByText('موقف المواعيد', { exact: true }),
+        ).toBeVisible();
         await page.getByRole('tab', { name: 'المالية' }).click();
         await expect(page).toHaveURL(/tab=financial/);
-        await expect(page.getByText('موقف التكلفة', { exact: true })).toBeVisible();
+        await expect(
+            page.getByText('موقف التكلفة', { exact: true }),
+        ).toBeVisible();
         await expect(page.getByTestId('vendor-detail-panel')).toHaveCount(1);
         await expectNoHorizontalOverflow(page);
 
@@ -3275,25 +3279,83 @@ test.describe('authenticated administration', () => {
         await expect(
             page.getByRole('link', { name: 'تشغيل التقرير' }),
         ).toBeVisible();
-        await expect(page.locator('.pmc-resource-decision-card')).toHaveCount(
-            4,
-        );
+        await expect(
+            page.locator('.pmc-saved-report-detail-metrics article'),
+        ).toHaveCount(4);
         await expect(page.getByText('PDF · DOCX · XLSX')).toBeVisible();
-        await page
-            .getByRole('combobox', { name: 'أقسام السجل' })
-            .selectOption('documents');
-        const savedReportFiles = page.locator('.pmc-document-strip > a');
+        const savedReportTabs = page.locator('.pmc-saved-report-detail-tabs');
+        await expect(savedReportTabs.getByRole('tab')).toHaveCount(5);
+        await expect(page.getByRole('tabpanel')).toHaveCount(1);
+        await expect(
+            page.getByRole('combobox', { name: 'أقسام السجل' }),
+        ).toHaveCount(0);
+
+        for (const tab of await savedReportTabs.getByRole('tab').all()) {
+            expect((await tab.boundingBox())!.height).toBeGreaterThanOrEqual(
+                44,
+            );
+        }
+
+        await savedReportTabs.getByRole('tab', { name: /الملفات/ }).click();
+        await expect(page).toHaveURL(/tab=outputs/);
+        const savedReportFiles = page.locator(
+            '.pmc-saved-report-output-card > a',
+        );
         await expect(savedReportFiles).toHaveCount(3);
         await expect(
-            savedReportFiles.filter({ hasText: 'PDF' }),
+            page.locator('.pmc-saved-report-output-card.is-pdf > a'),
         ).toHaveAttribute('href', /operating-report\.pdf/);
         await expect(
-            savedReportFiles.filter({ hasText: 'DOCX' }),
+            page.locator('.pmc-saved-report-output-card.is-docx > a'),
         ).toHaveAttribute('href', /operating-report\.docx/);
         await expect(
-            savedReportFiles.filter({ hasText: 'XLSX' }),
+            page.locator('.pmc-saved-report-output-card.is-xlsx > a'),
         ).toHaveAttribute('href', /operating-report\.xlsx/);
+        await savedReportTabs.getByRole('tab', { name: /النطاق/ }).click();
+        await expect(page).toHaveURL(/tab=scope/);
+        await expect(page.getByText('تتحرك هذه الفترة تلقائياً')).toBeVisible();
+        const scopeTab = savedReportTabs.getByRole('tab', { name: /النطاق/ });
+        await scopeTab.focus();
+        await scopeTab.press('End');
+        await expect(
+            savedReportTabs.getByRole('tab', { name: /السجل/ }),
+        ).toHaveAttribute('aria-selected', 'true');
         await expectNoHorizontalOverflow(page);
+
+        const savedReportPath = new URL(page.url()).pathname;
+
+        for (const viewport of [
+            viewports.tablet,
+            viewports.compactDesktop,
+            viewports.desktop,
+        ]) {
+            await page.setViewportSize(viewport);
+            await page.goto(`${savedReportPath}?locale=ar&tab=outputs`);
+            await expect(
+                page.locator('.pmc-saved-report-output-card'),
+            ).toHaveCount(3);
+            await expect(page.getByRole('tabpanel')).toHaveCount(1);
+
+            if (viewport.width === viewports.desktop.width) {
+                await page.goto(`${savedReportPath}?locale=ar`);
+                const nextStep = page.locator('.pmc-saved-report-next-step');
+                expect((await nextStep.boundingBox())!.width).toBeGreaterThan(
+                    280,
+                );
+                expect(
+                    (await nextStep.locator('p').boundingBox())!.width,
+                ).toBeGreaterThan(240);
+            }
+
+            await expectNoHorizontalOverflow(page);
+        }
+
+        await page.setViewportSize(viewports.mobile);
+        await page.goto(`${savedReportPath}?locale=ar`);
+        const savedReportA11y = await new AxeBuilder({ page })
+            .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+            .analyze();
+        expect(savedReportA11y.violations).toEqual([]);
 
         await page.goto('/reports/saved?locale=ar');
         await expect(savedCard).toBeVisible();

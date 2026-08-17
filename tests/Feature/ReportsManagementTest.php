@@ -1253,23 +1253,29 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.saved.show', $preset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/reports/saved-show')
                 ->where('detailPage.header.title', 'Arrears watch')
-                ->where('detailPage.header.actions.0.label', 'Run report')
-                ->where('detailPage.decisionCards.0.value', 'Custom dates')
-                ->where('detailPage.decisionCards.1.value', $portfolio->name_en)
-                ->where('detailPage.documents.0.badge', 'PDF')
-                ->where('detailPage.documents.0.href', route('reports.statement.pdf', [
+                ->where('detailPage.availableTabs', ['overview', 'scope', 'outputs', 'access', 'history'])
+                ->where('detailPage.header.actions.0.label', 'Edit saved report')
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->all() === ['Run report', 'Duplicate', 'Remove'])
+                ->where('detailPage.stats.0.value', 'Custom dates')
+                ->where('detailPage.stats.1.value', $portfolio->name_en)
+                ->where('detailPage.outputs.0.format', 'PDF')
+                ->where('detailPage.outputs.0.href', route('reports.statement.pdf', [
                     'date_from' => '2026-01-01',
                     'date_to' => '2026-01-31',
                 ]))
-                ->where('detailPage.documents.1.badge', 'DOCX')
-                ->where('detailPage.documents.2.badge', 'XLSX')
-                ->where('detailPage.documents.2.href', route('reports.statement.workbook', [
+                ->where('detailPage.outputs.1.format', 'DOCX')
+                ->where('detailPage.outputs.2.format', 'XLSX')
+                ->where('detailPage.outputs.2.href', route('reports.statement.workbook', [
                     'date_from' => '2026-01-01',
                     'date_to' => '2026-01-31',
                 ]))
-                ->has('detailPage.timeline'));
+                ->has('detailPage.timeline')
+                ->missing('detailPage.decisionCards')
+                ->missing('detailPage.documents'));
 
         $this->actingAs($owner)
             ->delete(route('reports.presets.destroy', $preset))
@@ -1429,14 +1435,14 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.saved.show', $preset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.decisionCards.1.value', $otherPortfolio->name_en)
+                ->where('detailPage.stats.1.value', $otherPortfolio->name_en)
                 ->where('detailPage.sections.1.items.3.value', $otherPortfolio->name_en));
 
         $this->actingAs($superadmin)
             ->get(route('reports.saved.show', $preset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.decisionCards.1.value', 'All portfolios')
+                ->where('detailPage.stats.1.value', 'All portfolios')
                 ->where('detailPage.sections.1.items.3.value', 'All portfolios'));
     }
 
@@ -1489,32 +1495,47 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.saved.show', $preset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/reports/saved-show')
                 ->where('detailPage.header.title', 'Monthly owner review')
                 ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
                     ->pluck('label')
-                    ->all() === ['Run report', 'Edit saved report', 'Duplicate', 'Remove'])
-                ->where('detailPage.decisionCards.0.value', 'This month')
+                    ->all() === ['Edit saved report'])
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)
+                    ->pluck('label')
+                    ->all() === ['Run report', 'Duplicate', 'Remove'])
+                ->where('detailPage.stats.0.value', 'This month')
                 ->where(
-                    'detailPage.decisionCards.1.value',
+                    'detailPage.stats.1.value',
                     fn (string $scope): bool => str_contains($scope, 'Focused Tower'),
                 )
-                ->where('detailPage.documents.0.href', route('reports.properties.pdf', [
+                ->where('detailPage.outputs.0.href', route('reports.properties.pdf', [
                     'asset' => $property->id,
                     'date_from' => '2026-08-01',
                     'date_to' => '2026-08-20',
                 ]))
-                ->where('detailPage.documents.1.href', route('reports.properties.word', [
+                ->where('detailPage.outputs.1.href', route('reports.properties.word', [
                     'asset' => $property->id,
                     'date_from' => '2026-08-01',
                     'date_to' => '2026-08-20',
                 ]))
-                ->where('detailPage.documents.2.href', route('reports.properties.workbook', [
+                ->where('detailPage.outputs.2.href', route('reports.properties.workbook', [
                     'asset' => $property->id,
                     'date_from' => '2026-08-01',
                     'date_to' => '2026-08-20',
                 ]))
-                ->where('detailPage.sections.1.items.1.value', 'Portfolio team'));
+                ->where('detailPage.sections.2.items.1.value', 'Portfolio team')
+                ->where('detailPage.notices.scope.title', 'This period moves automatically'));
+
+        $this->actingAs($owner)
+            ->get(route('reports.saved.show', ['reportPreset' => $preset, 'locale' => 'ar']))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/reports/saved-show')
+                ->where('detailPage.header.title', 'مراجعة المالك الشهرية')
+                ->where('detailPage.availableTabs', ['overview', 'scope', 'outputs', 'access', 'history'])
+                ->where('detailPage.workflow.title', 'تشغيل النطاق المحفوظ')
+                ->where('detailPage.outputs.0.label', 'تنزيل PDF')
+                ->where('detailPage.notices.outputs.title', 'جميع الملفات تستخدم نطاقاً موثوقاً واحداً'));
 
         $this->actingAs($owner)
             ->get(route('reports.saved.edit', $preset))
@@ -1619,9 +1640,10 @@ class ReportsManagementTest extends TestCase
             ->get(route('reports.saved.show', $preset))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/reports/saved-show')
                 ->where('detailPage.header.title', 'Team collections')
-                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)
+                ->where('detailPage.header.actions', [])
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)
                     ->pluck('label')
                     ->all() === ['Run report', 'Duplicate', 'Remove']));
 

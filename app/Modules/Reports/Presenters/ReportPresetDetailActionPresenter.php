@@ -18,11 +18,6 @@ final class ReportPresetDetailActionPresenter
                 'href' => $view['url'],
                 'variant' => 'primary',
             ],
-            $view['can_edit'] ? [
-                'label' => trans('app.reports.edit_saved_report'),
-                'href' => $view['edit_url'],
-                'variant' => 'secondary',
-            ] : null,
             $view['can_duplicate'] ? [
                 'label' => trans('app.reports.duplicate'),
                 'href' => route('reports.saved.duplicate', $preset),

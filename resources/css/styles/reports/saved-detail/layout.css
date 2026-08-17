@@ -1,0 +1,61 @@
+.pmc-saved-report-detail-panel,
+.pmc-saved-report-overview-grid,
+.pmc-saved-report-overview-grid > main,
+.pmc-saved-report-overview-grid > aside,
+.pmc-saved-report-section-layout,
+.pmc-saved-report-section-layout > main,
+.pmc-saved-report-section-layout > aside,
+.pmc-saved-report-output-layout,
+.pmc-saved-report-output-layout > main,
+.pmc-saved-report-output-layout > aside {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-saved-report-detail-panel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.pmc-saved-report-overview-grid,
+.pmc-saved-report-section-layout,
+.pmc-saved-report-output-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.34fr);
+    align-items: start;
+}
+
+.pmc-saved-report-overview-grid > aside,
+.pmc-saved-report-section-layout > aside,
+.pmc-saved-report-output-layout > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 4.8rem);
+}
+
+.pmc-saved-report-detail-panel .pmc-resource-detail-card,
+.pmc-saved-report-detail-panel .pmc-side-panel,
+.pmc-saved-report-detail-panel .pmc-resource-workflow {
+    margin: 0;
+    border-radius: 0.62rem;
+    box-shadow: none;
+}
+
+.pmc-saved-report-detail-panel .pmc-resource-detail-card,
+.pmc-saved-report-detail-panel .pmc-side-panel {
+    padding: 0.9rem !important;
+}
+
+.pmc-saved-report-detail-panel .pmc-resource-detail-card dl {
+    gap: 0;
+    border-top: 1px solid var(--pmc-line-soft);
+    border-inline-start: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-saved-report-detail-panel .pmc-resource-detail-card dl > div {
+    padding: 0.68rem;
+    border-inline-end: 1px solid var(--pmc-line-soft);
+    border-bottom: 1px solid var(--pmc-line-soft);
+    border-radius: 0;
+    background: #fff;
+}

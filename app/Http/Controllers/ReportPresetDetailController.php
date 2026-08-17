@@ -16,7 +16,7 @@ final class ReportPresetDetailController extends Controller
 
     public function __invoke(Request $request, ReportPreset $reportPreset): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/reports/saved-show', [
             'detailPage' => $this->details->present(
                 $this->actor($request),
                 $reportPreset,

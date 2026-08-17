@@ -1,0 +1,44 @@
+.pmc-saved-report-detail-metrics {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+}
+
+.pmc-saved-report-detail-metrics article {
+    display: grid;
+    min-width: 0;
+    min-height: 4.5rem;
+    align-content: center;
+    gap: 0.3rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.pmc-saved-report-detail-metrics article.is-primary {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-saved-report-detail-metrics article.is-teal {
+    border-color: rgba(8, 120, 110, 0.24);
+    background: #f1fbf8;
+}
+
+.pmc-saved-report-detail-metrics span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-saved-report-detail-metrics strong {
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
