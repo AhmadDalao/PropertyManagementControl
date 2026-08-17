@@ -40,7 +40,7 @@ class PortfolioController extends Controller
 
     public function show(Request $request, Portfolio $portfolio): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/portfolios/show', [
             'detailPage' => $this->detailPresenter->present($portfolio, $this->actor($request)),
         ]);
     }

@@ -221,6 +221,9 @@
 .bi-database-gear::before {
     content: '\f8bf';
 }
+.bi-dash-circle::before {
+    content: '\f2e6';
+}
 .bi-device-ssd::before {
     content: '\f6fb';
 }

@@ -1,0 +1,91 @@
+.pmc-portfolio-next-step {
+    display: grid;
+    min-width: 0;
+    gap: 0.7rem;
+    padding: 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-inline-start: 0.25rem solid var(--pmc-primary);
+    border-radius: 0.62rem;
+    background: linear-gradient(145deg, var(--pmc-primary-soft) 0%, #fff 62%);
+}
+
+.pmc-portfolio-next-step.is-teal {
+    border-inline-start-color: var(--pmc-teal);
+    background: linear-gradient(145deg, #f1fbf8 0%, #fff 62%);
+}
+
+.pmc-portfolio-next-step.is-danger {
+    border-inline-start-color: var(--pmc-red);
+    background: linear-gradient(145deg, #fff6f3 0%, #fff 62%);
+}
+
+.pmc-portfolio-next-step > header {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.6rem;
+}
+
+.pmc-portfolio-next-step > header > span {
+    display: grid;
+    width: 2.2rem;
+    height: 2.2rem;
+    place-items: center;
+    border-radius: 0.52rem;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.85rem;
+}
+
+.pmc-portfolio-next-step header div {
+    min-width: 0;
+}
+
+.pmc-portfolio-next-step header small {
+    display: block;
+    margin-bottom: 0.16rem;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+}
+
+.pmc-portfolio-next-step h2 {
+    margin: 0;
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.pmc-portfolio-next-step header em {
+    padding: 0.2rem 0.38rem;
+    border-radius: 999px;
+    background: var(--pmc-ink);
+    color: #fff;
+    font-size: 0.54rem;
+    font-style: normal;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pmc-portfolio-next-step > p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.64rem;
+    line-height: 1.55;
+}
+
+.pmc-portfolio-next-step > div:last-child {
+    display: grid;
+    gap: 0.38rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-portfolio-next-step .btn {
+    min-height: 2.75rem;
+    justify-content: center;
+    font-size: 0.62rem;
+}

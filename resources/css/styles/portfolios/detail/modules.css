@@ -1,0 +1,91 @@
+.pmc-portfolio-module-panel {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: #fff;
+}
+
+.pmc-portfolio-module-panel > header small {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--pmc-primary-strong);
+    font-size: 0.58rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.pmc-portfolio-module-panel h2 {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.pmc-portfolio-module-panel header p,
+.pmc-portfolio-module-grid p {
+    margin: 0.24rem 0 0;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    line-height: 1.5;
+}
+
+.pmc-portfolio-module-grid {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 0.5rem;
+}
+
+.pmc-portfolio-module-grid article {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.55rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line-soft);
+    border-radius: 0.48rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-portfolio-module-grid article.is-enabled {
+    border-color: rgba(18, 129, 60, 0.22);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-portfolio-module-grid article > span {
+    color: var(--pmc-muted);
+    font-size: 0.8rem;
+}
+
+.pmc-portfolio-module-grid article.is-enabled > span {
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-portfolio-module-grid article > div {
+    min-width: 0;
+}
+
+.pmc-portfolio-module-grid strong {
+    display: block;
+    overflow-wrap: anywhere;
+    font-size: 0.66rem;
+}
+
+.pmc-portfolio-module-grid em {
+    padding: 0.16rem 0.34rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--pmc-muted);
+    font-size: 0.52rem;
+    font-style: normal;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.pmc-portfolio-module-grid .is-enabled em {
+    color: var(--pmc-primary-strong);
+}

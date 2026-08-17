@@ -2663,6 +2663,15 @@ test.describe('authenticated administration', () => {
         expect(portfolioId).toBeTruthy();
 
         await page.goto(`${portfolioHref}?locale=ar`);
+        await expect(page.getByTestId('portfolio-detail-tabs')).toBeVisible();
+        await expect(page.getByTestId('portfolio-detail-tabs')).toHaveAttribute(
+            'role',
+            'tablist',
+        );
+        await expect(page.getByTestId('portfolio-detail-panel')).toHaveCount(1);
+        await expect(
+            page.locator('.pmc-portfolio-detail-tabs select'),
+        ).toHaveCount(0);
         const createAssetAction = page.getByRole('link', {
             name: 'إنشاء أصل',
             exact: true,
@@ -2678,6 +2687,27 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/portfolios/1?locale=ar');
+        const portfolioTabs = page.getByTestId('portfolio-detail-tabs');
+        await expect(portfolioTabs.getByRole('tab')).toHaveCount(7);
+        await portfolioTabs.getByRole('tab', { name: /المالية/ }).click();
+        await expect(page).toHaveURL(/tab=financial/);
+        await expect(page.getByTestId('portfolio-detail-panel')).toHaveCount(1);
+        await expect(
+            page.getByText('المركز المالي', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.locator('a[href*="/assets?portfolio_id=1"]'),
+        ).toBeVisible();
+        await expect(
+            page.locator(
+                'a[href*="/payments?portfolio_id=1"][href*="status=posted"]',
+            ),
+        ).toBeVisible();
+        await expect(
+            page.locator('a[href*="/reports/statement?portfolio_id=1"]'),
+        ).toBeVisible();
+        await portfolioTabs.getByRole('tab', { name: 'نظرة عامة' }).click();
+        await expect(page).toHaveURL(/tab=overview/);
         const completedSetup = page.locator(
             '.pmc-resource-progress[data-progress-complete="true"]',
         );
@@ -2705,15 +2735,6 @@ test.describe('authenticated administration', () => {
         await expect(
             completedSetup.locator('.pmc-resource-progress-details'),
         ).not.toBeVisible();
-        await expect(
-            page.getByRole('link', { name: 'مراجعة العقارات' }),
-        ).toHaveAttribute('href', /portfolio_id=1/);
-        await expect(
-            page.getByRole('link', { name: 'مراجعة الدفعات المرحلة' }),
-        ).toHaveAttribute('href', /portfolio_id=1.*status=posted/);
-        await expect(
-            page.getByRole('link', { name: 'فتح كشف التشغيل' }),
-        ).toHaveAttribute('href', /portfolio_id=1/);
         await expectNoHorizontalOverflow(page);
 
         await page.goto(

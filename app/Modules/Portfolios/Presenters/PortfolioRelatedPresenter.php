@@ -23,22 +23,24 @@ class PortfolioRelatedPresenter
     public function present(PortfolioDetailData $data, User $actor): array
     {
         $portfolio = $data->portfolio;
+        $platformAccess = $actor->hasRole('superadmin');
+        $visible = fn (string $module): bool => $platformAccess || ($data->settings[$module] ?? true);
 
-        return [
-            $this->assetTable(
+        return collect([
+            $visible('assets') ? $this->assetTable(
                 $data->assets,
                 $portfolio,
                 $portfolio->status === 'active' && ($data->settings['assets'] ?? true),
-            ),
-            $this->peopleTable(
+            ) : null,
+            $visible('users') ? $this->peopleTable(
                 $data->people,
                 $portfolio,
                 $actor,
                 $portfolio->status === 'active' && ($data->settings['users'] ?? true),
-            ),
-            $this->leaseTable($data->leases),
-            $this->maintenanceTable($data->maintenance),
-        ];
+            ) : null,
+            $visible('leases') ? $this->leaseTable($data->leases) : null,
+            $visible('maintenance') ? $this->maintenanceTable($data->maintenance) : null,
+        ])->filter()->values()->all();
     }
 
     /**
@@ -48,6 +50,7 @@ class PortfolioRelatedPresenter
     private function assetTable(Collection $assets, Portfolio $portfolio, bool $canCreate): array
     {
         return [
+            'key' => 'properties',
             'title' => trans('app.portfolios.recent_assets'),
             'description' => trans('app.portfolios.recent_assets_help'),
             'columns' => [
@@ -78,6 +81,7 @@ class PortfolioRelatedPresenter
     private function peopleTable(Collection $people, Portfolio $portfolio, User $actor, bool $canCreate): array
     {
         return [
+            'key' => 'people',
             'title' => trans('app.portfolios.people'),
             'description' => trans('app.portfolios.people_help'),
             'columns' => [
@@ -111,6 +115,7 @@ class PortfolioRelatedPresenter
     private function leaseTable(Collection $leases): array
     {
         return [
+            'key' => 'leases',
             'title' => trans('app.portfolios.recent_leases'),
             'description' => trans('app.portfolios.recent_leases_help'),
             'columns' => [
@@ -139,6 +144,7 @@ class PortfolioRelatedPresenter
     private function maintenanceTable(Collection $requests): array
     {
         return [
+            'key' => 'maintenance',
             'title' => trans('app.portfolios.recent_maintenance'),
             'description' => trans('app.portfolios.recent_maintenance_help'),
             'columns' => [

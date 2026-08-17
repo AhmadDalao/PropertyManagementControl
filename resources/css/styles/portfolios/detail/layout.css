@@ -1,0 +1,105 @@
+.pmc-portfolio-detail-metrics {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+}
+
+.pmc-portfolio-detail-metrics article {
+    display: grid;
+    min-width: 0;
+    gap: 0.24rem;
+    padding: 0.65rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.5rem;
+    background: #fff;
+}
+
+.pmc-portfolio-detail-metrics article.is-primary {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-portfolio-detail-metrics article.is-teal {
+    border-color: rgba(8, 120, 110, 0.24);
+    background: #f1fbf8;
+}
+
+.pmc-portfolio-detail-metrics article.is-danger {
+    border-color: rgba(196, 48, 48, 0.24);
+    background: #fff5f5;
+}
+
+.pmc-portfolio-detail-metrics span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.58rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-portfolio-detail-metrics strong {
+    overflow-wrap: anywhere;
+    font-size: 0.84rem;
+    line-height: 1.3;
+}
+
+.pmc-portfolio-detail-panel,
+.pmc-portfolio-record-stack,
+.pmc-portfolio-overview-grid,
+.pmc-portfolio-overview-grid > main,
+.pmc-portfolio-overview-grid > aside {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-portfolio-detail-panel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.pmc-portfolio-overview-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.34fr);
+    align-items: start;
+}
+
+.pmc-portfolio-overview-grid > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 4.8rem);
+}
+
+.pmc-portfolio-detail-panel .pmc-resource-detail-card,
+.pmc-portfolio-detail-panel .pmc-related-table-card,
+.pmc-portfolio-detail-panel .pmc-side-panel,
+.pmc-portfolio-detail-panel .pmc-resource-progress {
+    margin: 0;
+    border-radius: 0.62rem;
+    box-shadow: none;
+}
+
+.pmc-portfolio-detail-panel .pmc-resource-detail-card,
+.pmc-portfolio-detail-panel .pmc-related-table-card {
+    padding: 0.9rem !important;
+}
+
+.pmc-portfolio-detail-panel .pmc-resource-detail-card dl {
+    gap: 0;
+    border-top: 1px solid var(--pmc-line-soft);
+    border-inline-start: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-portfolio-detail-panel .pmc-resource-detail-card dl > div {
+    padding: 0.62rem;
+    border-inline-end: 1px solid var(--pmc-line-soft);
+    border-bottom: 1px solid var(--pmc-line-soft);
+    border-radius: 0;
+    background: #fff;
+}
+
+.pmc-portfolio-detail-panel .pmc-resource-detail-card header {
+    margin-bottom: 0.7rem;
+}

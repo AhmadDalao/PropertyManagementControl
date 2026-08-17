@@ -4,7 +4,6 @@ namespace App\Modules\Portfolios\Presenters;
 
 use App\Models\User;
 use App\Modules\Portfolios\Data\PortfolioDetailData;
-use App\Modules\Portfolios\Support\PortfolioModules;
 use App\Modules\Shared\ResourcePresenter;
 use App\Modules\Users\Support\UserAccess;
 
@@ -24,15 +23,31 @@ class PortfolioOverviewPresenter
         $name = $this->resources->localized($portfolio->name_en, $portfolio->name_ar)
             ?? $portfolio->code;
         $location = implode(' · ', array_filter([$portfolio->city, $portfolio->country]));
-        $enabledModules = collect(PortfolioModules::definitions())
-            ->filter(fn (array $definition): bool => $data->settings[(string) $definition['key']] ?? true)
-            ->pluck('label')
-            ->join(', ');
         $net = $data->postedRevenue - $data->postedExpenses;
         $platformAccess = $actor->hasRole('superadmin');
-        $assetsEnabled = $platformAccess || ($data->settings['assets'] ?? true);
-        $paymentsEnabled = $platformAccess || ($data->settings['payments'] ?? true);
-        $reportsEnabled = $platformAccess || ($data->settings['reports'] ?? true);
+        $visible = fn (string $module): bool => $platformAccess || ($data->settings[$module] ?? true);
+        $financialVisible = collect(['assets', 'payments', 'expenses', 'reports'])
+            ->contains($visible);
+        $stats = [
+            ['label' => trans('app.portfolios.portfolio_status'), 'value' => trans("app.status.{$portfolio->status}"), 'tone' => $portfolio->status === 'active' ? 'teal' : 'danger'],
+        ];
+
+        if ($visible('assets')) {
+            $stats[] = ['label' => trans('app.portfolios.properties'), 'value' => $data->assetTotal, 'tone' => 'primary'];
+            $stats[] = ['label' => trans('app.portfolios.vacant_rentable'), 'value' => $data->vacantAssets, 'tone' => $data->vacantAssets > 0 ? 'danger' : 'muted'];
+        }
+
+        if ($visible('users')) {
+            $stats[] = ['label' => trans('app.portfolios.people_count'), 'value' => $data->visibleUsers];
+        }
+
+        if ($visible('leases')) {
+            $stats[] = ['label' => trans('app.portfolios.active_leases_label'), 'value' => $data->activeLeases, 'tone' => 'teal'];
+        }
+
+        if ($visible('maintenance')) {
+            $stats[] = ['label' => trans('app.portfolios.open_service'), 'value' => $data->openMaintenance, 'tone' => $data->openMaintenance > 0 ? 'danger' : 'muted'];
+        }
 
         return [
             'header' => [
@@ -46,63 +61,10 @@ class PortfolioOverviewPresenter
                 'backLabel' => trans('app.portfolios.all_portfolios'),
                 'actions' => $this->actions->present($portfolio, $actor, $data->settings),
             ],
-            'decisionCards' => [
+            'stats' => $this->resources->detailItems($stats),
+            'sections' => array_values(array_filter([
                 [
-                    'title' => trans('app.portfolios.portfolio_status'),
-                    'value' => trans("app.status.{$portfolio->status}"),
-                    'detail' => trans('app.portfolios.module_count', ['count' => count(array_filter($data->settings))]),
-                    'tone' => $portfolio->status === 'active' ? 'teal' : 'danger',
-                    'icon' => 'bi-shield-check',
-                ],
-                [
-                    'title' => trans('app.portfolios.recorded_valuation'),
-                    'value' => $this->money($data->valuation, $currency),
-                    'detail' => trans('app.portfolios.vacant_units', ['count' => $data->vacantAssets]),
-                    'tone' => 'primary',
-                    'icon' => 'bi-buildings',
-                    ...($assetsEnabled ? [
-                        'href' => route('assets.index', ['portfolio_id' => $portfolio->id]),
-                        'actionLabel' => trans('app.portfolios.review_properties'),
-                    ] : []),
-                ],
-                [
-                    'title' => trans('app.portfolios.posted_revenue'),
-                    'value' => $this->money($data->postedRevenue, $currency),
-                    'detail' => trans('app.portfolios.active_lease_count', ['count' => $data->activeLeases]),
-                    'tone' => 'teal',
-                    'icon' => 'bi-cash-stack',
-                    ...($paymentsEnabled ? [
-                        'href' => route('payments.index', [
-                            'portfolio_id' => $portfolio->id,
-                            'status' => 'posted',
-                        ]),
-                        'actionLabel' => trans('app.portfolios.review_payments'),
-                    ] : []),
-                ],
-                [
-                    'title' => trans('app.portfolios.net_position'),
-                    'value' => $this->money($net, $currency),
-                    'detail' => trans('app.portfolios.expense_summary', [
-                        'amount' => $this->money($data->postedExpenses, $currency),
-                    ]),
-                    'tone' => $net >= 0 ? 'blue' : 'danger',
-                    'icon' => 'bi-graph-up-arrow',
-                    ...($reportsEnabled ? [
-                        'href' => route('reports.statement', [
-                            'portfolio_id' => $portfolio->id,
-                        ]),
-                        'actionLabel' => trans('app.portfolios.open_operating_statement'),
-                    ] : []),
-                ],
-            ],
-            'stats' => $this->resources->detailItems([
-                ['label' => trans('app.portfolios.assets'), 'value' => $data->assetTotal, 'tone' => 'primary'],
-                ['label' => trans('app.portfolios.users'), 'value' => $data->visibleUsers],
-                ['label' => trans('app.portfolios.active_leases_label'), 'value' => $data->activeLeases, 'tone' => 'teal'],
-                ['label' => trans('app.portfolios.open_maintenance'), 'value' => $data->openMaintenance, 'tone' => $data->openMaintenance > 0 ? 'danger' : 'muted'],
-            ]),
-            'sections' => [
-                [
+                    'key' => 'profile',
                     'title' => trans('app.portfolios.business_profile'),
                     'description' => trans('app.portfolios.business_profile_help'),
                     'items' => $this->resources->detailItems([
@@ -114,9 +76,11 @@ class PortfolioOverviewPresenter
                         ['label' => trans('app.portfolios.contact_phone'), 'value' => $portfolio->contact_phone],
                         ['label' => trans('app.portfolios.location'), 'value' => $location],
                         ['label' => trans('app.portfolios.address'), 'value' => $this->resources->localized($portfolio->address, $portfolio->address_ar)],
+                        ['label' => trans('app.portfolios.showcase_state'), 'value' => $portfolio->is_showcase ? trans('app.portfolios.showcase') : trans('app.portfolios.live_data')],
                     ]),
                 ],
-                [
+                $visible('users') ? [
+                    'key' => 'ownership',
                     'title' => trans('app.portfolios.ownership_modules'),
                     'description' => trans('app.portfolios.ownership_modules_help'),
                     'items' => $this->resources->detailItems([
@@ -125,13 +89,40 @@ class PortfolioOverviewPresenter
                             'value' => $portfolio->owner?->name ?: trans('app.portfolios.no_owner'),
                             'href' => $this->users->recordHref($actor, $portfolio->owner),
                         ],
-                        ['label' => trans('app.portfolios.enabled_modules'), 'value' => $enabledModules],
-                        ['label' => trans('app.portfolios.showcase_state'), 'value' => $portfolio->is_showcase ? trans('app.portfolios.showcase') : trans('app.portfolios.live_data')],
+                        ['label' => trans('app.portfolios.enabled_modules'), 'value' => trans('app.portfolios.module_count', ['count' => count(array_filter($data->settings))])],
                         ['label' => trans('app.portfolios.created_at'), 'value' => $portfolio->created_at?->toDateTimeString()],
                         ['label' => trans('app.portfolios.updated_at'), 'value' => $portfolio->updated_at?->toDateTimeString()],
                     ]),
-                ],
-            ],
+                ] : null,
+                $financialVisible ? [
+                    'key' => 'financial',
+                    'title' => trans('app.portfolios.financial_position'),
+                    'description' => trans('app.portfolios.financial_position_help'),
+                    'items' => $this->resources->detailItems(array_values(array_filter([
+                        $visible('assets') ? [
+                            'label' => trans('app.portfolios.recorded_valuation'),
+                            'value' => $this->money($data->valuation, $currency),
+                            'href' => route('assets.index', ['portfolio_id' => $portfolio->id]),
+                        ] : null,
+                        $visible('payments') ? [
+                            'label' => trans('app.portfolios.posted_revenue'),
+                            'value' => $this->money($data->postedRevenue, $currency),
+                            'href' => route('payments.index', ['portfolio_id' => $portfolio->id, 'status' => 'posted']),
+                        ] : null,
+                        $visible('expenses') ? [
+                            'label' => trans('app.portfolios.posted_expenses'),
+                            'value' => $this->money($data->postedExpenses, $currency),
+                            'href' => route('expenses.index', ['portfolio_id' => $portfolio->id, 'status' => 'posted']),
+                        ] : null,
+                        $visible('payments') && $visible('expenses') ? [
+                            'label' => trans('app.portfolios.net_position'),
+                            'value' => $this->money($net, $currency),
+                            'href' => $visible('reports') ? route('reports.statement', ['portfolio_id' => $portfolio->id]) : null,
+                            'tone' => $net < 0 ? 'danger' : 'teal',
+                        ] : null,
+                    ]))),
+                ] : null,
+            ])),
         ];
     }
 

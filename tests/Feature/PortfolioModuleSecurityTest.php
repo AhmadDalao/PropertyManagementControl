@@ -46,8 +46,10 @@ class PortfolioModuleSecurityTest extends TestCase
         $response = $this->actingAs($manager)->get(route('portfolios.show', $portfolio));
 
         $response->assertOk()->assertInertia(fn (Assert $page) => $page
-            ->component('admin/resource-show')
-            ->where('detailPage.stats.1.value', 13)
+            ->component('admin/portfolios/show')
+            ->where('detailPage.stats', fn ($stats): bool => collect($stats)
+                ->contains(fn (array $stat): bool => $stat['label'] === 'People'
+                    && $stat['value'] === 13))
             ->has('detailPage.related.0.rows', 8)
             ->has('detailPage.related.1.rows', 8)
             ->where('detailPage.related.1.rows', function ($rows) use ($owner, $peer): bool {
@@ -252,17 +254,24 @@ class PortfolioModuleSecurityTest extends TestCase
             ->get(route('portfolios.show', $portfolio))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->has('detailPage.related.0.rows', 0)
-                ->has('detailPage.related.1.rows', 0)
-                ->has('detailPage.related.2.rows', 0)
-                ->has('detailPage.related.3.rows', 0)
-                ->where('detailPage.related.0.actionHref', null)
-                ->where('detailPage.related.1.actionHref', null));
+                ->where('detailPage.availableTabs', ['overview', 'financial', 'history'])
+                ->has('detailPage.related', 0)
+                ->has('detailPage.documents', 0)
+                ->where('detailPage.sections', fn ($sections): bool => ! collect($sections)
+                    ->contains('key', 'ownership'))
+                ->where('detailPage.modules', fn ($modules): bool => collect($modules)
+                    ->whereIn('key', ['users', 'assets', 'leases', 'maintenance', 'documents'])
+                    ->every(fn (array $module): bool => $module['enabled'] === false)));
 
         $this->actingAs($superadmin)
             ->get(route('portfolios.show', $portfolio))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/portfolios/show')
+                ->where('detailPage.availableTabs', [
+                    'overview', 'properties', 'people', 'operations',
+                    'financial', 'documents', 'history',
+                ])
                 ->has('detailPage.related.0.rows', 1)
                 ->has('detailPage.related.1.rows', 2)
                 ->has('detailPage.related.2.rows', 1)
@@ -355,6 +364,9 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.progress.title', 'أكمل أساس التشغيل')
                 ->where('detailPage.progress.expandLabel', 'عرض خطوات الإعداد')
                 ->where('detailPage.progress.collapseLabel', 'إخفاء خطوات الإعداد')
+                ->where('detailPage.availableTabs.0', 'overview')
+                ->where('detailPage.availableTabs.1', 'properties')
+                ->where('detailPage.workflow.eyebrow', 'إجراء المحفظة التالي')
                 ->where('detailPage.sections.0.title', 'ملف النشاط')
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains('label', 'الموقع'))
@@ -455,19 +467,19 @@ class PortfolioModuleSecurityTest extends TestCase
                     'portfolio_id' => $portfolio->id,
                 ]))
                 ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.decisionCards.1.href', route('assets.index', [
-                    'portfolio_id' => $portfolio->id,
-                ]))
-                ->where('detailPage.decisionCards.1.actionLabel', 'Review properties')
-                ->where('detailPage.decisionCards.2.href', route('payments.index', [
-                    'portfolio_id' => $portfolio->id,
-                    'status' => 'posted',
-                ]))
-                ->where('detailPage.decisionCards.2.actionLabel', 'Review posted payments')
-                ->where('detailPage.decisionCards.3.href', route('reports.statement', [
-                    'portfolio_id' => $portfolio->id,
-                ]))
-                ->where('detailPage.decisionCards.3.actionLabel', 'Open operating statement')
+                ->missing('detailPage.decisionCards')
+                ->where('detailPage.sections.2.items', function ($items) use ($portfolio): bool {
+                    $links = collect($items)->pluck('href', 'label');
+
+                    return $links['Recorded valuation'] === route('assets.index', [
+                        'portfolio_id' => $portfolio->id,
+                    ]) && $links['Posted revenue'] === route('payments.index', [
+                        'portfolio_id' => $portfolio->id,
+                        'status' => 'posted',
+                    ]) && $links['Net position'] === route('reports.statement', [
+                        'portfolio_id' => $portfolio->id,
+                    ]);
+                })
                 ->where('detailPage.sections.0.items', fn ($items): bool => collect($items)
                     ->contains('label', 'Location')));
 
@@ -488,9 +500,13 @@ class PortfolioModuleSecurityTest extends TestCase
                 ->where('detailPage.header.actions.0.variant', 'primary')
                 ->where('detailPage.header.actions.1.label', 'Edit portfolio')
                 ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.decisionCards', fn ($cards): bool => ! isset($cards[1]['href']))
+                ->where('detailPage.availableTabs', fn ($tabs): bool => ! collect($tabs)
+                    ->contains('properties'))
+                ->where('detailPage.sections.2.items', fn ($items): bool => ! collect($items)
+                    ->contains('label', 'Recorded valuation'))
                 ->where('detailPage.progress.steps.3.href', route('portfolios.edit', $portfolio))
                 ->where('detailPage.progress.steps.3.actionLabel', 'Configure portfolio')
+                ->where('detailPage.workflow.actions.0.href', route('portfolios.edit', $portfolio))
                 ->has('detailPage.header.actions', 2));
     }
 
@@ -503,7 +519,58 @@ class PortfolioModuleSecurityTest extends TestCase
             ->get(route('portfolios.show', $portfolio))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->has('detailPage.header.actions', 0));
+                ->has('detailPage.header.actions', 0)
+                ->where('detailPage.workflow.title', 'Property assignment required')
+                ->has('detailPage.workflow.actions', 0));
+    }
+
+    public function test_portfolio_workflow_prioritizes_service_before_vacancy(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $portfolio->update(['owner_user_id' => $owner->id]);
+        $manager = $this->createUserWithRole('property_manager', $portfolio);
+        $tenantUser = $this->createUserWithRole('tenant', $portfolio);
+        $tenant = $this->createTenantProfile($portfolio, $tenantUser);
+        $occupied = $this->createAsset($portfolio, ['code' => 'WORKFLOW-OCCUPIED']);
+        $this->createAsset($portfolio, ['code' => 'WORKFLOW-VACANT']);
+        $lease = $this->createLease($portfolio, $tenant, $occupied, $manager);
+        $request = MaintenanceRequest::query()->create([
+            'portfolio_id' => $portfolio->id,
+            'asset_id' => $occupied->id,
+            'lease_id' => $lease->id,
+            'tenant_profile_id' => $tenant->id,
+            'submitted_by_user_id' => $tenantUser->id,
+            'category' => 'general',
+            'priority' => 'high',
+            'status' => 'open',
+            'title' => 'Priority workflow request',
+            'description' => 'Service must be handled before vacancy review.',
+            'requested_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.title', 'Resolve open service requests')
+                ->where('detailPage.workflow.actions.0.href', route('maintenance-requests.index', [
+                    'portfolio_id' => $portfolio->id,
+                    'status' => 'open',
+                ])));
+
+        $request->update(['status' => 'resolved', 'resolved_at' => now()]);
+
+        $this->actingAs($owner)
+            ->get(route('portfolios.show', $portfolio))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('detailPage.workflow.title', 'Activate vacant rentable space')
+                ->where('detailPage.workflow.actions.0.href', route('assets.index', [
+                    'portfolio_id' => $portfolio->id,
+                    'rentable' => 'yes',
+                    'occupancy_status' => 'vacant',
+                ])));
     }
 
     /** @param array<string, mixed> $overrides */

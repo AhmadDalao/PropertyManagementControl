@@ -43,8 +43,11 @@ class PortfolioModuleArchitectureTest extends TestCase
         $this->assertLessThanOrEqual(45, substr_count($detail, "\n") + 1);
         $this->assertStringContainsString('PortfolioDetailQuery', $detail);
         $this->assertStringContainsString('PortfolioOverviewPresenter', $detail);
+        $this->assertStringContainsString('PortfolioDetailTabPresenter', $detail);
+        $this->assertStringContainsString('PortfolioWorkflowPresenter', $detail);
         $this->assertStringContainsString('PortfolioSetupProgressPresenter', $detail);
         $this->assertStringContainsString('PortfolioRelatedPresenter', $detail);
+        $this->assertStringContainsString('PortfolioModulePresenter', $detail);
         $this->assertStringNotContainsString('->assets()', $detail);
         $this->assertStringNotContainsString('selectRaw(', $detail);
 
@@ -72,6 +75,22 @@ class PortfolioModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function portfolio_detail_owns_a_custom_modular_workspace(): void
+    {
+        $controller = $this->source($this->path('app/Http/Controllers/PortfolioController.php'));
+        $entry = $this->source($this->path('resources/js/modules/portfolios/detail-page.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/portfolios/detail/portfolio-detail-workspace.tsx'));
+
+        $this->assertStringContainsString("Inertia::render('admin/portfolios/show'", $controller);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $controller);
+        $this->assertLessThanOrEqual(30, substr_count($entry, "\n") + 1);
+        $this->assertLessThanOrEqual(115, substr_count($workspace, "\n") + 1);
+        $this->assertStringContainsString('PortfolioDetailWorkspace', $entry);
+        $this->assertStringContainsString('PortfolioDetailTabs', $workspace);
+        $this->assertStringNotContainsString('<select', $workspace);
+    }
+
+    #[Test]
     public function portfolio_module_owns_each_resource_responsibility(): void
     {
         foreach ([
@@ -79,11 +98,14 @@ class PortfolioModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Portfolios/Data/PortfolioDetailData.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioActionPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioDetailPresenter.php'),
+            $this->path('app/Modules/Portfolios/Presenters/PortfolioDetailTabPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioFormPresenter.php'),
+            $this->path('app/Modules/Portfolios/Presenters/PortfolioModulePresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioOverviewPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioRelatedPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioSetupProgressPresenter.php'),
             $this->path('app/Modules/Portfolios/Presenters/PortfolioSetupStepsPresenter.php'),
+            $this->path('app/Modules/Portfolios/Presenters/PortfolioWorkflowPresenter.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDetailQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioDirectoryQuery.php'),
             $this->path('app/Modules/Portfolios/Queries/PortfolioIndexQuery.php'),
@@ -101,6 +123,12 @@ class PortfolioModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/portfolios/portfolio-table-config.tsx'),
             $this->path('resources/js/modules/portfolios/portfolio-table.tsx'),
             $this->path('resources/js/modules/portfolios/types.ts'),
+            $this->path('resources/js/modules/portfolios/detail-page.tsx'),
+            $this->path('resources/js/modules/portfolios/detail/portfolio-detail-workspace.tsx'),
+            $this->path('resources/js/modules/portfolios/detail/portfolio-detail-tabs.tsx'),
+            $this->path('resources/js/modules/portfolios/detail/types.ts'),
+            $this->path('resources/js/pages/admin/portfolios/show.tsx'),
+            $this->path('resources/css/styles/portfolios/detail.css'),
         ] as $path) {
             $this->assertFileExists($path);
         }

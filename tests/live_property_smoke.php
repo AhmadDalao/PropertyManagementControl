@@ -538,30 +538,34 @@ $portfolioDetail = smoke_request(
 $portfolioPayload = smoke_page_payload($portfolioDetail['body']);
 $portfolioProps = $portfolioPayload['props']['detailPage'] ?? [];
 $portfolioProgress = $portfolioProps['progress'] ?? [];
-$portfolioCards = $portfolioProps['decisionCards'] ?? [];
+$portfolioTabs = $portfolioProps['availableTabs'] ?? [];
+$portfolioSections = $portfolioProps['sections'] ?? [];
+$portfolioSectionLinks = [];
+
+foreach ($portfolioSections as $section) {
+    foreach (($section['items'] ?? []) as $item) {
+        if (is_string($item['href'] ?? null)) {
+            $portfolioSectionLinks[] = $item['href'];
+        }
+    }
+}
+
 $progressIsValid = ! $detailPortfolioIsLive
     || (($portfolioProgress['collapseWhenComplete'] ?? null) === true
         && ($portfolioProgress['expandLabel'] ?? null) === 'عرض خطوات الإعداد');
 
 if ($portfolioDetail['status'] !== 200
-    || smoke_component($portfolioDetail['body']) !== 'admin/resource-show'
+    || smoke_component($portfolioDetail['body']) !== 'admin/portfolios/show'
     || ! $progressIsValid
-    || ! str_contains(
-        (string) ($portfolioCards[1]['href'] ?? ''),
-        "/assets?portfolio_id={$detailPortfolioId}",
-    )
-    || ! str_contains(
-        (string) ($portfolioCards[2]['href'] ?? ''),
-        "/payments?portfolio_id={$detailPortfolioId}&status=posted",
-    )
-    || ! str_contains(
-        (string) ($portfolioCards[3]['href'] ?? ''),
-        "/reports/statement?portfolio_id={$detailPortfolioId}",
-    )) {
-    smoke_fail('Portfolio detail did not expose the compact setup and scoped operating flow.');
+    || count($portfolioTabs) !== 7
+    || array_key_exists('decisionCards', $portfolioProps)
+    || ! in_array("/assets?portfolio_id={$detailPortfolioId}", $portfolioSectionLinks, true)
+    || ! in_array("/payments?portfolio_id={$detailPortfolioId}&status=posted", $portfolioSectionLinks, true)
+    || ! in_array("/reports/statement?portfolio_id={$detailPortfolioId}", $portfolioSectionLinks, true)) {
+    smoke_fail('Portfolio detail did not expose the custom tabbed, scoped operating flow.');
 }
 
-smoke_note('/portfolios/{portfolio} compact setup and operating links valid');
+smoke_note('/portfolios/{portfolio} custom tabs, setup and operating links valid');
 
 $companyWorkbook = smoke_request(
     $baseUrl,
