@@ -3,9 +3,12 @@
 namespace App\Modules\Expenses\Presenters;
 
 use App\Modules\Expenses\Data\ExpenseDetailData;
+use App\Modules\Expenses\Support\ExpenseEvidenceLinks;
 
 final class ExpenseWorkflowPresenter
 {
+    public function __construct(private readonly ExpenseEvidenceLinks $evidence) {}
+
     /** @return array<string, mixed> */
     public function present(ExpenseDetailData $data): array
     {
@@ -16,6 +19,16 @@ final class ExpenseWorkflowPresenter
             $actions[] = [
                 'label' => trans('app.expenses.review_and_post'),
                 'href' => route('expenses.edit', $expense),
+                'variant' => 'primary',
+            ];
+        }
+
+        if ($expense->status === 'posted'
+            && $data->documentsEnabled
+            && $expense->portfolio?->status === 'active') {
+            $actions[] = [
+                'label' => trans('app.expenses.upload_evidence'),
+                'href' => $this->evidence->upload($expense),
                 'variant' => 'primary',
             ];
         }

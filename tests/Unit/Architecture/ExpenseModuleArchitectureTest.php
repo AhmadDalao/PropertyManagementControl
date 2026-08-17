@@ -17,6 +17,8 @@ class ExpenseModuleArchitectureTest extends TestCase
         $this->assertStringContainsString('ExpenseFormPresenter', $source);
         $this->assertStringContainsString('ExpenseDetailPresenter', $source);
         $this->assertStringContainsString('ManageExpenses', $source);
+        $this->assertStringContainsString("'admin/expenses/show'", $source);
+        $this->assertStringNotContainsString("'admin/resource-show'", $source);
         $this->assertStringNotContainsString('ExpenseEntry::query()', $source);
         $this->assertStringNotContainsString('->validate([', $source);
         $this->assertStringNotContainsString('DB::', $source);
@@ -35,6 +37,23 @@ class ExpenseModuleArchitectureTest extends TestCase
     }
 
     #[Test]
+    public function expense_detail_is_a_custom_keyboard_accessible_workspace(): void
+    {
+        $entry = $this->source($this->path('resources/js/modules/expenses/detail-page.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/expenses/detail/expense-detail-workspace.tsx'));
+        $tabs = $this->source($this->path('resources/js/modules/expenses/detail/expense-detail-tabs.tsx'));
+
+        $this->assertLessThanOrEqual(35, substr_count($entry, "\n") + 1);
+        $this->assertStringContainsString('ExpenseDetailWorkspace', $entry);
+        $this->assertStringContainsString('ExpenseEvidencePanel', $workspace);
+        $this->assertStringContainsString('role="tabpanel"', $workspace);
+        $this->assertStringContainsString('role="tab"', $tabs);
+        $this->assertStringContainsString("event.key === 'Home'", $tabs);
+        $this->assertStringContainsString("event.key === 'End'", $tabs);
+        $this->assertStringNotContainsString('<select', $workspace.$tabs);
+    }
+
+    #[Test]
     public function expense_module_owns_each_resource_responsibility(): void
     {
         foreach ([
@@ -49,6 +68,7 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Expenses/Presenters/ExpenseDetailOverviewPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseDetailPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseEditFormPresenter.php'),
+            $this->path('app/Modules/Expenses/Presenters/ExpenseEvidencePresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormFieldsPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseFormPresenter.php'),
             $this->path('app/Modules/Expenses/Presenters/ExpenseTableRowPresenter.php'),
@@ -62,6 +82,7 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Expenses/Requests/StoreExpenseRequest.php'),
             $this->path('app/Modules/Expenses/Requests/UpdateExpenseRequest.php'),
             $this->path('app/Modules/Expenses/Support/ExpenseAccess.php'),
+            $this->path('app/Modules/Expenses/Support/ExpenseEvidenceLinks.php'),
             $this->path('app/Modules/Expenses/Support/ExpenseAttributes.php'),
             $this->path('app/Modules/Expenses/Support/ExpenseInputGuard.php'),
             $this->path('app/Modules/Expenses/Support/ExpenseOptions.php'),
@@ -72,6 +93,13 @@ class ExpenseModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/expenses/expense-table.tsx'),
             $this->path('resources/js/modules/expenses/expense-table-config.tsx'),
             $this->path('resources/js/modules/expenses/types.ts'),
+            $this->path('resources/js/modules/expenses/detail-page.tsx'),
+            $this->path('resources/js/modules/expenses/detail/expense-detail-workspace.tsx'),
+            $this->path('resources/js/modules/expenses/detail/expense-detail-tabs.tsx'),
+            $this->path('resources/js/modules/expenses/detail/expense-evidence-panel.tsx'),
+            $this->path('resources/js/modules/expenses/detail/types.ts'),
+            $this->path('resources/js/pages/admin/expenses/show.tsx'),
+            $this->path('resources/css/styles/expenses/detail.css'),
         ] as $path) {
             $this->assertFileExists($path);
         }

@@ -2,10 +2,7 @@
 
 namespace App\Modules\Documents\Queries;
 
-use App\Models\Asset;
 use App\Models\Document;
-use App\Models\Lease;
-use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Documents\Support\DocumentAttachments;
 use App\Modules\Documents\Support\DocumentExpiryState;
@@ -21,6 +18,7 @@ final class DocumentFilters
         private readonly DocumentAttachments $attachments,
         private readonly DocumentExpiryState $expiry,
         private readonly DocumentPropertyScope $properties,
+        private readonly DocumentRelatedSearch $related,
         private readonly TableQuery $tables,
     ) {}
 
@@ -86,7 +84,7 @@ final class DocumentFilters
             'title_ar',
             'original_name',
             'type',
-            fn (Builder $query, string $search, string $like) => $this->relatedSearch($query, $like),
+            fn (Builder $query, string $search, string $like) => $this->related->apply($query, $like),
         ]);
     }
 
@@ -98,31 +96,6 @@ final class DocumentFilters
     {
         $this->tables->exact($query, $filters, 'portfolio_id');
         $this->properties->apply($query, $filters, $actor);
-    }
-
-    /**
-     * @param  Builder<Document>  $documents
-     * @return Builder<Document>
-     */
-    private function relatedSearch(Builder $documents, string $like): Builder
-    {
-        return $documents
-            ->orWhereHas('uploadedBy', fn (Builder $users) => $users
-                ->where('name', 'like', $like)
-                ->orWhere('email', 'like', $like))
-            ->orWhere(fn (Builder $leases) => $leases
-                ->whereIn('documentable_type', $this->attachments->typesFor('lease'))
-                ->whereIn('documentable_id', Lease::query()->select('id')->where('code', 'like', $like)))
-            ->orWhere(fn (Builder $assets) => $assets
-                ->whereIn('documentable_type', $this->attachments->typesFor('asset'))
-                ->whereIn('documentable_id', Asset::query()
-                    ->select('id')
-                    ->where('title_en', 'like', $like)
-                    ->orWhere('title_ar', 'like', $like)
-                    ->orWhere('code', 'like', $like)))
-            ->orWhere(fn (Builder $payments) => $payments
-                ->whereIn('documentable_type', $this->attachments->typesFor('payment'))
-                ->whereIn('documentable_id', Payment::query()->select('id')->where('reference', 'like', $like)));
     }
 
     private function validDate(string $value): bool

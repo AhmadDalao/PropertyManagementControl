@@ -1,0 +1,107 @@
+.pmc-expense-detail-metrics {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-bottom: 0.7rem;
+}
+
+.pmc-expense-detail-metrics article {
+    display: grid;
+    min-width: 0;
+    min-height: 4.5rem;
+    align-content: center;
+    gap: 0.3rem;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.6rem;
+    background: #fff;
+}
+
+.pmc-expense-detail-metrics article.is-primary {
+    border-color: rgba(18, 129, 60, 0.3);
+    background: var(--pmc-primary-soft);
+}
+
+.pmc-expense-detail-metrics article.is-teal {
+    border-color: rgba(8, 120, 110, 0.24);
+    background: #f1fbf8;
+}
+
+.pmc-expense-detail-metrics article.is-danger {
+    border-color: rgba(196, 48, 48, 0.24);
+    background: #fff5f5;
+}
+
+.pmc-expense-detail-metrics span {
+    overflow: hidden;
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+    font-weight: 750;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-expense-detail-metrics strong {
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+    line-height: 1.3;
+}
+
+.pmc-expense-detail-panel,
+.pmc-expense-record-stack,
+.pmc-expense-overview-grid,
+.pmc-expense-overview-grid > main,
+.pmc-expense-overview-grid > aside,
+.pmc-expense-evidence-layout,
+.pmc-expense-evidence-layout > main,
+.pmc-expense-evidence-layout > aside {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-expense-detail-panel {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.pmc-expense-overview-grid,
+.pmc-expense-evidence-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(19rem, 0.34fr);
+    align-items: start;
+}
+
+.pmc-expense-overview-grid > aside,
+.pmc-expense-evidence-layout > aside {
+    position: sticky;
+    top: calc(var(--pmc-topbar-height) + 4.8rem);
+}
+
+.pmc-expense-detail-panel .pmc-resource-detail-card,
+.pmc-expense-detail-panel .pmc-side-panel,
+.pmc-expense-detail-panel .pmc-resource-workflow {
+    margin: 0;
+    border-radius: 0.62rem;
+    box-shadow: none;
+}
+
+.pmc-expense-detail-panel .pmc-resource-detail-card,
+.pmc-expense-detail-panel .pmc-side-panel {
+    padding: 0.9rem !important;
+}
+
+.pmc-expense-detail-panel .pmc-resource-detail-card dl {
+    gap: 0;
+    border-top: 1px solid var(--pmc-line-soft);
+    border-inline-start: 1px solid var(--pmc-line-soft);
+}
+
+.pmc-expense-detail-panel .pmc-resource-detail-card dl > div {
+    padding: 0.68rem;
+    border-inline-end: 1px solid var(--pmc-line-soft);
+    border-bottom: 1px solid var(--pmc-line-soft);
+    border-radius: 0;
+    background: #fff;
+}

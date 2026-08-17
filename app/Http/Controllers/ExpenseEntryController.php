@@ -51,7 +51,7 @@ class ExpenseEntryController extends Controller
 
     public function show(Request $request, ExpenseEntry $expense): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/expenses/show', [
             'detailPage' => $this->detailPresenter->present($expense, $this->actor($request)),
         ]);
     }

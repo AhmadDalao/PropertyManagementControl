@@ -117,6 +117,7 @@ class DocumentModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Documents/Queries/DocumentIndexQuery.php'),
             $this->path('app/Modules/Documents/Queries/DocumentInsightsQuery.php'),
             $this->path('app/Modules/Documents/Queries/DocumentPropertyScope.php'),
+            $this->path('app/Modules/Documents/Queries/DocumentRelatedSearch.php'),
             $this->path('app/Modules/Documents/Requests/StoreDocumentRequest.php'),
             $this->path('app/Modules/Documents/Requests/UpdateDocumentRequest.php'),
             $this->path('app/Modules/Documents/Support/DocumentAccess.php'),

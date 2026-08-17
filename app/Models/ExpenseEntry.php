@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Models\Concerns\HasShowcaseBadge;
 use App\Models\Concerns\LogsModelActivity;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 /**
  * @property-read Portfolio|null $portfolio
@@ -15,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Lease|null $lease
  * @property-read MaintenanceRequest|null $maintenanceRequest
  * @property-read User|null $createdBy
+ * @property-read Collection<int, Document> $documents
  * @property CarbonInterface|null $incurred_on
  * @property float $amount
  */
@@ -63,5 +66,11 @@ class ExpenseEntry extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /** @return MorphMany<Document, $this> */
+    public function documents(): MorphMany
+    {
+        return $this->morphMany(Document::class, 'documentable');
     }
 }

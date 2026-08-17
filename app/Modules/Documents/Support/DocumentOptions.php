@@ -5,7 +5,7 @@ namespace App\Modules\Documents\Support;
 final class DocumentOptions
 {
     /** @var array<int, string> */
-    public const ATTACHMENTS = ['lease', 'asset', 'payment'];
+    public const ATTACHMENTS = ['lease', 'asset', 'payment', 'expense'];
 
     /** @var array<int, string> */
     public const TYPES = [
@@ -48,6 +48,7 @@ final class DocumentOptions
         ],
         'payment' => ['receipt'],
         'asset' => [],
+        'expense' => [],
     ];
 
     public static function canShowInPortal(string $attachment, string $type): bool

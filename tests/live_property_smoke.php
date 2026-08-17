@@ -1317,12 +1317,20 @@ $expenseRows = $expensePayload['props']['expenses']['data'] ?? [];
 if (is_array($expenseRows) && isset($expenseRows[0]['id'])) {
     $expenseId = (int) $expenseRows[0]['id'];
     $expenseDetail = smoke_request($baseUrl, $cookieFile, 'GET', '/expenses/'.$expenseId.'?locale=en');
+    $expenseDetailPayload = smoke_page_payload($expenseDetail['body']);
+    $expensePage = $expenseDetailPayload['props']['detailPage'] ?? [];
 
-    if ($expenseDetail['status'] !== 200 || smoke_component($expenseDetail['body']) !== 'admin/resource-show') {
+    if ($expenseDetail['status'] !== 200 || smoke_component($expenseDetail['body']) !== 'admin/expenses/show') {
         smoke_fail("Expense {$expenseId} detail did not load.");
     }
 
-    smoke_note("/expenses/{$expenseId} admin/resource-show");
+    if (($expensePage['availableTabs'] ?? []) !== ['overview', 'financial', 'evidence', 'history']
+        || ($expensePage['evidence']['enabled'] ?? false) !== true
+        || array_key_exists('decisionCards', $expensePage)) {
+        smoke_fail("Expense {$expenseId} did not expose the focused evidence workspace.");
+    }
+
+    smoke_note("/expenses/{$expenseId} admin/expenses/show with PDF evidence workspace");
 } else {
     smoke_note('No posted expense available for the non-destructive detail check.');
 }

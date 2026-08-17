@@ -727,7 +727,7 @@ class DocumentLibraryManagementTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('formPage.title', 'رفع المستند')
-                ->where('formPage.description', 'اربط ملف PDF خاصاً بعقد أو أصل أو دفعة.')
+                ->where('formPage.description', 'اربط ملف PDF خاصاً بعقد أو عقار أو دفعة أو مصروف.')
                 ->where('formPage.fields', function ($fields): bool {
                     $fields = collect($fields)->keyBy('name');
 

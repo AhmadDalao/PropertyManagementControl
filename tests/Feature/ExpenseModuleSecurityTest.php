@@ -311,6 +311,7 @@ class ExpenseModuleSecurityTest extends TestCase
                     'Edit expense',
                 ])
                 ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
+                    'Upload receipt or invoice',
                     'Void expense',
                 ]));
 
@@ -433,7 +434,7 @@ class ExpenseModuleSecurityTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->where('app.locale', 'ar')
                 ->where('formPage.title', 'تسجيل مصروف')
-                ->where('formPage.fields.0.label', 'الأصل')
+                ->where('formPage.fields.0.label', 'العقار / الوحدة')
                 ->where('formPage.fields.2.options.0.label', 'الصيانة'));
 
         $this->actingAs($owner)
@@ -442,6 +443,7 @@ class ExpenseModuleSecurityTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('detailPage.header.eyebrow', 'سجل المصروف')
+                ->where('detailPage.availableTabs', ['overview', 'financial', 'evidence', 'history'])
                 ->where('detailPage.sections.0.title', 'سياق التكلفة')
                 ->where('detailPage.sections.1.tab', 'financial'));
     }

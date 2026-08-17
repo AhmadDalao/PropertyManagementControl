@@ -13,5 +13,6 @@ final readonly class ExpenseDetailData
         public string $category,
         public string $status,
         public string $amount,
+        public bool $documentsEnabled,
     ) {}
 }

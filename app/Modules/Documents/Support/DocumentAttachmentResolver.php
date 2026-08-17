@@ -3,6 +3,7 @@
 namespace App\Modules\Documents\Support;
 
 use App\Models\Asset;
+use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\Portfolio;
@@ -24,7 +25,7 @@ final class DocumentAttachmentResolver
         string $alias,
         int $id,
         bool $lock = false,
-    ): Asset|Lease|Payment {
+    ): Asset|Lease|Payment|ExpenseEntry {
         $class = $this->classFor($alias);
         $query = $class::query();
 
@@ -44,6 +45,7 @@ final class DocumentAttachmentResolver
             $record instanceof Asset => $this->assignments->allowsAsset($actor, $record),
             $record instanceof Lease => $this->assignments->allowsLease($actor, $record),
             $record instanceof Payment => $this->assignments->allowsPayment($actor, $record),
+            $record instanceof ExpenseEntry => $this->assignments->allowsExpense($actor, $record),
         };
         abort_unless($allowed, 403, trans('app.errors.property_assignment_access_denied'));
         $portfolioQuery = Portfolio::query();
@@ -63,13 +65,14 @@ final class DocumentAttachmentResolver
         return $record;
     }
 
-    /** @return class-string<Asset|Lease|Payment> */
+    /** @return class-string<Asset|Lease|Payment|ExpenseEntry> */
     private function classFor(string $alias): string
     {
         return match ($alias) {
             'lease' => Lease::class,
             'asset' => Asset::class,
             'payment' => Payment::class,
+            'expense' => ExpenseEntry::class,
             default => throw ValidationException::withMessages([
                 'documentable_type' => trans('app.errors.unsupported_document_attachment'),
             ]),

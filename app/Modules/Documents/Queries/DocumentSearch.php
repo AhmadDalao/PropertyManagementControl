@@ -8,6 +8,7 @@ use App\Modules\Documents\Support\DocumentAccess;
 use App\Modules\Search\Presenters\SearchResultPresenter;
 use App\Modules\Search\Support\ModuleSearchSource;
 use App\Modules\Shared\TableQuery;
+use Illuminate\Database\Eloquent\Builder;
 
 class DocumentSearch extends ModuleSearchSource
 {
@@ -15,6 +16,7 @@ class DocumentSearch extends ModuleSearchSource
         private readonly DocumentAccess $access,
         private readonly TableQuery $tables,
         private readonly SearchResultPresenter $results,
+        private readonly DocumentRelatedSearch $related,
     ) {}
 
     public function results(User $actor, string $query): array
@@ -32,6 +34,7 @@ class DocumentSearch extends ModuleSearchSource
             'title_ar',
             'original_name',
             'type',
+            fn (Builder $documents, string $search, string $like) => $this->related->apply($documents, $like),
         ]);
 
         return $documents

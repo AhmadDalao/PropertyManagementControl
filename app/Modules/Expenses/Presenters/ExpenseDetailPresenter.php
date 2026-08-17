@@ -14,6 +14,7 @@ final class ExpenseDetailPresenter
         private readonly ExpenseDetailHeaderPresenter $header,
         private readonly ExpenseWorkflowPresenter $workflow,
         private readonly ExpenseDetailOverviewPresenter $overview,
+        private readonly ExpenseEvidencePresenter $evidence,
         private readonly ResourcePresenter $resources,
     ) {}
 
@@ -25,11 +26,15 @@ final class ExpenseDetailPresenter
         return [
             'header' => $this->header->present($data),
             'workflow' => $this->workflow->present($data),
-            'decisionCards' => $this->overview->decisionCards($data),
+            'availableTabs' => array_values(array_filter([
+                'overview',
+                'financial',
+                $data->documentsEnabled ? 'evidence' : null,
+                'history',
+            ])),
             'stats' => $this->overview->stats($data),
             'sections' => $this->overview->sections($data),
-            'related' => [],
-            'documents' => [],
+            'evidence' => $this->evidence->present($data),
             'timeline' => $this->resources->activityTimeline($expense),
         ];
     }

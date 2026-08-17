@@ -4,6 +4,7 @@ namespace App\Modules\Documents\Support;
 
 use App\Models\Asset;
 use App\Models\Document;
+use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Modules\Shared\MorphTypes;
@@ -23,6 +24,7 @@ final class DocumentAttachments
             $model instanceof Lease => 'lease',
             $model instanceof Asset => 'asset',
             $model instanceof Payment => 'payment',
+            $model instanceof ExpenseEntry => 'expense',
             default => null,
         };
     }
@@ -50,6 +52,7 @@ final class DocumentAttachments
             'lease' => $this->morphTypes->for(new Lease),
             'asset' => $this->morphTypes->for(new Asset),
             'payment' => $this->morphTypes->for(new Payment),
+            'expense' => $this->morphTypes->for(new ExpenseEntry),
             default => [$alias],
         };
     }
@@ -72,6 +75,11 @@ final class DocumentAttachments
                 'type' => 'payment',
                 'label' => $model->reference ?: '#'.$model->id,
                 'url' => route('payments.show', $model),
+            ],
+            $model instanceof ExpenseEntry => [
+                'type' => 'expense',
+                'label' => $model->title ?: '#'.$model->id,
+                'url' => route('expenses.show', $model),
             ],
             default => null,
         };

@@ -3,6 +3,7 @@
 namespace App\Modules\Documents\Support;
 
 use App\Models\Asset;
+use App\Models\ExpenseEntry;
 use App\Models\Lease;
 use App\Models\Payment;
 use App\Models\User;
@@ -16,7 +17,7 @@ final class DocumentAttributes
      */
     public function forCreate(
         User $actor,
-        Asset|Lease|Payment $attachment,
+        Asset|Lease|Payment|ExpenseEntry $attachment,
         string $attachmentAlias,
         StoredDocumentFile $file,
         array $data,

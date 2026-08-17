@@ -179,6 +179,11 @@ final class AssignedPropertyScope
                     $payments
                         ->whereIn('documentable_type', $this->morphTypes->for(new Payment))
                         ->whereIn('documentable_id', $this->paymentIds($actor));
+                })
+                ->orWhere(function (Builder $expenses) use ($actor): void {
+                    $expenses
+                        ->whereIn('documentable_type', $this->morphTypes->for(new ExpenseEntry))
+                        ->whereIn('documentable_id', $this->expenseIds($actor));
                 });
         });
     }
@@ -276,6 +281,11 @@ final class AssignedPropertyScope
                         $payments
                             ->whereIn('documentable_type', $this->morphTypes->for(new Payment))
                             ->whereIn('documentable_id', $this->paymentIds($actor));
+                    })
+                    ->orWhere(function (Builder $expenses) use ($actor): void {
+                        $expenses
+                            ->whereIn('documentable_type', $this->morphTypes->for(new ExpenseEntry))
+                            ->whereIn('documentable_id', $this->expenseIds($actor));
                     });
             });
         }
@@ -299,6 +309,12 @@ final class AssignedPropertyScope
     private function paymentIds(User $actor): Builder
     {
         return $this->payments(Payment::query(), $actor)->select('id');
+    }
+
+    /** @return Builder<ExpenseEntry> */
+    private function expenseIds(User $actor): Builder
+    {
+        return $this->expenses(ExpenseEntry::query(), $actor)->select('id');
     }
 
     /**

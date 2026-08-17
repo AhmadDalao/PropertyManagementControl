@@ -1,0 +1,64 @@
+.pmc-expense-evidence-empty,
+.pmc-expense-evidence-guide {
+    display: grid;
+    min-width: 0;
+    gap: 0.7rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.62rem;
+    background: #fff;
+}
+
+.pmc-expense-evidence-empty {
+    min-height: 12rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-content: center;
+    align-items: center;
+}
+
+.pmc-expense-evidence-empty > i,
+.pmc-expense-evidence-guide > span {
+    display: grid;
+    width: 2.8rem;
+    height: 2.8rem;
+    place-items: center;
+    border-radius: 0.58rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 1.1rem;
+}
+
+.pmc-expense-evidence-empty h2,
+.pmc-expense-evidence-guide h2 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.pmc-expense-evidence-empty p,
+.pmc-expense-evidence-guide p {
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.68rem;
+    line-height: 1.6;
+}
+
+.pmc-expense-evidence-guide {
+    border-inline-start: 0.25rem solid var(--pmc-primary);
+    background: linear-gradient(145deg, var(--pmc-primary-soft), #fff 65%);
+}
+
+.pmc-expense-evidence-guide .btn {
+    min-height: 2.75rem;
+    justify-content: center;
+    font-size: 0.64rem;
+}
+
+.pmc-expense-evidence-guide small {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+}
+
+.pmc-expense-detail-panel .pmc-document-strip a {
+    min-height: 3.5rem;
+}

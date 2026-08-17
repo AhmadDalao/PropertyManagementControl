@@ -2148,13 +2148,28 @@ test.describe('authenticated administration', () => {
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/expenses/1?locale=ar');
-        await page.locator('.pmc-resource-tab-select select').selectOption({
-            value: 'financial',
-        });
+        const expenseTabs = page.locator(
+            '.pmc-expense-detail-tabs [role="tab"]',
+        );
+        await expect(expenseTabs).toHaveCount(4);
+        await expect(
+            page.locator('.pmc-resource-tab-select select'),
+        ).toHaveCount(0);
+        await page
+            .getByRole('tab', { name: 'البيانات المالية', exact: false })
+            .click();
         await expect(page).toHaveURL(/tab=financial/);
         await expect(
             page.locator('.pmc-resource-detail-card').getByText('السجل المالي'),
         ).toBeVisible();
+        await page
+            .getByRole('tab', { name: 'الإثباتات', exact: false })
+            .click();
+        await expect(page).toHaveURL(/tab=evidence/);
+        await expect(
+            page.getByRole('heading', { name: 'الإيصالات والفواتير' }),
+        ).toBeVisible();
+        await expect(page.locator('[role="tabpanel"]')).toHaveCount(1);
         await expectNoHorizontalOverflow(page);
     });
 

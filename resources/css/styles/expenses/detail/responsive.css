@@ -1,0 +1,56 @@
+@media (max-width: 1199.98px) {
+    .pmc-expense-overview-grid,
+    .pmc-expense-evidence-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .pmc-expense-overview-grid > aside,
+    .pmc-expense-evidence-layout > aside {
+        position: static;
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-expense-detail-metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-expense-detail-tabs {
+        top: calc(var(--pmc-topbar-height) + 0.25rem);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        margin-inline: -0.25rem;
+    }
+
+    .pmc-expense-detail-tabs button span {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        white-space: normal;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pmc-expense-detail-metrics article {
+        min-height: 4.1rem;
+        padding: 0.6rem;
+    }
+
+    .pmc-expense-detail-metrics span {
+        white-space: normal;
+    }
+
+    .pmc-expense-detail-panel .pmc-resource-detail-card,
+    .pmc-expense-detail-panel .pmc-side-panel,
+    .pmc-expense-detail-panel .pmc-resource-workflow,
+    .pmc-expense-evidence-empty,
+    .pmc-expense-evidence-guide {
+        padding: 0.75rem !important;
+    }
+
+    .pmc-expense-evidence-empty {
+        min-height: 10rem;
+        grid-template-columns: minmax(0, 1fr);
+    }
+}

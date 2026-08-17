@@ -3,7 +3,9 @@
 namespace App\Modules\Documents\Queries;
 
 use App\Models\Document;
+use App\Models\ExpenseEntry;
 use App\Models\Lease;
+use App\Models\MaintenanceRequest;
 use App\Models\Payment;
 use App\Models\User;
 use App\Modules\Assets\Support\PropertyScope;
@@ -38,7 +40,20 @@ final readonly class DocumentPropertyScope
             ->whereIn('leaseable_type', $this->properties->leaseableTypes())
             ->whereIn('leaseable_id', $assetIds);
 
-        $documents->where(function (Builder $query) use ($assetIds, $leaseIds): void {
+        $maintenanceIds = fn (): Builder => MaintenanceRequest::query()
+            ->select('id')
+            ->whereIn('asset_id', $assetIds);
+
+        $expenseIds = fn (): Builder => ExpenseEntry::query()
+            ->select('id')
+            ->where(function (Builder $expenses) use ($assetIds, $leaseIds, $maintenanceIds): void {
+                $expenses
+                    ->whereIn('asset_id', $assetIds)
+                    ->orWhereIn('lease_id', $leaseIds())
+                    ->orWhereIn('maintenance_request_id', $maintenanceIds());
+            });
+
+        $documents->where(function (Builder $query) use ($assetIds, $leaseIds, $expenseIds): void {
             $query
                 ->where(function (Builder $assets) use ($assetIds): void {
                     $assets
@@ -59,6 +74,11 @@ final readonly class DocumentPropertyScope
                                 ->select('id')
                                 ->whereIn('lease_id', $leaseIds()),
                         );
+                })
+                ->orWhere(function (Builder $expenses) use ($expenseIds): void {
+                    $expenses
+                        ->whereIn('documentable_type', $this->attachments->typesFor('expense'))
+                        ->whereIn('documentable_id', $expenseIds());
                 });
         });
     }
