@@ -2472,7 +2472,17 @@ test.describe('authenticated administration', () => {
         expect(userHref).toBeTruthy();
 
         await page.goto(`${userHref}?locale=ar`);
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        const detailTabs = page
+            .getByTestId('user-detail-tabs')
+            .getByRole('tab');
+        await expect(detailTabs).toHaveCount(6);
+        await expect(page.getByTestId('user-detail-panel')).toHaveCount(1);
+        await expect(page.locator('main select')).toHaveCount(0);
         await expect(page.getByText('الحساب والنطاق')).toBeVisible();
+        await page.getByRole('tab', { name: 'الوصول', exact: true }).click();
+        await expect(page).toHaveURL(/tab=access/);
+        await expect(page.getByText('الأمان والنشاط')).toBeVisible();
         await expectNoHorizontalOverflow(page);
 
         await page.goto('/users/create?locale=ar');
@@ -2507,13 +2517,12 @@ test.describe('authenticated administration', () => {
             name: 'Manage property assignments',
         });
         await expect(assignmentLink).toBeVisible();
-        await expect(assignmentLink).toHaveClass(/btn-primary/);
+        await expect(assignmentLink).toHaveClass(/btn-outline-secondary/);
         expect(
             (await assignmentLink.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
-        await page.locator('.pmc-resource-action-menu summary').click();
         await expect(page.getByRole('link', { name: 'Edit user' })).toHaveClass(
-            /btn-outline-secondary/,
+            /btn-primary/,
         );
         const assignmentHref = await assignmentLink.getAttribute('href');
         expect(assignmentHref).toBeTruthy();
@@ -2535,10 +2544,9 @@ test.describe('authenticated administration', () => {
         expect(
             (await tenantProfileLink.boundingBox())?.height ?? 0,
         ).toBeGreaterThanOrEqual(44);
-        await page.locator('.pmc-resource-action-menu summary').click();
         await expect(
             page.getByRole('link', { name: 'تعديل المستخدم' }),
-        ).toHaveClass(/btn-outline-secondary/);
+        ).toHaveClass(/btn-primary/);
         await expectNoHorizontalOverflow(page);
 
         await page.goto(`${assignmentHref}?locale=ar`);

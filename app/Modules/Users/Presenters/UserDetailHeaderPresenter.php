@@ -3,58 +3,17 @@
 namespace App\Modules\Users\Presenters;
 
 use App\Models\User;
-use App\Modules\Portfolios\Support\PortfolioModules;
 
 final class UserDetailHeaderPresenter
 {
     /** @return array<string, mixed> */
     public function present(User $user, User $actor): array
     {
-        $actions = [];
-
-        if (
-            $user->hasRole('property_manager')
-            && $actor->hasAnyRole(['superadmin', 'owner'])
-        ) {
-            $actions[] = [
-                'label' => trans('app.users.manage_property_assignments'),
-                'href' => route('users.property-assignments.edit', $user),
-                'variant' => 'primary',
-            ];
-        }
-
-        if (
-            PortfolioModules::enabledForUser($actor, 'tenants')
-            && $user->tenantProfile
-        ) {
-            $actions[] = [
-                'label' => trans('app.users.open_tenant_profile'),
-                'href' => route('tenants.show', $user->tenantProfile),
-                'variant' => 'primary',
-            ];
-        }
-
-        $actions[] = [
+        $actions = [[
             'label' => trans('app.users.edit_user'),
             'href' => route('users.edit', $user),
-            'variant' => $actions === [] ? 'primary' : 'secondary',
-        ];
-
-        $actions[] = [
-            'label' => trans('app.users.manage_portal_access'),
-            'href' => route('users.portal-access.show', $user),
-            'variant' => 'secondary',
-        ];
-
-        if ($user->status !== 'suspended') {
-            $actions[] = [
-                'label' => trans('app.users.suspend_user'),
-                'href' => route('users.destroy', $user),
-                'method' => 'delete',
-                'variant' => 'danger',
-                'confirm' => trans('app.users.archive_confirm', ['name' => $user->name]),
-            ];
-        }
+            'variant' => 'primary',
+        ]];
 
         return [
             'eyebrow' => trans('app.users.detail_eyebrow'),

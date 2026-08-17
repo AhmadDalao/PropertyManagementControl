@@ -43,6 +43,7 @@ final class UserRelatedPresenter
     private function stakeholders(Collection $stakeholders): array
     {
         return [
+            'key' => 'properties',
             'title' => trans('app.users.assets_title'),
             'description' => trans('app.users.assets_help'),
             'columns' => [
@@ -73,6 +74,7 @@ final class UserRelatedPresenter
     private function maintenance(Collection $requests): array
     {
         return [
+            'key' => 'workload',
             'title' => trans('app.users.maintenance_title'),
             'description' => trans('app.users.maintenance_help'),
             'columns' => [

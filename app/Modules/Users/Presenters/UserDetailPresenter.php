@@ -13,6 +13,8 @@ final class UserDetailPresenter
         private readonly UserDetailQuery $details,
         private readonly UserDetailHeaderPresenter $header,
         private readonly UserDetailOverviewPresenter $overview,
+        private readonly UserDetailTabPresenter $tabs,
+        private readonly UserWorkflowPresenter $workflow,
         private readonly UserRelatedPresenter $related,
         private readonly ResourcePresenter $resources,
     ) {}
@@ -21,11 +23,12 @@ final class UserDetailPresenter
     public function present(User $target, User $actor): array
     {
         $data = $this->details->get($target, $actor);
-        $overview = $this->overview->present($data->user, $actor);
 
         return [
             'header' => $this->header->present($data->user, $actor),
-            ...$overview,
+            'availableTabs' => $this->tabs->present($actor),
+            'workflow' => $this->workflow->present($data, $actor),
+            ...$this->overview->present($data->user, $actor),
             'related' => $this->related->present($data->stakeholders, $data->maintenance, $actor),
             'documents' => PortfolioModules::enabledForUser($actor, 'documents')
                 ? $this->resources->documentStrip($data->documents)

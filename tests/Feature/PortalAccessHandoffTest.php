@@ -38,8 +38,11 @@ class PortalAccessHandoffTest extends TestCase
             ->get(route('users.show', $tenantUser))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.decisionCards.0.href', route('users.portal-access.show', $tenantUser))
-                ->where('detailPage.decisionCards.0.actionLabel', 'Portal access'));
+                ->component('admin/users/show')
+                ->missing('detailPage.decisionCards')
+                ->where('detailPage.workflow.actions.0.href', route('users.portal-access.show', $tenantUser))
+                ->where('detailPage.workflow.actions.0.label', 'Portal access')
+                ->where('detailPage.workflow.actions.0.variant', 'primary'));
         $this->actingAs($owner)
             ->get(route('tenants.show', $tenant))
             ->assertOk()

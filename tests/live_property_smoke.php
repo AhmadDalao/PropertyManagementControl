@@ -572,6 +572,33 @@ if ($portfolioDetail['status'] !== 200
 
 smoke_note('/portfolios/{portfolio} custom tabs, setup and operating links valid');
 
+$userIndex = smoke_request($baseUrl, $cookieFile, 'GET', '/users?per_page=10&locale=en');
+$userPayload = smoke_page_payload($userIndex['body']);
+$userRows = $userPayload['props']['users']['data'] ?? [];
+
+if (is_array($userRows) && isset($userRows[0]['id'])) {
+    $userId = (int) $userRows[0]['id'];
+    $userDetail = smoke_request($baseUrl, $cookieFile, 'GET', "/users/{$userId}?locale=ar");
+    $userDetailPayload = smoke_page_payload($userDetail['body']);
+    $userDetailProps = $userDetailPayload['props']['detailPage'] ?? [];
+    $userTabs = $userDetailProps['availableTabs'] ?? [];
+
+    if ($userDetail['status'] !== 200
+        || smoke_component($userDetail['body']) !== 'admin/users/show'
+        || ! is_array($userTabs)
+        || ! in_array('overview', $userTabs, true)
+        || ! in_array('access', $userTabs, true)
+        || ! in_array('history', $userTabs, true)
+        || ! is_array($userDetailProps['workflow'] ?? null)
+        || array_key_exists('decisionCards', $userDetailProps)) {
+        smoke_fail("User detail {$userId} did not expose the custom scoped workflow.");
+    }
+
+    smoke_note("/users/{$userId}?locale=ar admin/users/show with workflow tabs");
+} else {
+    smoke_fail('User directory did not return an account for detail verification.');
+}
+
 $companyWorkbook = smoke_request(
     $baseUrl,
     $cookieFile,

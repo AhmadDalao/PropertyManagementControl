@@ -49,7 +49,7 @@ class UserController extends Controller
 
     public function show(Request $request, User $user): Response
     {
-        return Inertia::render('admin/resource-show', [
+        return Inertia::render('admin/users/show', [
             'detailPage' => $this->detailPresenter->present($user, $this->actor($request)),
         ]);
     }

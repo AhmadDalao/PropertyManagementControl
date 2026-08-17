@@ -118,25 +118,30 @@ class UserModuleSecurityTest extends TestCase
             ->get(route('users.show', $tenantUser))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions.0.label', 'Open tenant profile')
-                ->where('detailPage.header.actions.0.href', route('tenants.show', $tenant))
+                ->component('admin/users/show')
+                ->where('detailPage.header.actions.0.label', 'Edit user')
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'Edit user')
-                ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.header.actions.2.label', 'Portal access')
-                ->where('detailPage.header.actions.2.variant', 'secondary'));
+                ->has('detailPage.header.actions', 1)
+                ->where('detailPage.workflow.title', 'Continue in the tenant profile')
+                ->where('detailPage.workflow.actions.0.label', 'Open tenant profile')
+                ->where('detailPage.workflow.actions.0.href', route('tenants.show', $tenant))
+                ->where('detailPage.workflow.actions.0.variant', 'primary')
+                ->where('detailPage.workflow.actions.1.label', 'Portal access')
+                ->where('detailPage.workflow.actions.1.variant', 'secondary'));
 
         $this->actingAs($owner)
             ->withSession(['locale' => 'ar'])
             ->get(route('users.show', $tenantUser))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions.0.label', 'فتح ملف المستأجر')
+                ->component('admin/users/show')
+                ->where('detailPage.header.actions.0.label', 'تعديل المستخدم')
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'تعديل المستخدم')
-                ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.header.actions.2.label', 'صلاحية البوابة')
-                ->where('detailPage.header.actions.2.variant', 'secondary'));
+                ->where('detailPage.workflow.title', 'تابع من ملف المستأجر')
+                ->where('detailPage.workflow.actions.0.label', 'فتح ملف المستأجر')
+                ->where('detailPage.workflow.actions.0.variant', 'primary')
+                ->where('detailPage.workflow.actions.1.label', 'صلاحية البوابة')
+                ->where('detailPage.workflow.actions.1.variant', 'secondary'));
     }
 
     public function test_user_detail_payload_obeys_disabled_portfolio_modules(): void
@@ -195,14 +200,14 @@ class UserModuleSecurityTest extends TestCase
             ->get(route('users.show', $tenantUser))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === [
-                    'Edit user',
-                    'Portal access',
-                    'Suspend user',
-                ])
+                ->component('admin/users/show')
+                ->where('detailPage.header.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === ['Edit user'])
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->has('detailPage.decisionCards', 2)
+                ->missing('detailPage.decisionCards')
+                ->where('detailPage.availableTabs', ['overview', 'access', 'history'])
+                ->where('detailPage.workflow.title', 'Account access is ready')
                 ->has('detailPage.stats', 2)
+                ->has('detailPage.sections', 2)
                 ->has('detailPage.related', 0)
                 ->has('detailPage.documents', 0));
     }
@@ -224,6 +229,50 @@ class UserModuleSecurityTest extends TestCase
         $this->assertSame(route('profile.index'), $access->recordHref($manager, $manager));
         $this->assertSame(route('users.show', $tenant), $access->recordHref($manager, $tenant));
         $this->assertSame(route('users.show', $manager), $access->recordHref($owner, $manager));
+    }
+
+    public function test_user_detail_prioritizes_manager_assignment_before_secondary_access_actions(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $manager = $this->createUserWithRole('property_manager', $portfolio, [
+            'force_password_reset' => false,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('users.show', $manager))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/users/show')
+                ->where('detailPage.workflow.title', 'Assign operating properties')
+                ->where('detailPage.workflow.tone', 'danger')
+                ->where('detailPage.workflow.actions.0.label', 'Manage property assignments')
+                ->where('detailPage.workflow.actions.0.href', route('users.property-assignments.edit', $manager))
+                ->where('detailPage.workflow.actions.0.variant', 'primary')
+                ->where('detailPage.workflow.actions.1.label', 'Portal access')
+                ->where('detailPage.workflow.actions.1.variant', 'secondary')
+                ->where('detailPage.workflow.actions.2.label', 'Suspend user')
+                ->where('detailPage.workflow.actions.2.variant', 'danger'));
+    }
+
+    public function test_user_detail_never_offers_portal_handoff_or_suspension_for_a_blocked_account(): void
+    {
+        $portfolio = $this->createPortfolio();
+        $owner = $this->createUserWithRole('owner', $portfolio);
+        $tenant = $this->createUserWithRole('tenant', $portfolio, [
+            'status' => 'suspended',
+            'force_password_reset' => true,
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('users.show', $tenant))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('admin/users/show')
+                ->where('detailPage.workflow.title', 'Restore or update this account')
+                ->where('detailPage.workflow.status', 'Suspended')
+                ->where('detailPage.workflow.actions', fn ($actions): bool => collect($actions)->pluck('label')->all() === ['Edit user'])
+                ->has('detailPage.header.actions', 1));
     }
 
     public function test_account_options_and_portfolio_boundaries_are_strictly_validated(): void
@@ -632,12 +681,25 @@ class UserModuleSecurityTest extends TestCase
             ->get(route('users.show', $manager))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->component('admin/resource-show')
+                ->component('admin/users/show')
                 ->where('app.locale', 'ar')
                 ->where('detailPage.header.eyebrow', 'حساب المستخدم')
                 ->where('detailPage.sections.0.title', 'الحساب والنطاق')
-                ->where('detailPage.decisionCards.2.value', 12)
-                ->where('detailPage.decisionCards.3.value', 12)
+                ->where('detailPage.availableTabs', [
+                    'overview',
+                    'access',
+                    'properties',
+                    'workload',
+                    'documents',
+                    'history',
+                ])
+                ->missing('detailPage.decisionCards')
+                ->where('detailPage.workflow.title', 'راجع المهام المعينة')
+                ->where('detailPage.stats', fn ($stats): bool => collect($stats)
+                    ->contains(fn (array $stat): bool => $stat['label'] === 'مسؤوليات العقارات' && $stat['value'] === 12)
+                    && collect($stats)->contains(fn (array $stat): bool => $stat['label'] === 'المهام المفتوحة' && $stat['value'] === 12))
+                ->where('detailPage.related.0.key', 'properties')
+                ->where('detailPage.related.1.key', 'workload')
                 ->has('detailPage.related.0.rows', 8)
                 ->has('detailPage.related.1.rows', 8));
 

@@ -54,6 +54,10 @@ class UserModuleArchitectureTest extends TestCase
             $this->path('app/Modules/Users/Presenters/UserDetailPresenter.php'),
             $this->path('app/Modules/Users/Presenters/UserDetailHeaderPresenter.php'),
             $this->path('app/Modules/Users/Presenters/UserDetailOverviewPresenter.php'),
+            $this->path('app/Modules/Users/Presenters/UserDetailTabPresenter.php'),
+            $this->path('app/Modules/Users/Presenters/UserWorkflowPresenter.php'),
+            $this->path('app/Modules/Users/Presenters/UserWorkflowActionPresenter.php'),
+            $this->path('app/Modules/Users/Presenters/UserWorkflowCompletionPresenter.php'),
             $this->path('app/Modules/Users/Presenters/UserEditFormPresenter.php'),
             $this->path('app/Modules/Users/Presenters/UserFormDefinitionPresenter.php'),
             $this->path('app/Modules/Users/Presenters/UserFormPresenter.php'),
@@ -94,6 +98,12 @@ class UserModuleArchitectureTest extends TestCase
             $this->path('resources/js/modules/users/portal-access-steps.tsx'),
             $this->path('resources/js/modules/users/portal-access-types.ts'),
             $this->path('resources/js/modules/users/use-portal-access-link.ts'),
+            $this->path('resources/js/modules/users/detail-page.tsx'),
+            $this->path('resources/js/modules/users/detail/user-detail-workspace.tsx'),
+            $this->path('resources/js/modules/users/detail/user-detail-tabs.tsx'),
+            $this->path('resources/js/modules/users/detail/types.ts'),
+            $this->path('resources/js/pages/admin/users/show.tsx'),
+            $this->path('resources/css/styles/users/detail.css'),
             $this->path('resources/css/styles/users/property-assignments.css'),
             $this->path('resources/css/styles/users/property-assignments/base.css'),
             $this->path('resources/css/styles/users/property-assignments/cards.css'),
@@ -113,6 +123,9 @@ class UserModuleArchitectureTest extends TestCase
         foreach ([
             'app/Modules/Users/Actions/ManageUsers.php' => 40,
             'app/Modules/Users/Presenters/UserDetailPresenter.php' => 45,
+            'app/Modules/Users/Presenters/UserWorkflowPresenter.php' => 145,
+            'app/Modules/Users/Presenters/UserWorkflowActionPresenter.php' => 110,
+            'app/Modules/Users/Presenters/UserWorkflowCompletionPresenter.php' => 80,
             'app/Modules/Users/Presenters/UserFormPresenter.php' => 45,
             'app/Modules/Users/Presenters/UserCreateFormPresenter.php' => 75,
             'app/Modules/Users/Queries/UserIndexQuery.php' => 90,
@@ -135,6 +148,9 @@ class UserModuleArchitectureTest extends TestCase
             'resources/js/modules/users/portal-access-account-card.tsx' => 85,
             'resources/js/modules/users/portal-access-steps.tsx' => 60,
             'resources/js/modules/users/use-portal-access-link.ts' => 100,
+            'resources/js/modules/users/detail-page.tsx' => 30,
+            'resources/js/modules/users/detail/user-detail-workspace.tsx' => 90,
+            'resources/js/modules/users/detail/user-detail-tabs.tsx' => 145,
             'resources/css/styles/users/portal-access/layout.css' => 175,
             'resources/css/styles/users/portal-access/generator.css' => 180,
             'resources/css/styles/users/portal-access/responsive.css' => 65,
@@ -147,6 +163,24 @@ class UserModuleArchitectureTest extends TestCase
                 "{$path} should only coordinate focused collaborators.",
             );
         }
+    }
+
+    #[Test]
+    public function user_detail_owns_a_custom_modular_workspace(): void
+    {
+        $controller = $this->source($this->path('app/Http/Controllers/UserController.php'));
+        $presenter = $this->source($this->path('app/Modules/Users/Presenters/UserDetailPresenter.php'));
+        $entry = $this->source($this->path('resources/js/modules/users/detail-page.tsx'));
+        $workspace = $this->source($this->path('resources/js/modules/users/detail/user-detail-workspace.tsx'));
+
+        $this->assertStringContainsString("Inertia::render('admin/users/show'", $controller);
+        $this->assertStringNotContainsString("Inertia::render('admin/resource-show'", $controller);
+        $this->assertStringContainsString('UserDetailTabPresenter', $presenter);
+        $this->assertStringContainsString('UserWorkflowPresenter', $presenter);
+        $this->assertStringNotContainsString('decisionCards', $presenter);
+        $this->assertStringContainsString('UserDetailWorkspace', $entry);
+        $this->assertStringContainsString('UserDetailTabs', $workspace);
+        $this->assertStringNotContainsString('<select', $workspace);
     }
 
     #[Test]

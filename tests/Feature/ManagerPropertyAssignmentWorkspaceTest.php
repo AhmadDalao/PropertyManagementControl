@@ -45,15 +45,17 @@ class ManagerPropertyAssignmentWorkspaceTest extends TestCase
             ->get(route('users.show', $manager))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('detailPage.header.actions.0.label', 'Manage property assignments')
-                ->where('detailPage.header.actions.0.href', route('users.property-assignments.edit', $manager))
+                ->component('admin/users/show')
+                ->where('detailPage.header.actions.0.label', 'Edit user')
+                ->where('detailPage.header.actions.0.href', route('users.edit', $manager))
                 ->where('detailPage.header.actions.0.variant', 'primary')
-                ->where('detailPage.header.actions.1.label', 'Edit user')
-                ->where('detailPage.header.actions.1.href', route('users.edit', $manager))
-                ->where('detailPage.header.actions.1.variant', 'secondary')
-                ->where('detailPage.header.actions.2.label', 'Portal access')
-                ->where('detailPage.header.actions.2.href', route('users.portal-access.show', $manager))
-                ->where('detailPage.header.actions.2.variant', 'secondary'));
+                ->has('detailPage.header.actions', 1)
+                ->where('detailPage.workflow.actions.0.label', 'Manage property assignments')
+                ->where('detailPage.workflow.actions.0.href', route('users.property-assignments.edit', $manager))
+                ->where('detailPage.workflow.actions.0.variant', 'primary')
+                ->where('detailPage.workflow.actions.1.label', 'Portal access')
+                ->where('detailPage.workflow.actions.1.href', route('users.portal-access.show', $manager))
+                ->where('detailPage.workflow.actions.1.variant', 'secondary'));
 
         $this->actingAs($owner)
             ->get(route('users.property-assignments.edit', $manager))
