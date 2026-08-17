@@ -1,0 +1,89 @@
+@media (max-width: 991.98px) {
+    .pmc-tenant-command-header {
+        grid-template-columns: minmax(0, 1fr) minmax(14rem, 0.4fr);
+    }
+
+    .pmc-tenant-command-snapshots {
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-tenant-home-actions > div {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pmc-tenant-command-header {
+        min-height: 0;
+        grid-template-columns: 1fr;
+    }
+
+    .pmc-tenant-command-intro {
+        padding: 1rem;
+    }
+
+    .pmc-tenant-command-intro nav {
+        display: grid;
+        width: 100%;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pmc-tenant-command-intro nav a {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .pmc-tenant-current-rental {
+        min-height: 5.5rem;
+        grid-template-columns: auto minmax(0, 1fr);
+        place-content: initial;
+        padding: 0.9rem 1rem;
+        text-align: start;
+    }
+
+    .pmc-tenant-current-rental > i {
+        font-size: 1.6rem;
+    }
+
+    .pmc-tenant-recent-activity > div {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 479.98px) {
+    .pmc-tenant-snapshot {
+        padding: 0.75rem;
+    }
+
+    .pmc-tenant-snapshot dl {
+        gap: 0.35rem;
+    }
+
+    .pmc-tenant-snapshot dl > div {
+        min-height: 4.75rem;
+        padding: 0.48rem;
+    }
+
+    .pmc-tenant-snapshot dt {
+        font-size: 0.56rem;
+    }
+
+    .pmc-tenant-snapshot dd {
+        font-size: 0.72rem;
+    }
+
+    .pmc-tenant-home-actions {
+        padding: 0.75rem;
+    }
+
+    .pmc-tenant-home-actions > div > a {
+        min-height: 5.5rem;
+        grid-template-columns: 1fr;
+        align-content: center;
+        justify-items: start;
+    }
+
+    .pmc-tenant-empty-lease nav {
+        grid-template-columns: 1fr;
+    }
+}

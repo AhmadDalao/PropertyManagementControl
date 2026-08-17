@@ -57,6 +57,7 @@ return [
     ],
     'tenant_portal' => [
         'portal_eyebrow' => 'بوابة المستأجر',
+        'home_description' => 'عقدك ووضع دفعاتك ومستنداتك وطلبات الصيانة في مكان واحد.',
         'my_lease' => 'عقدي',
         'my_payments' => 'الدفعات والإيصالات',
         'my_documents' => 'مستنداتي',
@@ -112,6 +113,8 @@ return [
         'secure_files' => 'ملفات آمنة',
         'documents_are_private' => 'تظهر هنا فقط المستندات المصرح بها لعقدك',
         'available_documents' => 'المستندات المتاحة',
+        'available_files_count' => ':count ملفات آمنة',
+        'confirmation_description' => ':count طلبات صيانة مكتملة تحتاج إلى تأكيدك.',
         'ready_to_download' => 'جاهز للتنزيل',
         'document_type' => 'نوع المستند',
         'all_leases' => 'جميع العقود',

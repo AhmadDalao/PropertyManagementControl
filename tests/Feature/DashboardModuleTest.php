@@ -606,8 +606,26 @@ class DashboardModuleTest extends TestCase
         $owner = $this->createUserWithRole('owner', $portfolio);
         $tenantUser = $this->createUserWithRole('tenant', $portfolio);
         $tenant = $this->createTenantProfile($portfolio, $tenantUser);
-        $lease = $this->createLease($portfolio, $tenant, $this->createAsset($portfolio), $owner);
+        $asset = $this->createAsset($portfolio);
+        $lease = $this->createLease($portfolio, $tenant, $asset, $owner);
         $posted = $this->payment($portfolio, $tenant, $lease, $owner, 'VISIBLE', 'posted', 500);
+        $this->maintenanceRequest($portfolio, $asset, $tenant, $owner, 'Open issue');
+        $awaitingConfirmation = $this->maintenanceRequest(
+            $portfolio,
+            $asset,
+            $tenant,
+            $owner,
+            'Resolved issue',
+        );
+        $awaitingConfirmation->update(['status' => 'resolved']);
+        $cancelled = $this->maintenanceRequest(
+            $portfolio,
+            $asset,
+            $tenant,
+            $owner,
+            'Cancelled issue',
+        );
+        $cancelled->update(['status' => 'cancelled']);
 
         $this->payment($portfolio, $tenant, $lease, $owner, 'HIDDEN-PENDING', 'pending', 900);
         $document = Document::query()->create([
@@ -632,6 +650,9 @@ class DashboardModuleTest extends TestCase
             ->assertInertia(fn (Assert $page) => $page
                 ->component('dashboard')
                 ->where('mode', 'tenant')
+                ->where('stats.maintenanceRequests', 1)
+                ->where('stats.maintenanceConfirmations', 1)
+                ->where('tenantPortal.lease.status', 'active')
                 ->has('tenantPortal.payments', 1)
                 ->where('tenantPortal.payments.0.id', $posted->id)
                 ->where('tenantPortal.documents.0.id', $document->id)

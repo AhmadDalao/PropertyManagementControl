@@ -1,0 +1,202 @@
+.pmc-tenant-command-center {
+    display: grid;
+    width: 100%;
+    max-width: 72rem;
+    min-width: 0;
+    gap: 0.75rem;
+}
+
+.pmc-tenant-command-header {
+    display: grid;
+    min-width: 0;
+    min-height: 10.5rem;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.42fr);
+    overflow: hidden;
+    border: 1px solid #cce7d5;
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-tenant-command-intro {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 0.35rem;
+    padding: 1.15rem;
+}
+
+.pmc-tenant-command-intro > span,
+.pmc-tenant-home-actions > header > span,
+.pmc-tenant-empty-lease > div > span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.62rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.pmc-tenant-command-intro h1 {
+    margin: 0;
+    color: var(--pmc-ink);
+    font-size: clamp(1.4rem, 2.6vw, 1.85rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+}
+
+.pmc-tenant-command-intro p {
+    max-width: 42rem;
+    margin: 0;
+    color: var(--pmc-muted);
+    font-size: 0.76rem;
+}
+
+.pmc-tenant-command-intro nav {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+    flex-wrap: wrap;
+}
+
+.pmc-tenant-command-intro nav a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.6rem;
+    background: #fff;
+    color: var(--pmc-ink);
+    font-size: 0.7rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-tenant-command-intro nav a:first-child {
+    border-color: var(--pmc-primary);
+    background: var(--pmc-primary);
+    color: #fff;
+}
+
+.pmc-tenant-current-rental {
+    position: relative;
+    display: grid;
+    min-width: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    place-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    overflow: hidden;
+    padding: 1.2rem;
+    background: linear-gradient(145deg, #168441, #0a5429);
+    color: #fff;
+}
+
+.pmc-tenant-current-rental > i {
+    font-size: 2rem;
+}
+
+.pmc-tenant-current-rental > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.2rem;
+}
+
+.pmc-tenant-current-rental span {
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.62rem;
+    font-weight: 800;
+}
+
+.pmc-tenant-current-rental strong {
+    overflow: hidden;
+    font-size: 0.88rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-tenant-current-rental small {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.62rem;
+    flex-wrap: wrap;
+}
+
+.pmc-tenant-current-rental em {
+    padding: 0.18rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    font-style: normal;
+    font-weight: 850;
+}
+
+.pmc-tenant-empty-lease {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-tenant-empty-lease > i {
+    display: grid;
+    width: 2.75rem;
+    height: 2.75rem;
+    place-items: center;
+    border-radius: 0.7rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary);
+}
+
+.pmc-tenant-empty-lease h2,
+.pmc-tenant-empty-lease p {
+    margin: 0;
+}
+
+.pmc-tenant-empty-lease h2 {
+    font-size: 1rem;
+}
+
+.pmc-tenant-empty-lease p {
+    color: var(--pmc-muted);
+    font-size: 0.72rem;
+}
+
+.pmc-tenant-empty-lease nav {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+}
+
+.pmc-tenant-empty-lease nav a {
+    display: grid;
+    min-height: 4.5rem;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.7rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.65rem;
+    color: inherit;
+    text-decoration: none;
+}
+
+.pmc-tenant-empty-lease nav span {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-tenant-empty-lease nav strong {
+    font-size: 0.72rem;
+}
+
+.pmc-tenant-empty-lease nav small {
+    color: var(--pmc-muted);
+    font-size: 0.62rem;
+}

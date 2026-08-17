@@ -57,6 +57,7 @@ return [
     ],
     'tenant_portal' => [
         'portal_eyebrow' => 'Tenant portal',
+        'home_description' => 'Your contract, payment position, documents, and service requests in one place.',
         'my_lease' => 'My Lease',
         'my_payments' => 'Payments & Receipts',
         'my_documents' => 'My Documents',
@@ -112,6 +113,8 @@ return [
         'secure_files' => 'Secure files',
         'documents_are_private' => 'Only documents authorized for your tenancy appear here',
         'available_documents' => 'Available documents',
+        'available_files_count' => ':count secure files',
+        'confirmation_description' => ':count completed service requests need your confirmation.',
         'ready_to_download' => 'Ready to download',
         'document_type' => 'Document type',
         'all_leases' => 'All leases',

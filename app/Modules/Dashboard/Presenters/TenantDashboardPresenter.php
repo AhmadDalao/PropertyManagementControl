@@ -31,7 +31,8 @@ class TenantDashboardPresenter
                 'dueNow' => $lease ? (float) $lease->due_now_amount : 0.0,
                 'overdue' => $lease ? (float) $lease->overdue_amount : 0.0,
                 'paidAmount' => $lease ? (float) $lease->total_paid : 0.0,
-                'maintenanceRequests' => $data['requestCount'],
+                'maintenanceRequests' => $data['openRequestCount'],
+                'maintenanceConfirmations' => $data['confirmationRequestCount'],
             ],
             'tenantPortal' => [
                 'lease' => $lease ? $this->lease($lease) : null,
@@ -49,6 +50,7 @@ class TenantDashboardPresenter
         return [
             'id' => $lease->id,
             'code' => $lease->code,
+            'status' => $lease->status,
             'days_remaining' => $lease->days_remaining,
             'balance_remaining' => (float) $lease->balance_remaining,
             'due_now' => (float) $lease->due_now_amount,

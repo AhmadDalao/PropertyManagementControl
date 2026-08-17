@@ -4682,11 +4682,61 @@ test.describe('local role dashboards', () => {
                 }
             } else {
                 await expect(
-                    page.locator('.pmc-tenant-home-metrics'),
+                    page.locator('.pmc-tenant-command-header'),
                 ).toBeVisible();
                 await expect(
                     page.locator('.pmc-tenant-recent-activity'),
                 ).toBeVisible();
+                await expect(
+                    page.locator('.pmc-tenant-home-metrics'),
+                ).toHaveCount(0);
+                await expect(
+                    page.locator('.pmc-tenant-command-snapshots > section'),
+                ).toHaveCount(2);
+                await expect(
+                    page.locator('.pmc-tenant-home-actions > div > a'),
+                ).toHaveCount(4);
+                await expect(
+                    page.locator('.pmc-tenant-confirmation-alert'),
+                ).toHaveCount(1);
+                await expect(
+                    page.getByText('Days left', { exact: true }),
+                ).toBeVisible();
+                await expect(
+                    page.getByText('Total paid', { exact: true }),
+                ).toBeVisible();
+                await expect(
+                    page.getByText('Due now', { exact: true }),
+                ).toBeVisible();
+                await expect(
+                    page.getByText('Outstanding', { exact: true }),
+                ).toBeVisible();
+
+                for (const href of [
+                    '/my-lease',
+                    '/my-payments',
+                    '/my-documents',
+                    '/maintenance-requests/create',
+                ]) {
+                    await expect(
+                        page.locator(`a[href="${href}"]`).first(),
+                    ).toBeVisible();
+                }
+
+                const activityCount = await page
+                    .locator('.pmc-tenant-recent-activity > div > a')
+                    .count();
+                expect(activityCount).toBeGreaterThan(0);
+                expect(activityCount).toBeLessThanOrEqual(4);
+                await expectMinimumTouchHeight(
+                    page,
+                    '.pmc-tenant-command-intro nav a, .pmc-tenant-home-actions > div > a',
+                );
+
+                const tenantDashboardHeight = await page.evaluate(
+                    () => document.documentElement.scrollHeight,
+                );
+                expect(tenantDashboardHeight).toBeLessThan(1575);
             }
 
             await expectNoHorizontalOverflow(page);
@@ -4705,8 +4755,18 @@ test.describe('local role dashboards', () => {
         await page.goto('/dashboard?locale=ar');
 
         await expect(page.locator('html')).toHaveAttribute('dir', 'rtl');
-        await expect(page.getByText('عقد نشط', { exact: true })).toBeVisible();
-        await expect(page.getByText('الرصيد المتبقي')).toBeVisible();
+        await expect(
+            page.getByText('الأيام المتبقية', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('إجمالي المدفوع', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('المستحق الآن', { exact: true }),
+        ).toBeVisible();
+        await expect(
+            page.getByText('الرصيد المتبقي', { exact: true }),
+        ).toBeVisible();
         await expect(
             page.getByRole('heading', { name: 'النشاط الأخير' }),
         ).toBeVisible();
@@ -4714,6 +4774,20 @@ test.describe('local role dashboards', () => {
             page.getByRole('link', { name: 'طلب صيانة جديد' }),
         ).toBeVisible();
         await expect(page.locator('body')).not.toContainText('Recent activity');
+        await expect(page.locator('body')).not.toContainText('Days left');
+        await expect(page.locator('body')).not.toContainText('Total paid');
+        await expect(page.locator('body')).not.toContainText('Outstanding');
+        await expect(
+            page.locator('.pmc-tenant-command-snapshots > section'),
+        ).toHaveCount(2);
+        await expect(
+            page.locator('.pmc-tenant-home-actions > div > a'),
+        ).toHaveCount(4);
+
+        const tenantDashboardHeight = await page.evaluate(
+            () => document.documentElement.scrollHeight,
+        );
+        expect(tenantDashboardHeight).toBeLessThan(1550);
         await expectNoHorizontalOverflow(page);
     });
 

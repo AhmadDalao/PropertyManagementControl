@@ -12,12 +12,14 @@ export type TenantDashboardProps = SharedProps & {
         overdue: number;
         paidAmount: number;
         maintenanceRequests: number;
+        maintenanceConfirmations: number;
     };
     nextActions: NextAction[];
     tenantPortal: {
         lease: {
             id: number;
             code: string;
+            status: string;
             days_remaining: number | null;
             balance_remaining: number;
             due_now: number;

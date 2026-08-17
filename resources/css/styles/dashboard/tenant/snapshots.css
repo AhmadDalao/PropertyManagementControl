@@ -1,0 +1,110 @@
+.pmc-tenant-command-snapshots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.pmc-tenant-snapshot {
+    display: grid;
+    min-width: 0;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border: 1px solid var(--pmc-line);
+    border-radius: 0.85rem;
+    background: #fff;
+}
+
+.pmc-tenant-snapshot > header {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.pmc-tenant-snapshot > header > div {
+    display: grid;
+    min-width: 0;
+    gap: 0.12rem;
+}
+
+.pmc-tenant-snapshot > header span {
+    color: var(--pmc-primary-strong);
+    font-size: 0.6rem;
+    font-weight: 900;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+}
+
+.pmc-tenant-snapshot h2 {
+    margin: 0;
+    overflow: hidden;
+    font-size: 0.92rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pmc-tenant-snapshot > header > a {
+    display: inline-flex;
+    min-height: 2.75rem;
+    align-items: center;
+    flex: 0 0 auto;
+    color: var(--pmc-primary-strong);
+    font-size: 0.66rem;
+    font-weight: 850;
+    text-decoration: none;
+}
+
+.pmc-tenant-snapshot dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin: 0;
+}
+
+.pmc-tenant-snapshot dl > div {
+    display: grid;
+    min-width: 0;
+    align-content: center;
+    gap: 0.28rem;
+    min-height: 4.4rem;
+    padding: 0.6rem;
+    border-radius: 0.65rem;
+    background: var(--pmc-surface-soft);
+}
+
+.pmc-tenant-snapshot dt {
+    color: var(--pmc-muted);
+    font-size: 0.6rem;
+    font-weight: 750;
+}
+
+.pmc-tenant-snapshot dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.pmc-tenant-financial-snapshot dd {
+    color: var(--pmc-primary-strong);
+}
+
+.pmc-tenant-financial-snapshot > p {
+    display: flex;
+    min-height: 2.75rem;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0.55rem 0.65rem;
+    border-radius: 0.6rem;
+    background: var(--pmc-primary-soft);
+    color: var(--pmc-primary-strong);
+    font-size: 0.66rem;
+    font-weight: 800;
+}
+
+.pmc-tenant-financial-snapshot > p.is-overdue {
+    background: #fff1ef;
+    color: #b93827;
+}

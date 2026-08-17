@@ -138,11 +138,13 @@ class DashboardModuleArchitectureTest extends TestCase
             'shared-types.ts',
             'shared/health-signals.tsx',
             'shared/record-list.tsx',
-            'tenant/tenant-header.tsx',
-            'tenant/tenant-lease-documents.tsx',
-            'tenant/tenant-maintenance-panel.tsx',
-            'tenant/tenant-metrics.tsx',
-            'tenant/tenant-payment-history.tsx',
+            'tenant/tenant-contract-snapshot.tsx',
+            'tenant/tenant-empty-lease.tsx',
+            'tenant/tenant-financial-snapshot.tsx',
+            'tenant/tenant-home-actions.tsx',
+            'tenant/tenant-home-command-center.tsx',
+            'tenant/tenant-home-header.tsx',
+            'tenant/tenant-recent-activity.tsx',
             'tenant-types.ts',
             'types.ts',
         ] as $file) {
@@ -172,6 +174,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $platformStyles = $this->source('resources/css/styles/dashboard/platform.css');
         $this->assertStringContainsString('./platform-composition.css', $platformStyles);
         $this->assertStringContainsString('./platform-activity.css', $platformStyles);
+        $this->assertStringNotContainsString('../reference/tenant.css', $platformStyles);
         $this->assertStringNotContainsString('../reference/dashboard.css', $platformStyles);
         $this->assertFileDoesNotExist($this->path(
             'resources/css/styles/reference/dashboard.css',
@@ -180,6 +183,20 @@ class DashboardModuleArchitectureTest extends TestCase
         $this->assertFileDoesNotExist($this->path(
             'resources/js/modules/dashboard/operations/operations-insight-panels.tsx',
         ));
+        $this->assertFileDoesNotExist($this->path(
+            'resources/css/styles/reference/tenant.css',
+        ));
+        foreach ([
+            'tenant-header.tsx',
+            'tenant-lease-documents.tsx',
+            'tenant-maintenance-panel.tsx',
+            'tenant-metrics.tsx',
+            'tenant-payment-history.tsx',
+        ] as $obsoleteTenantFile) {
+            $this->assertFileDoesNotExist($this->path(
+                'resources/js/modules/dashboard/tenant/'.$obsoleteTenantFile,
+            ));
+        }
 
         $groups = $this->source(
             'resources/js/modules/dashboard/operations/operations-dashboard-groups.tsx',
@@ -279,6 +296,14 @@ class DashboardModuleArchitectureTest extends TestCase
             100,
             substr_count($this->source('resources/css/styles/dashboard/portfolio-workspace.css'), "\n") + 1,
         );
+        $tenantStyles = $this->source('resources/css/styles/dashboard/tenant.css');
+        foreach (['home', 'snapshots', 'actions', 'activity', 'responsive'] as $tenantStyle) {
+            $this->assertStringContainsString("./tenant/{$tenantStyle}.css", $tenantStyles);
+            $this->assertLessThanOrEqual(
+                220,
+                substr_count($this->source("resources/css/styles/dashboard/tenant/{$tenantStyle}.css"), "\n") + 1,
+            );
+        }
     }
 
     private function source(string $relativePath): string

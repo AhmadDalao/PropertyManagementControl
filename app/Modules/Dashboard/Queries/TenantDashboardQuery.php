@@ -20,7 +20,8 @@ class TenantDashboardQuery
      *     payments:Collection<int, Payment>,
      *     requests:Collection<int, MaintenanceRequest>,
      *     documents:Collection<int, Document>,
-     *     requestCount:int
+     *     openRequestCount:int,
+     *     confirmationRequestCount:int
      * }
      */
     public function forUser(User $user): array
@@ -53,7 +54,13 @@ class TenantDashboardQuery
             'payments' => $payments,
             'requests' => $requests,
             'documents' => $documents,
-            'requestCount' => $profile?->maintenanceRequests()->count() ?? 0,
+            'openRequestCount' => $profile?->maintenanceRequests()
+                ->whereIn('status', ['open', 'in_progress'])
+                ->count() ?? 0,
+            'confirmationRequestCount' => $profile?->maintenanceRequests()
+                ->where('status', 'resolved')
+                ->whereNull('tenant_confirmed_at')
+                ->count() ?? 0,
         ];
     }
 }
