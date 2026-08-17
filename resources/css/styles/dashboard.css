@@ -1,4 +1,5 @@
 @import './dashboard/metrics.css';
+@import './dashboard/command-flow.css';
 @import './dashboard/focus.css';
 @import './dashboard/period.css';
 @import './dashboard/actions.css';

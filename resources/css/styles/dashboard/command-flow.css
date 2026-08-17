@@ -1,0 +1,85 @@
+.pmc-dashboard-command-flow {
+    display: contents;
+}
+
+@media (max-width: 991.98px) {
+    .pmc-dashboard-command-flow {
+        display: flex;
+        min-width: 0;
+        flex-direction: column;
+    }
+
+    .pmc-dashboard-command-flow > * {
+        min-width: 0;
+    }
+
+    .pmc-dashboard-command-scope {
+        order: 1;
+    }
+
+    .pmc-dashboard-command-work {
+        order: 2;
+    }
+
+    .pmc-dashboard-command-setup {
+        order: 3;
+    }
+
+    .pmc-dashboard-command-metrics {
+        order: 4;
+    }
+
+    .pmc-dashboard-command-work .pmc-dashboard-workspace {
+        margin-top: 0;
+        margin-bottom: 1rem;
+    }
+
+    .pmc-dashboard-command-setup:empty {
+        display: none;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pmc-dashboard-command-scope .pmc-dashboard-focus {
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0.65rem;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-copy > small,
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-hint {
+        display: none;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-copy > strong {
+        font-size: 0.9rem;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-icon {
+        width: 2.4rem;
+        height: 2.4rem;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-action {
+        min-height: 2.5rem;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-period {
+        margin-top: 0.1rem;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+    .pmc-dashboard-command-scope .pmc-dashboard-focus {
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-focus-action {
+        grid-column: auto;
+    }
+
+    .pmc-dashboard-command-scope .pmc-dashboard-period {
+        grid-column: 1 / -1;
+    }
+}

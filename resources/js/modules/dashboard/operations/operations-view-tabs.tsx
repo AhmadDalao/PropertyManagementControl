@@ -52,9 +52,10 @@ export function OperationsViewTabs({
 
     return (
         <div
-            className="pmc-dashboard-view-tabs"
+            className={`pmc-dashboard-view-tabs is-${options.length}`}
             role="tablist"
             aria-label={label}
+            data-dashboard-view-count={options.length}
         >
             {options.map((option, index) => (
                 <button

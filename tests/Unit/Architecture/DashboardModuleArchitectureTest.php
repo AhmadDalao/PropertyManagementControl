@@ -153,6 +153,7 @@ class DashboardModuleArchitectureTest extends TestCase
         $stylesheet = $this->source('resources/css/styles/dashboard.css');
         $this->assertLessThanOrEqual(12, substr_count($stylesheet, "\n") + 1);
         $this->assertStringContainsString('./dashboard/metrics.css', $stylesheet);
+        $this->assertStringContainsString('./dashboard/command-flow.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/actions.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/focus.css', $stylesheet);
         $this->assertStringContainsString('./dashboard/period.css', $stylesheet);
@@ -206,6 +207,16 @@ class DashboardModuleArchitectureTest extends TestCase
         );
         $this->assertStringNotContainsString('<select', $propertyFocus);
         $this->assertStringContainsString('pmc-dashboard-focus-action', $propertyFocus);
+        $operationsView = $this->source(
+            'resources/js/modules/dashboard/views/operations-dashboard.tsx',
+        );
+        $this->assertStringContainsString('pmc-dashboard-command-flow', $operationsView);
+        $this->assertStringContainsString('pmc-dashboard-command-work', $operationsView);
+        $commandFlow = $this->source(
+            'resources/css/styles/dashboard/command-flow.css',
+        );
+        $this->assertStringContainsString('order: 2', $commandFlow);
+        $this->assertStringContainsString('order: 4', $commandFlow);
         $this->assertLessThanOrEqual(
             180,
             substr_count($this->source('resources/css/styles/dashboard/focus.css'), "\n") + 1,

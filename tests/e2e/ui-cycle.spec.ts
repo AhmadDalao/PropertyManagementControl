@@ -3975,8 +3975,48 @@ test.describe('local role dashboards', () => {
 
             if (account.role !== 'tenant') {
                 await expect(page.locator('.pmc-metric-grid')).toBeVisible();
+                const workspaceBox = await page
+                    .locator('.pmc-dashboard-workspace')
+                    .boundingBox();
+                const metricBox = await page
+                    .locator('.pmc-metric-grid')
+                    .boundingBox();
+                expect(workspaceBox).not.toBeNull();
+                expect(metricBox).not.toBeNull();
+                expect(workspaceBox?.y ?? 0).toBeLessThan(metricBox?.y ?? 0);
+
+                await page.setViewportSize(viewports.tablet);
+                const tabletWorkspaceBox = await page
+                    .locator('.pmc-dashboard-workspace')
+                    .boundingBox();
+                const tabletMetricBox = await page
+                    .locator('.pmc-metric-grid')
+                    .boundingBox();
+                expect(tabletWorkspaceBox).not.toBeNull();
+                expect(tabletMetricBox).not.toBeNull();
+                expect(tabletWorkspaceBox?.y ?? 0).toBeLessThan(
+                    tabletMetricBox?.y ?? 0,
+                );
+                await page.setViewportSize(viewports.mobile);
+
+                const workColumns = await page
+                    .locator('.pmc-dashboard-today-tabs')
+                    .evaluate(
+                        (element) =>
+                            getComputedStyle(element).gridTemplateColumns.split(
+                                ' ',
+                            ).length,
+                    );
+                expect(workColumns).toBe(4);
+
                 const workspaceTabs = page.locator('[data-dashboard-view-tab]');
                 await expect(workspaceTabs.first()).toBeVisible();
+                await expect(
+                    page.locator('.pmc-dashboard-view-tabs'),
+                ).toHaveAttribute(
+                    'data-dashboard-view-count',
+                    account.role === 'superadmin' ? '3' : '2',
+                );
                 await expectMinimumTouchHeight(
                     page,
                     '[data-dashboard-view-tab]',

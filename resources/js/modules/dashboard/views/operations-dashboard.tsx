@@ -24,10 +24,23 @@ export function OperationsDashboard({
                 mode={props.mode}
                 propertyFocus={props.propertyFocus}
             />
-            <PropertyFocus focus={props.propertyFocus} period={props.period} />
-            <PortfolioSetupPanel target={props.setupTarget} />
-            <OperationsMetrics props={props} />
-            <OperationsDashboardGroups props={props} />
+            <div className="pmc-dashboard-command-flow">
+                <div className="pmc-dashboard-command-scope">
+                    <PropertyFocus
+                        focus={props.propertyFocus}
+                        period={props.period}
+                    />
+                </div>
+                <div className="pmc-dashboard-command-setup">
+                    <PortfolioSetupPanel target={props.setupTarget} />
+                </div>
+                <div className="pmc-dashboard-command-metrics">
+                    <OperationsMetrics props={props} />
+                </div>
+                <div className="pmc-dashboard-command-work">
+                    <OperationsDashboardGroups props={props} />
+                </div>
+            </div>
         </AdminLayout>
     );
 }
